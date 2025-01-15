@@ -36,7 +36,6 @@ const colorBox = cva({
 });
 
 const title = css({
-  fontFamily: 'Noto Sans KR',
   fontSize: 'xxl',
   fontWeight: 'black',
   height: '7.5rem',
@@ -57,7 +56,6 @@ const policy = css({
 });
 
 const policyButton = css({
-  fontFamily: 'Noto Sans KR',
   fontSize: 'md',
   fontWeight: 'medium',
   color: 'gray',

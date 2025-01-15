@@ -21,7 +21,7 @@ const RootLayout = ({
   if (!isLogin) {
     return (
       <html lang="ko">
-        <body>
+        <body className={notoSans.className}>
           <LoginPage />
         </body>
       </html>

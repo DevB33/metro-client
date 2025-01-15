@@ -2,7 +2,6 @@ import Image from 'next/image';
 import { css } from '@/../styled-system/css';
 
 const naverButton = css({
-  fontFamily: 'Noto Sans KR',
   fontSize: 'md',
   fontWeight: 'medium',
   color: 'white',
