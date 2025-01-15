@@ -6,6 +6,7 @@ import { css } from '../../../../styled-system/css';
 const HeaderConatiner = css({
   width: 'full',
   paddingTop: 'small',
+  pl: 'small',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',

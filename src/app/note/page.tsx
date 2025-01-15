@@ -1,5 +1,20 @@
 import { css } from '../../../styled-system/css';
+import IconSelector from './_components/_content/icon-selector';
+import LineInfo from './_components/_content/line-info';
+import NoteContent from './_components/_content/note-content';
+import Tag from './_components/_content/tag';
+import Title from './_components/_content/title';
 import Header from './_components/header';
+
+const container = css({
+  width: 'full',
+  minHeight: 'full',
+  height: 'auto',
+  display: 'flex',
+  overflowY: 'auto',
+  alignItems: 'start',
+  justifyContent: 'center',
+});
 
 const NoteContainer = css({
   width: '1440px',
@@ -8,20 +23,38 @@ const NoteContainer = css({
   flexDirection: 'column',
   justifyContent: 'space-between',
   alignItems: 'center',
+  gap: 'huge',
 });
 
-const NoteContent = css({
+const content = css({
   width: '44.5rem',
-  height: '60rem',
-  backgroundColor: 'red',
-  overflowY: 'scroll',
+  minHeight: '48rem',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 'tiny',
+});
+
+const divider = css({
+  backgroundColor: 'gray',
+  height: '1px',
+  borderRadius: '1rem',
 });
 
 const Note = () => {
   return (
     <div className={NoteContainer}>
       <Header />
-      <div className={NoteContent} />
+      <div className={container}>
+        <div className={content}>
+          <IconSelector />
+          <Title />
+          <Tag />
+          <div className={divider} />
+          <LineInfo />
+          <div className={divider} />
+          <NoteContent />
+        </div>
+      </div>
     </div>
   );
 };
