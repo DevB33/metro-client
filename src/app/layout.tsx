@@ -1,6 +1,7 @@
 import './globals.css';
 import { Noto_Sans_KR } from 'next/font/google';
 import type { Metadata } from 'next';
+import Sidebar from './_components/sidebar/sidebar';
 
 export const metadata: Metadata = {
   title: 'Metro',
@@ -8,7 +9,6 @@ export const metadata: Metadata = {
 
 const notoSans = Noto_Sans_KR({
   subsets: ['latin'],
-  variable: '--font-noto-sans',
 });
 
 const RootLayout = ({
@@ -17,8 +17,11 @@ const RootLayout = ({
   children: React.ReactNode;
 }>) => {
   return (
-    <html lang="ko" className={notoSans.variable}>
-      <body>{children}</body>
+    <html lang="ko">
+      <body className={notoSans.className} style={{ display: 'flex', flexDirection: 'row' }}>
+        <Sidebar />
+        {children}
+      </body>
     </html>
   );
 };
