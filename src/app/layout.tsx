@@ -29,8 +29,8 @@ const RootLayout = ({
   }
 
   return (
-    <html lang="ko" className={notoSans.variable}>
-      <body>{children}</body>
+    <html lang="ko">
+      <body className={notoSans.className}>{children}</body>
     </html>
   );
 };

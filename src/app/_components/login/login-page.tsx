@@ -1,5 +1,9 @@
 import { css, cva } from '@/../styled-system/css';
 
+import KakaoLoginButton from './kaka-login-button';
+import NaverLoginButton from './naver-login-button';
+import GoogleLoginButton from './google-login-button';
+
 const container = css({
   display: 'flex',
   flexDirection: 'column',
@@ -39,6 +43,13 @@ const title = css({
   marginBottom: '2.5rem',
 });
 
+const buttons = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '2rem',
+  marginBottom: '6.75rem',
+});
+
 const policy = css({
   display: 'flex',
   gap: '0.75rem',
@@ -65,6 +76,11 @@ const LoginPage = () => {
         <div className={colorBox({ color: 'lineSix' })} />
       </div>
       <div className={title}>METRO</div>
+      <div className={buttons}>
+        <KakaoLoginButton />
+        <NaverLoginButton />
+        <GoogleLoginButton />
+      </div>
       <div className={policy}>
         <button type="button" className={policyButton}>
           이용약관
