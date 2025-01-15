@@ -1,0 +1,21 @@
+{
+  "singleQuote": true,
+  "trailingComma": "all",
+  "jsxSingleQuote": false,
+  "useTabs": false,
+  "tabWidth": 2,
+  "printWidth": 100,
+  "bracketSpacing": true,
+  "bracketSameLine": false,
+  "arrowParens": "avoid",
+  "endOfLine": "lf",
+  "htmlWhitespaceSensitivity": "css",
+  "insertFinalNewline": true,
+  "proseWrap": "always",
+  "vueIndentScriptAndStyle": false,
+  "spaceBeforeFunctionParen": false,
+  "commentSpacing": true,
+  "maintainIndent": true,
+  "insertEmptyFinalNewline": true,
+  "jsonIndent": 2
+}
