@@ -18,6 +18,7 @@ const profileImage = css({
 
 const profileName = css({
   fontSize: 'md',
+  userSelect: 'none',
 });
 
 const ProfileSection = () => {

@@ -14,6 +14,11 @@ const tabContainer = css({
   mx: 'tiny',
   px: 'tiny',
   gap: 'tiny',
+
+  _hover: {
+    borderRadius: '0.5rem',
+    backgroundColor: 'gray',
+  },
 });
 
 const tabIcon = css({
@@ -25,6 +30,7 @@ const tabIcon = css({
 
 const tabTitle = css({
   fontSize: 'md',
+  userSelect: 'none',
 });
 
 const TabSection = ({ icon, title }: ITab) => {
