@@ -4,20 +4,20 @@ import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { css } from '@/../styled-system/css';
 
-import IFileType from '@/types/file-type';
+import IPageType from '@/types/page-type';
 import PageCloseIcon from '@/icons/page-close-icon';
 import PageOpenIcon from '@/icons/page-open-icon';
-import FileIcon from '@/icons/file-icon';
+import PageIcon from '@/icons/page-icon';
 import HorizonDotIcon from '@/icons/horizon-dot-icon';
 import PlusIcon from '@/icons/plus-icon';
 
-const fileContainer = css({
+const pageItemContainer = css({
   display: 'flex',
   flexDirection: 'column',
   width: '100%',
 });
 
-const fileItem = css({
+const pageItem = css({
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'center',
@@ -35,22 +35,23 @@ const fileItem = css({
   },
 });
 
-const fileButton = css({
+const pageButton = css({
   borderRadius: '0.25rem',
+  cursor: 'pointer',
 
   '&:hover': {
     backgroundColor: '#E4E4E3',
   },
 });
 
-const fileButtonContainer = css({
+const pageButtonContainer = css({
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'center',
   gap: '0.75rem',
 });
 
-const fileIcon = css({
+const pageIcon = css({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
@@ -60,14 +61,14 @@ const fileIcon = css({
   minHeight: '1.5rem',
 });
 
-const fileTitle = css({
+const pageTitle = css({
   width: '100%',
   whiteSpace: 'nowrap',
   textOverflow: 'ellipsis',
   overflow: 'hidden',
 });
 
-const fileCildren = css({
+const pageChildren = css({
   display: 'flex',
   flexDirection: 'column',
 });
@@ -83,7 +84,7 @@ const noChildren = css({
   overflow: 'hidden',
 });
 
-const File = ({ file, depth }: { file: IFileType; depth: number }) => {
+const PageItem = ({ page, depth }: { page: IPageType; depth: number }) => {
   const router = useRouter();
   const toggleButtoonRef = useRef<HTMLButtonElement>(null);
   const settingButtonRef = useRef<HTMLButtonElement>(null);
@@ -98,11 +99,14 @@ const File = ({ file, depth }: { file: IFileType; depth: number }) => {
   const openPage = (
     event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>,
   ) => {
-    if (toggleButtoonRef.current?.contains(event.target as Node)) return;
-    if (settingButtonRef.current?.contains(event.target as Node)) return;
-    if (plusButtonRef.current?.contains(event.target as Node)) return;
+    if (
+      toggleButtoonRef.current?.contains(event.target as Node) ||
+      settingButtonRef.current?.contains(event.target as Node) ||
+      plusButtonRef.current?.contains(event.target as Node)
+    )
+      return;
 
-    router.push(`/note/${file.docsId}`);
+    router.push(`/note/${page.pageId}`);
   };
 
   const openSettingDropdown = () => {
@@ -114,9 +118,9 @@ const File = ({ file, depth }: { file: IFileType; depth: number }) => {
   };
 
   return (
-    <div className={fileContainer}>
+    <div className={pageItemContainer}>
       <div
-        className={fileItem}
+        className={pageItem}
         style={{ paddingLeft: `${depth * 0.5}rem` }}
         onClick={openPage}
         onMouseEnter={() => setIsHover(true)}
@@ -125,32 +129,32 @@ const File = ({ file, depth }: { file: IFileType; depth: number }) => {
         role="button"
         tabIndex={0}
       >
-        <button type="button" ref={toggleButtoonRef} className={fileButton} onClick={togglePage}>
+        <button type="button" ref={toggleButtoonRef} className={pageButton} onClick={togglePage}>
           {isOpen ? <PageOpenIcon color="black" /> : <PageCloseIcon color="black" />}
         </button>
-        <div className={fileIcon}>{file.icon ? `${file.icon}` : <FileIcon />}</div>
-        <div className={fileTitle}>{file.title}</div>
+        <div className={pageIcon}>{page.icon ? `${page.icon}` : <PageIcon />}</div>
+        <div className={pageTitle}>{page.title}</div>
         {isHover && (
-          <div className={fileButtonContainer}>
+          <div className={pageButtonContainer}>
             <button
               type="button"
               ref={settingButtonRef}
-              className={fileButton}
+              className={pageButton}
               onClick={openSettingDropdown}
             >
               <HorizonDotIcon />
             </button>
-            <button type="button" ref={plusButtonRef} className={fileButton} onClick={deletePage}>
+            <button type="button" ref={plusButtonRef} className={pageButton} onClick={deletePage}>
               <PlusIcon />
             </button>
           </div>
         )}
       </div>
       {isOpen &&
-        (file.children.length ? (
-          <div className={fileCildren}>
-            {file.children.map(child => (
-              <File key={child.docsId} file={child} depth={depth + 1} />
+        (page.children.length ? (
+          <div className={pageChildren}>
+            {page.children.map(child => (
+              <PageItem key={child.pageId} page={child} depth={depth + 1} />
             ))}
           </div>
         ) : (
@@ -160,4 +164,4 @@ const File = ({ file, depth }: { file: IFileType; depth: number }) => {
   );
 };
 
-export default File;
+export default PageItem;

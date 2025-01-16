@@ -1,7 +1,7 @@
 import { css } from '@/../styled-system/css';
 
-import File from './file';
-import fileList from './file-list-mock';
+import PageItem from './page-item';
+import pageList from './page-list-mock';
 
 const finderCard = css({
   width: '16rem',
@@ -19,8 +19,8 @@ const finderCard = css({
 const FinderCard = () => {
   return (
     <div className={finderCard}>
-      {fileList.map(file => {
-        return <File key={file.docsId} file={file} depth={1} />;
+      {pageList.map(page => {
+        return <PageItem key={page.pageId} page={page} depth={1} />;
       })}
     </div>
   );

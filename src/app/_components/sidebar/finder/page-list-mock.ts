@@ -1,32 +1,32 @@
-const fileList = [
+const pageList = [
   {
-    docsId: 1,
+    pageId: 1,
     title: 'Page 1',
     icon: '🏠',
     children: [
       {
-        docsId: 2,
+        pageId: 2,
         title: 'Page 2',
         icon: '📄',
         children: [
           {
-            docsId: 3,
+            pageId: 3,
             title: 'Page 3',
             icon: '📄',
             children: [
               {
-                docsId: 4,
+                pageId: 4,
                 title: 'Page 4',
                 icon: '📂',
                 children: [],
               },
               {
-                docsId: 5,
+                pageId: 5,
                 title: 'Page 5',
                 icon: '📂',
                 children: [
                   {
-                    docsId: 6,
+                    pageId: 6,
                     title: 'Page 6',
                     icon: '📄',
                     children: [],
@@ -38,28 +38,28 @@ const fileList = [
         ],
       },
       {
-        docsId: 7,
+        pageId: 7,
         title: 'Page 7',
         icon: '',
         children: [
           {
-            docsId: 8,
+            pageId: 8,
             title: 'Page 8',
             icon: '📂',
             children: [
               {
-                docsId: 9,
+                pageId: 9,
                 title: 'Page 9',
                 icon: '📄',
                 children: [],
               },
               {
-                docsId: 10,
+                pageId: 10,
                 title: 'Page 10',
                 icon: '📄',
                 children: [
                   {
-                    docsId: 11,
+                    pageId: 11,
                     title: 'Page 11',
                     icon: '📂',
                     children: [],
@@ -73,28 +73,28 @@ const fileList = [
     ],
   },
   {
-    docsId: 12,
+    pageId: 12,
     title: 'Page 12',
     icon: '',
     children: [
       {
-        docsId: 13,
+        pageId: 13,
         title: 'Page 13',
         icon: '',
         children: [
           {
-            docsId: 14,
+            pageId: 14,
             title: '이름이 엄청나게 긴 페이지',
             icon: '📄',
             children: [],
           },
           {
-            docsId: 15,
+            pageId: 15,
             title: 'Page 15',
             icon: '📄',
             children: [
               {
-                docsId: 16,
+                pageId: 16,
                 title: 'Page 16',
                 icon: '📂',
                 children: [],
@@ -106,23 +106,23 @@ const fileList = [
     ],
   },
   {
-    docsId: 17,
+    pageId: 17,
     title: 'Page 17',
     icon: '',
     children: [
       {
-        docsId: 18,
+        pageId: 18,
         title: 'Page 18',
         icon: '📂',
         children: [
           {
-            docsId: 19,
+            pageId: 19,
             title: 'Page 19',
             icon: '📄',
             children: [],
           },
           {
-            docsId: 20,
+            pageId: 20,
             title: 'Page 20',
             icon: '📄',
             children: [],
@@ -130,7 +130,7 @@ const fileList = [
         ],
       },
       {
-        docsId: 21,
+        pageId: 21,
         title: 'Page 21',
         icon: '📄',
         children: [],
@@ -139,4 +139,4 @@ const fileList = [
   },
 ];
 
-export default fileList;
+export default pageList;
