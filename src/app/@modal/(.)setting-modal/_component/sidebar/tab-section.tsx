@@ -4,6 +4,7 @@ import { JSX } from 'react';
 interface ITab {
   icon: JSX.Element;
   title: string;
+  onClick?: () => void;
 }
 
 const tabContainer = css({
@@ -33,9 +34,9 @@ const tabTitle = css({
   userSelect: 'none',
 });
 
-const TabSection = ({ icon, title }: ITab) => {
+const TabSection = ({ icon, title, onClick }: ITab) => {
   return (
-    <div className={tabContainer}>
+    <div className={tabContainer} onClick={onClick}>
       <div className={tabIcon}>{icon}</div>
       <div className={tabTitle}>{title}</div>
     </div>

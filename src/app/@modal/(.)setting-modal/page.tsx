@@ -2,10 +2,9 @@
 
 import { css } from '@/../styled-system/css';
 import { useRouter } from 'next/navigation';
-import AccountIcon from '@/icons/account-icon';
-import SettingIcon2 from '@/icons/setting-icon2';
-import ProfileSection from './_component/sidebar/profile-section';
-import TabSection from './_component/sidebar/tab-section';
+import { useState } from 'react';
+import ModalContent from './_component/content/content';
+import SideBar from './_component/sidebar/sidebar';
 
 const overlayStyles = css({
   position: 'fixed',
@@ -44,10 +43,15 @@ const contentContainer = css({
 });
 
 const SettingsModal = () => {
+  const [tab, setTab] = useState(1);
   const router = useRouter();
 
   const closeModal = () => {
     router.back(); // 이전 상태로 돌아감
+  };
+
+  const handleTab = (i: number) => {
+    setTab(i);
   };
 
   return (
@@ -55,11 +59,11 @@ const SettingsModal = () => {
       <div className={overlayStyles} onClick={closeModal} />
       <div className={settingModalContainer}>
         <div className={sideContainer}>
-          <ProfileSection />
-          <TabSection icon={<AccountIcon />} title="내 계정" />
-          <TabSection icon={<SettingIcon2 />} title="설정" />
+          <SideBar onClick={handleTab} />
         </div>
-        <div className={contentContainer} />
+        <div className={contentContainer}>
+          <ModalContent tab={tab} />
+        </div>
       </div>
     </>
   );
