@@ -30,7 +30,7 @@ const pageItem = css({
   borderRadius: '0.25rem',
   cursor: 'pointer',
 
-  '&:hover': {
+  _hover: {
     backgroundColor: '#F1F1F0',
   },
 });
@@ -39,7 +39,7 @@ const pageButton = css({
   borderRadius: '0.25rem',
   cursor: 'pointer',
 
-  '&:hover': {
+  _hover: {
     backgroundColor: '#E4E4E3',
   },
 });
