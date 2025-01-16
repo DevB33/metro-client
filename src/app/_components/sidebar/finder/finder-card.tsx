@@ -4,7 +4,7 @@ import PageOpenIcon from '@/icons/page-open-icon';
 import PageCloseIcon from '@/icons/page-close-icon';
 
 const finderCard = css({
-  width: '16rem',
+  width: '100%',
   height: '44rem',
   display: 'flex',
   flex: '1',

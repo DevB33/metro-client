@@ -4,7 +4,7 @@ import SearchButton from './search-button';
 import HomeButton from './home-button';
 
 const menuCard = css({
-  width: '16rem',
+  width: '100%',
   height: 'auto',
   display: 'flex',
   flexDirection: 'column',

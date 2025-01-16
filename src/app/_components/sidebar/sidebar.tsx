@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef } from 'react';
 import { css } from '@/../styled-system/css';
 
 import ProfileCard from './profile/profile-card';
@@ -27,21 +27,49 @@ const sideBar = (width: number) =>
     backgroundColor: 'white',
   });
 
-const dragHandleStyle = css({
+const dragHandle = css({
   width: '1rem',
   cursor: 'col-resize',
 });
 
 const Sidebar = () => {
-  const [width, setWidth] = useState(20);
+  const sideBarRef = useRef<HTMLDivElement>(null);
+  const minWidth = 17;
+  const maxWidth = 50;
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    const startX = e.clientX;
+    const startWidth = sideBarRef.current
+      ? parseFloat(getComputedStyle(sideBarRef.current).width) / 16 // Convert px to rem
+      : 20;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const newWidth = Math.min(
+        Math.max(minWidth, startWidth + (moveEvent.clientX - startX) / 16),
+        maxWidth,
+      );
+      if (sideBarRef.current) {
+        sideBarRef.current.style.width = `${newWidth}rem`;
+      }
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  };
+
   return (
     <div className={sideBarContainer}>
-      <div className={sideBar(width)}>
+      <div className={sideBar(minWidth)} ref={sideBarRef}>
         <ProfileCard />
         <SideMenuCard />
         <FinderCard />
       </div>
-      <div className={dragHandleStyle} />
+      <div className={dragHandle} onMouseDown={handleMouseDown} />
     </div>
   );
 };
