@@ -12,7 +12,7 @@ const container = css({
   height: '100vh',
 });
 
-const colorBoxs = css({
+const colorBoxContainer = css({
   display: 'flex',
   gap: '1.5rem',
 });
@@ -42,10 +42,10 @@ const title = css({
   marginBottom: '2.5rem',
 });
 
-const buttons = css({
+const buttonContainer = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '2rem',
+  gap: 'base',
   marginBottom: '6.75rem',
 });
 
@@ -65,7 +65,7 @@ const policyButton = css({
 const LoginPage = () => {
   return (
     <div className={container}>
-      <div className={colorBoxs}>
+      <div className={colorBoxContainer}>
         <div className={colorBox({ color: 'lineOne' })} />
         <div className={colorBox({ color: 'lineTwo' })} />
         <div className={colorBox({ color: 'lineThree' })} />
@@ -74,7 +74,7 @@ const LoginPage = () => {
         <div className={colorBox({ color: 'lineSix' })} />
       </div>
       <div className={title}>METRO</div>
-      <div className={buttons}>
+      <div className={buttonContainer}>
         <KakaoLoginButton />
         <NaverLoginButton />
         <GoogleLoginButton />
