@@ -2,6 +2,10 @@
 
 import { css } from '@/../styled-system/css';
 import { useRouter } from 'next/navigation';
+import AccountIcon from '@/icons/account-icon';
+import SettingIcon2 from '@/icons/setting-icon2';
+import ProfileSection from './_component/sidebar/profile-section';
+import TabSection from './_component/sidebar/tab-section';
 
 const overlayStyles = css({
   position: 'fixed',
@@ -31,7 +35,7 @@ const settingModalContainer = css({
 const sideContainer = css({
   zIndex: 1000,
   width: '12rem',
-  backgroundColor: 'gray',
+  backgroundColor: '#F1F1F1',
 });
 
 const contentContainer = css({
@@ -50,7 +54,11 @@ const SettingsModal = () => {
     <>
       <div className={overlayStyles} onClick={closeModal} />
       <div className={settingModalContainer}>
-        <div className={sideContainer} />
+        <div className={sideContainer}>
+          <ProfileSection />
+          <TabSection icon={<AccountIcon />} title="내 계정" />
+          <TabSection icon={<SettingIcon2 />} title="설정" />
+        </div>
         <div className={contentContainer} />
       </div>
     </>
