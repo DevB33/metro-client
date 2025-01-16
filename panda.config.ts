@@ -45,6 +45,7 @@ export default defineConfig({
         },
         shadows: {
           sidebar: { value: '0 0 10px 0 rgba(0, 0, 0, 0.20)' },
+          loginButton: { value: '0 0 20px 0 rgba(0, 0, 0, 0.15)' },
         },
         fontWeights: {
           light: { value: '300' },

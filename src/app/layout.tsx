@@ -4,6 +4,8 @@ import type { Metadata } from 'next';
 import { css } from '@/../styled-system/css';
 
 import Sidebar from './_components/sidebar/sidebar';
+import LoginPage from './_components/login/login-page';
+
 
 export const metadata: Metadata = {
   title: 'Metro',
@@ -23,6 +25,18 @@ const RootLayout = ({
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
+  const isLogin = false;
+
+  if (!isLogin) {
+    return (
+      <html lang="ko">
+        <body className={notoSans.className}>
+          <LoginPage />
+        </body>
+      </html>
+    );
+  }
+
   return (
     <html lang="ko">
       <body className={`${notoSans.className} ${Body}`}>
