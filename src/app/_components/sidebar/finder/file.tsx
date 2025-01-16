@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { css } from '@/../styled-system/css';
 
 import IFileType from '@/types/file-type';
@@ -73,24 +74,40 @@ const noChildren = css({
 });
 
 const File = ({ file, depth }: { file: IFileType; depth: number }) => {
+  const router = useRouter();
+  const toggleButtoonRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState(false);
 
   const togglePage = () => {
     setIsOpen(!isOpen);
   };
 
+  const openPage = (
+    event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>,
+  ) => {
+    if (toggleButtoonRef.current?.contains(event.target as Node)) return;
+
+    router.push(`/note/${file.docsId}`);
+  };
+
   return (
     <div className={fileContainer}>
-      <div className={fileItem} style={{ paddingLeft: `${depth * 0.5}rem` }}>
-        <div
+      <div
+        className={fileItem}
+        style={{ paddingLeft: `${depth * 0.5}rem` }}
+        onClick={openPage}
+        onKeyDown={openPage}
+        role="button"
+        tabIndex={0}
+      >
+        <button
+          type="button"
+          ref={toggleButtoonRef}
           className={fileToggleButton}
           onClick={togglePage}
-          onKeyDown={togglePage}
-          role="button"
-          tabIndex={0}
         >
           {isOpen ? <PageOpenIcon color="black" /> : <PageCloseIcon color="black" />}
-        </div>
+        </button>
         <div className={fileIcon}>{file.icon ? `${file.icon}` : <FileIcon />}</div>
         <div className={fileTitle}>{file.title}</div>
       </div>

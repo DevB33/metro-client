@@ -1,4 +1,5 @@
-import { css } from '../../../styled-system/css';
+import { css } from '@/../styled-system/css';
+
 import IconSelector from './_components/_content/icon-selector';
 import LineInfo from './_components/_content/line-info';
 import NoteContent from './_components/_content/note-content';
