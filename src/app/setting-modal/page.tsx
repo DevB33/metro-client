@@ -1,7 +1,12 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+
 const Settings = () => {
-  return <div>asdf</div>;
+  const router = useRouter();
+  router.replace('/');
+
+  return null;
 };
 
 export default Settings;
