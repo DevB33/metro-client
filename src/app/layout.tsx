@@ -28,7 +28,7 @@ const RootLayout = ({
 }>) => {
   const isLogin = false;
 
-  if (isLogin) {
+  if (!isLogin) {
     return (
       <html lang="ko">
         <body className={notoSans.className}>
