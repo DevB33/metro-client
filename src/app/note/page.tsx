@@ -8,8 +8,6 @@ import Header from './_components/header';
 
 const noteContainer = css({
   width: 'full',
-  minHeight: 'full',
-  height: 'auto',
   display: 'flex',
   overflowY: 'auto',
   alignItems: 'start',
@@ -21,7 +19,6 @@ const container = css({
   height: '100vh',
   display: 'flex',
   flexDirection: 'column',
-  justifyContent: 'space-between',
   alignItems: 'center',
   gap: 'huge',
 });

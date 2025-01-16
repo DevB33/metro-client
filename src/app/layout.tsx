@@ -6,7 +6,6 @@ import { css } from '@/../styled-system/css';
 import Sidebar from './_components/sidebar/sidebar';
 import LoginPage from './_components/login/login-page';
 
-
 export const metadata: Metadata = {
   title: 'Metro',
 };
@@ -22,12 +21,14 @@ const Body = css({
 
 const RootLayout = ({
   children,
+  modal,
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode;
 }>) => {
   const isLogin = false;
 
-  if (!isLogin) {
+  if (isLogin) {
     return (
       <html lang="ko">
         <body className={notoSans.className}>
@@ -41,6 +42,7 @@ const RootLayout = ({
     <html lang="ko">
       <body className={`${notoSans.className} ${Body}`}>
         <Sidebar />
+        {modal}
         {children}
       </body>
     </html>

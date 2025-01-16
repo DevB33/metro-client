@@ -7,6 +7,7 @@ const finderCard = css({
   width: '16rem',
   height: '44rem',
   display: 'flex',
+  flex: '1',
   flexDirection: 'column',
   padding: 'small',
   fontWeight: 'regular',
