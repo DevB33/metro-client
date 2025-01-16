@@ -2,6 +2,20 @@
 
 import SettingIcon from '@/icons/setting-icon';
 import { useRouter } from 'next/navigation';
+import { css } from '@/../styled-system/css';
+
+const buttonContainer = css({
+  width: '1.4rem',
+  height: '1.4rem',
+  borderRadius: '10%',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+
+  _hover: {
+    backgroundColor: 'gray',
+  },
+});
 
 const SettingButton = () => {
   const router = useRouter();
@@ -11,7 +25,7 @@ const SettingButton = () => {
   };
 
   return (
-    <button type="button" onClick={openSettings}>
+    <button className={buttonContainer} type="button" onClick={openSettings}>
       <SettingIcon color="gray" />
     </button>
   );
