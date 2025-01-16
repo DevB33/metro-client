@@ -6,6 +6,7 @@ import { css } from '@/../styled-system/css';
 import IFileType from '@/types/file-type';
 import PageCloseIcon from '@/icons/page-close-icon';
 import PageOpenIcon from '@/icons/page-open-icon';
+import FileIcon from '@/icons/file-icon';
 
 const fileContainer = css({
   display: 'flex',
@@ -19,11 +20,11 @@ const fileItem = css({
   alignItems: 'center',
   width: '100%',
   height: '2rem',
+  gap: '0.25rem',
   fontWeight: 'regular',
   fontSize: 'md',
   borderRadius: '0.25rem',
   cursor: 'pointer',
-  pl: 'calc(100% + 0.5rem)',
 
   '&:hover': {
     backgroundColor: '#F1F1F0',
@@ -36,6 +37,16 @@ const fileToggleButton = css({
   '&:hover': {
     backgroundColor: '#E4E4E3',
   },
+});
+
+const fileIcon = css({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  width: '1.5rem',
+  height: '1.5rem',
+  minWidth: '1.5rem',
+  minHeight: '1.5rem',
 });
 
 const fileTitle = css({
@@ -80,7 +91,7 @@ const File = ({ file, depth }: { file: IFileType; depth: number }) => {
         >
           {isOpen ? <PageOpenIcon color="black" /> : <PageCloseIcon color="black" />}
         </div>
-        <div>{file.icon}</div>
+        <div className={fileIcon}>{file.icon ? `${file.icon}` : <FileIcon />}</div>
         <div className={fileTitle}>{file.title}</div>
       </div>
       {isOpen &&

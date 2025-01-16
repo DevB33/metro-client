@@ -40,7 +40,7 @@ const fileList = [
       {
         docsId: 7,
         title: 'Page 7',
-        icon: '📂',
+        icon: '',
         children: [
           {
             docsId: 8,
@@ -75,12 +75,12 @@ const fileList = [
   {
     docsId: 12,
     title: 'Page 12',
-    icon: '🏠',
+    icon: '',
     children: [
       {
         docsId: 13,
         title: 'Page 13',
-        icon: '📂',
+        icon: '',
         children: [
           {
             docsId: 14,
@@ -108,7 +108,7 @@ const fileList = [
   {
     docsId: 17,
     title: 'Page 17',
-    icon: '📂',
+    icon: '',
     children: [
       {
         docsId: 18,
