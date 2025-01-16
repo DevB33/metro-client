@@ -8,6 +8,8 @@ import IFileType from '@/types/file-type';
 import PageCloseIcon from '@/icons/page-close-icon';
 import PageOpenIcon from '@/icons/page-open-icon';
 import FileIcon from '@/icons/file-icon';
+import HorizonDotIcon from '@/icons/horizon-dot-icon';
+import PlusIcon from '@/icons/plus-icon';
 
 const fileContainer = css({
   display: 'flex',
@@ -21,6 +23,7 @@ const fileItem = css({
   alignItems: 'center',
   width: '100%',
   height: '2rem',
+  pr: 'tiny',
   gap: '0.25rem',
   fontWeight: 'regular',
   fontSize: 'md',
@@ -32,12 +35,19 @@ const fileItem = css({
   },
 });
 
-const fileToggleButton = css({
+const fileButton = css({
   borderRadius: '0.25rem',
 
   '&:hover': {
     backgroundColor: '#E4E4E3',
   },
+});
+
+const fileButtonContainer = css({
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: '0.75rem',
 });
 
 const fileIcon = css({
@@ -76,7 +86,10 @@ const noChildren = css({
 const File = ({ file, depth }: { file: IFileType; depth: number }) => {
   const router = useRouter();
   const toggleButtoonRef = useRef<HTMLButtonElement>(null);
+  const settingButtonRef = useRef<HTMLButtonElement>(null);
+  const plusButtonRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [isHover, setIsHover] = useState(false);
 
   const togglePage = () => {
     setIsOpen(!isOpen);
@@ -86,8 +99,18 @@ const File = ({ file, depth }: { file: IFileType; depth: number }) => {
     event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>,
   ) => {
     if (toggleButtoonRef.current?.contains(event.target as Node)) return;
+    if (settingButtonRef.current?.contains(event.target as Node)) return;
+    if (plusButtonRef.current?.contains(event.target as Node)) return;
 
     router.push(`/note/${file.docsId}`);
+  };
+
+  const openSettingDropdown = () => {
+    // TODD: 페이지 설정 드롭다운 열기
+  };
+
+  const deletePage = () => {
+    // TODD: 페이지 삭제
   };
 
   return (
@@ -96,20 +119,32 @@ const File = ({ file, depth }: { file: IFileType; depth: number }) => {
         className={fileItem}
         style={{ paddingLeft: `${depth * 0.5}rem` }}
         onClick={openPage}
+        onMouseEnter={() => setIsHover(true)}
+        onMouseLeave={() => setIsHover(false)}
         onKeyDown={openPage}
         role="button"
         tabIndex={0}
       >
-        <button
-          type="button"
-          ref={toggleButtoonRef}
-          className={fileToggleButton}
-          onClick={togglePage}
-        >
+        <button type="button" ref={toggleButtoonRef} className={fileButton} onClick={togglePage}>
           {isOpen ? <PageOpenIcon color="black" /> : <PageCloseIcon color="black" />}
         </button>
         <div className={fileIcon}>{file.icon ? `${file.icon}` : <FileIcon />}</div>
         <div className={fileTitle}>{file.title}</div>
+        {isHover && (
+          <div className={fileButtonContainer}>
+            <button
+              type="button"
+              ref={settingButtonRef}
+              className={fileButton}
+              onClick={openSettingDropdown}
+            >
+              <HorizonDotIcon />
+            </button>
+            <button type="button" ref={plusButtonRef} className={fileButton} onClick={deletePage}>
+              <PlusIcon />
+            </button>
+          </div>
+        )}
       </div>
       {isOpen &&
         (file.children.length ? (
