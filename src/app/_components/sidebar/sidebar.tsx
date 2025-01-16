@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { css } from '@/../styled-system/css';
 
 import ProfileCard from './profile/profile-card';
@@ -13,19 +13,17 @@ const sideBarContainer = css({
   height: '100vh',
 });
 
-const sideBar = (width: number) =>
-  css({
-    width: `${width}rem`,
-    minWidth: `17rem`,
-    height: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    padding: '1rem 0 1rem 1rem',
-    gap: 'small',
-    backgroundColor: 'white',
-  });
+const sideBar = css({
+  minWidth: `17rem`,
+  height: '100vh',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'flex-start',
+  padding: '1rem 0 1rem 1rem',
+  gap: 'small',
+  backgroundColor: 'white',
+});
 
 const dragHandle = css({
   width: '1rem',
@@ -37,10 +35,15 @@ const Sidebar = () => {
   const minWidth = 17;
   const maxWidth = 50;
 
+  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
+    const savedWidth = localStorage.getItem('sidebarWidth');
+    return savedWidth ? parseFloat(savedWidth) : minWidth;
+  });
+
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     const startX = e.clientX;
     const startWidth = sideBarRef.current
-      ? parseFloat(getComputedStyle(sideBarRef.current).width) / 16 // Convert px to rem
+      ? parseFloat(getComputedStyle(sideBarRef.current).width) / 16
       : 20;
 
     const onMouseMove = (moveEvent: MouseEvent) => {
@@ -51,6 +54,8 @@ const Sidebar = () => {
       if (sideBarRef.current) {
         sideBarRef.current.style.width = `${newWidth}rem`;
       }
+      setSidebarWidth(newWidth);
+      localStorage.setItem('sidebarWidth', newWidth.toString());
     };
 
     const onMouseUp = () => {
@@ -64,7 +69,7 @@ const Sidebar = () => {
 
   return (
     <div className={sideBarContainer}>
-      <div className={sideBar(minWidth)} ref={sideBarRef}>
+      <div className={sideBar} ref={sideBarRef} style={{ width: `${sidebarWidth}rem` }}>
         <ProfileCard />
         <SideMenuCard />
         <FinderCard />
