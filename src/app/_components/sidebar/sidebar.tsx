@@ -8,7 +8,6 @@ const sideBar = css({
   width: '18rem',
   height: '100vh',
   display: 'flex',
-  flex: '1',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'flex-start',
