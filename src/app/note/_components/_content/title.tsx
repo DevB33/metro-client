@@ -1,4 +1,4 @@
-import { css } from '../../../../../styled-system/css';
+import { css } from '@/../styled-system/css';
 
 const titleFont = css({
   fontSize: 'lg',
@@ -6,7 +6,7 @@ const titleFont = css({
 });
 
 const Title = () => {
-  return <div className={titleFont}>Page01</div>;
+  return <div className={titleFont}>Page0</div>;
 };
 
 export default Title;

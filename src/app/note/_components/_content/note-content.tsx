@@ -1,9 +1,10 @@
 'use client';
 
 import { useRef } from 'react';
-import { css } from '../../../../../styled-system/css';
+import { css } from '@/../styled-system/css';
 
 const noteContentContainer = css({
+  boxSizing: 'border-box',
   paddingTop: 'tiny',
   display: 'flex',
   flex: '1 0 auto',

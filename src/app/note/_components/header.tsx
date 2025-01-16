@@ -1,12 +1,14 @@
+import { css } from '@/../styled-system/css';
+
 import LeftArrowIcon from '@/icons/left-arrow-icon';
 import RightArrowIcon from '@/icons/right-arrow-icon';
 import HorizonDotIcon from '@/icons/horizon-dot-icon';
-import { css } from '../../../../styled-system/css';
 
 const headerConatiner = css({
+  boxSizing: 'border-box',
   width: 'full',
   paddingTop: 'small',
-  pl: 'small',
+  px: 'small',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',

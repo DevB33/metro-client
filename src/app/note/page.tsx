@@ -17,8 +17,8 @@ const noteContainer = css({
 });
 
 const container = css({
-  width: '1440px',
-  height: '1024px',
+  width: '100vw',
+  height: '100vh',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'space-between',

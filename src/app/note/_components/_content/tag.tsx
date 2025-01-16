@@ -1,4 +1,4 @@
-import { css, cva } from '../../../../../styled-system/css';
+import { css, cva } from '@/../styled-system/css';
 
 const tagContainer = css({
   height: '2rem',
