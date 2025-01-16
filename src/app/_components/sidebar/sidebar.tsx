@@ -11,7 +11,7 @@ const sideBar = css({
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'flex-start',
-  padding: '1rem',
+  padding: 'small',
   gap: 'small',
   backgroundColor: 'white',
 });
