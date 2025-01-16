@@ -6,7 +6,7 @@ import Tag from './_components/_content/tag';
 import Title from './_components/_content/title';
 import Header from './_components/header';
 
-const container = css({
+const noteContainer = css({
   width: 'full',
   minHeight: 'full',
   height: 'auto',
@@ -16,7 +16,7 @@ const container = css({
   justifyContent: 'center',
 });
 
-const NoteContainer = css({
+const container = css({
   width: '1440px',
   height: '1024px',
   display: 'flex',
@@ -42,9 +42,9 @@ const divider = css({
 
 const Note = () => {
   return (
-    <div className={NoteContainer}>
+    <div className={container}>
       <Header />
-      <div className={container}>
+      <div className={noteContainer}>
         <div className={content}>
           <IconSelector />
           <Title />

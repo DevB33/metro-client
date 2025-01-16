@@ -1,12 +1,12 @@
 import { css } from '../../../../../styled-system/css';
 
-const LineInfoContainer = css({
+const lineInfoContainer = css({
   height: '6rem',
   display: 'flex',
 });
 
 const LineInfo = () => {
-  return <div className={LineInfoContainer} />;
+  return <div className={lineInfoContainer} />;
 };
 
 export default LineInfo;

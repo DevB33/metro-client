@@ -3,7 +3,7 @@ import RightArrowIcon from '@/icons/right-arrow-icon';
 import HorizonDotIcon from '@/icons/horizon-dot-icon';
 import { css } from '../../../../styled-system/css';
 
-const HeaderConatiner = css({
+const headerConatiner = css({
   width: 'full',
   paddingTop: 'small',
   pl: 'small',
@@ -12,24 +12,24 @@ const HeaderConatiner = css({
   justifyContent: 'space-between',
 });
 
-const LeftItemsConatiner = css({
+const leftItemsConatiner = css({
   display: 'flex',
   gap: 'small',
 });
 
-const RightItemsConatiner = css({
+const rightItemsConatiner = css({
   display: 'flex',
   gap: 'small',
 });
 
 const Header = () => {
   return (
-    <div className={HeaderConatiner}>
-      <div className={LeftItemsConatiner}>
+    <div className={headerConatiner}>
+      <div className={leftItemsConatiner}>
         <LeftArrowIcon />
         <RightArrowIcon />
       </div>
-      <div className={RightItemsConatiner}>
+      <div className={rightItemsConatiner}>
         <div>공유</div>
         <HorizonDotIcon />
       </div>

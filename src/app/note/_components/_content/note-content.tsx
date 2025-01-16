@@ -22,7 +22,6 @@ const NoteContent = () => {
 
   const handleInput = () => {
     if (textAreaRef.current) {
-      // 높이를 동적으로 조정
       textAreaRef.current.style.height = 'auto';
       textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
     }

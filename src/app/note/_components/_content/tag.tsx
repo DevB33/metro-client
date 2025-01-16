@@ -1,6 +1,6 @@
 import { css, cva } from '../../../../../styled-system/css';
 
-const TagContainer = css({
+const tagContainer = css({
   height: '2rem',
   display: 'flex',
   alignItems: 'center',
@@ -8,7 +8,7 @@ const TagContainer = css({
   gap: 'tiny',
 });
 
-const TagBox = cva({
+const tagBox = cva({
   base: {
     height: '1rem',
     width: '4rem',
@@ -30,10 +30,10 @@ const TagBox = cva({
 
 const Tag = () => {
   return (
-    <div className={TagContainer}>
-      <div className={TagBox({ color: 'lineOne' })}>tag01</div>
-      <div className={TagBox({ color: 'lineTwo' })}>tag02</div>
-      <div className={TagBox({ color: 'lineThree' })}>tag03</div>
+    <div className={tagContainer}>
+      <div className={tagBox({ color: 'lineOne' })}>tag01</div>
+      <div className={tagBox({ color: 'lineTwo' })}>tag02</div>
+      <div className={tagBox({ color: 'lineThree' })}>tag03</div>
     </div>
   );
 };

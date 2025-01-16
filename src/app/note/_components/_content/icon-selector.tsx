@@ -1,11 +1,11 @@
 import { css } from '../../../../../styled-system/css';
 
-const Icon = css({
+const icon = css({
   fontSize: 'lg',
 });
 
 const IconSelector = () => {
-  return <div className={Icon}>🍎</div>;
+  return <div className={icon}>🍎</div>;
 };
 
 export default IconSelector;
