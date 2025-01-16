@@ -20,7 +20,7 @@ const FinderCard = () => {
   return (
     <div className={finderCard}>
       {fileList.map(file => {
-        return <File key={file.docsId} file={file} />;
+        return <File key={file.docsId} file={file} depth={1} />;
       })}
     </div>
   );
