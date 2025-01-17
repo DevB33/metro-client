@@ -18,17 +18,17 @@ const modalContentContainer = css({
 const ModalContent = ({ tab }: IModalContent) => {
   return (
     <div className={modalContentContainer}>
-      <Header
-        icon={
-          tab === 1 ? (
-            <AccountIcon width="32" height="32" />
-          ) : (
-            <SettingIcon2 width="32" height="32" />
-          )
-        }
-        title={tab === 1 ? '내 계정' : '설정'}
-      />
-      {tab === 1 ? <ProfileSettingPage /> : <SettingPage />}
+      {tab === 1 ? (
+        <>
+          <Header icon={<AccountIcon width="32" height="32" />} title="내 계정" />
+          <ProfileSettingPage />
+        </>
+      ) : (
+        <>
+          <Header icon={<SettingIcon2 width="32" height="32" />} title="설정" />
+          <SettingPage />
+        </>
+      )}
     </div>
   );
 };
