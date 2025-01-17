@@ -21,6 +21,8 @@ const foldButton = css({
   opacity: { base: 0.3, _hover: 1 },
   transition: '0.3s',
   cursor: 'pointer',
+  position: 'relative',
+  left: `0px`,
 });
 
 const SideBarResizeHandle = ({
@@ -71,7 +73,6 @@ const SideBarResizeHandle = ({
   const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
     setIsHover(true);
     setMousePosition({ x: e.clientX, y: Math.max(e.clientY, 60) });
-    console.log('mouse enter', e.clientX, e.clientY);
   };
 
   const handleMouseLeave = () => {
@@ -79,11 +80,8 @@ const SideBarResizeHandle = ({
   };
 
   const handleFold = (e: React.MouseEvent<HTMLDivElement>) => {
-    console.log('fold');
     setIsOpen(!isOpen);
     setIsHover(false);
-
-    console.log('sidebarWidth', sideBarRef.current?.style.width);
   };
 
   return (
@@ -98,8 +96,6 @@ const SideBarResizeHandle = ({
           onClick={handleFold}
           className={foldButton}
           style={{
-            position: 'relative',
-            left: `0px`,
             top: `${mousePosition.y - 50}px`,
           }}
         >

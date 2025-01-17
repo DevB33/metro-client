@@ -17,7 +17,7 @@ const sideBarContainer = css({
 });
 
 const sideBar = css({
-  minWidth: `17rem`,
+  minWidth: '17rem',
   height: '100vh',
   display: 'flex',
   flexDirection: 'column',
