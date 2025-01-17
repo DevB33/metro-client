@@ -1,5 +1,7 @@
 import { css } from '@/../styled-system/css';
 
+import { useEffect, useState } from 'react';
+import IPageType from '@/types/page-type';
 import PageItem from './page-item';
 import pageList from './page-list-mock';
 
@@ -17,9 +19,21 @@ const finderCard = css({
 });
 
 const FinderCard = () => {
+  const [mockPageList, setMockPageList] = useState<IPageType[]>();
+
+  useEffect(() => {
+    const storedPageList = localStorage.getItem('pageList');
+    if (storedPageList) {
+      setMockPageList(JSON.parse(storedPageList));
+    } else {
+      localStorage.setItem('pageList', JSON.stringify(pageList));
+      setMockPageList(pageList);
+    }
+  }, []);
+
   return (
     <div className={finderCard}>
-      {pageList.map(page => {
+      {mockPageList?.map(page => {
         return <PageItem key={page.pageId} page={page} depth={1} />;
       })}
     </div>
