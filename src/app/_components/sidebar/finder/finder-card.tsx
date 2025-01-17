@@ -69,14 +69,13 @@ const FinderCard = () => {
 
   const createPage = () => {
     const newPage: IPageType = {
-      pageId: Date.now(), // 고유한 ID 생성
+      pageId: Date.now(),
       title: '새 페이지',
-      icon: '', // 기본 아이콘
-      children: [], // 기본적으로 빈 children 배열
+      icon: '',
+      children: [],
     };
     const updatedPageList = [...(mockPageList || []), newPage];
 
-    // 로컬 스토리지와 상태 업데이트
     localStorage.setItem('pageList', JSON.stringify(updatedPageList));
     setMockPageList(updatedPageList);
   };
