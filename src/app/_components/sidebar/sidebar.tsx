@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { css } from '@/../styled-system/css';
 
 import ProfileCard from './profile/profile-card';
-import SideMenuCard from './sied-menu/side-menu-card';
+import SideMenuCard from './side-menu/side-menu-card';
 import FinderCard from './finder/finder-card';
 import SideBarResizeHandle from './sidebar-resize-handle';
 

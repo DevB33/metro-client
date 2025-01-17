@@ -26,8 +26,10 @@ const contentContainer = css({
 
 const RootLayout = ({
   children,
+  modal,
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode;
 }>) => {
   const isLogin = true;
 
@@ -45,7 +47,8 @@ const RootLayout = ({
     <html lang="ko">
       <body className={`${notoSans.className} ${Body}`}>
         <Sidebar />
-        <div className={contentContainer}>{children}</div>
+        {modal}
+        {children}
       </body>
     </html>
   );

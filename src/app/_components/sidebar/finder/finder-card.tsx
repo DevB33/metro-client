@@ -1,7 +1,7 @@
 import { css } from '@/../styled-system/css';
 
-import PageOpenIcon from '@/icons/page-open-icon';
-import PageCloseIcon from '@/icons/page-close-icon';
+import PageItem from './page-item';
+import pageList from './page-list-mock';
 
 const finderCard = css({
   width: '100%',
@@ -9,35 +9,19 @@ const finderCard = css({
   display: 'flex',
   flex: '1',
   flexDirection: 'column',
+  gap: '0.25rem',
   padding: 'small',
-  fontWeight: 'regular',
-  fontSize: 'md',
   backgroundColor: 'background',
   borderRadius: '10px',
   boxShadow: 'sidebar',
-  overflow: 'hidden',
-});
-
-const finderButton = css({
-  display: 'flex',
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: 'tiny',
 });
 
 const FinderCard = () => {
   return (
     <div className={finderCard}>
-      <div className={finderButton}>
-        <PageOpenIcon color="black" />
-        <div>👾</div>
-        <div>file open</div>
-      </div>
-      <div className={finderButton}>
-        <PageCloseIcon color="black" />
-        <div>👾</div>
-        <div>file close</div>
-      </div>
+      {pageList.map(page => {
+        return <PageItem key={page.pageId} page={page} depth={1} />;
+      })}
     </div>
   );
 };
