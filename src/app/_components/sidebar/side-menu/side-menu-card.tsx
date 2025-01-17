@@ -4,7 +4,7 @@ import SearchButton from './search-button';
 import HomeButton from './home-button';
 
 const menuCard = css({
-  width: '16rem',
+  width: '100%',
   height: 'auto',
   display: 'flex',
   flexDirection: 'column',
@@ -17,6 +17,7 @@ const menuCard = css({
   backgroundColor: 'background',
   borderRadius: '10px',
   boxShadow: 'sidebar',
+  overflow: 'hidden',
 });
 
 const SideMenuCard = () => {

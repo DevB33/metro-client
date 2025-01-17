@@ -4,7 +4,7 @@ import PageItem from './page-item';
 import pageList from './page-list-mock';
 
 const finderCard = css({
-  width: '16rem',
+  width: '100%',
   height: '44rem',
   display: 'flex',
   flex: '1',

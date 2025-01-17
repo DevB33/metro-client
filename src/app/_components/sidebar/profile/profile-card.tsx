@@ -3,7 +3,7 @@ import { css } from '@/../styled-system/css';
 import SettingButton from './setting-button';
 
 const profileCard = css({
-  width: '16rem',
+  width: '100%',
   height: '4rem',
   display: 'flex',
   alignItems: 'center',
@@ -15,6 +15,7 @@ const profileCard = css({
   backgroundColor: 'background',
   borderRadius: '10px',
   boxShadow: 'sidebar',
+  overflow: 'hidden',
 });
 
 const profileInfo = css({

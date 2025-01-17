@@ -19,6 +19,11 @@ const Body = css({
   flexDirection: 'row',
 });
 
+const contentContainer = css({
+  flex: '1',
+  transition: '0.3s',
+});
+
 const RootLayout = ({
   children,
   modal,
