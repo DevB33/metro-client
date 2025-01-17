@@ -50,8 +50,8 @@ const SettingsModal = () => {
     router.back(); // 이전 상태로 돌아감
   };
 
-  const handleTab = (i: number) => {
-    setTab(i);
+  const handleTab = (selectedTab: number) => {
+    setTab(selectedTab);
   };
 
   return (
