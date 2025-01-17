@@ -26,7 +26,7 @@ const RootLayout = ({
   children: React.ReactNode;
   modal: React.ReactNode;
 }>) => {
-  const isLogin = false;
+  const isLogin = true;
 
   if (!isLogin) {
     return (
