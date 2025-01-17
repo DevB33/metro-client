@@ -40,18 +40,11 @@ const Sidebar = () => {
   });
 
   return (
-    <div
-      className={sideBarContainer}
-      // style={{
-      //   transform: !isOpen ? `translateX(${-sidebarWidth}rem)` : 'none',
-      // }}
-    >
+    <div className={sideBarContainer}>
       <div
         className={sideBar}
         ref={sideBarRef}
         style={{ width: `${sidebarWidth}rem`, display: isOpen ? 'flex' : 'none' }}
-        // style={{ width: `${sidebarWidth}rem` }}
-        // style={{ width: isOpen ? `${sidebarWidth}rem` : '0rem', backgroundColor: 'gray' }}
       >
         <ProfileCard />
         <SideMenuCard />

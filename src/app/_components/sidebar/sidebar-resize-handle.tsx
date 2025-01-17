@@ -9,10 +9,10 @@ import SidebarCloseIcon from '@/icons/sidebar-close-icon';
 const dragHandle = css({
   minWidth: '.2rem',
   width: { base: '.2rem', _hover: '1.5rem' },
-  height: '100%',
-  margin: '1.5rem 0',
+  height: 'auto',
+  my: '1.5rem',
   cursor: 'col-resize',
-  borderRadius: '10px',
+  borderRadius: '0 10px 10px 0 ',
   backgroundColor: { base: 'none', _hover: 'lightgray' },
   transition: '0.3s',
 });
