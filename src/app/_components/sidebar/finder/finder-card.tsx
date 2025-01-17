@@ -15,6 +15,7 @@ const finderCard = css({
   backgroundColor: 'background',
   borderRadius: '10px',
   boxShadow: 'sidebar',
+  overflow: 'hidden',
 });
 
 const finderButton = css({

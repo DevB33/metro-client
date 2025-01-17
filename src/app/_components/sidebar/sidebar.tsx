@@ -13,6 +13,7 @@ const sideBarContainer = css({
   width: 'auto',
   height: '100vh',
   marginRight: '1rem',
+  transition: '0.3s',
 });
 
 const sideBar = css({
@@ -25,11 +26,13 @@ const sideBar = css({
   padding: '1rem 0 1rem 1rem',
   gap: 'small',
   backgroundColor: 'white',
+  transition: '0.3s',
 });
 
 const Sidebar = () => {
   const sideBarRef = useRef<HTMLDivElement>(null);
   const startWidth = 17;
+  const [isOpen, setIsOpen] = useState(true);
 
   const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
     const savedWidth = localStorage.getItem('sidebarWidth');
@@ -37,15 +40,27 @@ const Sidebar = () => {
   });
 
   return (
-    <div className={sideBarContainer}>
-      <div className={sideBar} ref={sideBarRef} style={{ width: `${sidebarWidth}rem` }}>
+    <div
+      className={sideBarContainer}
+      // style={{
+      //   transform: !isOpen ? `translateX(${-sidebarWidth}rem)` : 'none',
+      // }}
+    >
+      <div
+        className={sideBar}
+        ref={sideBarRef}
+        style={{ width: `${sidebarWidth}rem`, display: isOpen ? 'flex' : 'none' }}
+        // style={{ width: `${sidebarWidth}rem` }}
+        // style={{ width: isOpen ? `${sidebarWidth}rem` : '0rem', backgroundColor: 'gray' }}
+      >
         <ProfileCard />
         <SideMenuCard />
         <FinderCard />
       </div>
       <SideBarResizeHandle
         sideBarRef={sideBarRef as React.RefObject<HTMLDivElement>}
-        setSidebarWidth={setSidebarWidth}
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
       />
     </div>
   );

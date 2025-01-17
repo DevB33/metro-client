@@ -17,6 +17,7 @@ const menuCard = css({
   backgroundColor: 'background',
   borderRadius: '10px',
   boxShadow: 'sidebar',
+  overflow: 'hidden',
 });
 
 const SideMenuCard = () => {
