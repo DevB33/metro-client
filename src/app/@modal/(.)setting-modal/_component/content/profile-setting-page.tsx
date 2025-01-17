@@ -87,6 +87,7 @@ const colorBox = cva({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    cursor: 'pointer',
   },
   variants: {
     color: {

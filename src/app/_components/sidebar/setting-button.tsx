@@ -11,6 +11,7 @@ const buttonContainer = css({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
+  cursor: 'pointer',
 
   _hover: {
     backgroundColor: 'gray',

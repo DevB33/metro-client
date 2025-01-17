@@ -15,6 +15,7 @@ const tabContainer = css({
   mx: 'tiny',
   px: 'tiny',
   gap: 'tiny',
+  cursor: 'pointer',
 
   _hover: {
     borderRadius: '0.5rem',
