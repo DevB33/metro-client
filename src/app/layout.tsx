@@ -1,6 +1,7 @@
-import './globals.css';
-import { Noto_Sans_KR } from 'next/font/google';
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
+import { Noto_Sans_KR } from 'next/font/google';
+import './globals.css';
 import { css } from '@/../styled-system/css';
 
 import Sidebar from './_components/sidebar/sidebar';
@@ -19,21 +20,18 @@ const Body = css({
   flexDirection: 'row',
 });
 
-const contentContainer = css({
-  flex: '1',
-  transition: '0.3s',
-});
-
-const RootLayout = ({
+const RootLayout = async ({
   children,
   modal,
 }: Readonly<{
   children: React.ReactNode;
   modal: React.ReactNode;
 }>) => {
-  const isLogin = true;
+  const isLogin = false;
+  const headersList = await headers();
+  const headerPathname = headersList.get('x-pathname') || '';
 
-  if (!isLogin) {
+  if (!isLogin && headerPathname !== '/auth/callback') {
     return (
       <html lang="ko">
         <body className={notoSans.className}>
@@ -46,7 +44,7 @@ const RootLayout = ({
   return (
     <html lang="ko">
       <body className={`${notoSans.className} ${Body}`}>
-        <Sidebar />
+        {headerPathname !== '/auth/callback' && <Sidebar />}
         {modal}
         {children}
       </body>
