@@ -119,6 +119,7 @@ const PageItem = ({ page, depth }: { page: IPageType; depth: number }) => {
   };
 
   const createChildPage = () => {
+    togglePage();
     const newChildPage: IPageType = {
       pageId: Date.now(),
       title: '새 페이지',
