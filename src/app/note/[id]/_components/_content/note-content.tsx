@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { css } from '@/../styled-system/css';
+import IBlockType from '@/types/block-type';
 
 const noteContentContainer = css({
   boxSizing: 'border-box',
@@ -31,36 +32,76 @@ const wrapper = css({
 });
 
 const NoteContent = () => {
-  const textAreaRef = useRef<HTMLTextAreaElement>(null);
-  const [isFocused, setIsFocused] = useState(false);
-  const [hasValue, setHasValue] = useState(false);
+  const [blockList, setBlockList] = useState<IBlockType[]>([{ type: '', tag: '' }]);
+  const textAreaRefs = useRef<HTMLTextAreaElement[]>([]);
+  const [isFocused, setIsFocused] = useState<boolean[]>([false]);
+  const [hasValue, setHasValue] = useState<boolean[]>([false]);
 
-  const handleInput = () => {
-    if (textAreaRef.current) {
-      textAreaRef.current.style.height = 'auto';
-      textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
-      setHasValue(textAreaRef.current.value.length > 0);
+  const handleInput = (index: number) => {
+    const blockRef = textAreaRefs.current[index];
+    if (blockRef) {
+      blockRef.style.height = 'auto';
+      blockRef.style.height = `${blockRef.scrollHeight}px`;
+
+      const newHasValue = [...hasValue];
+      newHasValue[index] = blockRef.value.trim().length > 0;
+      setHasValue(newHasValue);
     }
   };
 
-  const handleFocus = () => setIsFocused(true);
-  const handleBlur = () => setIsFocused(false);
+  const handleFocus = (index: number) => {
+    const newFocusState = [...isFocused];
+    newFocusState[index] = true;
+    setIsFocused(newFocusState);
+  };
+
+  const handleBlur = (index: number) => {
+    const newFocusState = [...isFocused];
+    newFocusState[index] = false;
+    setIsFocused(newFocusState);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>, index: number) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+
+      const newBlock = { type: '', tag: '' };
+      const updatedBlockList = [
+        ...blockList.slice(0, index + 1),
+        newBlock,
+        ...blockList.slice(index + 1),
+      ];
+      setBlockList(updatedBlockList);
+
+      setTimeout(() => {
+        textAreaRefs.current[index + 1]?.focus();
+      }, 0);
+    }
+  };
 
   return (
-    <div className={wrapper}>
-      {isFocused && !hasValue && (
-        <div className={focusTextStyle}>
-          글을 작성하거나 AI를 사용하려면 '스페이스' 키를, 명령어를 사용하려면 '/' 키를 누르세요.
+    <>
+      {blockList.map((block, index) => (
+        <div className={wrapper}>
+          {isFocused[index] && !hasValue[index] && (
+            <div className={focusTextStyle}>
+              글을 작성하거나 AI를 사용하려면 '스페이스' 키를, 명령어를 사용하려면 '/' 키를
+              누르세요.
+            </div>
+          )}
+          <textarea
+            ref={el => {
+              if (el) textAreaRefs.current[index] = el;
+            }}
+            className={noteContentContainer}
+            onInput={() => handleInput(index)}
+            onFocus={() => handleFocus(index)}
+            onBlur={() => handleBlur(index)}
+            onKeyDown={event => handleKeyDown(event, index)}
+          />
         </div>
-      )}
-      <textarea
-        ref={textAreaRef}
-        className={noteContentContainer}
-        onInput={handleInput}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-      />
-    </div>
+      ))}
+    </>
   );
 };
 
