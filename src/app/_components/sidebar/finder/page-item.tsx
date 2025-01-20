@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { css } from '@/../styled-system/css';
 
@@ -91,6 +91,7 @@ const PageItem = ({ page, depth }: { page: IPageType; depth: number }) => {
   const plusButtonRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isHover, setIsHover] = useState(false);
+  const [currentPage, setCurrentPage] = useState<IPageType>(page);
 
   const togglePage = () => {
     setIsOpen(!isOpen);
@@ -116,6 +117,38 @@ const PageItem = ({ page, depth }: { page: IPageType; depth: number }) => {
   const deletePage = () => {
     // TODD: 페이지 삭제
   };
+
+  const createChildPage = () => {
+    togglePage();
+    const newChildPage: IPageType = {
+      pageId: Date.now(),
+      title: '새 페이지',
+      icon: '',
+      children: [],
+    };
+    setCurrentPage(prevPage => ({
+      ...prevPage,
+      children: [...prevPage.children, newChildPage],
+    }));
+  };
+
+  useEffect(() => {
+    const storedPageList = localStorage.getItem('pageList');
+    if (!storedPageList) return;
+
+    const parsedPageList: IPageType[] = JSON.parse(storedPageList);
+
+    const updatePagesRecursively = (pages: IPageType[]): IPageType[] => {
+      return pages.map(p =>
+        p.pageId === currentPage.pageId
+          ? currentPage
+          : { ...p, children: updatePagesRecursively(p.children) },
+      );
+    };
+
+    const updatedPageList = updatePagesRecursively(parsedPageList);
+    localStorage.setItem('pageList', JSON.stringify(updatedPageList));
+  }, [currentPage]);
 
   return (
     <div className={pageItemContainer}>
@@ -144,16 +177,21 @@ const PageItem = ({ page, depth }: { page: IPageType; depth: number }) => {
             >
               <HorizonDotIcon />
             </button>
-            <button type="button" ref={plusButtonRef} className={pageButton} onClick={deletePage}>
+            <button
+              type="button"
+              ref={plusButtonRef}
+              className={pageButton}
+              onClick={createChildPage}
+            >
               <PlusIcon />
             </button>
           </div>
         )}
       </div>
       {isOpen &&
-        (page.children.length ? (
+        (currentPage.children.length ? (
           <div className={pageChildren}>
-            {page.children.map(child => (
+            {currentPage.children.map(child => (
               <PageItem key={child.pageId} page={child} depth={depth + 1} />
             ))}
           </div>
