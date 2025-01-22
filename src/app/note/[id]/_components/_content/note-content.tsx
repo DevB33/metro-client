@@ -1,51 +1,91 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { css } from '@/../styled-system/css';
 import IBlockType from '@/types/block-type';
+import PlusIcon from '@/icons/plus-icon';
+import GripVerticalIcon from '@/icons/grip-vertical-icon';
+
+const blockContainer = css({
+  display: 'flex',
+  flexDirection: 'row',
+});
+
+const blockBtnContainer = css({
+  position: 'absolute',
+  left: '-3rem',
+  display: 'flex',
+  flexDirection: 'row',
+});
+
+const blockBtn = css({
+  width: '1.5em',
+  height: '1.5rem',
+  padding: '0.2rem',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: '0.5rem',
+  cursor: 'pointer',
+
+  _hover: {
+    backgroundColor: '#F1F1F0',
+  },
+});
 
 const noteContentContainer = css({
   boxSizing: 'border-box',
-  paddingTop: 'tiny',
   display: 'flex',
-  flex: '1 0 auto',
+  flex: '1',
   width: 'full',
-  minHeight: 'full',
-  height: 'auto',
   outline: 'none',
   overflowY: 'hidden',
   flexShrink: 0,
   resize: 'none',
-  _placeholder: { color: 'gray' },
+  justifyContent: 'center',
+  height: 'auto',
+  alignItems: 'center',
 });
 
 const focusTextStyle = css({
   position: 'absolute',
   color: 'gray',
   fontSize: 'md',
-  top: 'tiny',
   pointerEvents: 'none',
 });
 
 const wrapper = css({
   position: 'relative',
+  verticalAlign: 'middle',
 });
 
 const NoteContent = () => {
-  const [blockList, setBlockList] = useState<IBlockType[]>([{ type: '', tag: '' }]);
+  const [blockList, setBlockList] = useState<IBlockType[]>([{ type: '', tag: '', content: '' }]);
   const textAreaRefs = useRef<HTMLTextAreaElement[]>([]);
   const [isFocused, setIsFocused] = useState<boolean[]>([false]);
-  const [hasValue, setHasValue] = useState<boolean[]>([false]);
+  const [isHover, setIsHover] = useState<boolean[]>([]);
+
+  const handleMouseEnter = (index: number) => {
+    const newHoverState = [...isHover];
+    newHoverState[index] = true;
+    setIsHover(newHoverState);
+  };
+
+  const handleMouseLeave = (index: number) => {
+    const newHoverState = [...isHover];
+    newHoverState[index] = false;
+    setIsHover(newHoverState);
+  };
 
   const handleInput = (index: number) => {
     const blockRef = textAreaRefs.current[index];
     if (blockRef) {
+      const updatedBlockList = [...blockList];
+      updatedBlockList[index].content = blockRef.value;
+      setBlockList(updatedBlockList);
+
       blockRef.style.height = 'auto';
       blockRef.style.height = `${blockRef.scrollHeight}px`;
-
-      const newHasValue = [...hasValue];
-      newHasValue[index] = blockRef.value.trim().length > 0;
-      setHasValue(newHasValue);
     }
   };
 
@@ -65,7 +105,7 @@ const NoteContent = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
 
-      const newBlock = { type: '', tag: '' };
+      const newBlock = { type: '', tag: '', content: '' };
       const updatedBlockList = [
         ...blockList.slice(0, index + 1),
         newBlock,
@@ -75,7 +115,22 @@ const NoteContent = () => {
 
       setTimeout(() => {
         textAreaRefs.current[index + 1]?.focus();
+        handleBlur(index);
       }, 0);
+    }
+    if (e.key === 'Backspace' && blockList[index].content?.trim() === '') {
+      e.preventDefault();
+
+      if (blockList.length > 1) {
+        const updatedBlocks = [...blockList.slice(0, index), ...blockList.slice(index + 1)];
+        setBlockList(updatedBlocks);
+
+        setTimeout(() => {
+          if (index > 0) {
+            textAreaRefs.current[index - 1]?.focus();
+          }
+        }, 0);
+      }
     }
   };
 
@@ -83,22 +138,39 @@ const NoteContent = () => {
     <>
       {blockList.map((block, index) => (
         <div className={wrapper}>
-          {isFocused[index] && !hasValue[index] && (
-            <div className={focusTextStyle}>
-              글을 작성하거나 AI를 사용하려면 '스페이스' 키를, 명령어를 사용하려면 '/' 키를
-              누르세요.
-            </div>
-          )}
-          <textarea
-            ref={el => {
-              if (el) textAreaRefs.current[index] = el;
-            }}
-            className={noteContentContainer}
-            onInput={() => handleInput(index)}
-            onFocus={() => handleFocus(index)}
-            onBlur={() => handleBlur(index)}
-            onKeyDown={event => handleKeyDown(event, index)}
-          />
+          <div
+            className={blockContainer}
+            onMouseEnter={() => handleMouseEnter(index)}
+            onMouseLeave={() => handleMouseLeave(index)}
+          >
+            {isHover[index] && (
+              <div className={blockBtnContainer}>
+                <div className={blockBtn}>
+                  <PlusIcon />
+                </div>
+                <div className={blockBtn}>
+                  <GripVerticalIcon />
+                </div>
+              </div>
+            )}
+            {isFocused[index] && block.content?.trim() === '' && (
+              <div className={focusTextStyle}>
+                글을 작성하거나 AI를 사용하려면 '스페이스' 키를, 명령어를 사용하려면 '/' 키를
+                누르세요.
+              </div>
+            )}
+            <textarea
+              ref={el => {
+                if (el) textAreaRefs.current[index] = el;
+              }}
+              className={noteContentContainer}
+              onInput={() => handleInput(index)}
+              onFocus={() => handleFocus(index)}
+              onBlur={() => handleBlur(index)}
+              onKeyDown={event => handleKeyDown(event, index)}
+              value={block.content}
+            />
+          </div>
         </div>
       ))}
     </>
