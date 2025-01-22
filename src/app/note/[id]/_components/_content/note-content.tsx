@@ -16,6 +16,7 @@ const blockBtnContainer = css({
   left: '-3rem',
   display: 'flex',
   flexDirection: 'row',
+  pt: '0.2rem',
 });
 
 const blockBtn = css({
@@ -38,11 +39,12 @@ const noteContentContainer = css({
   display: 'flex',
   flex: '1',
   width: 'full',
+  minHeight: '2rem',
+  height: 'auto',
   outline: 'none',
   overflowY: 'hidden',
   flexShrink: 0,
   resize: 'none',
-  height: 'auto',
   alignItems: 'center',
   _hover: {
     backgroundColor: 'lightgray',
@@ -153,6 +155,7 @@ const NoteContent = () => {
         const updatedBlockList = [...blockList];
         const previousBlock = updatedBlockList[index - 1];
         const currentBlock = updatedBlockList[index];
+        const mergePosition = previousBlock.content?.length || 0;
 
         previousBlock.content += currentBlock.content ?? '';
 
@@ -161,7 +164,16 @@ const NoteContent = () => {
 
         setTimeout(() => {
           const previousBackBlock = document.querySelectorAll('[contenteditable]')[index - 1];
-          (previousBackBlock as HTMLDivElement)?.focus();
+          if (previousBackBlock) {
+            const range = document.createRange();
+            const previousSelection = window.getSelection();
+
+            range.setStart(previousBackBlock.childNodes[0] || previousBackBlock, mergePosition);
+            range.collapse(true);
+
+            previousSelection?.removeAllRanges();
+            previousSelection?.addRange(range);
+          }
         }, 0);
       }
     }
