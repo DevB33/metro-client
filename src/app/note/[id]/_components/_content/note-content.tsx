@@ -120,26 +120,29 @@ const NoteContent = () => {
         handleBlur(index);
       }, 0);
     }
+
     if (e.key === 'Backspace') {
-      e.preventDefault();
+      const blockRef = textAreaRefs.current[index];
+      if (blockRef) {
+        e.preventDefault();
+        const cursorPosition = blockRef.selectionStart;
 
-      if (blockList.length > 1 && index > 0) {
-        const updatedBlocks = [...blockList];
-        const previousBlock = updatedBlocks[index - 1];
-        const currentBlock = updatedBlocks[index];
-
-        const previousContent = previousBlock.content ?? '';
-        const currentContent = currentBlock.content ?? '';
-        previousBlock.content = previousContent + currentContent;
-
-        updatedBlocks.splice(index, 1);
-        setBlockList(updatedBlocks);
-
-        setTimeout(() => {
+        if (cursorPosition === 0) {
           if (index > 0) {
-            textAreaRefs.current[index - 1]?.focus();
+            const updatedBlocks = [...blockList];
+            const previousBlock = updatedBlocks[index - 1];
+            const currentBlock = updatedBlocks[index];
+
+            previousBlock.content += currentBlock.content ?? '';
+
+            updatedBlocks.splice(index, 1);
+            setBlockList(updatedBlocks);
+
+            setTimeout(() => {
+              textAreaRefs.current[index - 1]?.focus();
+            }, 0);
           }
-        }, 0);
+        }
       }
     }
   };
