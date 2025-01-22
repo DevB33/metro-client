@@ -123,7 +123,7 @@ const NoteContent = () => {
     if (e.key === 'Backspace') {
       e.preventDefault();
 
-      if (blockList.length > 1) {
+      if (blockList.length > 1 && index > 0) {
         const updatedBlocks = [...blockList];
         const previousBlock = updatedBlocks[index - 1];
         const currentBlock = updatedBlocks[index];
