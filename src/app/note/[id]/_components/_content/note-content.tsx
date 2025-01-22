@@ -82,8 +82,28 @@ const NoteContent = () => {
 
   const handleInput = (e: React.FormEvent<HTMLDivElement>, index: number) => {
     const updatedBlockList = [...blockList];
-    updatedBlockList[index].content = e.currentTarget.textContent || '';
+    const target = e.currentTarget;
+
+    const selection = window.getSelection();
+    const range = selection?.getRangeAt(0);
+    const cursorPosition = range?.startOffset || 0;
+
+    updatedBlockList[index].content = target.textContent || '';
     setBlockList(updatedBlockList);
+
+    setTimeout(() => {
+      const restoredBlock = document.querySelectorAll('[contenteditable]')[index];
+      if (restoredBlock) {
+        const newRange = document.createRange();
+        const newSelection = window.getSelection();
+
+        newRange.setStart(restoredBlock.childNodes[0] || restoredBlock, cursorPosition);
+        newRange.collapse(true);
+
+        newSelection?.removeAllRanges();
+        newSelection?.addRange(newRange);
+      }
+    }, 0);
   };
 
   const handleFocus = (index: number) => {
