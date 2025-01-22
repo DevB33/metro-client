@@ -60,7 +60,9 @@ const wrapper = css({
 });
 
 const NoteContent = () => {
-  const [blockList, setBlockList] = useState<IBlockType[]>([{ type: '', tag: '', content: '' }]);
+  const [blockList, setBlockList] = useState<IBlockType[]>([
+    { type: '', tag: '', content: '', style: '', children: null },
+  ]);
   const textAreaRefs = useRef<HTMLTextAreaElement[]>([]);
   const [isFocused, setIsFocused] = useState<boolean[]>([false]);
   const [isHover, setIsHover] = useState<boolean[]>([]);
@@ -105,7 +107,7 @@ const NoteContent = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
 
-      const newBlock = { type: '', tag: '', content: '' };
+      const newBlock = { type: '', tag: '', content: '', style: '', children: null };
       const updatedBlockList = [
         ...blockList.slice(0, index + 1),
         newBlock,
@@ -118,11 +120,19 @@ const NoteContent = () => {
         handleBlur(index);
       }, 0);
     }
-    if (e.key === 'Backspace' && blockList[index].content?.trim() === '') {
+    if (e.key === 'Backspace') {
       e.preventDefault();
 
       if (blockList.length > 1) {
-        const updatedBlocks = [...blockList.slice(0, index), ...blockList.slice(index + 1)];
+        const updatedBlocks = [...blockList];
+        const previousBlock = updatedBlocks[index - 1];
+        const currentBlock = updatedBlocks[index];
+
+        const previousContent = previousBlock.content ?? '';
+        const currentContent = currentBlock.content ?? '';
+        previousBlock.content = previousContent + currentContent;
+
+        updatedBlocks.splice(index, 1);
         setBlockList(updatedBlocks);
 
         setTimeout(() => {

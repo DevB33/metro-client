@@ -1,9 +1,9 @@
 interface IBlockType {
   type: string;
   tag: string;
-  style?: string;
-  content?: string;
-  children?: IBlockType[];
+  style: string | null;
+  content: string | null;
+  children: IBlockType[] | null;
 }
 
 export default IBlockType;
