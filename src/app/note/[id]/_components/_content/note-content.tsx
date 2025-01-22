@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { css } from '@/../styled-system/css';
 import IBlockType from '@/types/block-type';
 import PlusIcon from '@/icons/plus-icon';
@@ -42,7 +42,6 @@ const noteContentContainer = css({
   overflowY: 'hidden',
   flexShrink: 0,
   resize: 'none',
-  justifyContent: 'center',
   height: 'auto',
   alignItems: 'center',
   _hover: {
@@ -66,7 +65,6 @@ const NoteContent = () => {
   const [blockList, setBlockList] = useState<IBlockType[]>([
     { type: '', tag: '', content: '', style: '', children: null },
   ]);
-  const textAreaRefs = useRef<HTMLTextAreaElement[]>([]);
   const [isFocused, setIsFocused] = useState<boolean[]>([false]);
   const [isHover, setIsHover] = useState<boolean[]>([]);
 
@@ -82,16 +80,10 @@ const NoteContent = () => {
     setIsHover(newHoverState);
   };
 
-  const handleInput = (index: number) => {
-    const blockRef = textAreaRefs.current[index];
-    if (blockRef) {
-      const updatedBlockList = [...blockList];
-      updatedBlockList[index].content = blockRef.value;
-      setBlockList(updatedBlockList);
-
-      blockRef.style.height = 'auto';
-      blockRef.style.height = `${blockRef.scrollHeight}px`;
-    }
+  const handleInput = (e: React.FormEvent<HTMLDivElement>, index: number) => {
+    const updatedBlockList = [...blockList];
+    updatedBlockList[index].content = e.currentTarget.textContent || '';
+    setBlockList(updatedBlockList);
   };
 
   const handleFocus = (index: number) => {
@@ -106,55 +98,51 @@ const NoteContent = () => {
     setIsFocused(newFocusState);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>, index: number) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, index: number) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
 
-      const cursorPosition = textAreaRefs.current[index].selectionStart;
+      const selection = window.getSelection();
+      const cursorPosition = selection?.focusOffset || 0;
       const currentContent = blockList[index].content || '';
 
-      // 현재 블록의 내용을 두 부분으로 나눔
       const beforeCursor = currentContent.slice(0, cursorPosition);
       const afterCursor = currentContent.slice(cursorPosition);
 
-      // 현재 블록의 내용을 업데이트
       const updatedBlockList = [...blockList];
       updatedBlockList[index].content = beforeCursor;
 
-      // 새로운 블록 추가
       const newBlock = { type: '', tag: '', content: afterCursor, style: '', children: null };
       updatedBlockList.splice(index + 1, 0, newBlock);
 
       setBlockList(updatedBlockList);
 
-      // 새 블록에 포커스
       setTimeout(() => {
-        textAreaRefs.current[index + 1]?.focus();
+        const nextBlock = document.querySelectorAll('[contenteditable]')[index + 1];
+        (nextBlock as HTMLDivElement)?.focus();
       }, 0);
     }
 
     if (e.key === 'Backspace') {
-      const blockRef = textAreaRefs.current[index];
-      if (blockRef) {
-        const cursorPosition = blockRef.selectionStart;
+      const selection = window.getSelection();
+      const cursorPosition = selection?.focusOffset || 0;
 
-        if (cursorPosition === 0) {
-          if (index > 0) {
-            e.preventDefault();
-            const updatedBlocks = [...blockList];
-            const previousBlock = updatedBlocks[index - 1];
-            const currentBlock = updatedBlocks[index];
+      if (cursorPosition === 0 && index > 0) {
+        e.preventDefault();
 
-            previousBlock.content += currentBlock.content ?? '';
+        const updatedBlockList = [...blockList];
+        const previousBlock = updatedBlockList[index - 1];
+        const currentBlock = updatedBlockList[index];
 
-            updatedBlocks.splice(index, 1);
-            setBlockList(updatedBlocks);
+        previousBlock.content += currentBlock.content ?? '';
 
-            setTimeout(() => {
-              textAreaRefs.current[index - 1]?.focus();
-            }, 0);
-          }
-        }
+        updatedBlockList.splice(index, 1);
+        setBlockList(updatedBlockList);
+
+        setTimeout(() => {
+          const previousBackBlock = document.querySelectorAll('[contenteditable]')[index - 1];
+          (previousBackBlock as HTMLDivElement)?.focus();
+        }, 0);
       }
     }
   };
@@ -162,7 +150,7 @@ const NoteContent = () => {
   return (
     <>
       {blockList.map((block, index) => (
-        <div className={wrapper}>
+        <div className={wrapper} key={index}>
           <div
             className={blockContainer}
             onMouseEnter={() => handleMouseEnter(index)}
@@ -184,17 +172,17 @@ const NoteContent = () => {
                 누르세요.
               </div>
             )}
-            <textarea
-              ref={el => {
-                if (el) textAreaRefs.current[index] = el;
-              }}
+            <div
+              contentEditable
+              suppressContentEditableWarning
               className={noteContentContainer}
-              onInput={() => handleInput(index)}
+              onInput={e => handleInput(e, index)}
               onFocus={() => handleFocus(index)}
               onBlur={() => handleBlur(index)}
               onKeyDown={event => handleKeyDown(event, index)}
-              value={block.content || ''}
-            />
+            >
+              {block.content}
+            </div>
           </div>
         </div>
       ))}
