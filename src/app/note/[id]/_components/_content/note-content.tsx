@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { css } from '@/../styled-system/css';
 import IBlockType from '@/types/block-type';
 import PlusIcon from '@/icons/plus-icon';
@@ -45,6 +45,9 @@ const noteContentContainer = css({
   justifyContent: 'center',
   height: 'auto',
   alignItems: 'center',
+  _hover: {
+    backgroundColor: 'lightgray',
+  },
 });
 
 const focusTextStyle = css({
@@ -107,28 +110,37 @@ const NoteContent = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
 
-      const newBlock = { type: '', tag: '', content: '', style: '', children: null };
-      const updatedBlockList = [
-        ...blockList.slice(0, index + 1),
-        newBlock,
-        ...blockList.slice(index + 1),
-      ];
+      const cursorPosition = textAreaRefs.current[index].selectionStart;
+      const currentContent = blockList[index].content || '';
+
+      // 현재 블록의 내용을 두 부분으로 나눔
+      const beforeCursor = currentContent.slice(0, cursorPosition);
+      const afterCursor = currentContent.slice(cursorPosition);
+
+      // 현재 블록의 내용을 업데이트
+      const updatedBlockList = [...blockList];
+      updatedBlockList[index].content = beforeCursor;
+
+      // 새로운 블록 추가
+      const newBlock = { type: '', tag: '', content: afterCursor, style: '', children: null };
+      updatedBlockList.splice(index + 1, 0, newBlock);
+
       setBlockList(updatedBlockList);
 
+      // 새 블록에 포커스
       setTimeout(() => {
         textAreaRefs.current[index + 1]?.focus();
-        handleBlur(index);
       }, 0);
     }
 
     if (e.key === 'Backspace') {
       const blockRef = textAreaRefs.current[index];
       if (blockRef) {
-        e.preventDefault();
         const cursorPosition = blockRef.selectionStart;
 
         if (cursorPosition === 0) {
           if (index > 0) {
+            e.preventDefault();
             const updatedBlocks = [...blockList];
             const previousBlock = updatedBlocks[index - 1];
             const currentBlock = updatedBlocks[index];
@@ -181,7 +193,7 @@ const NoteContent = () => {
               onFocus={() => handleFocus(index)}
               onBlur={() => handleBlur(index)}
               onKeyDown={event => handleKeyDown(event, index)}
-              value={block.content}
+              value={block.content || ''}
             />
           </div>
         </div>
