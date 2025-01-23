@@ -46,13 +46,10 @@ const noteContentContainer = css({
   flexShrink: 0,
   resize: 'none',
   alignItems: 'center',
-  _hover: {
-    backgroundColor: 'lightgray',
-  },
 });
-
 const focusTextStyle = css({
   position: 'absolute',
+  top: '0.1rem',
   color: 'gray',
   fontSize: 'md',
   pointerEvents: 'none',
