@@ -10,7 +10,7 @@ const menuCard = css({
   flexDirection: 'column',
   alignItems: 'flex-start',
   justifyContent: 'flex-start',
-  padding: '1rem 1.5rem',
+  padding: 'small',
   gap: 'tiny',
   fontWeight: 'bold',
   fontSize: 'md',
