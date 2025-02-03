@@ -3,7 +3,7 @@ export interface ITextBlock {
   children: ITextBlockChild[];
 }
 
-export interface ITextBlockChild {
+interface ITextBlockChild {
   type: 'text' | 'codeBlock' | 'h1' | 'h2' | 'h3';
   style: IBlockStyle;
   content: string | null;
