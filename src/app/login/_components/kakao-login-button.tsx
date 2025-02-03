@@ -20,8 +20,7 @@ const kakaoButton = css({
 
 const KakaoLoginButton = () => {
   const handleKakaoLogin = () => {
-    window.location.href =
-      'https://kauth.kakao.com/oauth/authorize?client_id=4d2facf5f4280bc1079b2bc3e4cd5b8d&redirect_uri=http://localhost:3000/auth/callback/kakao&response_type=code&scope=profile_nickname,account_email,profile_image';
+    window.location.href = process.env.NEXT_PUBLIC_KAKAO_AUTH_URL as string;
   };
 
   return (
