@@ -17,6 +17,7 @@ const noteContentContainer = css({
   resize: 'none',
   _placeholder: { color: 'gray' },
   fontSize: 'md',
+  backgroundColor: 'lightgray',
 });
 
 const menuContainer = css({
@@ -67,7 +68,7 @@ const getDropdownPosition = (textarea: HTMLTextAreaElement) => {
 };
 
 const NoteContent = () => {
-  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const divRef = useRef<HTMLDivElement>(null);
   const [inputValue, setInputValue] = useState('');
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | null>(
@@ -77,61 +78,61 @@ const NoteContent = () => {
   const [selectedOption, setSelectedOption] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isFocused, setIsFocused] = useState(false);
 
-  const handleInput = () => {
-    if (!textAreaRef.current) return;
+  const handleInput = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    // const value = e.currentTarget.textContent || '';
+    // setInputValue(value);
+    const selection = window.getSelection();
+    if (!selection || !divRef.current) return;
 
-    const value = textAreaRef.current.value;
-    const cursorPosition = textAreaRef.current.selectionStart;
-    setInputValue(value);
+    const range = selection.getRangeAt(0); // 현재 선택 영역
+    const { textContent } = divRef.current;
 
-    // 텍스트 영역 높이 자동 조절
-    if (textAreaRef.current) {
-      textAreaRef.current.style.height = 'auto';
-      textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
+    if (!textContent) return;
+
+    const cursorPosition = range.startOffset; // 커서 위치
+    const beforeCursor = textContent.slice(0, cursorPosition); // 커서 이전의 텍스트
+    const afterCursor = textContent.slice(cursorPosition); // 커서 이후의 텍스트
+
+    // '/'가 입력되면 span을 삽입
+    if (e.key === '/') {
+      e.preventDefault(); // 기본 입력 방지
+      // 새로운 <span> 요소 생성
+      const span = document.createElement('span');
+      span.textContent = '';
+      span.style.fontWeight = 'bold';
+      span.style.height = '1.5em';
+      span.style.color = 'white';
+      (span.style.borderRadius = '8px'), (span.style.backgroundColor = 'gray');
+      span.contentEditable = 'true';
+      span.style.padding = '0 4px'; // 스타일 추가
+
+      // <span>을 현재 위치에 삽입
+      range.deleteContents(); // 기존 입력 내용 제거
+      range.insertNode(span);
+
+      // <span> 뒤에 텍스트 노드를 추가
+      const textNode = document.createTextNode(' ');
+      span.after(textNode); // <span> 뒤에 공백 추가
+
+      // 커서를 <span> 뒤로 이동
+      const newRange = document.createRange();
+      newRange.setStartAfter(textNode); // 공백 노드 뒤에 커서 위치
+      newRange.collapse(true); // 범위를 축소
+      selection.removeAllRanges();
+      selection.addRange(newRange);
+
+      // 업데이트된 DOM 상태 반영
+      divRef.current.normalize();
     }
+  };
 
-    const match = /(?:^|\s)\/(\w*)$/.exec(value.slice(0, cursorPosition));
-
-    if (match) {
-      const keyword = match[1];
-      const { top, left } = getDropdownPosition(textAreaRef.current);
-      setDropdownPosition({ top, left });
-      setFilteredOptions(
-        options.filter(option => option.toLowerCase().includes(keyword.toLowerCase())),
-      );
-      setIsMenuVisible(true);
-    } else {
-      setIsMenuVisible(false);
-    }
-
-    // if (textAreaRef.current) {
-    //   const cursorPosition = textAreaRef.current.selectionStart;
-    //   const textareaRect = textAreaRef.current.getBoundingClientRect();
-
-    //   // 현재 커서 주변 텍스트를 추출
-    //   const beforeCursor = value.slice(0, cursorPosition);
-    //   console.log(beforeCursor);
-    //   const match = /(?:^|\s)\/(\w*)$/.exec(beforeCursor); // `/`로 시작하는 단어 찾기
-
-    //   if (match) {
-    //     const keyword = match[1];
-    //     const lineHeight = 16; // 줄 높이
-    //     const row = beforeCursor.split('\n').length - 1;
-    //     const col = beforeCursor[row]?.length || 0;
-
-    //     const top = textareaRect.top + window.scrollY + row * lineHeight + 32;
-    //     const left = textareaRect.left + col * 8; // 문자 너비 기반 계산
-
-    //     setMenuPosition({ top, left });
-    //     setFilteredOptions(
-    //       options.filter(option => option.toLowerCase().includes(keyword.toLowerCase())),
-    //     );
-    //     setIsMenuVisible(true);
-    //   } else {
-    //     setIsMenuVisible(false);
-    //   }
-    // }
+  const handleFocus = () => {
+    setIsFocused(true);
+  };
+  const handleBlur = () => {
+    setIsFocused(false);
   };
 
   const handleOptionSelect = (option: string) => {
@@ -180,44 +181,54 @@ const NoteContent = () => {
 
   return (
     <>
-      <textarea
-        ref={textAreaRef}
+      <div
+        contentEditable="true"
+        ref={divRef}
         className={noteContentContainer}
-        onInput={handleInput}
-        value={inputValue}
-        onKeyDown={handleKeyDown}
-        placeholder="글을 작성하거나 AI를 사용하려면 '스페이스' 키를, 명령어를 사용하려면 '/' 키를 누르세요."
-      />
-      {isMenuVisible && (
-        <div
-          className={menuContainer}
-          ref={dropdownRef}
-          tabIndex={-1}
-          style={{
-            top: dropdownPosition?.top,
-            left: dropdownPosition?.left,
-          }}
-        >
-          {filteredOptions.length > 0 ? (
-            filteredOptions.map((option, index) => (
-              <div
-                key={index}
-                style={{
-                  padding: '8px',
-                  backgroundColor: focusedIndex === index ? '#e0e0e0' : 'white', // 포커스된 항목 강조
-                  cursor: 'pointer',
-                }}
-                className={menuItem}
-                onClick={() => handleOptionSelect(option)}
-              >
-                {option}
-              </div>
-            ))
-          ) : (
-            <div className={menuItem}>No results</div>
-          )}
-        </div>
-      )}
+        // onInput={handleInput}
+        onKeyDown={handleInput}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        // onKeyDown={handleKeyDown}
+      >
+        {/* {inputValue || isFocused ? (
+          inputValue
+        ) : (
+          <span style={{ color: 'gray', opacity: '0.7' }}>
+            글을 작성하거나 AI를 사용하려면 '스페이스' 키를, 명령어를 사용하려면 '/' 키를 누르세요.
+          </span>
+        )}
+        {isMenuVisible && (
+          <div
+            className={menuContainer}
+            ref={dropdownRef}
+            tabIndex={-1}
+            style={{
+              top: dropdownPosition?.top,
+              left: dropdownPosition?.left,
+            }}
+          >
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((option, index) => (
+                <div
+                  key={index}
+                  style={{
+                    padding: '8px',
+                    backgroundColor: focusedIndex === index ? '#e0e0e0' : 'white', // 포커스된 항목 강조
+                    cursor: 'pointer',
+                  }}
+                  className={menuItem}
+                  onClick={() => handleOptionSelect(option)}
+                >
+                  {option}
+                </div>
+              ))
+            ) : (
+              <div className={menuItem}>No results</div>
+            )}
+          </div>
+        )} */}
+      </div>
     </>
   );
 };
