@@ -1,8 +1,8 @@
 import { css, cva } from '@/../styled-system/css';
 
-import KakaoLoginButton from './kaka-login-button';
-import NaverLoginButton from './naver-login-button';
-import GoogleLoginButton from './google-login-button';
+import KakaoLoginButton from './_components/kakao-login-button';
+import NaverLoginButton from './_components/naver-login-button';
+import GoogleLoginButton from './_components/google-login-button';
 
 const container = css({
   display: 'flex',
@@ -62,7 +62,7 @@ const policyButton = css({
   cursor: 'pointer',
 });
 
-const LoginPage = () => {
+const Login = () => {
   return (
     <div className={container}>
       <div className={colorBoxContainer}>
@@ -92,4 +92,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default Login;

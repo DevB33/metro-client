@@ -10,6 +10,8 @@ const AuthCallback = () => {
   const state = searchParams.get('state');
   const { provider } = useParams();
 
+  console.log('a');
+
   useEffect(() => {
     (async () => {
       await fetch(`/api/auth`, {
@@ -21,7 +23,7 @@ const AuthCallback = () => {
         credentials: 'include',
       });
 
-      redirect('/'); //
+      redirect('/');
     })();
   }, [code, state, provider]);
 
