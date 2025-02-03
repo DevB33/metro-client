@@ -10,20 +10,27 @@ const AuthCallback = () => {
   const state = searchParams.get('state');
   const { provider } = useParams();
 
-  console.log('a');
-
   useEffect(() => {
     (async () => {
-      await fetch(`/api/auth`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ provider, authorizationCode: code, state }),
-        credentials: 'include',
-      });
+      try {
+        const response = await fetch(`/api/auth`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ provider, authorizationCode: code, state }),
+          credentials: 'include',
+        });
 
-      redirect('/');
+        if (response.status !== 200) {
+          throw new Error('Failed to login');
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(error);
+      } finally {
+        redirect('/');
+      }
     })();
   }, [code, state, provider]);
 

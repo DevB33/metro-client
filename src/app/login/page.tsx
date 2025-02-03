@@ -1,3 +1,5 @@
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { css, cva } from '@/../styled-system/css';
 
 import KakaoLoginButton from './_components/kakao-login-button';
@@ -62,7 +64,14 @@ const policyButton = css({
   cursor: 'pointer',
 });
 
-const Login = () => {
+const Login = async () => {
+  const cookie = await cookies();
+  const isLogin = cookie.has('accessToken');
+
+  if (isLogin) {
+    redirect('/');
+  }
+
   return (
     <div className={container}>
       <div className={colorBoxContainer}>
