@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { css } from '@/../styled-system/css';
-import { ITextBlock, ITextBlockChild } from '@/types/block-type';
+import { ITextBlock } from '@/types/block-type';
 import PlusIcon from '@/icons/plus-icon';
 import GripVerticalIcon from '@/icons/grip-vertical-icon';
 
