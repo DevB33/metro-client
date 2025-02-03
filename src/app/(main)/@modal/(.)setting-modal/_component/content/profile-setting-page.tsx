@@ -1,4 +1,5 @@
 import { css, cva } from '@/../styled-system/css';
+import { redirect } from 'next/navigation';
 
 const container = css({
   width: '100%',
@@ -103,6 +104,26 @@ const description = css({
 });
 
 const ProfileSettingPage = () => {
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.status !== 200) {
+        throw new Error('Failed to logout');
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      redirect('/login');
+    }
+  };
+
   return (
     <div className={container}>
       <div className={titleContainer}>
@@ -124,7 +145,9 @@ const ProfileSettingPage = () => {
         <div className={divider} />
       </div>
       <div className={stateContainer}>
-        <div className={colorBox({ color: 'warning' })}>로그아웃</div>
+        <button type="button" className={colorBox({ color: 'warning' })} onClick={handleLogout}>
+          로그아웃
+        </button>
         <div className={description}>현재 작업중이던 문서의 저장 여부를 확인하세요</div>
       </div>
       <div className={stateContainer}>
