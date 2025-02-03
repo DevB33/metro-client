@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { css } from '@/../styled-system/css';
 
 import ProfileCard from './profile/profile-card';
@@ -30,14 +30,11 @@ const sideBar = css({
 });
 
 const Sidebar = () => {
-  const sideBarRef = useRef<HTMLDivElement>(null);
+  const savedWidth = localStorage.getItem('sidebarWidth');
   const startWidth = 17;
+  const sidebarWidth = savedWidth ? parseFloat(savedWidth) : startWidth;
+  const sideBarRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(true);
-
-  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
-    const savedWidth = localStorage.getItem('sidebarWidth');
-    return savedWidth ? parseFloat(savedWidth) : startWidth;
-  });
 
   return (
     <div className={sideBarContainer}>
