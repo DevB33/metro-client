@@ -1,9 +1,19 @@
-interface IBlockType {
-  type: string;
-  tag: string;
-  style: string | null;
-  content: string | null;
-  children: IBlockType[] | null;
+export interface ITextBlock {
+  type: 'default' | 'quote' | 'ul' | 'li' | 'toggle';
+  children: ITextBlockChild[];
 }
 
-export default IBlockType;
+export interface ITextBlockChild {
+  type: 'text' | 'codeBlock' | 'h1' | 'h2' | 'h3';
+  style: IBlockStyle;
+  content: string | null;
+}
+
+interface IBlockStyle {
+  fontStyle: 'normal' | string;
+  fontWeight: 'regular' | string;
+  color: 'black' | string;
+  backgroundColor: 'white' | string;
+  width: number | string;
+  height: number | string;
+}

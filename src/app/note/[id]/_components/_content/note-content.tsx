@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { css } from '@/../styled-system/css';
-import IBlockType from '@/types/block-type';
+import { ITextBlock, ITextBlockChild } from '@/types/block-type';
 import PlusIcon from '@/icons/plus-icon';
 import GripVerticalIcon from '@/icons/grip-vertical-icon';
 
@@ -47,6 +47,7 @@ const noteContentContainer = css({
   resize: 'none',
   alignItems: 'center',
 });
+
 const focusTextStyle = css({
   position: 'absolute',
   top: '0.1rem',
@@ -61,9 +62,26 @@ const wrapper = css({
 });
 
 const NoteContent = () => {
-  const [blockList, setBlockList] = useState<IBlockType[]>([
-    { type: '', tag: '', content: '', style: '', children: null },
+  const [blockList, setBlockList] = useState<ITextBlock[]>([
+    {
+      type: 'default',
+      children: [
+        {
+          type: 'text',
+          style: {
+            fontStyle: 'normal',
+            fontWeight: 'regular',
+            color: 'black',
+            backgroundColor: 'white',
+            width: 'auto',
+            height: 'auto',
+          },
+          content: '',
+        },
+      ],
+    },
   ]);
+
   const [isFocused, setIsFocused] = useState<boolean[]>([false]);
   const [isHover, setIsHover] = useState<boolean[]>([]);
 
@@ -82,7 +100,7 @@ const NoteContent = () => {
   const handleInput = (e: React.FormEvent<HTMLDivElement>, index: number) => {
     const updatedBlockList = [...blockList];
     const target = e.currentTarget;
-    updatedBlockList[index].content = target.textContent || '';
+    updatedBlockList[index].children[0].content = target.textContent || '';
     setBlockList(updatedBlockList);
   };
 
@@ -104,15 +122,32 @@ const NoteContent = () => {
 
       const selection = window.getSelection();
       const cursorPosition = selection?.focusOffset || 0;
-      const currentContent = blockList[index].content || '';
+      const currentContent = blockList[index].children[0].content || '';
 
       const beforeContent = currentContent.slice(0, cursorPosition);
       const afterContent = currentContent.slice(cursorPosition);
 
       const updatedBlockList = [...blockList];
-      updatedBlockList[index].content = beforeContent;
+      updatedBlockList[index].children[0].content = beforeContent;
 
-      const newBlock = { type: '', tag: '', content: afterContent, style: '', children: null };
+      const newBlock: ITextBlock = {
+        type: 'default',
+        children: [
+          {
+            type: 'text',
+            style: {
+              fontStyle: 'normal',
+              fontWeight: 'regular',
+              color: 'black',
+              backgroundColor: 'white',
+              width: 'auto',
+              height: 'auto',
+            },
+            content: afterContent,
+          },
+        ],
+      };
+
       updatedBlockList.splice(index + 1, 0, newBlock);
 
       setBlockList(updatedBlockList);
@@ -133,9 +168,9 @@ const NoteContent = () => {
         const updatedBlockList = [...blockList];
         const previousBlock = updatedBlockList[index - 1];
         const currentBlock = updatedBlockList[index];
-        const mergePosition = previousBlock.content?.length || 0;
+        const mergePosition = previousBlock.children[0].content?.length || 0;
 
-        previousBlock.content += currentBlock.content ?? '';
+        previousBlock.children[0].content += currentBlock.children[0].content ?? '';
 
         updatedBlockList.splice(index, 1);
         setBlockList(updatedBlockList);
@@ -176,7 +211,7 @@ const NoteContent = () => {
                 </div>
               </div>
             )}
-            {isFocused[index] && block.content?.trim() === '' && (
+            {isFocused[index] && block.children[0].content?.trim() === '' && (
               <div className={focusTextStyle}>
                 글을 작성하거나 AI를 사용하려면 '스페이스' 키를, 명령어를 사용하려면 '/' 키를
                 누르세요.
@@ -191,7 +226,7 @@ const NoteContent = () => {
               onBlur={() => handleBlur(index)}
               onKeyDown={event => handleKeyDown(event, index)}
             >
-              {block.content}
+              {block.children[0].content}
             </div>
           </div>
         </div>
