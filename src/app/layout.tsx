@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
+import { headers, cookies } from 'next/headers';
+
 import { Noto_Sans_KR } from 'next/font/google';
 import './globals.css';
 import { css } from '@/../styled-system/css';
@@ -27,11 +28,12 @@ const RootLayout = async ({
   children: React.ReactNode;
   modal: React.ReactNode;
 }>) => {
-  const isLogin = false;
+  const cookie = await cookies();
+  const isLogin = cookie.has('accessToken');
   const headersList = await headers();
   const headerPathname = headersList.get('x-pathname') || '';
 
-  if (!isLogin && headerPathname !== '/auth/callback') {
+  if (!isLogin && !headerPathname.includes('/auth/callback')) {
     return (
       <html lang="ko">
         <body className={notoSans.className}>
@@ -44,7 +46,7 @@ const RootLayout = async ({
   return (
     <html lang="ko">
       <body className={`${notoSans.className} ${Body}`}>
-        {headerPathname !== '/auth/callback' && <Sidebar />}
+        {!headerPathname.includes('/auth/callback') && <Sidebar />}
         {modal}
         {children}
       </body>

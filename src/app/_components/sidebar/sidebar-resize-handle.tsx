@@ -79,25 +79,31 @@ const SideBarResizeHandle = ({
     setIsHover(false);
   };
 
-  const handleFold = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleFold = () => {
     setIsOpen(!isOpen);
     setIsHover(false);
   };
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       className={dragHandle}
       onMouseDown={handleMouseDown}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onKeyDown={handleMouseLeave}
     >
       {isHover && (
         <div
-          onClick={handleFold}
+          role="button"
+          tabIndex={0}
           className={foldButton}
           style={{
             top: `${mousePosition.y - 50}px`,
           }}
+          onClick={handleFold}
+          onKeyDown={handleFold}
         >
           {isOpen ? <SidebarCloseIcon color="black" /> : <SidebarOpenIcon color="black" />}
         </div>
