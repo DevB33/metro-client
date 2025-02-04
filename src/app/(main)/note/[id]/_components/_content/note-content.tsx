@@ -154,7 +154,6 @@ const NoteContent = () => {
       setBlockList(updatedBlockList);
 
       setTimeout(() => {
-        console.log(blockRef);
         blockRef.current[index + 1]?.focus();
       }, 0);
     }
