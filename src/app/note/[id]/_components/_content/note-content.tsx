@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { css } from '@/../styled-system/css';
 import { ITextBlock } from '@/types/block-type';
 import PlusIcon from '@/icons/plus-icon';
@@ -84,6 +84,7 @@ const NoteContent = () => {
 
   const [isFocused, setIsFocused] = useState<boolean[]>([false]);
   const [isHover, setIsHover] = useState<boolean[]>([]);
+  const blockRef = useRef<(HTMLDivElement | null)[]>([]);
 
   const handleMouseEnter = (index: number) => {
     const newHoverState = [...isHover];
@@ -153,8 +154,8 @@ const NoteContent = () => {
       setBlockList(updatedBlockList);
 
       setTimeout(() => {
-        const nextBlock = document.querySelectorAll('[contenteditable]')[index + 1];
-        (nextBlock as HTMLDivElement)?.focus();
+        console.log(blockRef);
+        blockRef.current[index + 1]?.focus();
       }, 0);
     }
 
@@ -176,7 +177,7 @@ const NoteContent = () => {
         setBlockList(updatedBlockList);
 
         setTimeout(() => {
-          const previousBackBlock = document.querySelectorAll('[contenteditable]')[index - 1];
+          const previousBackBlock = blockRef.current[index - 1];
           if (previousBackBlock) {
             const range = document.createRange();
             const previousSelection = window.getSelection();
@@ -225,6 +226,9 @@ const NoteContent = () => {
               onFocus={() => handleFocus(index)}
               onBlur={() => handleBlur(index)}
               onKeyDown={event => handleKeyDown(event, index)}
+              ref={element => {
+                blockRef.current[index] = element;
+              }}
             >
               {block.children[0].content}
             </div>
