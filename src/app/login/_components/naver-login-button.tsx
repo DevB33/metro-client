@@ -1,3 +1,5 @@
+'use client';
+
 import Image from 'next/image';
 import { css } from '@/../styled-system/css';
 
@@ -18,9 +20,15 @@ const naverButton = css({
 });
 
 const NaverLoginButton = () => {
+  const uuid = crypto.randomUUID();
+
+  const handleNaverLogin = () => {
+    window.location.href = `${process.env.NEXT_PUBLIC_NAVER_AUTH_URL}${uuid}`;
+  };
+
   return (
     <div>
-      <button type="button" className={naverButton}>
+      <button type="button" className={naverButton} onClick={handleNaverLogin}>
         <Image src="/images/naver_logo.png" alt="네이버 로고" height={50} width={50} />
         Continue with Naver
       </button>
