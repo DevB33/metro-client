@@ -1,10 +1,10 @@
 import { css } from '@/../styled-system/css';
 
-import IconSelector from './_components/_content/icon-selector';
-import LineInfo from './_components/_content/line-info';
-import NoteContent from './_components/_content/note-content';
-import Tag from './_components/_content/tag';
-import Title from './_components/_content/title';
+import IconSelector from './_components/content/icon-selector';
+import LineInfo from './_components/content/line-info';
+import NoteConent from './_components/content/note-content';
+import Tag from './_components/content/tag';
+import Title from './_components/content/title';
 import Header from './_components/header';
 
 const noteContainer = css({
@@ -50,7 +50,7 @@ const Note = () => {
           <div className={divider} />
           <LineInfo />
           <div className={divider} />
-          <NoteContent />
+          <NoteConent />
         </div>
       </div>
     </div>
