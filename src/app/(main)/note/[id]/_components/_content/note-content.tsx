@@ -62,6 +62,7 @@ const wrapper = css({
 });
 
 const NoteContent = () => {
+  console.log('render NoteContent');
   const [blockList, setBlockList] = useState<ITextBlock[]>([
     {
       type: 'default',
@@ -98,11 +99,47 @@ const NoteContent = () => {
     setIsHover(newHoverState);
   };
 
+  //
+  const [isComposing, setIsComposing] = useState(false); // 한글 조합 중 여부
+
+  const handleCompositionStart = () => {
+    setIsComposing(true); // 한글 입력 조합 시작
+  };
+
+  const handleCompositionEnd = (e: React.FormEvent<HTMLDivElement>, index: number) => {
+    setIsComposing(false); // 한글 입력 조합 완료
+    handleInput(e, index); // 입력값 반영
+  };
+
   const handleInput = (e: React.FormEvent<HTMLDivElement>, index: number) => {
+    // const updatedBlockList = [...blockList];
+    // const target = e.currentTarget;
+    // updatedBlockList[index].children[0].content = target.textContent || '';
+    // setBlockList(updatedBlockList);
+    if (isComposing) return; // 한글 조합 중이면 상태 업데이트 방지
+
     const updatedBlockList = [...blockList];
     const target = e.currentTarget;
+
+    // 커서 위치 저장
+    const selection = window.getSelection();
+    const range = selection?.getRangeAt(0);
+    const cursorPosition = range ? range.startOffset : 0;
+
     updatedBlockList[index].children[0].content = target.textContent || '';
     setBlockList(updatedBlockList);
+
+    setTimeout(() => {
+      //  커서 위치 복구
+      const newRange = document.createRange();
+      const newSelection = window.getSelection();
+      if (blockRef.current[index]?.firstChild) {
+        newRange.setStart(blockRef.current[index]?.firstChild, cursorPosition);
+        newRange.collapse(true);
+        newSelection?.removeAllRanges();
+        newSelection?.addRange(newRange);
+      }
+    }, 0);
   };
 
   const handleFocus = (index: number) => {
@@ -221,6 +258,8 @@ const NoteContent = () => {
               contentEditable
               suppressContentEditableWarning
               className={noteContentContainer}
+              onCompositionStart={handleCompositionStart} // 한글 입력 시작 감지
+              onCompositionEnd={e => handleCompositionEnd(e, index)} // 한글 입력 완료 시 업데이트
               onInput={e => handleInput(e, index)}
               onFocus={() => handleFocus(index)}
               onBlur={() => handleBlur(index)}
