@@ -1,10 +1,10 @@
 import { css } from '@/../styled-system/css';
 
-import IconSelector from './_components/content/icon-selector';
-import LineInfo from './_components/content/line-info';
-import NoteConent from './_components/content/note-content';
-import Tag from './_components/content/tag';
-import Title from './_components/content/title';
+import IconSelector from './_components/note-header/icon-selector';
+import LineInfo from './_components/note-header/line-info';
+import Tag from './_components/note-header/tag';
+import Title from './_components/note-header/title';
+import NoteConent from './_components/note-content/note-content';
 import Header from './_components/header';
 
 const noteContainer = css({
