@@ -40,7 +40,7 @@ const NoteHeader = () => {
     setIsHover(false);
   };
 
-  const handleSelectIcon = (selectedIcon: string) => {
+  const handleSelectIcon = (selectedIcon: string | null) => {
     setIcon(selectedIcon);
   };
 
