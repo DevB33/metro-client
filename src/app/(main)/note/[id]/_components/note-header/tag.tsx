@@ -2,6 +2,7 @@ import { css } from '@/../styled-system/css';
 import TagIcon from '@/icons/tag-icon';
 import { useState } from 'react';
 import ITagType from '@/types/tag-type';
+import LineColor from '@/constants/line-color';
 import TagBox from './tag-box';
 
 const tagContainer = css({
@@ -57,10 +58,10 @@ const Tag = () => {
   const [tagList, setTagList] = useState<ITagType[]>([]);
   const [isEditing, setIsEditing] = useState(false);
 
-  const getRandomColor = () => {
-    const colors = ['lineOne', 'lineTwo', 'lineThree', 'lineFour', 'lineFive', 'lineSix'];
-    const randomIndex = Math.floor(Math.random() * colors.length);
-    return colors[randomIndex];
+  const getRandomColor = (): keyof typeof LineColor => {
+    const colorKeys = Object.keys(LineColor) as Array<keyof typeof LineColor>;
+    const randomIndex = Math.floor(Math.random() * colorKeys.length);
+    return colorKeys[randomIndex];
   };
 
   const handleEditing = () => {
@@ -86,13 +87,15 @@ const Tag = () => {
         {isEditing && (
           <>
             {tagList.map(tag => (
-              <TagBox tagName={tag.name} />
+              <TagBox tagName={tag.name} color={tag.color} />
             ))}
             <input className={tagInput} onKeyDown={handleKeyDown} />
           </>
         )}
         {!isEditing && tagList.length === 0 && <>비어있음</>}
-        {!isEditing && tagList.length > 0 && tagList.map(tag => <TagBox tagName={tag.name} />)}
+        {!isEditing &&
+          tagList.length > 0 &&
+          tagList.map(tag => <TagBox tagName={tag.name} color={tag.color} />)}
       </div>
     </div>
   );

@@ -1,7 +1,9 @@
 import { cva } from '@/../styled-system/css';
+import LineColor from '@/constants/line-color';
 
 interface ITagBox {
   tagName: string;
+  color: keyof typeof LineColor;
 }
 
 const tagBox = cva({
@@ -28,8 +30,8 @@ const tagBox = cva({
   },
 });
 
-const TagBox = ({ tagName }: ITagBox) => {
-  return <div className={tagBox({ color: 'lineOne' })}>{tagName}</div>;
+const TagBox = ({ tagName, color }: ITagBox) => {
+  return <div className={tagBox({ color })}>{tagName}</div>;
 };
 
 export default TagBox;
