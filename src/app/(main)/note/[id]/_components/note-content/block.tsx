@@ -12,11 +12,10 @@ interface IBlockComponent {
   setBlockList: (blockList: ITextBlock[]) => void;
   isTyping: boolean;
   setIsTyping: (isTyping: boolean) => void;
-  isFocused: boolean[];
-  setIsFocused: (isFocused: boolean[]) => void;
 }
 
-const noteContentContainer = css({
+const blockDiv = css({
+  position: 'relative',
   boxSizing: 'border-box',
   display: 'flex',
   flex: '1',
@@ -26,8 +25,16 @@ const noteContentContainer = css({
   outline: 'none',
   overflowY: 'hidden',
   flexShrink: 0,
-  resize: 'none',
-  alignItems: 'center',
+
+  '&:focus:empty::before': {
+    position: 'absolute',
+    top: '0',
+    left: '0',
+    content: 'attr(data-placeholder)',
+    color: 'gray',
+    fontSize: 'md',
+    pointerEvents: 'none',
+  },
 });
 
 const Block = memo(
@@ -39,8 +46,6 @@ const Block = memo(
     setBlockList,
     isTyping: _isTyping,
     setIsTyping,
-    isFocused,
-    setIsFocused,
   }: IBlockComponent) => {
     const handleInput = (e: React.FormEvent<HTMLDivElement>, i: number) => {
       setIsTyping(true);
@@ -48,18 +53,10 @@ const Block = memo(
       const target = e.currentTarget;
       updatedBlockList[i].children[0].content = target.textContent || '';
       setBlockList(updatedBlockList);
-    };
-
-    const handleFocus = (i: number) => {
-      const newFocusState = [...isFocused];
-      newFocusState[i] = true;
-      setIsFocused(newFocusState);
-    };
-
-    const handleBlur = (i: number) => {
-      const newFocusState = [...isFocused];
-      newFocusState[i] = false;
-      setIsFocused(newFocusState);
+      if (blockRef.current[index]?.innerText.trim() === '') {
+        // eslint-disable-next-line no-param-reassign
+        blockRef.current[index].innerHTML = '';
+      }
     };
 
     const splitBlock = (i: number) => {
@@ -154,10 +151,9 @@ const Block = memo(
         tabIndex={0}
         contentEditable
         suppressContentEditableWarning
-        className={noteContentContainer}
+        data-placeholder="글을 작성하거나 AI를 사용하려면 '스페이스' 키를, 명령어를 사용하려면 '/' 키를누르세요."
+        className={blockDiv}
         onInput={e => handleInput(e, index)}
-        onFocus={() => handleFocus(index)}
-        onBlur={() => handleBlur(index)}
         onKeyDown={event => handleKeyDown(event, index)}
         ref={element => {
           // eslint-disable-next-line no-param-reassign
