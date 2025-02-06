@@ -35,7 +35,7 @@ const hoverMenu = css({
   userSelect: 'none',
 
   _hover: {
-    backgroundColor: '#F2F2F2',
+    backgroundColor: 'lightGray',
   },
 });
 
