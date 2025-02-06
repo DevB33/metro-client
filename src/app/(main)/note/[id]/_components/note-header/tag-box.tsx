@@ -35,6 +35,14 @@ const tagBox = cva({
   },
 });
 
+const tagNameContainer = css({
+  width: 'max-content',
+  maxWidth: '30rem',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+});
+
 const deleteButton = css({
   display: 'flex',
   alignItems: 'center',
@@ -46,7 +54,7 @@ const deleteButton = css({
 const TagBox = ({ tagName, color, isEditing, onDelete }: ITagBox) => {
   return (
     <div className={tagBox({ color })}>
-      {tagName}
+      <div className={tagNameContainer}>{tagName}</div>
       {isEditing && (
         <button type="button" className={deleteButton} onClick={() => onDelete(tagName)}>
           x

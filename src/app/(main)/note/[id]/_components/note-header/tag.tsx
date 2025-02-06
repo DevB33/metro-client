@@ -6,22 +6,24 @@ import LineColor from '@/constants/line-color';
 import TagBox from './tag-box';
 
 const tagContainer = css({
-  height: '2rem',
+  minHeight: '2rem',
+  height: 'auto',
   display: 'flex',
   flexDirection: 'row',
-  alignItems: 'center',
+  alignItems: 'start',
   justifyContent: 'start',
   gap: 'small',
   userSelect: 'none',
 });
 
 const typeContainer = css({
+  minHeight: '2rem',
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'center',
   justifyContent: 'start',
   width: '10rem',
-  height: '2rem',
+  height: 'auto',
   borderRadius: '0.2rem',
   px: 'tiny',
   gap: 'tiny',
@@ -33,16 +35,18 @@ const typeContainer = css({
   },
 });
 const tagBoxContainer = css({
-  height: '2rem',
+  minHeight: '2rem',
+  height: 'auto',
   width: '35rem',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'start',
   gap: 'tiny',
   cursor: 'pointer',
-  px: 'tiny',
+  padding: 'tiny',
   borderRadius: '0.2rem',
   color: 'grey',
+  flexWrap: 'wrap',
 
   _hover: {
     backgroundColor: 'lightGray',
@@ -51,7 +55,7 @@ const tagBoxContainer = css({
 
 const tagInput = css({
   outline: 'none',
-  width: 'auto',
+  flex: '1',
 });
 
 const Tag = () => {
