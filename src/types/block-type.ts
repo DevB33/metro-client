@@ -1,4 +1,5 @@
 export interface ITextBlock {
+  id: number;
   type: 'default' | 'quote' | 'ul' | 'li' | 'toggle';
   children: ITextBlockChild[];
 }
