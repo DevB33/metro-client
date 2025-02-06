@@ -33,6 +33,7 @@ const NoteHeader = () => {
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
   const [icon, setIcon] = useState<string | null>(null);
   const iconSelectorRef = useRef<HTMLDivElement>(null);
+  const iconRef = useRef<HTMLButtonElement>(null);
 
   const handleMouseEnter = () => {
     setIsHover(true);
@@ -56,7 +57,12 @@ const NoteHeader = () => {
 
   useEffect(() => {
     const handleOutterClick = (e: MouseEvent) => {
-      if (iconSelectorRef.current && !iconSelectorRef.current.contains(e.target as Node)) {
+      if (
+        iconRef.current &&
+        iconSelectorRef.current &&
+        !iconRef.current.contains(e.target as Node) &&
+        !iconSelectorRef.current.contains(e.target as Node)
+      ) {
         handleSelectorClose();
       }
     };
@@ -69,6 +75,7 @@ const NoteHeader = () => {
       <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
         {icon && (
           <button
+            ref={iconRef}
             type="button"
             onClick={isSelectorOpen ? handleSelectorClose : handleSelectorOpen}
             className={IconContainer}

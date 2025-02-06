@@ -40,12 +40,17 @@ const hoverMenu = css({
 });
 
 const HoverMenu = ({ isHover, icon, handleSelectorOpen, handleSelectIcon }: IHoverMenuProps) => {
+  const handleClick = () => {
+    handleSelectIcon('🍎');
+    handleSelectorOpen();
+  };
+
   return (
     <div className={hoverMenuContainer}>
       {isHover && (
         <>
           {!icon ? (
-            <button type="button" className={hoverMenu} onClick={handleSelectorOpen}>
+            <button type="button" className={hoverMenu} onClick={handleClick}>
               <SmileIcon />
               아이콘 추가
             </button>
