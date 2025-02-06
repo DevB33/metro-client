@@ -17,7 +17,7 @@ const tagContainer = css({
 });
 
 const typeContainer = css({
-  minHeight: '2rem',
+  minHeight: '2.5rem',
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'center',
@@ -35,7 +35,7 @@ const typeContainer = css({
   },
 });
 const tagBoxContainer = css({
-  minHeight: '2rem',
+  minHeight: '2.5rem',
   height: 'auto',
   width: '35rem',
   display: 'flex',
@@ -62,6 +62,7 @@ const Tag = () => {
   const [tagList, setTagList] = useState<ITagType[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const tagRef = useRef<HTMLDivElement>(null);
 
   const getRandomColor = (): keyof typeof LineColor => {
     const colorKeys = Object.keys(LineColor) as Array<keyof typeof LineColor>;
@@ -79,6 +80,16 @@ const Tag = () => {
     }
   }, [isEditing]);
 
+  useEffect(() => {
+    const handleOutterClick = (e: MouseEvent) => {
+      if (tagRef.current && !tagRef.current.contains(e.target as Node)) {
+        setIsEditing(false);
+      }
+    };
+    window.addEventListener('mousedown', handleOutterClick);
+    return () => window.removeEventListener('mousedown', handleOutterClick);
+  }, [tagRef]);
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const inputValue = e.currentTarget.value;
     if (e.key === 'Enter' && inputValue.trim() !== '') {
@@ -93,7 +104,7 @@ const Tag = () => {
   };
 
   return (
-    <div className={tagContainer}>
+    <div className={tagContainer} ref={tagRef}>
       <div className={typeContainer}>
         <TagIcon />
         태그
