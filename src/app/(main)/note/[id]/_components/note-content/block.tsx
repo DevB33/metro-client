@@ -3,6 +3,7 @@ import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
 import keyName from '@/constants/key-name';
+import placeholder from '@/constants/placeholder';
 
 interface IBlockComponent {
   block: ITextBlock;
@@ -151,9 +152,9 @@ const Block = memo(
         tabIndex={0}
         contentEditable
         suppressContentEditableWarning
-        data-placeholder="글을 작성하거나 AI를 사용하려면 '스페이스' 키를, 명령어를 사용하려면 '/' 키를누르세요."
+        data-placeholder={placeholder.block}
         className={blockDiv}
-        onInput={e => handleInput(e, index)}
+        onInput={event => handleInput(event, index)}
         onKeyDown={event => handleKeyDown(event, index)}
         ref={element => {
           // eslint-disable-next-line no-param-reassign
