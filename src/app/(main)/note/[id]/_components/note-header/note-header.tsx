@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { css } from '@/../styled-system/css';
 import IconSelector from './icon-selector';
 import Tag from './tag';
@@ -26,11 +26,13 @@ const IconContainer = css({
 
 const IconSelectorContainer = css({
   position: 'absolute',
+  zIndex: '9999',
 });
 const NoteHeader = () => {
   const [isHover, setIsHover] = useState(false);
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
   const [icon, setIcon] = useState<string | null>(null);
+  const iconSelectorRef = useRef<HTMLDivElement>(null);
 
   const handleMouseEnter = () => {
     setIsHover(true);
@@ -52,6 +54,16 @@ const NoteHeader = () => {
     setIsSelectorOpen(false);
   };
 
+  useEffect(() => {
+    const handleOutterClick = (e: MouseEvent) => {
+      if (iconSelectorRef.current && !iconSelectorRef.current.contains(e.target as Node)) {
+        handleSelectorClose();
+      }
+    };
+    window.addEventListener('mousedown', handleOutterClick);
+    return () => window.removeEventListener('mousedown', handleOutterClick);
+  }, [iconSelectorRef]);
+
   return (
     <>
       <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
@@ -64,7 +76,7 @@ const NoteHeader = () => {
             {icon}
           </button>
         )}
-        <div className={IconSelectorContainer}>
+        <div className={IconSelectorContainer} ref={iconSelectorRef}>
           <IconSelector
             handleSelectIcon={handleSelectIcon}
             handleSelectorClose={handleSelectorClose}
