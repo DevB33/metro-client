@@ -56,6 +56,7 @@ const tagBoxContainer = css({
 const tagInput = css({
   outline: 'none',
   flex: '1',
+  color: 'black',
 });
 
 const Tag = () => {
@@ -92,7 +93,16 @@ const Tag = () => {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const inputValue = e.currentTarget.value;
-    if (e.key === 'Enter' && inputValue.trim() !== '') {
+    const isDuplicate = tagList.some(tag => tag.name === inputValue);
+
+    if (e.key === 'Enter') {
+      if (isDuplicate || inputValue.trim() === '') {
+        inputRef.current?.blur();
+        e.currentTarget.value = '';
+        setIsEditing(false);
+        return;
+      }
+
       setTagList([...tagList, { name: inputValue.trim(), color: getRandomColor() }]);
       e.currentTarget.value = '';
       setIsEditing(false);
@@ -109,11 +119,22 @@ const Tag = () => {
         <TagIcon />
         태그
       </div>
-      <button type="button" className={tagBoxContainer} onClick={handleEditing}>
+      <div
+        role="button"
+        tabIndex={0}
+        className={tagBoxContainer}
+        onClick={handleEditing}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            handleEditing();
+          }
+        }}
+      >
         {isEditing && (
           <>
             {tagList.map(tag => (
               <TagBox
+                key={tag.name}
                 isEditing={isEditing}
                 tagName={tag.name}
                 color={tag.color}
@@ -128,13 +149,14 @@ const Tag = () => {
           tagList.length > 0 &&
           tagList.map(tag => (
             <TagBox
+              key={tag.name}
               isEditing={isEditing}
               tagName={tag.name}
               color={tag.color}
               onDelete={handleTagDelete}
             />
           ))}
-      </button>
+      </div>
     </div>
   );
 };
