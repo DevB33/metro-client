@@ -7,6 +7,7 @@ import Block from './block';
 import BlockButton from './block-button';
 
 const blockContainer = css({
+  position: 'relative',
   display: 'flex',
   flexDirection: 'row',
 });
