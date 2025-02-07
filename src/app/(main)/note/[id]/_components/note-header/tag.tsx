@@ -3,6 +3,7 @@ import TagIcon from '@/icons/tag-icon';
 import { useEffect, useRef, useState } from 'react';
 import ITagType from '@/types/tag-type';
 import LineColor from '@/constants/line-color';
+import keyName from '@/constants/key-name';
 import TagBox from './tag-box';
 
 const tagContainer = css({
@@ -95,7 +96,7 @@ const Tag = () => {
     const inputValue = e.currentTarget.value;
     const isDuplicate = tagList.some(tag => tag.name === inputValue);
 
-    if (e.key === 'Enter') {
+    if (e.key === keyName.enter) {
       if (isDuplicate || inputValue.trim() === '') {
         inputRef.current?.blur();
         e.currentTarget.value = '';
@@ -125,7 +126,7 @@ const Tag = () => {
         className={tagBoxContainer}
         onClick={handleEditing}
         onKeyDown={e => {
-          if (e.key === 'Enter' || e.key === ' ') {
+          if (e.key === keyName.enter) {
             handleEditing();
           }
         }}
