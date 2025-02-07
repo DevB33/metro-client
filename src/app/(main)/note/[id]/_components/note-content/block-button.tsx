@@ -8,7 +8,6 @@ const blockBtnContainer = css({
   left: '-3rem',
   display: 'flex',
   flexDirection: 'row',
-  pt: '0.2rem',
 });
 
 const blockBtn = css({
