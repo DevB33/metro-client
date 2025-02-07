@@ -14,9 +14,9 @@ const RootLayout = async ({
   const cookie = await cookies();
   const isLogin = cookie.has('accessToken');
 
-  // if (!isLogin) {
-  //   redirect('/login');
-  // }
+  if (!isLogin) {
+    redirect('/login');
+  }
 
   return (
     <div className={css({ display: 'flex', flexDirection: 'row' })}>
