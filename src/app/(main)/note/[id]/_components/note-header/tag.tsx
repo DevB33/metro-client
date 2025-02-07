@@ -97,6 +97,9 @@ const Tag = () => {
     const isDuplicate = tagList.some(tag => tag.name === inputValue);
 
     if (e.key === keyName.enter) {
+      if (e.nativeEvent.isComposing) {
+        return;
+      }
       if (isDuplicate || inputValue.trim() === '') {
         inputRef.current?.blur();
         e.currentTarget.value = '';
