@@ -130,32 +130,17 @@ const Tag = () => {
           }
         }}
       >
-        {isEditing && (
-          <>
-            {tagList.map(tag => (
-              <TagBox
-                key={tag.name}
-                isEditing={isEditing}
-                tagName={tag.name}
-                color={tag.color}
-                onDelete={handleTagDelete}
-              />
-            ))}
-            <input className={tagInput} ref={inputRef} onKeyDown={handleKeyDown} />
-          </>
-        )}
+        {tagList.map(tag => (
+          <TagBox
+            key={tag.name}
+            isEditing={isEditing}
+            tagName={tag.name}
+            color={tag.color}
+            onDelete={handleTagDelete}
+          />
+        ))}
+        {isEditing && <input className={tagInput} ref={inputRef} onKeyDown={handleKeyDown} />}
         {!isEditing && tagList.length === 0 && <>비어있음</>}
-        {!isEditing &&
-          tagList.length > 0 &&
-          tagList.map(tag => (
-            <TagBox
-              key={tag.name}
-              isEditing={isEditing}
-              tagName={tag.name}
-              color={tag.color}
-              onDelete={handleTagDelete}
-            />
-          ))}
       </div>
     </div>
   );
