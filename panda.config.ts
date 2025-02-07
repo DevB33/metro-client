@@ -19,6 +19,7 @@ export default defineConfig({
           black: { value: '#000000' },
           white: { value: '#FFFFFF' },
           gray: { value: '#B6B6B6' },
+          lightGray: { value: '#F2F2F2' },
           warning: { value: '#FFA500' },
           error: { value: '#FF0000' },
           background: { value: '#F8F8F8' },
