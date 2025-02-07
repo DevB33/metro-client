@@ -11,7 +11,7 @@ const container = css({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  gap: 'huge',
+  gap: 'large',
 });
 
 const noteContainer = css({

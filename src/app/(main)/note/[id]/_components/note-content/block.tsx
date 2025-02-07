@@ -26,6 +26,7 @@ const blockDiv = css({
   outline: 'none',
   overflowY: 'hidden',
   flexShrink: 0,
+  whiteSpace: 'pre-wrap',
 
   '&:focus:empty::before': {
     position: 'absolute',
@@ -64,35 +65,96 @@ const Block = memo(
       setIsTyping(false);
 
       const selection = window.getSelection();
-      const cursorPosition = selection?.focusOffset || 0;
-      const currentContent = blockList[i].children[0].content || '';
+      if (!selection || selection.rangeCount === 0) return;
 
-      const beforeContent = currentContent.slice(0, cursorPosition);
-      const afterContent = currentContent.slice(cursorPosition);
+      const range = selection.getRangeAt(0);
+      const container = range.startContainer; // 현재 커서가 위치한 노드
+      const offset = range.startOffset; // 커서가 해당 노드 내에서 몇 번째 위치인지
+      const parent = blockRef.current[i]; // contentEditable 전체 영역
+      const children = parent?.childNodes; // contentEditable 내 자식 노드들
+      const childNodes = Array.from(children as NodeListOf<HTMLElement>);
+
+      const beforeBlock = Array.from(childNodes[0].childNodes as NodeListOf<HTMLElement>)
+        .filter((_node, idx) => {
+          return (
+            idx <=
+            Array.from(childNodes[0].childNodes as NodeListOf<HTMLElement>).indexOf(
+              container as HTMLElement,
+            )
+          );
+        })
+        .map((node, idx) => {
+          if (
+            idx ===
+            Array.from(childNodes[0].childNodes as NodeListOf<HTMLElement>).indexOf(
+              container as HTMLElement,
+            )
+          ) {
+            const newNode = document.createTextNode(node.textContent?.slice(0, offset) || '');
+            console.log(newNode);
+            return newNode;
+          }
+          return node;
+        });
+
+      const afterBlock = Array.from(childNodes[0].childNodes as NodeListOf<HTMLElement>)
+        .filter((_node, idx) => {
+          return (
+            idx >=
+            Array.from(childNodes[0].childNodes as NodeListOf<HTMLElement>).indexOf(
+              container as HTMLElement,
+            )
+          );
+        })
+        .map((node, idx) => {
+          if (idx === 0) {
+            const newNode = document.createTextNode(node.textContent?.slice(offset) || '');
+            return newNode;
+          }
+          return node;
+        });
 
       const updatedBlockList = [...blockList];
-      updatedBlockList[i].children[0].content = beforeContent;
 
-      const newBlock: ITextBlock = {
-        id: Math.random(),
-        type: 'default',
-        children: [
-          {
-            type: 'text',
-            style: {
-              fontStyle: 'normal',
-              fontWeight: 'regular',
-              color: 'black',
-              backgroundColor: 'white',
-              width: 'auto',
-              height: 'auto',
-            },
-            content: afterContent,
+      const newBeforeBlock = beforeBlock.map(node => {
+        return {
+          type: 'text' as 'text',
+          style: {
+            fontStyle: 'normal',
+            fontWeight: 'regular',
+            color: 'black',
+            backgroundColor: 'white',
+            width: 'auto',
+            height: 'auto',
           },
-        ],
-      };
+          content: node.textContent,
+        };
+      });
 
-      updatedBlockList.splice(i + 1, 0, newBlock);
+      console.log(afterBlock);
+
+      const newAfterBlock = afterBlock.map(node => {
+        return {
+          type: 'text' as 'text',
+          style: {
+            fontStyle: 'normal',
+            fontWeight: 'regular',
+            color: 'black',
+            backgroundColor: 'white',
+            width: 'auto',
+            height: 'auto',
+          },
+          content: node.textContent,
+        };
+      });
+
+      updatedBlockList[i].children = newBeforeBlock;
+
+      updatedBlockList.splice(i + 1, 0, {
+        id: Date.now(),
+        type: 'default',
+        children: newAfterBlock,
+      });
 
       setBlockList(updatedBlockList);
 
@@ -164,7 +226,9 @@ const Block = memo(
           blockRef.current[index] = element;
         }}
       >
-        {block.children[0].content}
+        {block.children.map((child, idx) =>
+          child.content === '\n' ? <br /> : <span key={idx}>{child.content}</span>,
+        )}
       </div>
     );
   },
