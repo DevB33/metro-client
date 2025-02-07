@@ -132,6 +132,9 @@ const Block = memo(
     const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, i: number) => {
       if (e.key === keyName.enter && !e.shiftKey) {
         e.preventDefault();
+        if (e.nativeEvent.isComposing) {
+          return;
+        }
         splitBlock(i);
       }
 
