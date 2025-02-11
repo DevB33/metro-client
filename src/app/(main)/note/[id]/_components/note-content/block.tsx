@@ -1,4 +1,4 @@
-import { useState, memo, useEffect } from 'react';
+import { useState, memo } from 'react';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
@@ -60,19 +60,15 @@ const Block = memo(
       }
     };
 
-    useEffect(() => {
-      console.log('useEffect', blockList);
-    }, [blockList]);
-
     const splitBlock = (i: number) => {
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
 
       const range = selection.getRangeAt(0);
-      const container = range.startContainer; // 현재 커서가 위치한 노드
-      const offset = range.startOffset; // 커서가 해당 노드 내에서 몇 번째 위치인지
-      const parent = blockRef.current[i]; // contentEditable 전체 영역
-      const children = parent?.childNodes; // contentEditable 내 자식 노드들
+      const container = range.startContainer;
+      const offset = range.startOffset;
+      const parent = blockRef.current[i];
+      const children = parent?.childNodes;
       const childNodes = Array.from(children as NodeListOf<HTMLElement>);
 
       const beforeBlock = Array.from(childNodes as HTMLElement[])
@@ -212,10 +208,6 @@ const Block = memo(
         setIsTyping(false);
         setKey(Math.random());
         splitBlock(i);
-      }
-
-      if (e.key === keyName.enter && e.shiftKey) {
-        console.log(blockList);
       }
 
       if (e.key === keyName.backspace) {
