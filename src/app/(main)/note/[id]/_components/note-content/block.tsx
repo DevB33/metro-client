@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { useState, memo, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
@@ -18,15 +18,12 @@ interface IBlockComponent {
 const blockDiv = css({
   position: 'relative',
   boxSizing: 'border-box',
-  display: 'flex',
-  flex: '1',
   width: 'full',
   minHeight: '2rem',
   height: 'auto',
   outline: 'none',
   overflowY: 'hidden',
   flexShrink: 0,
-  whiteSpace: 'pre-wrap',
 
   '&:focus:empty::before': {
     position: 'absolute',
@@ -49,6 +46,8 @@ const Block = memo(
     isTyping: _isTyping,
     setIsTyping,
   }: IBlockComponent) => {
+    const [key, setKey] = useState(Date.now());
+
     const handleInput = (e: React.FormEvent<HTMLDivElement>, i: number) => {
       setIsTyping(true);
       const updatedBlockList = [...blockList];
@@ -61,9 +60,11 @@ const Block = memo(
       }
     };
 
-    const splitBlock = (i: number) => {
-      setIsTyping(false);
+    useEffect(() => {
+      console.log('useEffect', blockList);
+    }, [blockList]);
 
+    const splitBlock = (i: number) => {
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
 
@@ -74,37 +75,21 @@ const Block = memo(
       const children = parent?.childNodes; // contentEditable 내 자식 노드들
       const childNodes = Array.from(children as NodeListOf<HTMLElement>);
 
-      const beforeBlock = Array.from(childNodes[0].childNodes as NodeListOf<HTMLElement>)
+      const beforeBlock = Array.from(childNodes as HTMLElement[])
         .filter((_node, idx) => {
-          return (
-            idx <=
-            Array.from(childNodes[0].childNodes as NodeListOf<HTMLElement>).indexOf(
-              container as HTMLElement,
-            )
-          );
+          return idx <= Array.from(childNodes as HTMLElement[]).indexOf(container as HTMLElement);
         })
         .map((node, idx) => {
-          if (
-            idx ===
-            Array.from(childNodes[0].childNodes as NodeListOf<HTMLElement>).indexOf(
-              container as HTMLElement,
-            )
-          ) {
+          if (idx === Array.from(childNodes as HTMLElement[]).indexOf(container as HTMLElement)) {
             const newNode = document.createTextNode(node.textContent?.slice(0, offset) || '');
-            console.log(newNode);
             return newNode;
           }
           return node;
         });
 
-      const afterBlock = Array.from(childNodes[0].childNodes as NodeListOf<HTMLElement>)
+      const afterBlock = Array.from(childNodes as HTMLElement[])
         .filter((_node, idx) => {
-          return (
-            idx >=
-            Array.from(childNodes[0].childNodes as NodeListOf<HTMLElement>).indexOf(
-              container as HTMLElement,
-            )
-          );
+          return idx >= Array.from(childNodes as HTMLElement[]).indexOf(container as HTMLElement);
         })
         .map((node, idx) => {
           if (idx === 0) {
@@ -117,6 +102,21 @@ const Block = memo(
       const updatedBlockList = [...blockList];
 
       const newBeforeBlock = beforeBlock.map(node => {
+        if (node.nodeName === 'BR') {
+          return {
+            type: 'br' as 'br',
+            style: {
+              fontStyle: 'normal',
+              fontWeight: 'regular',
+              color: 'black',
+              backgroundColor: 'white',
+              width: 'auto',
+              height: 'auto',
+            },
+            content: '',
+          };
+        }
+
         return {
           type: 'text' as 'text',
           style: {
@@ -130,10 +130,23 @@ const Block = memo(
           content: node.textContent,
         };
       });
-
-      console.log(afterBlock);
 
       const newAfterBlock = afterBlock.map(node => {
+        if (node.nodeName === 'BR') {
+          return {
+            type: 'br' as 'br',
+            style: {
+              fontStyle: 'normal',
+              fontWeight: 'regular',
+              color: 'black',
+              backgroundColor: 'white',
+              width: 'auto',
+              height: 'auto',
+            },
+            content: '',
+          };
+        }
+
         return {
           type: 'text' as 'text',
           style: {
@@ -148,6 +161,7 @@ const Block = memo(
         };
       });
 
+      updatedBlockList[i].children = [];
       updatedBlockList[i].children = newBeforeBlock;
 
       updatedBlockList.splice(i + 1, 0, {
@@ -164,8 +178,6 @@ const Block = memo(
     };
 
     const mergeBlock = (i: number) => {
-      setIsTyping(false);
-
       const updatedBlockList = [...blockList];
       const previousBlock = updatedBlockList[i - 1];
       const currentBlock = updatedBlockList[i];
@@ -197,7 +209,13 @@ const Block = memo(
         if (e.nativeEvent.isComposing) {
           return;
         }
+        setIsTyping(false);
+        setKey(Math.random());
         splitBlock(i);
+      }
+
+      if (e.key === keyName.enter && e.shiftKey) {
+        console.log(blockList);
       }
 
       if (e.key === keyName.backspace) {
@@ -213,6 +231,7 @@ const Block = memo(
 
     return (
       <div
+        key={key}
         role="textbox"
         tabIndex={0}
         contentEditable
@@ -226,9 +245,21 @@ const Block = memo(
           blockRef.current[index] = element;
         }}
       >
-        {block.children.map((child, idx) =>
-          child.content === '\n' ? <br /> : <span key={idx}>{child.content}</span>,
-        )}
+        {block.children.map(child => {
+          if (child.type === 'br') {
+            return <br key={Math.random()} />;
+          }
+
+          if (child.type === 'text') {
+            return child.content;
+          }
+
+          return (
+            <span key={Math.random()} style={child.style}>
+              {child.content}
+            </span>
+          );
+        })}
       </div>
     );
   },
