@@ -177,26 +177,11 @@ const Block = memo(
       const updatedBlockList = [...blockList];
       const previousBlock = updatedBlockList[i - 1];
       const currentBlock = updatedBlockList[i];
-      const mergePosition = previousBlock.children[0].content?.length || 0;
 
-      previousBlock.children[0].content += currentBlock.children[0].content ?? '';
+      previousBlock.children = [...previousBlock.children, ...currentBlock.children];
 
       updatedBlockList.splice(i, 1);
       setBlockList(updatedBlockList);
-
-      setTimeout(() => {
-        const previousBackBlock = blockRef.current[i - 1];
-        if (previousBackBlock) {
-          const range = document.createRange();
-          const previousSelection = window.getSelection();
-
-          range.setStart(previousBackBlock.childNodes[0] || previousBackBlock, mergePosition);
-          range.collapse(true);
-
-          previousSelection?.removeAllRanges();
-          previousSelection?.addRange(range);
-        }
-      }, 0);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, i: number) => {
