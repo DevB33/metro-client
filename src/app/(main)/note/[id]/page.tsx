@@ -12,6 +12,7 @@ const container = css({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
+  justifyItems: 'start',
 });
 
 const noteContainer = css({

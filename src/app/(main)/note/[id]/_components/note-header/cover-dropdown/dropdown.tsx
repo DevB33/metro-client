@@ -1,5 +1,12 @@
 import { css } from '@/../styled-system/css';
-import { forwardRef } from 'react';
+import { forwardRef, useState } from 'react';
+import DropdownHeader from './dropdown-header';
+import DropdownContent from './dropdown-content';
+
+interface ICoverDropdownProps {
+  handleSelectCover: (color: string) => void;
+  handleCoverModalClose: () => void;
+}
 
 const dropdownContainer = css({
   position: 'absolute',
@@ -11,10 +18,27 @@ const dropdownContainer = css({
   backgroundColor: 'white',
   boxShadow: 'dropDown',
   zIndex: '10000',
+  display: 'flex',
+  flexDirection: 'column',
 });
 
-const CoverDropdown = forwardRef<HTMLDivElement, {}>((props, ref) => {
-  return <div ref={ref} className={dropdownContainer} {...props} />;
+const CoverDropdown = forwardRef<HTMLDivElement, ICoverDropdownProps>((props, ref) => {
+  const { handleSelectCover, handleCoverModalClose } = props;
+  const [tab, setTab] = useState(0);
+
+  const handleTabIndex = (index: number) => {
+    setTab(index);
+  };
+
+  return (
+    <div ref={ref} className={dropdownContainer} {...props}>
+      <DropdownHeader handleTabIndex={handleTabIndex} />
+      <DropdownContent
+        handleSelectCover={handleSelectCover}
+        handleCoverModalClose={handleCoverModalClose}
+      />
+    </div>
+  );
 });
 
 export default CoverDropdown;

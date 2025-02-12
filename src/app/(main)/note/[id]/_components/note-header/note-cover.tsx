@@ -1,21 +1,35 @@
-import { css } from '@/../styled-system/css';
+import { css, cva } from '@/../styled-system/css';
 
 interface INoteCoverProps {
   handleCoverModalOpen: () => void;
+  deleteCover: () => void;
+  cover: string;
 }
 
-const coverContainer = css({
-  position: 'relative',
-  display: 'flex',
-  justifyContent: 'center',
-  left: '0',
-  top: '3rem',
-  width: '100%',
-  height: '17.5rem',
-  backgroundColor: 'gray',
-  zIndex: 1,
-  pt: '1rem',
-  pr: '1rem',
+const coverContainer = cva({
+  base: {
+    position: 'relative',
+    display: 'flex',
+    justifyContent: 'center',
+    left: '0',
+    top: '0.5rem',
+    width: '100%',
+    height: '17.5rem',
+    zIndex: 1,
+    pt: '1rem',
+    pr: '1rem',
+    mr: '1.5rem',
+  },
+  variants: {
+    backgroundColor: {
+      lineOne: { backgroundColor: 'lineOne' },
+      lineTwo: { backgroundColor: 'lineTwo' },
+      lineThree: { backgroundColor: 'lineThree' },
+      lineFour: { backgroundColor: 'lineFour' },
+      lineFive: { backgroundColor: 'lineFive' },
+      lineSix: { backgroundColor: 'lineSix' },
+    },
+  },
 });
 
 const innerContainer = css({
@@ -63,15 +77,17 @@ const thirdButton = css({
   width: '3.75rem',
 });
 
-const NoteCover = ({ handleCoverModalOpen }: INoteCoverProps) => {
+const NoteCover = ({ handleCoverModalOpen, deleteCover, cover }: INoteCoverProps) => {
   return (
-    <div className={coverContainer}>
+    <div className={coverContainer()} style={{ backgroundColor: cover }}>
       <div className={innerContainer}>
         <div className={buttonContainer}>
           <div className={firstButton} onClick={handleCoverModalOpen}>
             커버변경
           </div>
-          <div className={secondButton}>커버제거</div>
+          <div className={secondButton} onClick={deleteCover}>
+            커버제거
+          </div>
           <div className={thirdButton}>위치변경</div>
         </div>
       </div>
