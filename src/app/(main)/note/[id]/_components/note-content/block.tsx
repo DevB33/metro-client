@@ -48,10 +48,6 @@ const Block = memo(
   }: IBlockComponent) => {
     const [key, setKey] = useState(Date.now());
 
-    useEffect(() => {
-      console.log(blockList);
-    }, [blockList]);
-
     const handleInput = (e: React.FormEvent<HTMLDivElement>, i: number) => {
       setIsTyping(true);
       const updatedBlockList = [...blockList];
@@ -62,15 +58,22 @@ const Block = memo(
 
       const range = selection.getRangeAt(0);
       const container = range.startContainer;
-      const offset = range.startOffset;
+      const childNodes = Array.from(target.childNodes as NodeListOf<HTMLElement>);
+      const currentIndex = childNodes.indexOf(container as HTMLElement);
 
-      console.log(target.childNodes);
-      updatedBlockList[i].children[0].content = target.textContent || '';
-      setBlockList(updatedBlockList);
-      if (blockRef.current[index]?.innerText.trim() === '') {
-        // eslint-disable-next-line no-param-reassign
-        blockRef.current[index].innerHTML = '';
+      if (currentIndex === -1) {
+        if (blockRef.current[index] && childNodes.length === 1) {
+          // eslint-disable-next-line no-param-reassign
+          blockRef.current[index]!.innerHTML = '';
+        }
+        return;
       }
+
+      // 빈 노드 제거
+      if (!target.childNodes[currentIndex + 1]) {
+        updatedBlockList[i].children.splice(currentIndex + 1, 1);
+      }
+      setBlockList(updatedBlockList);
     };
 
     const splitBlock = (i: number) => {
@@ -90,7 +93,7 @@ const Block = memo(
         .map((node, idx) => {
           if (idx === childNodes.indexOf(container as HTMLElement)) {
             const newNode = document.createTextNode(node.textContent?.slice(0, offset) || '');
-            if (newNode.textContent === '') {
+            if (newNode.textContent === '' && idx !== 0) {
               return;
             }
             return newNode;
@@ -106,7 +109,8 @@ const Block = memo(
         .map((node, idx) => {
           if (idx === 0) {
             const newNode = document.createTextNode(node.textContent?.slice(offset) || '');
-            if (newNode.textContent === '') {
+            const filteredNodeCount = childNodes.filter(n => n != null).length;
+            if (newNode.textContent === '' && idx !== filteredNodeCount - 1) {
               return;
             }
             return newNode;
@@ -193,6 +197,7 @@ const Block = memo(
     };
 
     const splitLine = (i: number) => {
+      console.log(blockList);
       const selection = window.getSelection();
       if (!selection) return;
 
@@ -213,7 +218,7 @@ const Block = memo(
 
           const updatedChildren = [
             ...newChildren.slice(0, parentBlockIndex),
-            {
+            textBefore && {
               type: 'text' as 'text',
               style: {
                 fontStyle: 'normal',
@@ -237,7 +242,7 @@ const Block = memo(
               },
               content: '',
             },
-            {
+            textAfter && {
               type: 'text' as 'text',
               style: {
                 fontStyle: 'normal',
@@ -253,7 +258,10 @@ const Block = memo(
           ];
 
           const updatedBlockList = [...blockList];
-          updatedBlockList[i] = { ...updatedBlockList[i], children: updatedChildren };
+          updatedBlockList[i] = {
+            ...updatedBlockList[i],
+            children: updatedChildren.filter(item => item !== '') as ITextBlock['children'],
+          };
 
           setBlockList(updatedBlockList);
         }
@@ -288,9 +296,6 @@ const Block = memo(
     const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, i: number) => {
       if (e.key === keyName.enter && !e.shiftKey) {
         e.preventDefault();
-        if (e.nativeEvent.isComposing) {
-          return;
-        }
         setIsTyping(false);
         setKey(Math.random());
         splitBlock(i);
@@ -313,14 +318,26 @@ const Block = memo(
         const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
         const parentBlockIndex = childNodes.indexOf(container as HTMLElement);
 
+        if (
+          i === 0 &&
+          (parentBlockIndex === -1 || parentBlockIndex === 0) &&
+          cursorPosition === 0
+        ) {
+          e.preventDefault();
+          return;
+        }
+
+        console.log(cursorPosition);
+
         if (cursorPosition === 0) {
           e.preventDefault();
           setIsTyping(false);
           setKey(Math.random());
-
-          if (parentBlockIndex === 0 && i > 0) {
+          // console.log(1);
+          if (parentBlockIndex <= 0) {
             mergeBlock(i);
           } else if (parentBlockIndex > 0) {
+            // console.log(1);
             mergeLine(i, parentBlockIndex);
           }
         }
