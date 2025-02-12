@@ -36,19 +36,17 @@ const NoteContent = () => {
 
   const [isTyping, setIsTyping] = useState(false);
   const [isHover, setIsHover] = useState<boolean[]>([]);
-
+  const isHoverRef = useRef<boolean[]>([]);
   const blockRef = useRef<(HTMLDivElement | null)[]>([]);
 
   const handleMouseEnter = (index: number) => {
-    const newHoverState = [...isHover];
-    newHoverState[index] = true;
-    setIsHover(newHoverState);
+    isHoverRef.current[index] = true;
+    setIsHover([...isHoverRef.current]);
   };
 
   const handleMouseLeave = (index: number) => {
-    const newHoverState = [...isHover];
-    newHoverState[index] = false;
-    setIsHover(newHoverState);
+    isHoverRef.current[index] = false;
+    setIsHover([...isHoverRef.current]);
   };
 
   return (
