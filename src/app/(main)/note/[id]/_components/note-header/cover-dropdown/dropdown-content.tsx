@@ -29,13 +29,11 @@ const imageContainer = css({
   gap: 'tiny',
 });
 
-const image = cva({
-  base: {
-    width: '7.5rem',
-    height: '4rem',
-    backgroundColor: 'gray',
-    borderRadius: 'sm',
-  },
+const image = css({
+  width: '7.5rem',
+  height: '4rem',
+  backgroundColor: 'gray',
+  borderRadius: 'sm',
 });
 
 const DropdownContent = ({
@@ -145,7 +143,7 @@ const DropdownContent = ({
               <button
                 type="button"
                 key={color}
-                className={image()}
+                className={image}
                 style={{ backgroundColor: color }}
                 onClick={() => handleClick(color)}
                 aria-label={`Select color ${color}`}
