@@ -12,6 +12,7 @@ const dropDownContentContainer = css({
   overflowY: 'scroll',
   px: 'small',
   py: 'tiny',
+  userSelect: 'none',
 });
 
 const imageDescription = css({
@@ -34,6 +35,7 @@ const image = css({
   height: '4rem',
   backgroundColor: 'gray',
   borderRadius: 'sm',
+  cursor: 'pointer',
 });
 
 const DropdownContent = ({

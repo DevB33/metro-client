@@ -20,6 +20,7 @@ const dropdownContainer = css({
   zIndex: '10000',
   display: 'flex',
   flexDirection: 'column',
+  userSelect: 'none',
 });
 
 const CoverDropdown = forwardRef<HTMLDivElement, ICoverDropdownProps>((props, ref) => {

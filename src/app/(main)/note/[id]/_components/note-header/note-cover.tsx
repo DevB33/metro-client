@@ -41,7 +41,7 @@ const innerContainer = css({
 });
 
 const buttonContainer = css({
-  width: '11.25rem',
+  width: '7.5rem',
   height: '1.75rem',
   backgroundColor: 'white',
   borderRadius: 'sm',
@@ -66,14 +66,6 @@ const secondButton = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  borderRight: '1px solid',
-  borderColor: 'lightGray',
-  width: '3.75rem',
-});
-const thirdButton = css({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
   width: '3.75rem',
 });
 
@@ -88,7 +80,6 @@ const NoteCover = ({ handleCoverModalOpen, deleteCover, cover }: INoteCoverProps
           <div className={secondButton} onClick={deleteCover}>
             커버제거
           </div>
-          <div className={thirdButton}>위치변경</div>
         </div>
       </div>
     </div>
