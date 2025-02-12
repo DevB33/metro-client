@@ -48,6 +48,10 @@ export default defineConfig({
           sidebar: { value: '0 0 10px 0 rgba(0, 0, 0, 0.20)' },
           loginButton: { value: '0 0 20px 0 rgba(0, 0, 0, 0.15)' },
           settingModal: { value: '0 0 10px 0 rgba(0,0,0,0.05)' },
+          dropDown: {
+            value:
+              '0px 0px 0px 1px rgba(15, 15, 15, 0.05), 0px 3px 6px rgba(15, 15, 15, 0.1), 0px 9px 24px rgba(15, 15, 15, 0.2)',
+          },
         },
         fontWeights: {
           light: { value: '300' },
