@@ -57,6 +57,8 @@ const NoteContent = () => {
           className={blockContainer}
           onMouseEnter={() => handleMouseEnter(index)}
           onMouseLeave={() => handleMouseLeave(index)}
+          onKeyDown={() => handleMouseLeave(index)}
+          onMouseMove={() => handleMouseEnter(index)}
         >
           {isHover[index] && <BlockButton />}
           <Block
