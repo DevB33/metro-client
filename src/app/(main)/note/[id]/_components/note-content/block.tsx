@@ -1,4 +1,4 @@
-import { useState, memo } from 'react';
+import { useState, memo, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
@@ -47,6 +47,10 @@ const Block = memo(
     setIsTyping,
   }: IBlockComponent) => {
     const [key, setKey] = useState(Date.now());
+
+    useEffect(() => {
+      console.log(blockList);
+    }, [blockList]);
 
     const handleInput = (e: React.FormEvent<HTMLDivElement>, i: number) => {
       setIsTyping(true);
@@ -171,18 +175,6 @@ const Block = memo(
       }, 0);
     };
 
-    const mergeBlock = (i: number) => {
-      const updatedBlockList = [...blockList];
-      const previousBlock = updatedBlockList[i - 1];
-      const currentBlock = updatedBlockList[i];
-
-      previousBlock.children = [...previousBlock.children, ...currentBlock.children];
-
-      updatedBlockList.splice(i, 1);
-
-      setBlockList(updatedBlockList);
-    };
-
     const splitLine = (i: number) => {
       const selection = window.getSelection();
       if (!selection) return;
@@ -256,13 +248,27 @@ const Block = memo(
       }
     };
 
+    const mergeBlock = (i: number) => {
+      const updatedBlockList = [...blockList];
+      const previousBlock = updatedBlockList[i - 1];
+      const currentBlock = updatedBlockList[i];
+
+      previousBlock.children = [...previousBlock.children, ...currentBlock.children];
+
+      updatedBlockList.splice(i, 1);
+
+      setBlockList(updatedBlockList);
+    };
+
+    const mergeLine = (i: number, parentBlockIndex: number) => {
+      const updatedBlockList = [...blockList];
+      const newChildren = [...block.children];
+      newChildren.splice(parentBlockIndex - 1, 1);
+      updatedBlockList[i] = { ...updatedBlockList[i], children: newChildren };
+      setBlockList(updatedBlockList);
+    };
+
     const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, i: number) => {
-      if (e.key === keyName.enter && e.shiftKey) {
-        e.preventDefault();
-        setIsTyping(false);
-        setKey(Math.random());
-        splitLine(i);
-      }
       if (e.key === keyName.enter && !e.shiftKey) {
         e.preventDefault();
         if (e.nativeEvent.isComposing) {
@@ -273,15 +279,33 @@ const Block = memo(
         splitBlock(i);
       }
 
+      if (e.key === keyName.enter && e.shiftKey) {
+        e.preventDefault();
+        setIsTyping(false);
+        setKey(Math.random());
+        splitLine(i);
+      }
+
       if (e.key === keyName.backspace) {
         const selection = window.getSelection();
         const cursorPosition = selection?.focusOffset || 0;
 
-        if (cursorPosition === 0 && i > 0) {
+        const range = selection?.getRangeAt(0);
+        const container = range?.startContainer;
+        const parent = blockRef.current[i];
+        const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+        const parentBlockIndex = childNodes.indexOf(container as HTMLElement);
+
+        if (cursorPosition === 0) {
           e.preventDefault();
           setIsTyping(false);
           setKey(Math.random());
-          mergeBlock(i);
+
+          if (parentBlockIndex === 0 && i > 0) {
+            mergeBlock(i);
+          } else if (parentBlockIndex > 0) {
+            mergeLine(i, parentBlockIndex);
+          }
         }
       }
     };
