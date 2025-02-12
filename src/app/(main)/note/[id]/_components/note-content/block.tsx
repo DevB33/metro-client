@@ -68,24 +68,23 @@ const Block = memo(
       const container = range.startContainer;
       const offset = range.startOffset;
       const parent = blockRef.current[i];
-      const children = parent?.childNodes;
-      const childNodes = Array.from(children as NodeListOf<HTMLElement>);
+      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
 
-      const beforeBlock = Array.from(childNodes as HTMLElement[])
+      const beforeBlock = childNodes
         .filter((_node, idx) => {
-          return idx <= Array.from(childNodes as HTMLElement[]).indexOf(container as HTMLElement);
+          return idx <= childNodes.indexOf(container as HTMLElement);
         })
         .map((node, idx) => {
-          if (idx === Array.from(childNodes as HTMLElement[]).indexOf(container as HTMLElement)) {
+          if (idx === childNodes.indexOf(container as HTMLElement)) {
             const newNode = document.createTextNode(node.textContent?.slice(0, offset) || '');
             return newNode;
           }
           return node;
         });
 
-      const afterBlock = Array.from(childNodes as HTMLElement[])
+      const afterBlock = childNodes
         .filter((_node, idx) => {
-          return idx >= Array.from(childNodes as HTMLElement[]).indexOf(container as HTMLElement);
+          return idx >= childNodes.indexOf(container as HTMLElement);
         })
         .map((node, idx) => {
           if (idx === 0) {
@@ -157,7 +156,6 @@ const Block = memo(
         };
       });
 
-      updatedBlockList[i].children = [];
       updatedBlockList[i].children = newBeforeBlock;
 
       updatedBlockList.splice(i + 1, 0, {
@@ -181,10 +179,90 @@ const Block = memo(
       previousBlock.children = [...previousBlock.children, ...currentBlock.children];
 
       updatedBlockList.splice(i, 1);
+
       setBlockList(updatedBlockList);
     };
 
+    const splitLine = (i: number) => {
+      const selection = window.getSelection();
+      if (!selection) return;
+
+      const range = selection.getRangeAt(0);
+      const container = range.startContainer;
+      const offset = range.startOffset;
+      const parent = blockRef.current[i];
+      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+      const newChildren = [...block.children];
+
+      childNodes.indexOf(container as HTMLElement);
+      if (container.nodeType === Node.TEXT_NODE) {
+        const parentBlockIndex = childNodes.indexOf(container as HTMLElement);
+
+        if (parentBlockIndex !== -1) {
+          const textBefore = container.textContent?.substring(0, offset);
+          const textAfter = container.textContent?.substring(offset);
+
+          const updatedChildren = [
+            ...newChildren.slice(0, parentBlockIndex),
+            {
+              type: 'text' as 'text',
+              style: {
+                fontStyle: 'normal',
+                fontWeight: 'regular',
+                color: 'black',
+                backgroundColor: 'white',
+                width: 'auto',
+                height: 'auto',
+              },
+              content: textBefore || '',
+            },
+            {
+              type: 'br' as 'br',
+              style: {
+                fontStyle: 'normal',
+                fontWeight: 'regular',
+                color: 'black',
+                backgroundColor: 'white',
+                width: 'auto',
+                height: 'auto',
+              },
+              content: '',
+            },
+            {
+              type: 'text' as 'text',
+              style: {
+                fontStyle: 'normal',
+                fontWeight: 'regular',
+                color: 'black',
+                backgroundColor: 'white',
+                width: 'auto',
+                height: 'auto',
+              },
+              content: textAfter || '',
+            },
+            ...newChildren.slice(parentBlockIndex + 1),
+          ];
+
+          const updatedBlockList = [...blockList];
+          updatedBlockList[i] = { ...updatedBlockList[i], children: updatedChildren };
+
+          setBlockList(updatedBlockList);
+        }
+      } else if (
+        container.nodeType === Node.ELEMENT_NODE &&
+        (container as Element).tagName === 'SPAN'
+      ) {
+        // TODO: span 태그일 때 처리  (현재 미구현)
+      }
+    };
+
     const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, i: number) => {
+      if (e.key === keyName.enter && e.shiftKey) {
+        e.preventDefault();
+        setIsTyping(false);
+        setKey(Math.random());
+        splitLine(i);
+      }
       if (e.key === keyName.enter && !e.shiftKey) {
         e.preventDefault();
         if (e.nativeEvent.isComposing) {
@@ -201,6 +279,8 @@ const Block = memo(
 
         if (cursorPosition === 0 && i > 0) {
           e.preventDefault();
+          setIsTyping(false);
+          setKey(Math.random());
           mergeBlock(i);
         }
       }
