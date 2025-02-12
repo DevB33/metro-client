@@ -9,6 +9,7 @@ import TagBox from './tag-box';
 const tagContainer = css({
   minHeight: '2rem',
   height: 'auto',
+  width: '44.5rem',
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'start',

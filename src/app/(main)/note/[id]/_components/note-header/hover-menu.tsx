@@ -5,8 +5,10 @@ import SmileIcon from '@/icons/smile-icon';
 interface IHoverMenuProps {
   isHover: boolean;
   icon: string | null;
+  cover: string | null;
   handleSelectorOpen: () => void;
   handleSelectIcon: (icon: string | null) => void;
+  handleSelectCover: (color: string) => void;
 }
 
 const hoverMenuContainer = css({
@@ -39,10 +41,21 @@ const hoverMenu = css({
   },
 });
 
-const HoverMenu = ({ isHover, icon, handleSelectorOpen, handleSelectIcon }: IHoverMenuProps) => {
+const HoverMenu = ({
+  icon,
+  cover,
+  isHover,
+  handleSelectorOpen,
+  handleSelectIcon,
+  handleSelectCover,
+}: IHoverMenuProps) => {
   const handleClick = () => {
     handleSelectIcon('🍎');
     handleSelectorOpen();
+  };
+
+  const handleCoverButtonClick = () => {
+    handleSelectCover('#cc99ff');
   };
 
   return (
@@ -60,10 +73,12 @@ const HoverMenu = ({ isHover, icon, handleSelectorOpen, handleSelectIcon }: IHov
               아이콘 제거
             </button>
           )}
-          <button type="button" className={hoverMenu}>
-            <ImageIcon />
-            커버 추가
-          </button>
+          {!cover && (
+            <button type="button" className={hoverMenu} onClick={handleCoverButtonClick}>
+              <ImageIcon />
+              커버 추가
+            </button>
+          )}
         </>
       )}
     </div>
