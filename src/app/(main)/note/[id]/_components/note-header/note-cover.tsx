@@ -6,30 +6,18 @@ interface INoteCoverProps {
   cover: string;
 }
 
-const coverContainer = cva({
-  base: {
-    position: 'relative',
-    display: 'flex',
-    justifyContent: 'center',
-    left: '0',
-    top: '0.5rem',
-    width: '100%',
-    height: '17.5rem',
-    zIndex: 1,
-    pt: '1rem',
-    pr: '1rem',
-    mr: '1.5rem',
-  },
-  variants: {
-    backgroundColor: {
-      lineOne: { backgroundColor: 'lineOne' },
-      lineTwo: { backgroundColor: 'lineTwo' },
-      lineThree: { backgroundColor: 'lineThree' },
-      lineFour: { backgroundColor: 'lineFour' },
-      lineFive: { backgroundColor: 'lineFive' },
-      lineSix: { backgroundColor: 'lineSix' },
-    },
-  },
+const coverContainer = css({
+  position: 'relative',
+  display: 'flex',
+  justifyContent: 'center',
+  left: '0',
+  top: '0.5rem',
+  width: '100%',
+  height: '17.5rem',
+  zIndex: 1,
+  pt: '1rem',
+  pr: '1rem',
+  mr: '1.5rem',
 });
 
 const innerContainer = css({
@@ -71,7 +59,7 @@ const secondButton = css({
 
 const NoteCover = ({ handleCoverModalOpen, deleteCover, cover }: INoteCoverProps) => {
   return (
-    <div className={coverContainer()} style={{ backgroundColor: cover }}>
+    <div className={coverContainer} style={{ backgroundColor: cover }}>
       <div className={innerContainer}>
         <div className={buttonContainer}>
           <div className={firstButton} onClick={handleCoverModalOpen}>
