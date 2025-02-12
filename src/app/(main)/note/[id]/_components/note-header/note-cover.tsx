@@ -1,4 +1,4 @@
-import { css, cva } from '@/../styled-system/css';
+import { css } from '@/../styled-system/css';
 
 interface INoteCoverProps {
   handleCoverModalOpen: () => void;
