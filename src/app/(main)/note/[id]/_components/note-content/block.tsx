@@ -56,6 +56,15 @@ const Block = memo(
       setIsTyping(true);
       const updatedBlockList = [...blockList];
       const target = e.currentTarget;
+
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+
+      const range = selection.getRangeAt(0);
+      const container = range.startContainer;
+      const offset = range.startOffset;
+
+      console.log(target.childNodes);
       updatedBlockList[i].children[0].content = target.textContent || '';
       setBlockList(updatedBlockList);
       if (blockRef.current[index]?.innerText.trim() === '') {
@@ -81,10 +90,14 @@ const Block = memo(
         .map((node, idx) => {
           if (idx === childNodes.indexOf(container as HTMLElement)) {
             const newNode = document.createTextNode(node.textContent?.slice(0, offset) || '');
+            if (newNode.textContent === '') {
+              return;
+            }
             return newNode;
           }
           return node;
-        });
+        })
+        .filter(node => node != null);
 
       const afterBlock = childNodes
         .filter((_node, idx) => {
@@ -93,10 +106,14 @@ const Block = memo(
         .map((node, idx) => {
           if (idx === 0) {
             const newNode = document.createTextNode(node.textContent?.slice(offset) || '');
+            if (newNode.textContent === '') {
+              return;
+            }
             return newNode;
           }
           return node;
-        });
+        })
+        .filter(node => node != null);
 
       const updatedBlockList = [...blockList];
 
