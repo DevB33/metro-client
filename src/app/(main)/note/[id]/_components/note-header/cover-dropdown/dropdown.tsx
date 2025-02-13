@@ -1,5 +1,5 @@
 import { css } from '@/../styled-system/css';
-import { forwardRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import DropdownHeader from './dropdown-header';
 import DropdownContent from './dropdown-content';
 
@@ -23,16 +23,26 @@ const dropdownContainer = css({
   userSelect: 'none',
 });
 
-const CoverDropdown = forwardRef<HTMLDivElement, ICoverDropdownProps>((props, ref) => {
-  const { handleSelectCover, handleCoverModalClose } = props;
+const CoverDropdown = ({ handleSelectCover, handleCoverModalClose }: ICoverDropdownProps) => {
   const [tab, setTab] = useState(0);
+  const coverModalRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleOutterClick = (e: MouseEvent) => {
+      if (coverModalRef.current && !coverModalRef.current.contains(e.target as Node)) {
+        handleCoverModalClose();
+      }
+    };
+    window.addEventListener('mousedown', handleOutterClick);
+    return () => window.removeEventListener('mousedown', handleOutterClick);
+  }, [coverModalRef]);
 
   const handleTabIndex = (index: number) => {
     setTab(index);
   };
 
   return (
-    <div ref={ref} className={dropdownContainer}>
+    <div ref={coverModalRef} className={dropdownContainer}>
       <DropdownHeader handleTabIndex={handleTabIndex} />
       <DropdownContent
         handleSelectCover={handleSelectCover}
@@ -40,6 +50,6 @@ const CoverDropdown = forwardRef<HTMLDivElement, ICoverDropdownProps>((props, re
       />
     </div>
   );
-});
+};
 
 export default CoverDropdown;

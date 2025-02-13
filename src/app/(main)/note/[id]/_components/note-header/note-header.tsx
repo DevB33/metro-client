@@ -55,7 +55,6 @@ const NoteHeader = () => {
   const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
   const iconSelectorRef = useRef<HTMLDivElement>(null);
   const iconRef = useRef<HTMLButtonElement>(null);
-  const coverModalRef = useRef<HTMLDivElement | null>(null);
 
   const handleMouseEnter = () => {
     setIsHover(true);
@@ -108,16 +107,6 @@ const NoteHeader = () => {
     return () => window.removeEventListener('mousedown', handleOutterClick);
   }, [iconSelectorRef]);
 
-  useEffect(() => {
-    const handleOutterClick = (e: MouseEvent) => {
-      if (coverModalRef.current && !coverModalRef.current.contains(e.target as Node)) {
-        handleCoverModalClose();
-      }
-    };
-    window.addEventListener('mousedown', handleOutterClick);
-    return () => window.removeEventListener('mousedown', handleOutterClick);
-  }, [coverModalRef]);
-
   return (
     <>
       {cover && (
@@ -129,7 +118,6 @@ const NoteHeader = () => {
       )}
       {isCoverModalOpen && (
         <CoverDropdown
-          ref={coverModalRef}
           handleSelectCover={handleSelectCover}
           handleCoverModalClose={handleCoverModalClose}
         />
