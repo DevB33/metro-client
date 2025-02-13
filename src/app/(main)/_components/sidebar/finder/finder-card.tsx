@@ -1,10 +1,9 @@
 import { css } from '@/../styled-system/css';
 
 import { useEffect, useState } from 'react';
-import IPageType from '@/types/page-type';
 import PlusIcon from '@/icons/plus-icon';
+import IDocuments from '@/types/document-type';
 import PageItem from './page-item';
-import pageList from './page-list-mock';
 
 const finderCard = css({
   width: '100%',
@@ -53,32 +52,26 @@ const pageButton = css({
   },
 });
 
-const FinderCard = () => {
-  const [mockPageList, setMockPageList] = useState<IPageType[]>();
+const FinderCard = ({ data }: { data: IDocuments }) => {
+  const [pageList, setPageList] = useState<IDocuments>();
   const [isHover, setIsHover] = useState(false);
 
   useEffect(() => {
-    const storedPageList = localStorage.getItem('pageList');
-    if (storedPageList) {
-      setMockPageList(JSON.parse(storedPageList));
-    } else {
-      localStorage.setItem('pageList', JSON.stringify(pageList));
-      setMockPageList(pageList);
-    }
-  }, []);
+    setPageList(data);
+  }, [data]);
 
-  const createPage = () => {
-    const newPage: IPageType = {
-      pageId: Date.now(),
-      title: '새 페이지',
-      icon: '',
-      children: [],
-    };
-    const updatedPageList = [...(mockPageList || []), newPage];
+  // const createPage = () => {
+  //   const newPage: IPageType = {
+  //     pageId: Date.now(),
+  //     title: '새 페이지',
+  //     icon: '',
+  //     children: [],
+  //   };
+  //   const updatedPageList = [...(mockPageList || []), newPage];
 
-    localStorage.setItem('pageList', JSON.stringify(updatedPageList));
-    setMockPageList(updatedPageList);
-  };
+  //   localStorage.setItem('pageList', JSON.stringify(updatedPageList));
+  //   setMockPageList(updatedPageList);
+  // };
 
   return (
     <div className={finderCard}>
@@ -90,15 +83,17 @@ const FinderCard = () => {
         기원 님의 workspace
         {isHover && (
           <div className={pageButtonContainer}>
-            <button type="button" className={pageButton} onClick={createPage}>
+            <button type="button" className={pageButton}>
               <PlusIcon />
             </button>
           </div>
         )}
       </div>
-      {mockPageList?.map(page => {
-        return <PageItem key={page.pageId} page={page} depth={1} />;
-      })}
+      {pageList?.children?.length ? (
+        pageList.children.map(page => <PageItem key={page.docsId} page={page} depth={1} />)
+      ) : (
+        <p>문서가 없습니다.</p> // 데이터가 없을 때 메시지 추가
+      )}
     </div>
   );
 };

@@ -4,12 +4,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { css } from '@/../styled-system/css';
 
-import IPageType from '@/types/page-type';
 import PageCloseIcon from '@/icons/page-close-icon';
 import PageOpenIcon from '@/icons/page-open-icon';
 import PageIcon from '@/icons/page-icon';
 import HorizonDotIcon from '@/icons/horizon-dot-icon';
 import PlusIcon from '@/icons/plus-icon';
+import IDocuments from '@/types/document-type';
 
 const pageItemContainer = css({
   display: 'flex',
@@ -84,14 +84,14 @@ const noChildren = css({
   overflow: 'hidden',
 });
 
-const PageItem = ({ page, depth }: { page: IPageType; depth: number }) => {
+const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
   const router = useRouter();
   const toggleButtoonRef = useRef<HTMLButtonElement>(null);
   const settingButtonRef = useRef<HTMLButtonElement>(null);
   const plusButtonRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isHover, setIsHover] = useState(false);
-  const [currentPage, setCurrentPage] = useState<IPageType>(page);
+  const [currentPage, setCurrentPage] = useState<IDocuments>(page);
 
   const togglePage = () => {
     setIsOpen(!isOpen);
@@ -107,7 +107,7 @@ const PageItem = ({ page, depth }: { page: IPageType; depth: number }) => {
     )
       return;
 
-    router.push(`/note/${page.pageId}`);
+    router.push(`/note/${page.docsId}`);
   };
 
   const openSettingDropdown = () => {
@@ -118,37 +118,37 @@ const PageItem = ({ page, depth }: { page: IPageType; depth: number }) => {
     // TODD: 페이지 삭제
   };
 
-  const createChildPage = () => {
-    togglePage();
-    const newChildPage: IPageType = {
-      pageId: Date.now(),
-      title: '새 페이지',
-      icon: '',
-      children: [],
-    };
-    setCurrentPage(prevPage => ({
-      ...prevPage,
-      children: [...prevPage.children, newChildPage],
-    }));
-  };
+  // const createChildPage = () => {
+  //   togglePage();
+  //   const newChildPage: IPageType = {
+  //     pageId: Date.now(),
+  //     title: '새 페이지',
+  //     icon: '',
+  //     children: [],
+  //   };
+  //   setCurrentPage(prevPage => ({
+  //     ...prevPage,
+  //     children: [...prevPage.children, newChildPage],
+  //   }));
+  // };
 
-  useEffect(() => {
-    const storedPageList = localStorage.getItem('pageList');
-    if (!storedPageList) return;
+  // useEffect(() => {
+  //   const storedPageList = localStorage.getItem('pageList');
+  //   if (!storedPageList) return;
 
-    const parsedPageList: IPageType[] = JSON.parse(storedPageList);
+  //   const parsedPageList: IDocuments[] = JSON.parse(storedPageList);
 
-    const updatePagesRecursively = (pages: IPageType[]): IPageType[] => {
-      return pages.map(p =>
-        p.pageId === currentPage.pageId
-          ? currentPage
-          : { ...p, children: updatePagesRecursively(p.children) },
-      );
-    };
+  //   const updatePagesRecursively = (pages: IDocuments[]): IDocuments[] => {
+  //     return pages.map(p =>
+  //       p.docsId === currentPage.docsId
+  //         ? currentPage
+  //         : { ...p, children: updatePagesRecursively(p.children) },
+  //     );
+  //   };
 
-    const updatedPageList = updatePagesRecursively(parsedPageList);
-    localStorage.setItem('pageList', JSON.stringify(updatedPageList));
-  }, [currentPage]);
+  //   const updatedPageList = updatePagesRecursively(parsedPageList);
+  //   localStorage.setItem('pageList', JSON.stringify(updatedPageList));
+  // }, [currentPage]);
 
   return (
     <div className={pageItemContainer}>
@@ -177,12 +177,7 @@ const PageItem = ({ page, depth }: { page: IPageType; depth: number }) => {
             >
               <HorizonDotIcon />
             </button>
-            <button
-              type="button"
-              ref={plusButtonRef}
-              className={pageButton}
-              onClick={createChildPage}
-            >
+            <button type="button" ref={plusButtonRef} className={pageButton}>
               <PlusIcon />
             </button>
           </div>
@@ -192,7 +187,7 @@ const PageItem = ({ page, depth }: { page: IPageType; depth: number }) => {
         (currentPage.children.length ? (
           <div className={pageChildren}>
             {currentPage.children.map(child => (
-              <PageItem key={child.pageId} page={child} depth={depth + 1} />
+              <PageItem key={child.docsId} page={child} depth={depth + 1} />
             ))}
           </div>
         ) : (
