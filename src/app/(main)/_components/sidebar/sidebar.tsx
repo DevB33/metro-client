@@ -30,7 +30,7 @@ const sideBar = css({
   transition: '0.3s',
 });
 
-const Sidebar = ({ data }: { data: IDocuments }) => {
+const Sidebar = ({ list }: { list: IDocuments[] }) => {
   const savedWidth = localStorage.getItem('sidebarWidth');
   const startWidth = 17;
   const sidebarWidth = savedWidth ? parseFloat(savedWidth) : startWidth;
@@ -46,7 +46,7 @@ const Sidebar = ({ data }: { data: IDocuments }) => {
       >
         <ProfileCard />
         <SideMenuCard />
-        <FinderCard data={data} />
+        <FinderCard list={list} />
       </div>
       <SideBarResizeHandle
         sideBarRef={sideBarRef as React.RefObject<HTMLDivElement>}

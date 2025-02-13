@@ -166,7 +166,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
           {isOpen ? <PageOpenIcon color="black" /> : <PageCloseIcon color="black" />}
         </button>
         <div className={pageIcon}>{page.icon ? `${page.icon}` : <PageIcon />}</div>
-        <div className={pageTitle}>{page.title}</div>
+        <div className={pageTitle}>{page.title === null ? '새 페이지' : page.title}</div>
         {isHover && (
           <div className={pageButtonContainer}>
             <button

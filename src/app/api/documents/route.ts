@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache';
 import { cookies } from 'next/headers';
 
 // eslint-disable-next-line
@@ -24,8 +25,8 @@ export async function POST(request: Request) {
         parentId,
       }),
     });
+    revalidateTag('collection');
 
-    console.log(response);
     const data = await response.json();
 
     return new Response(JSON.stringify({ id: data.id }), {
