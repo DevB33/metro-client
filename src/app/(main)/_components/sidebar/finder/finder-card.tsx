@@ -52,26 +52,36 @@ const pageButton = css({
   },
 });
 
-const FinderCard = ({ data }: { data: IDocuments }) => {
+const FinderCard = ({ list }: { list: IDocuments }) => {
   const [pageList, setPageList] = useState<IDocuments>();
   const [isHover, setIsHover] = useState(false);
 
   useEffect(() => {
-    setPageList(data);
-  }, [data]);
+    setPageList(list);
+  }, [list]);
 
-  // const createPage = () => {
-  //   const newPage: IPageType = {
-  //     pageId: Date.now(),
-  //     title: '새 페이지',
-  //     icon: '',
-  //     children: [],
-  //   };
-  //   const updatedPageList = [...(mockPageList || []), newPage];
+  const rootCreatePage = async () => {
+    try {
+      const response = await fetch('/api/documents', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ parentId: null }),
+      });
 
-  //   localStorage.setItem('pageList', JSON.stringify(updatedPageList));
-  //   setMockPageList(updatedPageList);
-  // };
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Document created with ID:', data.id);
+      } else {
+        console.log(response);
+        throw new Error('Failed to create document');
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  };
 
   return (
     <div className={finderCard}>
@@ -83,7 +93,7 @@ const FinderCard = ({ data }: { data: IDocuments }) => {
         기원 님의 workspace
         {isHover && (
           <div className={pageButtonContainer}>
-            <button type="button" className={pageButton}>
+            <button type="button" className={pageButton} onClick={rootCreatePage}>
               <PlusIcon />
             </button>
           </div>
