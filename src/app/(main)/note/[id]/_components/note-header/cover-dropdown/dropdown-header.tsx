@@ -1,9 +1,5 @@
 import { css } from '@/../styled-system/css';
 
-interface IDropdownHeaderProps {
-  handleTabIndex: (index: number) => void;
-}
-
 const dropDownHeaderContainer = css({
   px: 'small',
   py: 'tiny',
@@ -27,11 +23,11 @@ const buttons = css({
   justifyContent: 'end',
 });
 
-const DropdownHeader = ({ handleTabIndex }: IDropdownHeaderProps) => {
+const DropdownHeader = () => {
   return (
     <div className={dropDownHeaderContainer}>
       <div className={headerButtonContainer}>
-        <button type="button" className={buttons} onClick={() => handleTabIndex(0)}>
+        <button type="button" className={buttons}>
           갤러리
         </button>
       </div>

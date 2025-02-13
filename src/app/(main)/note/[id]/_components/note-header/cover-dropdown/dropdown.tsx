@@ -24,7 +24,6 @@ const dropdownContainer = css({
 });
 
 const CoverDropdown = ({ handleSelectCover, handleCoverModalClose }: ICoverDropdownProps) => {
-  const [tab, setTab] = useState(0);
   const coverModalRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -37,13 +36,9 @@ const CoverDropdown = ({ handleSelectCover, handleCoverModalClose }: ICoverDropd
     return () => window.removeEventListener('mousedown', handleOutterClick);
   }, [coverModalRef]);
 
-  const handleTabIndex = (index: number) => {
-    setTab(index);
-  };
-
   return (
     <div ref={coverModalRef} className={dropdownContainer}>
-      <DropdownHeader handleTabIndex={handleTabIndex} />
+      <DropdownHeader />
       <DropdownContent
         handleSelectCover={handleSelectCover}
         handleCoverModalClose={handleCoverModalClose}
