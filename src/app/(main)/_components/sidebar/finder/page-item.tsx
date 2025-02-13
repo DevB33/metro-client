@@ -107,48 +107,82 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
     )
       return;
 
-    router.push(`/note/${page.docsId}`);
+    router.push(`/note/${page.id}`);
   };
 
   const openSettingDropdown = () => {
     // TODD: 페이지 설정 드롭다운 열기
   };
 
-  const deletePage = () => {
-    // TODD: 페이지 삭제
+  const deletePage = async () => {
+    console.log(currentPage);
+    try {
+      const response = await fetch('/api/documents', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ parentId: currentPage.id }),
+      });
+
+      if (response.ok) {
+        setCurrentPage(prevPage => {
+          if (!prevPage) return prevPage;
+
+          const updatedChildren = prevPage.children.filter(child => child.id !== currentPage.id);
+
+          return {
+            ...prevPage,
+            children: updatedChildren,
+          };
+        });
+      } else {
+        throw new Error('Failed to delete child page');
+      }
+    } catch (error) {
+      console.error('Error creating delete page:', error);
+    }
   };
 
-  // const createChildPage = () => {
-  //   togglePage();
-  //   const newChildPage: IPageType = {
-  //     pageId: Date.now(),
-  //     title: '새 페이지',
-  //     icon: '',
-  //     children: [],
-  //   };
-  //   setCurrentPage(prevPage => ({
-  //     ...prevPage,
-  //     children: [...prevPage.children, newChildPage],
-  //   }));
-  // };
+  const createChildPage = async () => {
+    togglePage();
+    try {
+      // 부모 페이지가 있을 경우에만 자식 페이지 생성
+      if (!currentPage) return;
 
-  // useEffect(() => {
-  //   const storedPageList = localStorage.getItem('pageList');
-  //   if (!storedPageList) return;
+      // API로 새 페이지 생성 요청
+      const response = await fetch('/api/documents', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ parentId: currentPage.id }),
+      });
 
-  //   const parsedPageList: IDocuments[] = JSON.parse(storedPageList);
+      if (response.ok) {
+        const data = await response.json();
 
-  //   const updatePagesRecursively = (pages: IDocuments[]): IDocuments[] => {
-  //     return pages.map(p =>
-  //       p.docsId === currentPage.docsId
-  //         ? currentPage
-  //         : { ...p, children: updatePagesRecursively(p.children) },
-  //     );
-  //   };
+        const newChildPage: IDocuments = {
+          id: data.id,
+          title: '새 페이지',
+          icon: '',
+          children: [],
+        };
 
-  //   const updatedPageList = updatePagesRecursively(parsedPageList);
-  //   localStorage.setItem('pageList', JSON.stringify(updatedPageList));
-  // }, [currentPage]);
+        setCurrentPage(prevPage => {
+          if (!prevPage) return prevPage;
+          return {
+            ...prevPage,
+            children: [...prevPage.children, newChildPage],
+          };
+        });
+      } else {
+        throw new Error('Failed to create child page');
+      }
+    } catch (error) {
+      console.error('Error creating child page:', error);
+    }
+  };
 
   return (
     <div className={pageItemContainer}>
@@ -173,11 +207,16 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
               type="button"
               ref={settingButtonRef}
               className={pageButton}
-              onClick={openSettingDropdown}
+              onClick={deletePage}
             >
               <HorizonDotIcon />
             </button>
-            <button type="button" ref={plusButtonRef} className={pageButton}>
+            <button
+              type="button"
+              ref={plusButtonRef}
+              className={pageButton}
+              onClick={createChildPage}
+            >
               <PlusIcon />
             </button>
           </div>
@@ -187,7 +226,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
         (currentPage.children.length ? (
           <div className={pageChildren}>
             {currentPage.children.map(child => (
-              <PageItem key={child.docsId} page={child} depth={depth + 1} />
+              <PageItem key={child.id} page={child} depth={depth + 1} />
             ))}
           </div>
         ) : (

@@ -101,7 +101,7 @@ const FinderCard = ({ list }: { list: IDocuments[] }) => {
         )}
       </div>
       {pageList?.length ? (
-        pageList.map(page => <PageItem key={page.docsId} page={page} depth={1} />)
+        pageList.map(page => <PageItem key={page.id} page={page} depth={1} />)
       ) : (
         <p>문서가 없습니다.</p> // 데이터가 없을 때 메시지 추가
       )}

@@ -1,5 +1,5 @@
 interface IDocuments {
-  docsId: number;
+  id: number;
   title: string;
   icon: string;
   children: IDocuments[];
