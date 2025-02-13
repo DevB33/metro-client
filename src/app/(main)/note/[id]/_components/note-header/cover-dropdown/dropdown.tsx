@@ -32,7 +32,7 @@ const CoverDropdown = forwardRef<HTMLDivElement, ICoverDropdownProps>((props, re
   };
 
   return (
-    <div ref={ref} className={dropdownContainer} {...props}>
+    <div ref={ref} className={dropdownContainer}>
       <DropdownHeader handleTabIndex={handleTabIndex} />
       <DropdownContent
         handleSelectCover={handleSelectCover}
