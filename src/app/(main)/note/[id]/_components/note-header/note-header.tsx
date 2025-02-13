@@ -22,7 +22,7 @@ const IconContainer = css({
   fontSize: 'xl',
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'start',
+  justifyContent: 'center',
   cursor: 'pointer',
   userSelect: 'none',
   borderRadius: '0.5rem',

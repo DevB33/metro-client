@@ -1,4 +1,4 @@
-import { useState, memo, useEffect } from 'react';
+import { useState, memo } from 'react';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
@@ -73,6 +73,10 @@ const Block = memo(
       if (!target.childNodes[currentIndex + 1]) {
         updatedBlockList[i].children.splice(currentIndex + 1, 1);
       }
+
+      updatedBlockList[i].children[currentIndex].content =
+        childNodes[currentIndex].textContent || '';
+
       setBlockList(updatedBlockList);
     };
 
@@ -197,7 +201,6 @@ const Block = memo(
     };
 
     const splitLine = (i: number) => {
-      console.log(blockList);
       const selection = window.getSelection();
       if (!selection) return;
 
@@ -218,7 +221,7 @@ const Block = memo(
 
           const updatedChildren = [
             ...newChildren.slice(0, parentBlockIndex),
-            textBefore && {
+            {
               type: 'text' as 'text',
               style: {
                 fontStyle: 'normal',
@@ -228,7 +231,7 @@ const Block = memo(
                 width: 'auto',
                 height: 'auto',
               },
-              content: textBefore || '',
+              content: textBefore || '.',
             },
             {
               type: 'br' as 'br',
@@ -242,7 +245,7 @@ const Block = memo(
               },
               content: '',
             },
-            textAfter && {
+            {
               type: 'text' as 'text',
               style: {
                 fontStyle: 'normal',
@@ -252,7 +255,7 @@ const Block = memo(
                 width: 'auto',
                 height: 'auto',
               },
-              content: textAfter || '',
+              content: textAfter || '.',
             },
             ...newChildren.slice(parentBlockIndex + 1),
           ];
@@ -260,7 +263,7 @@ const Block = memo(
           const updatedBlockList = [...blockList];
           updatedBlockList[i] = {
             ...updatedBlockList[i],
-            children: updatedChildren.filter(item => item !== '') as ITextBlock['children'],
+            children: updatedChildren,
           };
 
           setBlockList(updatedBlockList);
@@ -269,7 +272,7 @@ const Block = memo(
         container.nodeType === Node.ELEMENT_NODE &&
         (container as Element).tagName === 'SPAN'
       ) {
-        // TODO: span 태그일 때 처리  (현재 미구현)
+        // TODO: span 태그일 때 처리
       }
     };
 
@@ -327,17 +330,13 @@ const Block = memo(
           return;
         }
 
-        console.log(cursorPosition);
-
         if (cursorPosition === 0) {
           e.preventDefault();
           setIsTyping(false);
           setKey(Math.random());
-          // console.log(1);
           if (parentBlockIndex <= 0) {
             mergeBlock(i);
           } else if (parentBlockIndex > 0) {
-            // console.log(1);
             mergeLine(i, parentBlockIndex);
           }
         }

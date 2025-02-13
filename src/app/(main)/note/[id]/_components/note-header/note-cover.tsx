@@ -14,6 +14,7 @@ const coverContainer = css({
   top: '0.5rem',
   width: '100%',
   height: '17.5rem',
+  minHeight: '17.5rem',
   zIndex: 1,
   pt: '1rem',
   pr: '1rem',

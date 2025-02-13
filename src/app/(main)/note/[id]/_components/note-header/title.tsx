@@ -1,5 +1,7 @@
 import { css } from '@/../styled-system/css';
 
+import placeholder from '@/constants/placeholder';
+
 const titleFont = css({
   fontSize: 'lg',
   fontWeight: 'bold',
@@ -12,7 +14,7 @@ const titleFont = css({
 });
 
 const Title = () => {
-  return <input className={titleFont} placeholder="새 페이지" />;
+  return <input className={titleFont} placeholder={placeholder.noteTitle} />;
 };
 
 export default Title;
