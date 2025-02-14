@@ -62,9 +62,7 @@ const FinderCard = () => {
 
   const rootCreatePage = async () => {
     const instance = await getInstance();
-    const response = await instance.post('/api/documents', { parentId: null });
-    const createdata = response;
-    console.log(createdata);
+    await instance.post('/api/documents', { parentId: null });
   };
 
   return (
