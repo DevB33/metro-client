@@ -1,8 +1,10 @@
 import { css } from '@/../styled-system/css';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import PlusIcon from '@/icons/plus-icon';
 import IDocuments from '@/types/document-type';
+import useSWR from 'swr';
+import getInstance from '@/apis';
 import PageItem from './page-item';
 
 const finderCard = css({
@@ -52,36 +54,17 @@ const pageButton = css({
   },
 });
 
-const FinderCard = ({ list }: { list: IDocuments[] }) => {
-  const [pageList, setPageList] = useState<IDocuments[]>();
+const FinderCard = () => {
   const [isHover, setIsHover] = useState(false);
 
-  useEffect(() => {
-    console.log(list);
-    setPageList(list);
-  }, [list]);
+  const fetcher = (url: string) => fetch(url).then(res => res.json());
+  const { data } = useSWR(`${process.env.NEXT_PUBLIC_BASE_URL}/documents`, fetcher);
 
   const rootCreatePage = async () => {
-    try {
-      const response = await fetch('/api/documents', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ parentId: null }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Document created with ID:', data.id);
-      } else {
-        console.log(response);
-        throw new Error('Failed to create document');
-      }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
+    const instance = await getInstance();
+    const response = await instance.post('/api/documents', { parentId: null });
+    const createdata = response;
+    console.log(createdata);
   };
 
   return (
@@ -100,8 +83,8 @@ const FinderCard = ({ list }: { list: IDocuments[] }) => {
           </div>
         )}
       </div>
-      {pageList?.length ? (
-        pageList.map(page => <PageItem key={page.id} page={page} depth={1} />)
+      {data?.node.length ? (
+        data.node.map((page: IDocuments) => <PageItem key={page.id} page={page} depth={1} />)
       ) : (
         <p>문서가 없습니다.</p> // 데이터가 없을 때 메시지 추가
       )}
