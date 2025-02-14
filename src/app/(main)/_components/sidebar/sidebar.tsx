@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { css } from '@/../styled-system/css';
 
-import IDocuments from '@/types/document-type';
 import ProfileCard from './profile/profile-card';
 import SideMenuCard from './side-menu/side-menu-card';
 import FinderCard from './finder/finder-card';
@@ -30,7 +29,7 @@ const sideBar = css({
   transition: '0.3s',
 });
 
-const Sidebar = ({ list }: { list: IDocuments[] }) => {
+const Sidebar = () => {
   const savedWidth = localStorage.getItem('sidebarWidth');
   const startWidth = 17;
   const sidebarWidth = savedWidth ? parseFloat(savedWidth) : startWidth;
@@ -46,7 +45,7 @@ const Sidebar = ({ list }: { list: IDocuments[] }) => {
       >
         <ProfileCard />
         <SideMenuCard />
-        <FinderCard list={list} />
+        <FinderCard />
       </div>
       <SideBarResizeHandle
         sideBarRef={sideBarRef as React.RefObject<HTMLDivElement>}

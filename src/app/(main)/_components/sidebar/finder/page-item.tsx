@@ -10,6 +10,7 @@ import PageIcon from '@/icons/page-icon';
 import HorizonDotIcon from '@/icons/horizon-dot-icon';
 import PlusIcon from '@/icons/plus-icon';
 import IDocuments from '@/types/document-type';
+import useSWR from 'swr';
 
 const pageItemContainer = css({
   display: 'flex',
