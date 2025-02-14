@@ -34,7 +34,7 @@ const RootLayout = async ({
     <SWRConfig
       value={{
         fallback: {
-          [`${process.env.NEXT_PUBLIC_BASE_URL}/documents`]: sidebarData,
+          [`sidebarData`]: sidebarData,
         },
       }}
     >

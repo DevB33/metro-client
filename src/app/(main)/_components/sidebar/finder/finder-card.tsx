@@ -58,7 +58,7 @@ const FinderCard = () => {
   const [isHover, setIsHover] = useState(false);
 
   const fetcher = (url: string) => fetch(url).then(res => res.json());
-  const { data } = useSWR(`${process.env.NEXT_PUBLIC_BASE_URL}/documents`, fetcher);
+  const { data } = useSWR(`sidebarData`, fetcher);
 
   const rootCreatePage = async () => {
     const instance = await getInstance();
