@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { css } from '@/../styled-system/css';
 
@@ -10,7 +10,7 @@ import PageIcon from '@/icons/page-icon';
 import HorizonDotIcon from '@/icons/horizon-dot-icon';
 import PlusIcon from '@/icons/plus-icon';
 import IDocuments from '@/types/document-type';
-import useSWR from 'swr';
+import { createChildPage, deletePage } from '@/apis/side-bar';
 
 const pageItemContainer = css({
   display: 'flex',
@@ -115,74 +115,23 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
     // TODD: 페이지 설정 드롭다운 열기
   };
 
-  const deletePage = async () => {
-    console.log(currentPage);
-    try {
-      const response = await fetch('/api/documents', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ parentId: currentPage.id }),
-      });
+  const handleDeleteButtonClick = async () => {
+    deletePage(currentPage.id);
+    setCurrentPage(prevPage => {
+      if (!prevPage) return prevPage;
 
-      if (response.ok) {
-        setCurrentPage(prevPage => {
-          if (!prevPage) return prevPage;
+      const updatedChildren = prevPage.children.filter(child => child.id !== currentPage.id);
 
-          const updatedChildren = prevPage.children.filter(child => child.id !== currentPage.id);
-
-          return {
-            ...prevPage,
-            children: updatedChildren,
-          };
-        });
-      } else {
-        throw new Error('Failed to delete child page');
-      }
-    } catch (error) {
-      console.error('Error creating delete page:', error);
-    }
+      return {
+        ...prevPage,
+        children: updatedChildren,
+      };
+    });
   };
 
-  const createChildPage = async () => {
+  const handlePlusButtonClick = async () => {
     togglePage();
-    try {
-      // 부모 페이지가 있을 경우에만 자식 페이지 생성
-      if (!currentPage) return;
-
-      // API로 새 페이지 생성 요청
-      const response = await fetch('/api/documents', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ parentId: currentPage.id }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-
-        const newChildPage: IDocuments = {
-          id: data.id,
-          title: '새 페이지',
-          icon: '',
-          children: [],
-        };
-
-        setCurrentPage(prevPage => {
-          if (!prevPage) return prevPage;
-          return {
-            ...prevPage,
-            children: [...prevPage.children, newChildPage],
-          };
-        });
-      } else {
-        throw new Error('Failed to create child page');
-      }
-    } catch (error) {
-      console.error('Error creating child page:', error);
-    }
+    createChildPage(currentPage.id);
   };
 
   return (
@@ -208,7 +157,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
               type="button"
               ref={settingButtonRef}
               className={pageButton}
-              onClick={deletePage}
+              onClick={handleDeleteButtonClick}
             >
               <HorizonDotIcon />
             </button>
@@ -216,7 +165,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
               type="button"
               ref={plusButtonRef}
               className={pageButton}
-              onClick={createChildPage}
+              onClick={handlePlusButtonClick}
             >
               <PlusIcon />
             </button>

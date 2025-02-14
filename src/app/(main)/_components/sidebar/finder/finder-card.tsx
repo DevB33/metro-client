@@ -4,8 +4,7 @@ import { useState } from 'react';
 import PlusIcon from '@/icons/plus-icon';
 import IDocuments from '@/types/document-type';
 import useSWR from 'swr';
-import getInstance from '@/apis';
-import createRootPage from '@/apis/side-bar';
+import { createRootPage } from '@/apis/side-bar';
 import PageItem from './page-item';
 
 const finderCard = css({
