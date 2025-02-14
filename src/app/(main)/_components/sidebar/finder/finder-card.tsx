@@ -5,6 +5,7 @@ import PlusIcon from '@/icons/plus-icon';
 import IDocuments from '@/types/document-type';
 import useSWR from 'swr';
 import getInstance from '@/apis';
+import createRootPage from '@/apis/side-bar';
 import PageItem from './page-item';
 
 const finderCard = css({
@@ -60,9 +61,8 @@ const FinderCard = () => {
   const fetcher = (url: string) => fetch(url).then(res => res.json());
   const { data } = useSWR(`sidebarData`, fetcher);
 
-  const rootCreatePage = async () => {
-    const instance = await getInstance();
-    await instance.post('/api/documents', { parentId: null });
+  const handleClick = () => {
+    createRootPage();
   };
 
   return (
@@ -75,7 +75,7 @@ const FinderCard = () => {
         기원 님의 workspace
         {isHover && (
           <div className={pageButtonContainer}>
-            <button type="button" className={pageButton} onClick={rootCreatePage}>
+            <button type="button" className={pageButton} onClick={handleClick}>
               <PlusIcon />
             </button>
           </div>
