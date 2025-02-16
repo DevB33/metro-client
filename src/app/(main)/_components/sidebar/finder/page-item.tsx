@@ -10,7 +10,7 @@ import PageIcon from '@/icons/page-icon';
 import HorizonDotIcon from '@/icons/horizon-dot-icon';
 import PlusIcon from '@/icons/plus-icon';
 import IDocuments from '@/types/document-type';
-import { createChildPage, deletePage } from '@/apis/side-bar';
+import { createPage, deletePage } from '@/apis/side-bar';
 
 const pageItemContainer = css({
   display: 'flex',
@@ -131,7 +131,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
 
   const handlePlusButtonClick = async () => {
     togglePage();
-    createChildPage(currentPage.id);
+    createPage(currentPage.id);
   };
 
   return (

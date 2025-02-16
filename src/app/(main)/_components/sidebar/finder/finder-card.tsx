@@ -3,8 +3,8 @@ import { css } from '@/../styled-system/css';
 import { useState } from 'react';
 import PlusIcon from '@/icons/plus-icon';
 import IDocuments from '@/types/document-type';
+import { createPage, getPageList } from '@/apis/side-bar';
 import useSWR from 'swr';
-import { createRootPage } from '@/apis/side-bar';
 import PageItem from './page-item';
 
 const finderCard = css({
@@ -57,12 +57,21 @@ const pageButton = css({
 const FinderCard = () => {
   const [isHover, setIsHover] = useState(false);
 
-  const fetcher = (url: string) => fetch(url).then(res => res.json());
-  const { data } = useSWR(`sidebarData`, fetcher);
+  const { data, mutate, isLoading } = useSWR(`${process.env.NEXT_PUBLIC_BASE_URL}/documents`);
 
-  const handleClick = () => {
-    createRootPage();
+  const handleClick = async () => {
+    try {
+      await createPage(null);
+      const pageList = await getPageList();
+      console.log(pageList);
+      await mutate(`${process.env.NEXT_PUBLIC_BASE_URL}/documents`, pageList);
+    } catch (error) {
+      console.log(error);
+    }
   };
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className={finderCard}>
@@ -80,7 +89,7 @@ const FinderCard = () => {
           </div>
         )}
       </div>
-      {data?.node.length ? (
+      {data?.node ? (
         data.node.map((page: IDocuments) => <PageItem key={page.id} page={page} depth={1} />)
       ) : (
         <p>문서가 없습니다.</p> // 데이터가 없을 때 메시지 추가

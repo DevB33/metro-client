@@ -1,16 +1,18 @@
 import getInstance from '.';
 
-export const createRootPage = async () => {
+export const createPage = async (parentId: string | null) => {
   const instance = await getInstance();
-  await instance.post('/api/documents', { parentId: null });
-};
-
-export const createChildPage = async (parentId: string) => {
-  const instance = await getInstance();
-  await instance.post('/api/documents', { parentId });
+  await instance.post('/documents', { parentId });
 };
 
 export const deletePage = async (parentId: string) => {
   const instance = await getInstance();
-  await instance.delete(`/api/documents/${parentId}`);
+  await instance.delete(`/documents/${parentId}`);
+};
+
+export const getPageList = async () => {
+  const instance = await getInstance();
+  const response = await instance.get(`/documents`);
+
+  return response.data;
 };
