@@ -50,17 +50,21 @@ const Block = memo(
     const prevCurrentChildNodeIndex = useRef(0);
     const prevChildNodesLength = useRef(0);
 
-    const getCurrentChildNodeIndex = (event: React.MouseEvent<HTMLDivElement>) => {
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0) return;
-
+    const getCurrentChildNodeIndex = (
+      event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>,
+    ) => {
       const target = event.currentTarget;
-      const range = selection.getRangeAt(0);
-      const container = range.startContainer;
-      const childNodes = Array.from(target.childNodes as NodeListOf<HTMLElement>);
-      const currentChildNodeIndex = childNodes.indexOf(container as HTMLElement);
+      setTimeout(() => {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) return;
 
-      prevCurrentChildNodeIndex.current = currentChildNodeIndex;
+        const range = selection.getRangeAt(0);
+        const container = range.startContainer;
+        const childNodes = Array.from(target.childNodes as NodeListOf<HTMLElement>);
+        const currentChildNodeIndex = childNodes.indexOf(container as HTMLElement);
+
+        prevCurrentChildNodeIndex.current = currentChildNodeIndex;
+      }, 0);
     };
 
     const handleInput = (event: React.FormEvent<HTMLDivElement>, i: number) => {
@@ -254,18 +258,20 @@ const Block = memo(
               },
               content: textBefore || '',
             },
-            {
-              type: 'br' as 'br',
-              style: {
-                fontStyle: 'normal',
-                fontWeight: 'regular',
-                color: 'black',
-                backgroundColor: 'white',
-                width: 'auto',
-                height: 'auto',
-              },
-              content: '',
-            },
+            textBefore && textAfter
+              ? {
+                  type: 'br' as 'br',
+                  style: {
+                    fontStyle: 'normal',
+                    fontWeight: 'regular',
+                    color: 'black',
+                    backgroundColor: 'white',
+                    width: 'auto',
+                    height: 'auto',
+                  },
+                  content: '',
+                }
+              : null,
             textAfter && {
               type: 'text' as 'text',
               style: {
@@ -279,7 +285,26 @@ const Block = memo(
               content: textAfter || '',
             },
             ...newChildren.slice(currentChildNodeIndex + 1),
-          ].filter(child => child !== '');
+          ]
+            .map(child => {
+              if (child === '') {
+                return {
+                  type: 'br' as 'br',
+                  style: {
+                    fontStyle: 'normal',
+                    fontWeight: 'regular',
+                    color: 'black',
+                    backgroundColor: 'white',
+                    width: 'auto',
+                    height: 'auto',
+                  },
+                  content: '',
+                };
+              }
+
+              return child;
+            })
+            .filter(child => child !== null);
 
           const updatedBlockList = [...blockList];
           updatedBlockList[i] = {
@@ -291,6 +316,26 @@ const Block = memo(
 
           setBlockList(updatedBlockList);
         }
+      } else if (
+        container.nodeType === Node.ELEMENT_NODE &&
+        (container as Element).tagName === 'DIV'
+      ) {
+        // 현재 커서 위치 한 곳이 빈 문자열일 때
+        const updatedBlockList = [...blockList];
+        updatedBlockList[i].children.splice(offset, 0, {
+          type: 'br',
+          style: {
+            fontStyle: 'normal',
+            fontWeight: 'regular',
+            color: 'black',
+            backgroundColor: 'white',
+            width: 'auto',
+            height: 'auto',
+          },
+          content: '',
+        });
+        prevChildNodesLength.current = updatedBlockList[i].children.length;
+        setBlockList(updatedBlockList);
       } else if (
         container.nodeType === Node.ELEMENT_NODE &&
         (container as Element).tagName === 'SPAN'
@@ -322,6 +367,15 @@ const Block = memo(
     };
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>, i: number) => {
+      if (
+        event.key === keyName.arrowUp ||
+        event.key === keyName.arrowDown ||
+        event.key === keyName.arrowLeft ||
+        event.key === keyName.arrowRight
+      ) {
+        getCurrentChildNodeIndex(event);
+      }
+
       if (event.key === keyName.enter && !event.shiftKey) {
         event.preventDefault();
         setIsTyping(false);
@@ -367,7 +421,14 @@ const Block = memo(
           setKey(Math.random());
           const updatedBlockList = [...blockList];
 
-          updatedBlockList[i].children.splice(cursorPosition - 1, 2);
+          if (
+            updatedBlockList[i].children[cursorPosition - 1].type === 'br' &&
+            !updatedBlockList[i].children[cursorPosition + 1]
+          ) {
+            updatedBlockList[i].children.splice(cursorPosition - 1, 2);
+          } else {
+            updatedBlockList[i].children.splice(cursorPosition, 1);
+          }
 
           setBlockList(updatedBlockList);
           return;
