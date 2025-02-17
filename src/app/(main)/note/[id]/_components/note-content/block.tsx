@@ -47,12 +47,26 @@ const Block = memo(
     setIsTyping,
   }: IBlockComponent) => {
     const [key, setKey] = useState(Date.now());
-    const prevCurrentIndex = useRef(0);
+    const prevCurrentChildNodeIndex = useRef(0);
+    const prevChildNodesLength = useRef(0);
 
-    const handleInput = (e: React.FormEvent<HTMLDivElement>, i: number) => {
+    const getCurrentChildNodeIndex = (event: React.MouseEvent<HTMLDivElement>) => {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+
+      const target = event.currentTarget;
+      const range = selection.getRangeAt(0);
+      const container = range.startContainer;
+      const childNodes = Array.from(target.childNodes as NodeListOf<HTMLElement>);
+      const currentChildNodeIndex = childNodes.indexOf(container as HTMLElement);
+
+      prevCurrentChildNodeIndex.current = currentChildNodeIndex;
+    };
+
+    const handleInput = (event: React.FormEvent<HTMLDivElement>, i: number) => {
       setIsTyping(true);
       const updatedBlockList = [...blockList];
-      const target = e.currentTarget;
+      const target = event.currentTarget;
 
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
@@ -60,21 +74,29 @@ const Block = memo(
       const range = selection.getRangeAt(0);
       const container = range.startContainer;
       const childNodes = Array.from(target.childNodes as NodeListOf<HTMLElement>);
-      const currentIndex = childNodes.indexOf(container as HTMLElement);
+      const currentChildNodeIndex = childNodes.indexOf(container as HTMLElement);
 
       // 블록에 모든 내용이 지워졌을 때 빈 블록으로 변경 로직
-      if (currentIndex === -1 && blockRef.current[index] && childNodes.length === 1) {
+      if (currentChildNodeIndex === -1 && blockRef.current[index] && childNodes.length === 1) {
         // eslint-disable-next-line no-param-reassign
         blockRef.current[index]!.innerHTML = '';
         return;
       }
 
+      // block의 자식 노드가 지워졌을 때 blockList에 반영하는 로직
+      if (prevChildNodesLength.current !== childNodes.length && currentChildNodeIndex !== -1) {
+        updatedBlockList[i].children.splice(currentChildNodeIndex + 1, 1);
+      }
+
+      // 블록에 입력된 내용을 blockList에 반영하는 로직
       updatedBlockList[i].children[
-        currentIndex === -1 ? prevCurrentIndex.current : currentIndex
-      ].content = currentIndex !== -1 ? childNodes[currentIndex].textContent || '' : '';
+        currentChildNodeIndex === -1 ? prevCurrentChildNodeIndex.current : currentChildNodeIndex
+      ].content =
+        currentChildNodeIndex !== -1 ? childNodes[currentChildNodeIndex].textContent || '' : '';
 
       setBlockList(updatedBlockList);
-      prevCurrentIndex.current = currentIndex;
+      prevCurrentChildNodeIndex.current = currentChildNodeIndex;
+      prevChildNodesLength.current = childNodes.length;
     };
 
     const splitBlock = (i: number) => {
@@ -198,7 +220,7 @@ const Block = memo(
     };
 
     const splitLine = (i: number) => {
-      prevCurrentIndex.current += 2;
+      prevCurrentChildNodeIndex.current += 2;
 
       const selection = window.getSelection();
       if (!selection) return;
@@ -212,15 +234,15 @@ const Block = memo(
 
       childNodes.indexOf(container as HTMLElement);
       if (container.nodeType === Node.TEXT_NODE) {
-        const parentBlockIndex = childNodes.indexOf(container as HTMLElement);
+        const currentChildNodeIndex = childNodes.indexOf(container as HTMLElement);
 
-        if (parentBlockIndex !== -1) {
+        if (currentChildNodeIndex !== -1) {
           const textBefore = container.textContent?.substring(0, offset);
           const textAfter = container.textContent?.substring(offset);
 
           const updatedChildren = [
-            ...newChildren.slice(0, parentBlockIndex),
-            {
+            ...newChildren.slice(0, currentChildNodeIndex),
+            textBefore && {
               type: 'text' as 'text',
               style: {
                 fontStyle: 'normal',
@@ -244,7 +266,7 @@ const Block = memo(
               },
               content: '',
             },
-            {
+            textAfter && {
               type: 'text' as 'text',
               style: {
                 fontStyle: 'normal',
@@ -256,14 +278,16 @@ const Block = memo(
               },
               content: textAfter || '',
             },
-            ...newChildren.slice(parentBlockIndex + 1),
-          ];
+            ...newChildren.slice(currentChildNodeIndex + 1),
+          ].filter(child => child !== '');
 
           const updatedBlockList = [...blockList];
           updatedBlockList[i] = {
             ...updatedBlockList[i],
-            children: updatedChildren,
+            children: updatedChildren as ITextBlock['children'],
           };
+
+          prevChildNodesLength.current = updatedBlockList[i].children.length;
 
           setBlockList(updatedBlockList);
         }
@@ -276,6 +300,8 @@ const Block = memo(
     };
 
     const mergeBlock = (i: number) => {
+      prevChildNodesLength.current -= 1;
+
       const updatedBlockList = [...blockList];
       const previousBlock = updatedBlockList[i - 1];
       const currentBlock = updatedBlockList[i];
@@ -287,30 +313,30 @@ const Block = memo(
       setBlockList(updatedBlockList);
     };
 
-    const mergeLine = (i: number, parentBlockIndex: number) => {
+    const mergeLine = (i: number, currentChildNodeIndex: number) => {
       const updatedBlockList = [...blockList];
       const newChildren = [...block.children];
-      newChildren.splice(parentBlockIndex - 1, 1);
+      newChildren.splice(currentChildNodeIndex - 1, 1);
       updatedBlockList[i] = { ...updatedBlockList[i], children: newChildren };
       setBlockList(updatedBlockList);
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, i: number) => {
-      if (e.key === keyName.enter && !e.shiftKey) {
-        e.preventDefault();
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>, i: number) => {
+      if (event.key === keyName.enter && !event.shiftKey) {
+        event.preventDefault();
         setIsTyping(false);
         setKey(Math.random());
         splitBlock(i);
       }
 
-      if (e.key === keyName.enter && e.shiftKey) {
-        e.preventDefault();
+      if (event.key === keyName.enter && event.shiftKey) {
+        event.preventDefault();
         setIsTyping(false);
         setKey(Math.random());
         splitLine(i);
       }
 
-      if (e.key === keyName.backspace) {
+      if (event.key === keyName.backspace) {
         const selection = window.getSelection();
         const cursorPosition = selection?.focusOffset || 0;
 
@@ -318,7 +344,7 @@ const Block = memo(
         const container = range?.startContainer;
         const parent = blockRef.current[i];
         const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
-        const parentBlockIndex =
+        const currentChildNodeIndex =
           childNodes.indexOf(container as HTMLElement) === -1 &&
           container?.nodeType === Node.TEXT_NODE
             ? childNodes.indexOf(container.parentNode as HTMLElement)
@@ -327,16 +353,16 @@ const Block = memo(
         // 첫 블록 첫 커서에서 백스페이스 방지
         if (
           i === 0 &&
-          (parentBlockIndex === -1 || parentBlockIndex === 0) &&
+          (currentChildNodeIndex === -1 || currentChildNodeIndex === 0) &&
           cursorPosition === 0
         ) {
-          e.preventDefault();
+          event.preventDefault();
           return;
         }
 
         // 한 줄이 다 지워졌을 때 줄 합치기 로직
-        if (parentBlockIndex === -1) {
-          e.preventDefault();
+        if (currentChildNodeIndex === -1) {
+          event.preventDefault();
           setIsTyping(false);
           setKey(Math.random());
           const updatedBlockList = [...blockList];
@@ -349,13 +375,13 @@ const Block = memo(
 
         // 줄 또는 블록 합치기 로직
         if (cursorPosition === 0) {
-          e.preventDefault();
+          event.preventDefault();
           setIsTyping(false);
           setKey(Math.random());
-          if (parentBlockIndex <= 0) {
+          if (currentChildNodeIndex <= 0) {
             mergeBlock(i);
-          } else if (parentBlockIndex > 0) {
-            mergeLine(i, parentBlockIndex);
+          } else if (currentChildNodeIndex > 0) {
+            mergeLine(i, currentChildNodeIndex);
           }
         }
       }
@@ -370,6 +396,7 @@ const Block = memo(
         suppressContentEditableWarning
         data-placeholder={placeholder.block}
         className={blockDiv}
+        onClick={getCurrentChildNodeIndex}
         onInput={event => handleInput(event, index)}
         onKeyDown={event => handleKeyDown(event, index)}
         ref={element => {
