@@ -1,4 +1,4 @@
-import { useState, memo, useRef } from 'react';
+import { useState, memo, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
@@ -50,6 +50,10 @@ const Block = memo(
     const prevCurrentChildNodeIndex = useRef(0);
     const prevChildNodesLength = useRef(0);
 
+    useEffect(() => {
+      prevChildNodesLength.current = blockList[index].children.length;
+    }, [blockList, index]);
+
     const getCurrentChildNodeIndex = (
       event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>,
     ) => {
@@ -88,7 +92,7 @@ const Block = memo(
       }
 
       // block의 자식 노드가 지워졌을 때 blockList에 반영하는 로직
-      if (prevChildNodesLength.current !== childNodes.length && currentChildNodeIndex !== -1) {
+      if (prevChildNodesLength.current > childNodes.length && currentChildNodeIndex !== -1) {
         updatedBlockList[i].children.splice(currentChildNodeIndex + 1, 1);
       }
 
@@ -104,6 +108,7 @@ const Block = memo(
     };
 
     const splitBlock = (i: number) => {
+      // TODO: 줄바꿈 된 상태에서 블록 나누기 로직 추가
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
 
@@ -307,12 +312,27 @@ const Block = memo(
             .filter(child => child !== null);
 
           const updatedBlockList = [...blockList];
+          if (
+            updatedChildren[updatedChildren.length - 1]?.type === 'br' &&
+            updatedChildren[updatedChildren.length - 2]?.type !== 'br'
+          ) {
+            updatedChildren.push({
+              type: 'br' as 'br',
+              style: {
+                fontStyle: 'normal',
+                fontWeight: 'regular',
+                color: 'black',
+                backgroundColor: 'white',
+                width: 'auto',
+                height: 'auto',
+              },
+              content: '',
+            });
+          }
           updatedBlockList[i] = {
             ...updatedBlockList[i],
             children: updatedChildren as ITextBlock['children'],
           };
-
-          prevChildNodesLength.current = updatedBlockList[i].children.length;
 
           setBlockList(updatedBlockList);
         }
@@ -334,7 +354,7 @@ const Block = memo(
           },
           content: '',
         });
-        prevChildNodesLength.current = updatedBlockList[i].children.length;
+
         setBlockList(updatedBlockList);
       } else if (
         container.nodeType === Node.ELEMENT_NODE &&
@@ -345,14 +365,11 @@ const Block = memo(
     };
 
     const mergeBlock = (i: number) => {
-      prevChildNodesLength.current -= 1;
-
       const updatedBlockList = [...blockList];
       const previousBlock = updatedBlockList[i - 1];
       const currentBlock = updatedBlockList[i];
 
       previousBlock.children = [...previousBlock.children, ...currentBlock.children];
-
       updatedBlockList.splice(i, 1);
 
       setBlockList(updatedBlockList);
@@ -363,6 +380,7 @@ const Block = memo(
       const newChildren = [...block.children];
       newChildren.splice(currentChildNodeIndex - 1, 1);
       updatedBlockList[i] = { ...updatedBlockList[i], children: newChildren };
+
       setBlockList(updatedBlockList);
     };
 
@@ -414,16 +432,18 @@ const Block = memo(
           return;
         }
 
-        // 한 줄이 다 지워졌을 때 줄 합치기 로직
         if (currentChildNodeIndex === -1) {
+          // 한 줄이 다 지워졌을 때 줄 합치기 로직
           event.preventDefault();
           setIsTyping(false);
           setKey(Math.random());
           const updatedBlockList = [...blockList];
 
           if (
-            updatedBlockList[i].children[cursorPosition - 1].type === 'br' &&
-            !updatedBlockList[i].children[cursorPosition + 1]
+            (updatedBlockList[i].children[cursorPosition - 1].type === 'br' &&
+              updatedBlockList[i].children[cursorPosition - 2].type !== 'br' &&
+              !updatedBlockList[i].children[cursorPosition + 1]) ||
+            updatedBlockList[i].children.length !== blockRef.current[i]?.childNodes.length
           ) {
             updatedBlockList[i].children.splice(cursorPosition - 1, 2);
           } else {
@@ -431,6 +451,9 @@ const Block = memo(
           }
 
           setBlockList(updatedBlockList);
+
+          // TODO: 한 줄이 다 지워졌을 때 블록 합치기 로직
+
           return;
         }
 
