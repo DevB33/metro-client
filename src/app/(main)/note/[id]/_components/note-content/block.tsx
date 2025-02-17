@@ -1,4 +1,4 @@
-import { useState, memo } from 'react';
+import { useState, memo, useRef } from 'react';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
@@ -47,6 +47,7 @@ const Block = memo(
     setIsTyping,
   }: IBlockComponent) => {
     const [key, setKey] = useState(Date.now());
+    const prevCurrentIndex = useRef(0);
 
     const handleInput = (e: React.FormEvent<HTMLDivElement>, i: number) => {
       setIsTyping(true);
@@ -61,23 +62,19 @@ const Block = memo(
       const childNodes = Array.from(target.childNodes as NodeListOf<HTMLElement>);
       const currentIndex = childNodes.indexOf(container as HTMLElement);
 
-      if (currentIndex === -1) {
-        if (blockRef.current[index] && childNodes.length === 1) {
-          // eslint-disable-next-line no-param-reassign
-          blockRef.current[index]!.innerHTML = '';
-        }
+      // 블록에 모든 내용이 지워졌을 때 빈 블록으로 변경 로직
+      if (currentIndex === -1 && blockRef.current[index] && childNodes.length === 1) {
+        // eslint-disable-next-line no-param-reassign
+        blockRef.current[index]!.innerHTML = '';
         return;
       }
 
-      // 빈 노드 제거
-      if (!target.childNodes[currentIndex + 1]) {
-        updatedBlockList[i].children.splice(currentIndex + 1, 1);
-      }
-
-      updatedBlockList[i].children[currentIndex].content =
-        childNodes[currentIndex].textContent || '';
+      updatedBlockList[i].children[
+        currentIndex === -1 ? prevCurrentIndex.current : currentIndex
+      ].content = currentIndex !== -1 ? childNodes[currentIndex].textContent || '' : '';
 
       setBlockList(updatedBlockList);
+      prevCurrentIndex.current = currentIndex;
     };
 
     const splitBlock = (i: number) => {
@@ -201,6 +198,8 @@ const Block = memo(
     };
 
     const splitLine = (i: number) => {
+      prevCurrentIndex.current += 2;
+
       const selection = window.getSelection();
       if (!selection) return;
 
@@ -231,7 +230,7 @@ const Block = memo(
                 width: 'auto',
                 height: 'auto',
               },
-              content: textBefore || '.',
+              content: textBefore || '',
             },
             {
               type: 'br' as 'br',
@@ -255,7 +254,7 @@ const Block = memo(
                 width: 'auto',
                 height: 'auto',
               },
-              content: textAfter || '.',
+              content: textAfter || '',
             },
             ...newChildren.slice(parentBlockIndex + 1),
           ];
@@ -319,8 +318,13 @@ const Block = memo(
         const container = range?.startContainer;
         const parent = blockRef.current[i];
         const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
-        const parentBlockIndex = childNodes.indexOf(container as HTMLElement);
+        const parentBlockIndex =
+          childNodes.indexOf(container as HTMLElement) === -1 &&
+          container?.nodeType === Node.TEXT_NODE
+            ? childNodes.indexOf(container.parentNode as HTMLElement)
+            : childNodes.indexOf(container as HTMLElement);
 
+        // 첫 블록 첫 커서에서 백스페이스 방지
         if (
           i === 0 &&
           (parentBlockIndex === -1 || parentBlockIndex === 0) &&
@@ -330,6 +334,20 @@ const Block = memo(
           return;
         }
 
+        // 한 줄이 다 지워졌을 때 줄 합치기 로직
+        if (parentBlockIndex === -1) {
+          e.preventDefault();
+          setIsTyping(false);
+          setKey(Math.random());
+          const updatedBlockList = [...blockList];
+
+          updatedBlockList[i].children.splice(cursorPosition - 1, 2);
+
+          setBlockList(updatedBlockList);
+          return;
+        }
+
+        // 줄 또는 블록 합치기 로직
         if (cursorPosition === 0) {
           e.preventDefault();
           setIsTyping(false);
