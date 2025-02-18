@@ -10,7 +10,8 @@ import PageIcon from '@/icons/page-icon';
 import HorizonDotIcon from '@/icons/horizon-dot-icon';
 import PlusIcon from '@/icons/plus-icon';
 import IDocuments from '@/types/document-type';
-import { createPage, deletePage } from '@/apis/side-bar';
+import { createPage, deletePage, getPageList } from '@/apis/side-bar';
+import { mutate } from 'swr';
 
 const pageItemContainer = css({
   display: 'flex',
@@ -92,7 +93,6 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
   const plusButtonRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isHover, setIsHover] = useState(false);
-  const [currentPage, setCurrentPage] = useState<IDocuments>(page);
 
   const togglePage = () => {
     setIsOpen(!isOpen);
@@ -116,22 +116,19 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
   };
 
   const handleDeleteButtonClick = async () => {
-    deletePage(currentPage.id);
-    setCurrentPage(prevPage => {
-      if (!prevPage) return prevPage;
-
-      const updatedChildren = prevPage.children.filter(child => child.id !== currentPage.id);
-
-      return {
-        ...prevPage,
-        children: updatedChildren,
-      };
-    });
+    try {
+      await deletePage(page.id);
+      const pageList = await getPageList();
+      console.log(pageList);
+      await mutate(`${process.env.NEXT_PUBLIC_BASE_URL}/documents`, pageList, false);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handlePlusButtonClick = async () => {
     togglePage();
-    createPage(currentPage.id);
+    createPage(page.id);
   };
 
   return (
@@ -173,9 +170,9 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
         )}
       </div>
       {isOpen &&
-        (currentPage.children.length ? (
+        (page.children.length ? (
           <div className={pageChildren}>
-            {currentPage.children.map(child => (
+            {page.children.map(child => (
               <PageItem key={child.id} page={child} depth={depth + 1} />
             ))}
           </div>
