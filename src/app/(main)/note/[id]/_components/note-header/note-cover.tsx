@@ -10,14 +10,18 @@ const coverContainer = css({
   position: 'relative',
   display: 'flex',
   justifyContent: 'center',
+  alignItems: 'flex-start',
   left: '0',
   top: '0.5rem',
-  width: '100%',
+  // width: '100vw',
+  width: 'full',
+  // minWidth: '44.5rem',
+  minWidth: '54.5rem',
   height: '17.5rem',
   zIndex: 1,
   pt: '1rem',
   pr: '1rem',
-  mr: '1.5rem',
+  // mr: '1.5rem',
 });
 
 const innerContainer = css({
@@ -58,8 +62,15 @@ const secondButton = css({
 });
 
 const NoteCover = ({ handleCoverModalOpen, deleteCover, cover }: INoteCoverProps) => {
+  const sidebarWidth = localStorage.getItem('sidebarWidth');
+  const defaultSidebarWidth = 17;
+  const sidebarPadding = 2;
+  const coverWidth = sidebarWidth
+    ? `calc(100vw - ${sidebarWidth}rem - ${sidebarPadding}rem)`
+    : `calc(100vw - ${defaultSidebarWidth}rem - ${sidebarPadding}rem)`;
+
   return (
-    <div className={coverContainer} style={{ backgroundColor: cover }}>
+    <div className={coverContainer} style={{ backgroundColor: cover, width: '100%' }}>
       <div className={innerContainer}>
         <div className={buttonContainer}>
           <div className={firstButton} onClick={handleCoverModalOpen}>

@@ -7,23 +7,28 @@ import NoteConent from './_components/note-content/note-content';
 
 const container = css({
   position: 'relative',
-  width: '100vw',
+  width: '100%',
+  minWidth: '54.5rem',
   height: '100vh',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyItems: 'start',
+  // overflowX: 'scroll',
 });
 
 const noteContainer = css({
-  width: 'full',
-  height: 'full',
+  width: '100%',
+  height: '100%',
   display: 'flex',
   flexDirection: 'column',
-  overflowY: 'auto',
   alignItems: 'center',
   justifyContent: 'start',
+  // overflowY: 'auto',
+  overflowX: 'scroll',
   gap: 'tiny',
+  zIndex: 3,
+  // px: '5rem',
 });
 
 const divider = css({
@@ -33,10 +38,30 @@ const divider = css({
   borderRadius: '1rem',
 });
 
+const ContentContainer = css({
+  display: 'flex',
+  flexDirection: 'row',
+  width: '100%',
+  height: '100%',
+  overflowX: 'scroll',
+  // backgroundColor: 'lightGray',
+});
+
+const SafeZone = css({
+  width: '1rem',
+  px: '2rem',
+  height: '100%',
+  backgroundColor: 'lightBlue',
+  opacity: 0.4,
+  zIndex: 2,
+});
+
 const Note = () => {
   return (
     <div className={container}>
       <Header />
+      {/* <div className={ContentContainer}> */}
+      {/* <div className={SafeZone} /> */}
       <div className={noteContainer}>
         <NoteHeader />
         <div className={divider} />
@@ -44,6 +69,8 @@ const Note = () => {
         <div className={divider} />
         <NoteConent />
       </div>
+      {/* <div className={SafeZone} /> */}
+      {/* </div> */}
     </div>
   );
 };
