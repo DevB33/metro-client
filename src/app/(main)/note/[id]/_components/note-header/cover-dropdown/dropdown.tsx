@@ -10,8 +10,9 @@ interface ICoverDropdownProps {
 
 const dropdownContainer = css({
   position: 'absolute',
-  top: '7rem',
-  right: '15rem',
+  top: '5rem',
+  left: '50%',
+  transform: 'translateX(-50%)',
   width: '35rem',
   height: '30rem',
   borderRadius: 'lg',

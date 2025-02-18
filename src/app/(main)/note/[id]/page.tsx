@@ -23,6 +23,7 @@ const ContentContainer = css({
 });
 
 const noteContainer = css({
+  position: 'relative',
   width: 'auto',
   minWidth: '54.5rem',
   height: '100%',
