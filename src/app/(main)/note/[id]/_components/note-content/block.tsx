@@ -47,33 +47,11 @@ const Block = memo(
     setIsTyping,
   }: IBlockComponent) => {
     const [key, setKey] = useState(Date.now());
-    const prevCurrentChildNodeIndex = useRef(0);
     const prevChildNodesLength = useRef(0);
 
     useEffect(() => {
       prevChildNodesLength.current = blockList[index].children.length;
     }, [blockList, index]);
-
-    const getCurrentChildNodeIndex = (
-      event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>,
-    ) => {
-      const target = event.currentTarget;
-      setTimeout(() => {
-        const selection = window.getSelection();
-        if (!selection || selection.rangeCount === 0) return;
-
-        const range = selection.getRangeAt(0);
-        const container = range.startContainer;
-        const childNodes = Array.from(target.childNodes as NodeListOf<HTMLElement>);
-        const currentChildNodeIndex =
-          childNodes.indexOf(container as HTMLElement) === -1 &&
-          container?.nodeType === Node.TEXT_NODE
-            ? childNodes.indexOf(container.parentNode as HTMLElement)
-            : childNodes.indexOf(container as HTMLElement);
-
-        prevCurrentChildNodeIndex.current = currentChildNodeIndex;
-      }, 0);
-    };
 
     const handleInput = (event: React.FormEvent<HTMLDivElement>, i: number) => {
       setIsTyping(true);
@@ -84,6 +62,7 @@ const Block = memo(
       if (!selection || selection.rangeCount === 0) return;
 
       const range = selection.getRangeAt(0);
+      const offset = range.startOffset;
       const container = range.startContainer;
       const childNodes = Array.from(target.childNodes as NodeListOf<HTMLElement>);
       const currentChildNodeIndex =
@@ -106,12 +85,11 @@ const Block = memo(
 
       // 블록에 입력된 내용을 blockList에 반영하는 로직
       updatedBlockList[i].children[
-        currentChildNodeIndex === -1 ? prevCurrentChildNodeIndex.current : currentChildNodeIndex
+        currentChildNodeIndex === -1 ? offset : currentChildNodeIndex
       ].content =
         currentChildNodeIndex !== -1 ? childNodes[currentChildNodeIndex].textContent || '' : '';
 
       setBlockList(updatedBlockList);
-      prevCurrentChildNodeIndex.current = currentChildNodeIndex;
       prevChildNodesLength.current = childNodes.length;
     };
 
@@ -324,8 +302,6 @@ const Block = memo(
     };
 
     const splitLine = (i: number) => {
-      prevCurrentChildNodeIndex.current += 2;
-
       const selection = window.getSelection();
       if (!selection) return;
 
@@ -341,111 +317,124 @@ const Block = memo(
           : childNodes.indexOf(container as HTMLElement);
       const newChildren = [...block.children];
 
-      if (
-        container.nodeType === Node.TEXT_NODE &&
-        (container.parentNode as Element)?.tagName === 'DIV'
-      ) {
-        if (currentChildNodeIndex !== -1) {
-          const textBefore = container.textContent?.substring(0, offset);
-          const textAfter = container.textContent?.substring(offset);
+      if (container.nodeType === Node.TEXT_NODE) {
+        const textBefore = container.textContent?.substring(0, offset);
+        const textAfter = container.textContent?.substring(offset);
 
-          const updatedChildren = [
-            ...newChildren.slice(0, currentChildNodeIndex),
-            textBefore && {
-              type: 'h1' as 'h1',
-              style: {
-                fontStyle: 'normal',
-                fontWeight: 'regular',
-                color: 'black',
-                backgroundColor: 'white',
-                width: 'auto',
-                height: 'auto',
-              },
-              content: textBefore || '',
+        // 줄 바꿈이 반영된 children 배열 생성
+        const updatedChildren = [
+          ...newChildren.slice(0, currentChildNodeIndex),
+          textBefore && {
+            type: (container.parentNode as Element)?.tagName === 'DIV' ? 'text' : 'span',
+            style: {
+              fontStyle:
+                (container.parentNode as Element)?.tagName === 'DIV'
+                  ? 'normal'
+                  : (container.parentNode as HTMLElement)?.style.fontStyle || 'normal',
+              fontWeight:
+                (container.parentNode as Element)?.tagName === 'DIV'
+                  ? 'regular'
+                  : (container.parentNode as HTMLElement)?.style.fontWeight || 'regular',
+              color:
+                (container.parentNode as Element)?.tagName === 'DIV'
+                  ? 'black'
+                  : (container.parentNode as HTMLElement)?.style.color || 'black',
+              backgroundColor:
+                (container.parentNode as Element)?.tagName === 'DIV'
+                  ? 'white'
+                  : (container.parentNode as HTMLElement)?.style.backgroundColor || 'white',
+              width: 'auto',
+              height: 'auto',
             },
-            textBefore && textAfter
-              ? {
-                  type: 'br' as 'br',
-                  style: {
-                    fontStyle: 'normal',
-                    fontWeight: 'regular',
-                    color: 'black',
-                    backgroundColor: 'white',
-                    width: 'auto',
-                    height: 'auto',
-                  },
-                  content: '',
-                }
-              : null,
-            textAfter && {
-              type: 'h1' as 'h1',
-              style: {
-                fontStyle: 'normal',
-                fontWeight: 'regular',
-                color: 'black',
-                backgroundColor: 'white',
-                width: 'auto',
-                height: 'auto',
-              },
-              content: textAfter || '',
-            },
-            ...newChildren.slice(currentChildNodeIndex + 1),
-          ]
-            .map(child => {
-              if (child === '') {
-                return {
-                  type: 'br' as 'br',
-                  style: {
-                    fontStyle: 'normal',
-                    fontWeight: 'regular',
-                    color: 'black',
-                    backgroundColor: 'white',
-                    width: 'auto',
-                    height: 'auto',
-                  },
-                  content: '',
-                };
+            content: textBefore || '',
+          },
+          textBefore && textAfter
+            ? {
+                type: 'br' as 'br',
+                style: {
+                  fontStyle: 'normal',
+                  fontWeight: 'regular',
+                  color: 'black',
+                  backgroundColor: 'white',
+                  width: 'auto',
+                  height: 'auto',
+                },
+                content: '',
               }
+            : null,
+          textAfter && {
+            type: (container.parentNode as Element)?.tagName === 'DIV' ? 'text' : 'span',
+            style: {
+              fontStyle:
+                (container.parentNode as Element)?.tagName === 'DIV'
+                  ? 'normal'
+                  : (container.parentNode as HTMLElement)?.style.fontStyle || 'normal',
+              fontWeight:
+                (container.parentNode as Element)?.tagName === 'DIV'
+                  ? 'regular'
+                  : (container.parentNode as HTMLElement)?.style.fontWeight || 'regular',
+              color:
+                (container.parentNode as Element)?.tagName === 'DIV'
+                  ? 'black'
+                  : (container.parentNode as HTMLElement)?.style.color || 'black',
+              backgroundColor:
+                (container.parentNode as Element)?.tagName === 'DIV'
+                  ? 'white'
+                  : (container.parentNode as HTMLElement)?.style.backgroundColor || 'white',
+              width: 'auto',
+              height: 'auto',
+            },
+            content: textAfter || '',
+          },
+          ...newChildren.slice(currentChildNodeIndex + 1),
+        ]
+          .map(child => {
+            if (child === '') {
+              return {
+                type: 'br' as 'br',
+                style: {
+                  fontStyle: 'normal',
+                  fontWeight: 'regular',
+                  color: 'black',
+                  backgroundColor: 'white',
+                  width: 'auto',
+                  height: 'auto',
+                },
+                content: '',
+              };
+            }
 
-              return child;
-            })
-            .filter(child => child !== null);
+            return child;
+          })
+          .filter(child => child !== null);
 
-          const updatedBlockList = [...blockList];
-          if (
-            updatedChildren[updatedChildren.length - 1]?.type === 'br' &&
-            updatedChildren[updatedChildren.length - 2]?.type !== 'br'
-          ) {
-            updatedChildren.push({
-              type: 'br' as 'br',
-              style: {
-                fontStyle: 'normal',
-                fontWeight: 'regular',
-                color: 'black',
-                backgroundColor: 'white',
-                width: 'auto',
-                height: 'auto',
-              },
-              content: '',
-            });
-          }
-          updatedBlockList[i] = {
-            ...updatedBlockList[i],
-            children: updatedChildren as ITextBlock['children'],
-          };
-
-          setBlockList(updatedBlockList);
+        // 줄의 맨 마지막에서 줄바꿈을 할 떄는 <br> 태그가 하나 더 추가 되야함 ex) 줄바꿈 후 두 번째 줄이 빈 문자열일 때: ""<br><br>
+        if (
+          updatedChildren[updatedChildren.length - 1]?.type === 'br' &&
+          updatedChildren[updatedChildren.length - 2]?.type !== 'br'
+        ) {
+          updatedChildren.push({
+            type: 'br' as 'br',
+            style: {
+              fontStyle: 'normal',
+              fontWeight: 'regular',
+              color: 'black',
+              backgroundColor: 'white',
+              width: 'auto',
+              height: 'auto',
+            },
+            content: '',
+          });
         }
-      } else if (
-        container.nodeType === Node.ELEMENT_NODE &&
-        (container.parentNode as Element)?.tagName === 'SPAN'
-      ) {
-        // TODO: span 태그일 때 처리
-      } else if (
-        container.nodeType === Node.ELEMENT_NODE &&
-        (container as Element).tagName === 'DIV'
-      ) {
-        // 현재 커서 위치 한 곳이 빈 문자열일 때
+
+        const updatedBlockList = [...blockList];
+        updatedBlockList[i] = {
+          ...updatedBlockList[i],
+          children: updatedChildren as ITextBlock['children'],
+        };
+        setBlockList(updatedBlockList);
+      } else {
+        // 현재 커서 위치 한 곳이 빈 문자열일 때 → 중복 줄바꿈 로직
         const updatedBlockList = [...blockList];
         updatedBlockList[i].children.splice(offset, 0, {
           type: 'br',
@@ -485,15 +474,6 @@ const Block = memo(
     };
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>, i: number) => {
-      if (
-        event.key === keyName.arrowUp ||
-        event.key === keyName.arrowDown ||
-        event.key === keyName.arrowLeft ||
-        event.key === keyName.arrowRight
-      ) {
-        getCurrentChildNodeIndex(event);
-      }
-
       if (event.key === keyName.enter && !event.shiftKey) {
         event.preventDefault();
         setIsTyping(false);
@@ -585,7 +565,6 @@ const Block = memo(
         suppressContentEditableWarning
         data-placeholder={placeholder.block}
         className={blockDiv}
-        onClick={getCurrentChildNodeIndex}
         onInput={event => handleInput(event, index)}
         onKeyDown={event => handleKeyDown(event, index)}
         ref={element => {
