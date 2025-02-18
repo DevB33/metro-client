@@ -61,13 +61,12 @@ const emptyPageContainer = css({
 const FinderCard = () => {
   const [isHover, setIsHover] = useState(false);
 
-  const { data } = useSWR(`sidebarData`);
+  const { data } = useSWR(`pageList`);
 
   const handleClick = async () => {
     try {
       await createPage(null);
-      const pageList = await getPageList();
-      await mutate(`sidebarData`, pageList, false);
+      await mutate('pageList', getPageList, false);
     } catch (error) {
       console.log(error);
     }

@@ -34,7 +34,7 @@ const RootLayout = async ({
     <SWRConfig
       value={{
         fallback: {
-          [`sidebarData`]: sidebarData,
+          [`pageList`]: sidebarData,
         },
       }}
     >

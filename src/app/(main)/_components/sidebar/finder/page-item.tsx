@@ -118,8 +118,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
   const handleDeleteButtonClick = async () => {
     try {
       await deletePage(page.id);
-      const pageList = await getPageList();
-      await mutate(`sidebarData`, pageList, false);
+      await mutate('pageList', getPageList, false);
     } catch (error) {
       console.log(error);
     }
@@ -129,8 +128,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
     try {
       if (!isOpen) togglePage();
       await createPage(page.id);
-      const pageList = await getPageList();
-      await mutate(`sidebarData`, pageList, false);
+      await mutate('pageList', getPageList, false);
     } catch (error) {
       console.log(error);
     }
