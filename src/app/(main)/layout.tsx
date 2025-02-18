@@ -8,7 +8,7 @@ import Sidebar from './_components/sidebar/sidebar';
 
 const RootLayout = async ({
   children,
-  modal, // 미리 로딩된 데이터를 props로 받음
+  modal,
 }: Readonly<{
   children: React.ReactNode;
   modal: React.ReactNode;
@@ -34,7 +34,7 @@ const RootLayout = async ({
     <SWRConfig
       value={{
         fallback: {
-          [`${process.env.NEXT_PUBLIC_BASE_URL}/documents`]: sidebarData,
+          [`sidebarData`]: sidebarData,
         },
       }}
     >

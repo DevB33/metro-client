@@ -61,13 +61,13 @@ const emptyPageContainer = css({
 const FinderCard = () => {
   const [isHover, setIsHover] = useState(false);
 
-  const { data } = useSWR(`${process.env.NEXT_PUBLIC_BASE_URL}/documents`);
+  const { data } = useSWR(`sidebarData`);
 
   const handleClick = async () => {
     try {
       await createPage(null);
       const pageList = await getPageList();
-      await mutate(`${process.env.NEXT_PUBLIC_BASE_URL}/documents`, pageList, false);
+      await mutate(`sidebarData`, pageList, false);
     } catch (error) {
       console.log(error);
     }
@@ -92,7 +92,7 @@ const FinderCard = () => {
       {data?.node.length ? (
         data.node.map((page: IDocuments) => <PageItem key={page.id} page={page} depth={1} />)
       ) : (
-        <p className={emptyPageContainer}>문서가 없습니다.</p> // 데이터가 없을 때 메시지 추가
+        <p className={emptyPageContainer}>문서가 없습니다.</p>
       )}
     </div>
   );

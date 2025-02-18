@@ -119,7 +119,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
     try {
       await deletePage(page.id);
       const pageList = await getPageList();
-      await mutate(`${process.env.NEXT_PUBLIC_BASE_URL}/documents`, pageList, false);
+      await mutate(`sidebarData`, pageList, false);
     } catch (error) {
       console.log(error);
     }
@@ -130,7 +130,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
       if (!isOpen) togglePage();
       await createPage(page.id);
       const pageList = await getPageList();
-      await mutate(`${process.env.NEXT_PUBLIC_BASE_URL}/documents`, pageList, false);
+      await mutate(`sidebarData`, pageList, false);
     } catch (error) {
       console.log(error);
     }
