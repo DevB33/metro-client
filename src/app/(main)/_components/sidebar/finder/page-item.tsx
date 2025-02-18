@@ -119,7 +119,6 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
     try {
       await deletePage(page.id);
       const pageList = await getPageList();
-      console.log(pageList);
       await mutate(`${process.env.NEXT_PUBLIC_BASE_URL}/documents`, pageList, false);
     } catch (error) {
       console.log(error);
