@@ -116,7 +116,6 @@ const Block = memo(
     };
 
     const splitBlock = (i: number) => {
-      // TODO: 줄바꿈 된 상태에서 블록 나누기 로직 추가
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
 
@@ -142,10 +141,18 @@ const Block = memo(
         })
         .map((node, idx) => {
           if ((currentChildNodeIndex === -1 && idx === offset) || idx === currentChildNodeIndex) {
-            const newNode = document.createTextNode(beforeText);
-            if (newNode.textContent === '' && idx !== 0) {
+            if (beforeText === '' && idx !== 0) {
               return;
             }
+
+            if (node.nodeName === 'SPAN') {
+              const newNode = document.createElement('span');
+              newNode.style.cssText = node.style.cssText;
+              newNode.textContent = beforeText;
+              return newNode;
+            }
+
+            const newNode = document.createTextNode(beforeText);
             return newNode;
           }
           return node;
@@ -158,11 +165,19 @@ const Block = memo(
         })
         .map((node, idx) => {
           if (idx === 0) {
-            const newNode = document.createTextNode(afterText);
             const filteredNodeCount = childNodes.filter(n => n != null).length;
-            if (newNode.textContent === '' && idx !== filteredNodeCount - 1) {
+            if (afterText === '' && idx !== filteredNodeCount - 1) {
               return;
             }
+
+            if (node.nodeName === 'SPAN') {
+              const newNode = document.createElement('span');
+              newNode.style.cssText = node.style.cssText;
+              newNode.textContent = afterText;
+              return newNode;
+            }
+
+            const newNode = document.createTextNode(afterText);
             return newNode;
           }
           return node;
@@ -184,6 +199,21 @@ const Block = memo(
               height: 'auto',
             },
             content: '',
+          };
+        }
+
+        if (node.nodeName === 'SPAN') {
+          return {
+            type: 'span' as 'span',
+            style: {
+              fontStyle: node instanceof HTMLElement ? node.style.fontStyle : 'normal',
+              fontWeight: node instanceof HTMLElement ? node.style.fontWeight : 'regular',
+              color: node instanceof HTMLElement ? node.style.color : 'black',
+              backgroundColor: node instanceof HTMLElement ? node.style.backgroundColor : 'white',
+              width: 'auto',
+              height: 'auto',
+            },
+            content: node.textContent,
           };
         }
 
@@ -214,6 +244,21 @@ const Block = memo(
               height: 'auto',
             },
             content: '',
+          };
+        }
+
+        if (node.nodeName === 'SPAN') {
+          return {
+            type: 'span' as 'span',
+            style: {
+              fontStyle: node instanceof HTMLElement ? node.style.fontStyle : 'normal',
+              fontWeight: node instanceof HTMLElement ? node.style.fontWeight : 'regular',
+              color: node instanceof HTMLElement ? node.style.color : 'black',
+              backgroundColor: node instanceof HTMLElement ? node.style.backgroundColor : 'white',
+              width: 'auto',
+              height: 'auto',
+            },
+            content: node.textContent,
           };
         }
 
@@ -296,7 +341,10 @@ const Block = memo(
           : childNodes.indexOf(container as HTMLElement);
       const newChildren = [...block.children];
 
-      if (container.nodeType === Node.TEXT_NODE) {
+      if (
+        container.nodeType === Node.TEXT_NODE &&
+        (container.parentNode as Element)?.tagName === 'DIV'
+      ) {
         if (currentChildNodeIndex !== -1) {
           const textBefore = container.textContent?.substring(0, offset);
           const textAfter = container.textContent?.substring(offset);
@@ -304,7 +352,7 @@ const Block = memo(
           const updatedChildren = [
             ...newChildren.slice(0, currentChildNodeIndex),
             textBefore && {
-              type: 'text' as 'text',
+              type: 'h1' as 'h1',
               style: {
                 fontStyle: 'normal',
                 fontWeight: 'regular',
@@ -330,7 +378,7 @@ const Block = memo(
                 }
               : null,
             textAfter && {
-              type: 'text' as 'text',
+              type: 'h1' as 'h1',
               style: {
                 fontStyle: 'normal',
                 fontWeight: 'regular',
@@ -390,6 +438,11 @@ const Block = memo(
         }
       } else if (
         container.nodeType === Node.ELEMENT_NODE &&
+        (container.parentNode as Element)?.tagName === 'SPAN'
+      ) {
+        // TODO: span 태그일 때 처리
+      } else if (
+        container.nodeType === Node.ELEMENT_NODE &&
         (container as Element).tagName === 'DIV'
       ) {
         // 현재 커서 위치 한 곳이 빈 문자열일 때
@@ -408,11 +461,6 @@ const Block = memo(
         });
 
         setBlockList(updatedBlockList);
-      } else if (
-        container.nodeType === Node.ELEMENT_NODE &&
-        (container as Element).tagName === 'SPAN'
-      ) {
-        // TODO: span 태그일 때 처리
       }
     };
 
