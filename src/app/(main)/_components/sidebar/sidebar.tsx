@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { css } from '@/../styled-system/css';
 
 import ProfileCard from './profile/profile-card';

@@ -42,15 +42,6 @@ const divider = css({
   borderRadius: '1rem',
 });
 
-const SafeZone = css({
-  width: '1rem',
-  px: '2rem',
-  height: '100%',
-  backgroundColor: 'lightBlue',
-  opacity: 0.4,
-  zIndex: 2,
-});
-
 const Note = () => {
   return (
     <div className={container}>
