@@ -25,7 +25,8 @@ const coverContainer = css({
 });
 
 const innerContainer = css({
-  width: '44.5rem',
+  width: '100%',
+  maxWidth: '44.5rem',
   height: 'full',
   display: 'flex',
   alignItems: 'start',
