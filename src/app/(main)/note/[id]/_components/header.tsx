@@ -1,5 +1,3 @@
-'use client';
-
 import { css } from '@/../styled-system/css';
 
 import LeftArrowIcon from '@/icons/left-arrow-icon';
@@ -27,14 +25,8 @@ const rightItemsConatiner = css({
 });
 
 const Header = () => {
-  // const sidebarWidth = localStorage.getItem('sidebarWidth');
-  // const defaultSidebarWidth = 17;
-  // const sidebarPadding = 2;
-  // const coverWidth = sidebarWidth
-  //   ? `calc(100vw - ${sidebarWidth}rem - ${sidebarPadding}rem)`
-  //   : `calc(100vw - ${defaultSidebarWidth}rem - ${sidebarPadding}rem)`;
   return (
-    <div className={headerConatiner} style={{ width: '100%' }}>
+    <div className={headerConatiner}>
       <div className={leftItemsConatiner}>
         <LeftArrowIcon />
         <RightArrowIcon />

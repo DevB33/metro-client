@@ -39,7 +39,7 @@ const typeContainer = css({
 const tagBoxContainer = css({
   minHeight: '2.5rem',
   height: 'auto',
-  width: 'full',
+  width: '100%',
   maxWidth: '35rem',
   display: 'flex',
   alignItems: 'center',

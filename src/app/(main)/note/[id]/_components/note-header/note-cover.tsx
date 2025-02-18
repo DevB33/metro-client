@@ -13,7 +13,7 @@ const coverContainer = css({
   alignItems: 'flex-start',
   left: '0',
   top: '0.5rem',
-  width: 'full',
+  width: '100%',
   minWidth: '54.5rem',
   height: '17.5rem',
   zIndex: 1,
@@ -61,7 +61,7 @@ const secondButton = css({
 
 const NoteCover = ({ handleCoverModalOpen, deleteCover, cover }: INoteCoverProps) => {
   return (
-    <div className={coverContainer} style={{ backgroundColor: cover, width: '100%' }}>
+    <div className={coverContainer} style={{ backgroundColor: cover }}>
       <div className={innerContainer}>
         <div className={buttonContainer}>
           <div className={firstButton} onClick={handleCoverModalOpen}>
