@@ -54,6 +54,10 @@ const pageButton = css({
   },
 });
 
+const emptyPageContainer = css({
+  px: 'tiny',
+});
+
 const FinderCard = () => {
   const [isHover, setIsHover] = useState(false);
 
@@ -85,10 +89,10 @@ const FinderCard = () => {
           </div>
         )}
       </div>
-      {data?.node ? (
+      {data?.node.length ? (
         data.node.map((page: IDocuments) => <PageItem key={page.id} page={page} depth={1} />)
       ) : (
-        <p>문서가 없습니다.</p> // 데이터가 없을 때 메시지 추가
+        <p className={emptyPageContainer}>문서가 없습니다.</p> // 데이터가 없을 때 메시지 추가
       )}
     </div>
   );
