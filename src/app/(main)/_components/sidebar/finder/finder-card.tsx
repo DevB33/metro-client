@@ -4,7 +4,7 @@ import { useState } from 'react';
 import PlusIcon from '@/icons/plus-icon';
 import IDocuments from '@/types/document-type';
 import { createPage, getPageList } from '@/apis/side-bar';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import PageItem from './page-item';
 
 const finderCard = css({
@@ -57,21 +57,17 @@ const pageButton = css({
 const FinderCard = () => {
   const [isHover, setIsHover] = useState(false);
 
-  const { data, mutate, isLoading } = useSWR(`${process.env.NEXT_PUBLIC_BASE_URL}/documents`);
+  const { data } = useSWR(`${process.env.NEXT_PUBLIC_BASE_URL}/documents`);
 
   const handleClick = async () => {
     try {
       await createPage(null);
       const pageList = await getPageList();
-      console.log(pageList);
-      await mutate(`${process.env.NEXT_PUBLIC_BASE_URL}/documents`, pageList);
+      await mutate(`${process.env.NEXT_PUBLIC_BASE_URL}/documents`, pageList, false);
     } catch (error) {
       console.log(error);
     }
   };
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div className={finderCard}>
