@@ -126,8 +126,14 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
   };
 
   const handlePlusButtonClick = async () => {
-    togglePage();
-    createPage(page.id);
+    try {
+      if (!isOpen) togglePage();
+      await createPage(page.id);
+      const pageList = await getPageList();
+      await mutate(`${process.env.NEXT_PUBLIC_BASE_URL}/documents`, pageList, false);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
