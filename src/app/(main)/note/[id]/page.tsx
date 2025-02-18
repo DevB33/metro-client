@@ -16,7 +16,7 @@ const container = css({
   overflowX: 'scroll',
 });
 
-const ContentContainer = css({
+const contentContainer = css({
   width: '100%',
   height: '100%',
   overflowX: 'scroll',
@@ -46,7 +46,7 @@ const Note = () => {
   return (
     <div className={container}>
       <Header />
-      <div className={ContentContainer}>
+      <div className={contentContainer}>
         <div className={noteContainer}>
           <NoteHeader />
           <div className={divider} />
