@@ -17,6 +17,7 @@ const headerConatiner = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
+  userSelect: 'none',
 });
 
 const leftItemsConatiner = css({

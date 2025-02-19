@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { css } from '@/../styled-system/css';
 import useClickOutside from '@/app/hooks/useOutterClick';
 import IconSelector from './icon-selector';
