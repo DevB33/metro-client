@@ -6,7 +6,7 @@ import HorizonDotIcon from '@/icons/horizon-dot-icon';
 
 const headerConatiner = css({
   boxSizing: 'border-box',
-  width: 'full',
+  width: '100%',
   paddingTop: 'small',
   px: 'small',
   display: 'flex',

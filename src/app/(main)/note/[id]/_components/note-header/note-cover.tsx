@@ -10,18 +10,20 @@ const coverContainer = css({
   position: 'relative',
   display: 'flex',
   justifyContent: 'center',
+  alignItems: 'flex-start',
   left: '0',
   top: '0.5rem',
   width: '100%',
+  minWidth: '54.5rem',
   height: '17.5rem',
   zIndex: 1,
   pt: '1rem',
   pr: '1rem',
-  mr: '1.5rem',
 });
 
 const innerContainer = css({
-  width: '44.5rem',
+  width: '100%',
+  maxWidth: '44.5rem',
   height: 'full',
   display: 'flex',
   alignItems: 'start',

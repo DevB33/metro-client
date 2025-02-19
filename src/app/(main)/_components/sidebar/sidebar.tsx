@@ -12,7 +12,7 @@ const sideBarContainer = css({
   display: 'flex',
   width: 'auto',
   height: '100vh',
-  marginRight: '1rem',
+  marginRight: '.1rem',
   transition: '0.3s',
 });
 

@@ -9,6 +9,7 @@ const titleFont = css({
   _focus: {
     outline: 'none',
   },
+  width: '100%',
 });
 
 const Title = () => {

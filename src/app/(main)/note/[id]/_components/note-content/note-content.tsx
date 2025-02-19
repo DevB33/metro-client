@@ -7,10 +7,12 @@ import Block from './block';
 import BlockButton from './block-button';
 
 const blockContainer = css({
+  boxSizing: 'content-box',
   position: 'relative',
   width: '44.5rem',
   display: 'flex',
   flexDirection: 'row',
+  px: '5rem',
 });
 
 const NoteContent = () => {
