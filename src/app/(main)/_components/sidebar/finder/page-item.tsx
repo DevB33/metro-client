@@ -12,6 +12,9 @@ import PlusIcon from '@/icons/plus-icon';
 import IDocuments from '@/types/document-type';
 import { createPage, deletePage, getPageList } from '@/apis/side-bar';
 import { mutate } from 'swr';
+import TrashIcon from '@/icons/trash-icon';
+import PencilSquareIcon from '@/icons/pencil-square';
+import DropDown from '../../dropdown/dropdown';
 
 const pageItemContainer = css({
   display: 'flex',
@@ -93,6 +96,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
   const plusButtonRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isHover, setIsHover] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const togglePage = () => {
     setIsOpen(!isOpen);
@@ -112,7 +116,11 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
   };
 
   const openSettingDropdown = () => {
-    // TODD: 페이지 설정 드롭다운 열기
+    setIsDropdownOpen(true);
+  };
+
+  const closeSettingDropdown = () => {
+    setIsDropdownOpen(false);
   };
 
   const handleDeleteButtonClick = async () => {
@@ -157,7 +165,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
               type="button"
               ref={settingButtonRef}
               className={pageButton}
-              onClick={handleDeleteButtonClick}
+              onClick={openSettingDropdown}
             >
               <HorizonDotIcon />
             </button>
@@ -171,6 +179,18 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
             </button>
           </div>
         )}
+        <DropDown handleClose={closeSettingDropdown}>
+          <DropDown.Menu isOpen={isDropdownOpen} top="1rem" left="-3.7rem">
+            <DropDown.Item>
+              <PencilSquareIcon />
+              제목 수정하기
+            </DropDown.Item>
+            <DropDown.Item onClick={handleDeleteButtonClick}>
+              <TrashIcon />
+              삭제하기
+            </DropDown.Item>
+          </DropDown.Menu>
+        </DropDown>
       </div>
       {isOpen &&
         (page.children.length ? (
