@@ -83,11 +83,73 @@ const Block = memo(
         updatedBlockList[i].children.splice(currentChildNodeIndex + 1, 1);
       }
 
+      if (
+        currentChildNodeIndex !== -1 &&
+        updatedBlockList[i].children[currentChildNodeIndex].type === 'br'
+      ) {
+        if (currentChildNodeIndex !== childNodes.length - 1) {
+          // "안녕"<br><br>"하세요" 이 구조에서는 중간의 빈 줄에 text 입력 시 <br>과 <br> 사이에 textNode가 생성되어야함
+          updatedBlockList[i].children.splice(currentChildNodeIndex, 0, {
+            type: 'text',
+            style: {
+              fontStyle: 'normal',
+              fontWeight: 'regular',
+              color: 'black',
+              backgroundColor: 'white',
+              width: 'auto',
+              height: 'auto',
+            },
+            content: '',
+          });
+        } else {
+          // "안녕하세요"<br><br> 이 구조에서는 마지막 <br>이 textNode로 변경되어야함
+          updatedBlockList[i].children.splice(currentChildNodeIndex, 1, {
+            type: 'text',
+            style: {
+              fontStyle: 'normal',
+              fontWeight: 'regular',
+              color: 'black',
+              backgroundColor: 'white',
+              width: 'auto',
+              height: 'auto',
+            },
+            content: '',
+          });
+        }
+      }
+
       // 블록에 입력된 내용을 blockList에 반영하는 로직
       updatedBlockList[i].children[
         currentChildNodeIndex === -1 ? offset : currentChildNodeIndex
       ].content =
         currentChildNodeIndex !== -1 ? childNodes[currentChildNodeIndex].textContent || '' : '';
+
+      // 블록 중간에 빈 textNode가 생기면 삭제하고, 마지막 줄에 빈 textNode 생기면 <br>로 변경
+      const updatedChildList = updatedBlockList[i].children
+        .map((child, idx) => {
+          if (child.type === 'text' && child.content === '') {
+            if (idx === updatedBlockList[i].children.length - 1) {
+              return {
+                type: 'br' as 'br',
+                style: {
+                  fontStyle: 'normal',
+                  fontWeight: 'regular',
+                  color: 'black',
+                  backgroundColor: 'white',
+                  width: 'auto',
+                  height: 'auto',
+                },
+                content: '',
+              };
+            }
+
+            return '';
+          }
+          return child;
+        })
+        .filter(child => child !== '');
+
+      updatedBlockList[i].children = updatedChildList;
 
       setBlockList(updatedBlockList);
       prevChildNodesLength.current = childNodes.length;
