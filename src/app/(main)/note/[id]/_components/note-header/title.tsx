@@ -14,6 +14,7 @@ const titleFont = css({
   padding: '8px',
   border: 'none',
   outline: 'none',
+  textOverflow: 'ellipsis',
   '&::placeholder': {
     color: 'lightgray',
   },
@@ -21,6 +22,7 @@ const titleFont = css({
 
 const Title = () => {
   const [value, setValue] = useState('');
+  const [isHovered, setIsHovered] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -28,7 +30,16 @@ const Title = () => {
     const textarea = textareaRef.current;
 
     if (textarea) {
+      textarea.style.height = 'auto';
       textarea.style.height = `${Math.min(textarea.scrollHeight, 110)}px`;
+    }
+  };
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.overflowY = 'auto'; // 스크롤 활성화
     }
   };
 
@@ -36,8 +47,18 @@ const Title = () => {
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.scrollTo({ top: 0, behavior: 'smooth' });
+
+      const checkScroll = () => {
+        if (textarea.scrollTop === 0) {
+          setIsHovered(false);
+          textarea.removeEventListener('scroll', checkScroll);
+        }
+      };
+
+      textarea.addEventListener('scroll', checkScroll);
     }
   };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -53,7 +74,13 @@ const Title = () => {
       value={value}
       onChange={handleChange}
       onMouseLeave={handleMouseLeave}
+      onMouseEnter={handleMouseEnter}
       onKeyDown={handleKeyDown}
+      style={{
+        display: '-webkit-box',
+        WebkitLineClamp: isHovered ? 'unset' : 2,
+        WebkitBoxOrient: 'vertical',
+      }}
     />
   );
 };
