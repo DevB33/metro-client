@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { css } from '@/../styled-system/css';
+import useClickOutside from '@/app/hooks/useOutterClick';
 import IconSelector from './icon-selector';
 import Tag from './tag';
 import Title from './title';
@@ -53,7 +54,6 @@ const NoteHeader = () => {
   const [icon, setIcon] = useState<string | null>(null);
   const [cover, setCover] = useState<string | null>(null);
   const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
-  const iconSelectorRef = useRef<HTMLDivElement>(null);
   const iconRef = useRef<HTMLButtonElement>(null);
 
   const handleMouseEnter = () => {
@@ -92,20 +92,7 @@ const NoteHeader = () => {
     setCover(null);
   };
 
-  useEffect(() => {
-    const handleOutterClick = (e: MouseEvent) => {
-      if (
-        iconRef.current &&
-        iconSelectorRef.current &&
-        !iconRef.current.contains(e.target as Node) &&
-        !iconSelectorRef.current.contains(e.target as Node)
-      ) {
-        handleSelectorClose();
-      }
-    };
-    window.addEventListener('mousedown', handleOutterClick);
-    return () => window.removeEventListener('mousedown', handleOutterClick);
-  }, [iconSelectorRef]);
+  const iconSelectorRef = useClickOutside(handleSelectorClose);
 
   return (
     <>

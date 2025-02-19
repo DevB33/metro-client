@@ -16,6 +16,7 @@ const dropdownContainer = css({
 
 const DropDown = ({ children, handleClose }: IDropDownProps) => {
   const dropDownRef = useClickOutside(handleClose);
+
   return (
     <div ref={dropDownRef} className={dropdownContainer}>
       {children}
