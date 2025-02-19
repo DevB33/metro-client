@@ -26,7 +26,7 @@ const noteContainer = css({
   position: 'relative',
   width: 'auto',
   minWidth: '54.5rem',
-  height: '100%',
+  minHeight: '100%',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
