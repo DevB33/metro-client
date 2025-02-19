@@ -33,12 +33,13 @@ const noteContainer = css({
   justifyContent: 'start',
   gap: 'tiny',
   zIndex: 3,
+  mb: '10rem',
 });
 
 const divider = css({
   backgroundColor: 'gray',
   width: '44.5rem',
-  height: '1px',
+  height: '.5px',
   borderRadius: '1rem',
 });
 
