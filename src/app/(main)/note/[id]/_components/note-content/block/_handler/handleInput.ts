@@ -1,4 +1,5 @@
 import { ITextBlock } from '@/types/block-type';
+import getSelectionInfo from '@/utils/getSelectionInfo';
 
 const handleInput = (
   event: React.FormEvent<HTMLDivElement>,
@@ -11,17 +12,15 @@ const handleInput = (
   const updatedBlockList = [...blockList];
   const target = event.currentTarget;
 
-  const selection = window.getSelection();
-  if (!selection || selection.rangeCount === 0) return;
+  const { startOffset, startContainer } = getSelectionInfo(0) || {};
+  if (!startOffset || !startContainer) return;
 
-  const range = selection.getRangeAt(0);
-  const offset = range.startOffset;
-  const container = range.startContainer;
   const childNodes = Array.from(target.childNodes as NodeListOf<HTMLElement>);
   const currentChildNodeIndex =
-    childNodes.indexOf(container as HTMLElement) === -1 && container?.nodeType === Node.TEXT_NODE
-      ? childNodes.indexOf(container.parentNode as HTMLElement)
-      : childNodes.indexOf(container as HTMLElement);
+    childNodes.indexOf(startContainer as HTMLElement) === -1 &&
+    startContainer.nodeType === Node.TEXT_NODE
+      ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
+      : childNodes.indexOf(startContainer as HTMLElement);
 
   // 블록에 모든 내용이 지워졌을 때 빈 블록으로 변경 로직
   if (currentChildNodeIndex === -1 && blockRef.current[index] && childNodes.length === 1) {
@@ -72,7 +71,7 @@ const handleInput = (
 
   // 블록에 입력된 내용을 blockList에 반영하는 로직
   updatedBlockList[index].children[
-    currentChildNodeIndex === -1 ? offset : currentChildNodeIndex
+    currentChildNodeIndex === -1 ? startOffset : currentChildNodeIndex
   ].content =
     currentChildNodeIndex !== -1 ? childNodes[currentChildNodeIndex].textContent || '' : '';
 
