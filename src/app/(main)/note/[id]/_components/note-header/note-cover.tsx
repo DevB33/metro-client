@@ -18,7 +18,6 @@ const coverContainer = css({
   height: '17.5rem',
   zIndex: 1,
   pt: '1rem',
-  // pr: '1rem',
 });
 
 const innerContainer = css({

@@ -22,7 +22,8 @@ const titleFont = css({
 
 const Title = () => {
   const [value, setValue] = useState('');
-  const [isHovered, setIsHovered] = useState(false);
+  const isHovered = useRef(false);
+  const [isScrollable, setIsScrollable] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -36,26 +37,26 @@ const Title = () => {
   };
 
   const handleMouseEnter = () => {
-    setIsHovered(true);
+    isHovered.current = true;
+    setIsScrollable(true);
     const textarea = textareaRef.current;
     if (textarea) {
-      textarea.style.overflowY = 'auto'; // 스크롤 활성화
+      textarea.style.overflowY = 'auto';
     }
   };
 
   const handleMouseLeave = () => {
+    isHovered.current = false;
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.scrollTo({ top: 0, behavior: 'smooth' });
 
-      const checkScroll = () => {
-        if (textarea.scrollTop === 0) {
-          setIsHovered(false);
-          textarea.removeEventListener('scroll', checkScroll);
-        }
-      };
-
-      textarea.addEventListener('scroll', checkScroll);
+      setTimeout(
+        () => {
+          setIsScrollable(false);
+        },
+        (textarea?.scrollTop ?? 1) * 3,
+      );
     }
   };
 
@@ -78,7 +79,7 @@ const Title = () => {
       onKeyDown={handleKeyDown}
       style={{
         display: '-webkit-box',
-        WebkitLineClamp: isHovered ? 'unset' : 2,
+        WebkitLineClamp: isScrollable ? 'unset' : 2,
         WebkitBoxOrient: 'vertical',
       }}
     />
