@@ -4,6 +4,7 @@ import { css } from '@/../styled-system/css';
 import { ITextBlock } from '@/types/block-type';
 import keyName from '@/constants/key-name';
 import placeholder from '@/constants/placeholder';
+import handleInput from './_handler/handleInput';
 
 interface IBlockComponent {
   block: ITextBlock;
@@ -52,108 +53,6 @@ const Block = memo(
     useEffect(() => {
       prevChildNodesLength.current = blockList[index].children.length;
     }, [blockList, index]);
-
-    const handleInput = (event: React.FormEvent<HTMLDivElement>, i: number) => {
-      setIsTyping(true);
-      const updatedBlockList = [...blockList];
-      const target = event.currentTarget;
-
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0) return;
-
-      const range = selection.getRangeAt(0);
-      const offset = range.startOffset;
-      const container = range.startContainer;
-      const childNodes = Array.from(target.childNodes as NodeListOf<HTMLElement>);
-      const currentChildNodeIndex =
-        childNodes.indexOf(container as HTMLElement) === -1 &&
-        container?.nodeType === Node.TEXT_NODE
-          ? childNodes.indexOf(container.parentNode as HTMLElement)
-          : childNodes.indexOf(container as HTMLElement);
-
-      // 블록에 모든 내용이 지워졌을 때 빈 블록으로 변경 로직
-      if (currentChildNodeIndex === -1 && blockRef.current[index] && childNodes.length === 1) {
-        // eslint-disable-next-line no-param-reassign
-        blockRef.current[index]!.innerHTML = '';
-        return;
-      }
-
-      // block의 자식 노드가 지워졌을 때 blockList에 반영하는 로직
-      if (prevChildNodesLength.current > childNodes.length && currentChildNodeIndex !== -1) {
-        updatedBlockList[i].children.splice(currentChildNodeIndex + 1, 1);
-      }
-
-      if (
-        currentChildNodeIndex !== -1 &&
-        updatedBlockList[i].children[currentChildNodeIndex].type === 'br'
-      ) {
-        if (currentChildNodeIndex !== childNodes.length - 1) {
-          // "안녕"<br><br>"하세요" 이 구조에서는 중간의 빈 줄에 text 입력 시 <br>과 <br> 사이에 textNode가 생성되어야함
-          updatedBlockList[i].children.splice(currentChildNodeIndex, 0, {
-            type: 'text',
-            style: {
-              fontStyle: 'normal',
-              fontWeight: 'regular',
-              color: 'black',
-              backgroundColor: 'white',
-              width: 'auto',
-              height: 'auto',
-            },
-            content: '',
-          });
-        } else {
-          // "안녕하세요"<br><br> 이 구조에서는 마지막 <br>이 textNode로 변경되어야함
-          updatedBlockList[i].children.splice(currentChildNodeIndex, 1, {
-            type: 'text',
-            style: {
-              fontStyle: 'normal',
-              fontWeight: 'regular',
-              color: 'black',
-              backgroundColor: 'white',
-              width: 'auto',
-              height: 'auto',
-            },
-            content: '',
-          });
-        }
-      }
-
-      // 블록에 입력된 내용을 blockList에 반영하는 로직
-      updatedBlockList[i].children[
-        currentChildNodeIndex === -1 ? offset : currentChildNodeIndex
-      ].content =
-        currentChildNodeIndex !== -1 ? childNodes[currentChildNodeIndex].textContent || '' : '';
-
-      // 블록 중간에 빈 textNode가 생기면 삭제하고, 마지막 줄에 빈 textNode 생기면 <br>로 변경
-      const updatedChildList = updatedBlockList[i].children
-        .map((child, idx) => {
-          if (child.type === 'text' && child.content === '') {
-            if (idx === updatedBlockList[i].children.length - 1) {
-              return {
-                type: 'br' as 'br',
-                style: {
-                  fontStyle: 'normal',
-                  fontWeight: 'regular',
-                  color: 'black',
-                  backgroundColor: 'white',
-                  width: 'auto',
-                  height: 'auto',
-                },
-                content: '',
-              };
-            }
-
-            return '';
-          }
-          return child;
-        })
-        .filter(child => child !== '');
-
-      updatedBlockList[i].children = updatedChildList;
-
-      setBlockList(updatedBlockList);
-      prevChildNodesLength.current = childNodes.length;
-    };
 
     const splitBlock = (i: number) => {
       const selection = window.getSelection();
@@ -627,7 +526,10 @@ const Block = memo(
         suppressContentEditableWarning
         data-placeholder={placeholder.block}
         className={blockDiv}
-        onInput={event => handleInput(event, index)}
+        onInput={event => {
+          setIsTyping(true);
+          handleInput(event, index, blockList, setBlockList, blockRef, prevChildNodesLength);
+        }}
         onKeyDown={event => handleKeyDown(event, index)}
         ref={element => {
           // eslint-disable-next-line no-param-reassign
