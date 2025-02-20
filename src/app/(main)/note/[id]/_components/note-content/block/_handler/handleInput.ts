@@ -42,28 +42,12 @@ const handleInput = (
       // "안녕"<br><br>"하세요" 이 구조에서는 중간의 빈 줄에 text 입력 시 <br>과 <br> 사이에 textNode가 생성되어야함
       updatedBlockList[index].children.splice(currentChildNodeIndex, 0, {
         type: 'text',
-        style: {
-          fontStyle: 'normal',
-          fontWeight: 'regular',
-          color: 'black',
-          backgroundColor: 'white',
-          width: 'auto',
-          height: 'auto',
-        },
         content: '',
       });
     } else {
       // "안녕하세요"<br><br> 이 구조에서는 마지막 <br>이 textNode로 변경되어야함
       updatedBlockList[index].children.splice(currentChildNodeIndex, 1, {
         type: 'text',
-        style: {
-          fontStyle: 'normal',
-          fontWeight: 'regular',
-          color: 'black',
-          backgroundColor: 'white',
-          width: 'auto',
-          height: 'auto',
-        },
         content: '',
       });
     }
@@ -82,18 +66,8 @@ const handleInput = (
         if (idx === updatedBlockList[index].children.length - 1) {
           return {
             type: 'br' as 'br',
-            style: {
-              fontStyle: 'normal',
-              fontWeight: 'regular',
-              color: 'black',
-              backgroundColor: 'white',
-              width: 'auto',
-              height: 'auto',
-            },
-            content: '',
           };
         }
-
         return '';
       }
       return child;

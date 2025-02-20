@@ -129,15 +129,6 @@ const Block = memo(
         if (node.nodeName === 'BR') {
           return {
             type: 'br' as 'br',
-            style: {
-              fontStyle: 'normal',
-              fontWeight: 'regular',
-              color: 'black',
-              backgroundColor: 'white',
-              width: 'auto',
-              height: 'auto',
-            },
-            content: '',
           };
         }
 
@@ -152,21 +143,13 @@ const Block = memo(
               width: 'auto',
               height: 'auto',
             },
-            content: node.textContent,
+            content: node.textContent || '',
           };
         }
 
         return {
           type: 'text' as 'text',
-          style: {
-            fontStyle: 'normal',
-            fontWeight: 'regular',
-            color: 'black',
-            backgroundColor: 'white',
-            width: 'auto',
-            height: 'auto',
-          },
-          content: node.textContent,
+          content: node.textContent || '',
         };
       });
 
@@ -174,15 +157,6 @@ const Block = memo(
         if (node.nodeName === 'BR') {
           return {
             type: 'br' as 'br',
-            style: {
-              fontStyle: 'normal',
-              fontWeight: 'regular',
-              color: 'black',
-              backgroundColor: 'white',
-              width: 'auto',
-              height: 'auto',
-            },
-            content: '',
           };
         }
 
@@ -197,21 +171,13 @@ const Block = memo(
               width: 'auto',
               height: 'auto',
             },
-            content: node.textContent,
+            content: node.textContent || '',
           };
         }
 
         return {
           type: 'text' as 'text',
-          style: {
-            fontStyle: 'normal',
-            fontWeight: 'regular',
-            color: 'black',
-            backgroundColor: 'white',
-            width: 'auto',
-            height: 'auto',
-          },
-          content: node.textContent,
+          content: node.textContent || '',
         };
       });
 
@@ -219,15 +185,6 @@ const Block = memo(
       if (newBeforeBlock[newBeforeBlock.length - 1]?.type === 'br' && beforeText === '') {
         newBeforeBlock.push({
           type: 'br' as 'br',
-          style: {
-            fontStyle: 'normal',
-            fontWeight: 'regular',
-            color: 'black',
-            backgroundColor: 'white',
-            width: 'auto',
-            height: 'auto',
-          },
-          content: '',
         });
       }
 
@@ -235,15 +192,6 @@ const Block = memo(
       if (beforeText === '' && afterText === '') {
         newAfterBlock.unshift({
           type: 'br' as 'br',
-          style: {
-            fontStyle: 'normal',
-            fontWeight: 'regular',
-            color: 'black',
-            backgroundColor: 'white',
-            width: 'auto',
-            height: 'auto',
-          },
-          content: '',
         });
       }
 
@@ -282,28 +230,19 @@ const Block = memo(
         const textBefore = container.textContent?.substring(0, offset);
         const textAfter = container.textContent?.substring(offset);
 
+        const parentNode = container.parentNode as HTMLElement;
+        const isDiv = parentNode?.tagName === 'DIV';
+
         // 줄 바꿈이 반영된 children 배열 생성
         const updatedChildren = [
           ...newChildren.slice(0, currentChildNodeIndex),
           textBefore && {
-            type: (container.parentNode as Element)?.tagName === 'DIV' ? 'text' : 'span',
+            type: isDiv ? 'text' : 'span',
             style: {
-              fontStyle:
-                (container.parentNode as Element)?.tagName === 'DIV'
-                  ? 'normal'
-                  : (container.parentNode as HTMLElement)?.style.fontStyle || 'normal',
-              fontWeight:
-                (container.parentNode as Element)?.tagName === 'DIV'
-                  ? 'regular'
-                  : (container.parentNode as HTMLElement)?.style.fontWeight || 'regular',
-              color:
-                (container.parentNode as Element)?.tagName === 'DIV'
-                  ? 'black'
-                  : (container.parentNode as HTMLElement)?.style.color || 'black',
-              backgroundColor:
-                (container.parentNode as Element)?.tagName === 'DIV'
-                  ? 'white'
-                  : (container.parentNode as HTMLElement)?.style.backgroundColor || 'white',
+              fontStyle: isDiv ? 'normal' : parentNode?.style.fontStyle || 'normal',
+              fontWeight: isDiv ? 'regular' : parentNode?.style.fontWeight || 'regular',
+              color: isDiv ? 'black' : parentNode?.style.color || 'black',
+              backgroundColor: isDiv ? 'white' : parentNode?.style.backgroundColor || 'white',
               width: 'auto',
               height: 'auto',
             },
@@ -312,36 +251,15 @@ const Block = memo(
           textBefore && textAfter
             ? {
                 type: 'br' as 'br',
-                style: {
-                  fontStyle: 'normal',
-                  fontWeight: 'regular',
-                  color: 'black',
-                  backgroundColor: 'white',
-                  width: 'auto',
-                  height: 'auto',
-                },
-                content: '',
               }
             : null,
           textAfter && {
-            type: (container.parentNode as Element)?.tagName === 'DIV' ? 'text' : 'span',
+            type: isDiv ? 'text' : 'span',
             style: {
-              fontStyle:
-                (container.parentNode as Element)?.tagName === 'DIV'
-                  ? 'normal'
-                  : (container.parentNode as HTMLElement)?.style.fontStyle || 'normal',
-              fontWeight:
-                (container.parentNode as Element)?.tagName === 'DIV'
-                  ? 'regular'
-                  : (container.parentNode as HTMLElement)?.style.fontWeight || 'regular',
-              color:
-                (container.parentNode as Element)?.tagName === 'DIV'
-                  ? 'black'
-                  : (container.parentNode as HTMLElement)?.style.color || 'black',
-              backgroundColor:
-                (container.parentNode as Element)?.tagName === 'DIV'
-                  ? 'white'
-                  : (container.parentNode as HTMLElement)?.style.backgroundColor || 'white',
+              fontStyle: isDiv ? 'normal' : parentNode?.style.fontStyle || 'normal',
+              fontWeight: isDiv ? 'regular' : parentNode?.style.fontWeight || 'regular',
+              color: isDiv ? 'black' : parentNode?.style.color || 'black',
+              backgroundColor: isDiv ? 'white' : parentNode?.style.backgroundColor || 'white',
               width: 'auto',
               height: 'auto',
             },
@@ -353,15 +271,6 @@ const Block = memo(
             if (child === '') {
               return {
                 type: 'br' as 'br',
-                style: {
-                  fontStyle: 'normal',
-                  fontWeight: 'regular',
-                  color: 'black',
-                  backgroundColor: 'white',
-                  width: 'auto',
-                  height: 'auto',
-                },
-                content: '',
               };
             }
 
@@ -376,15 +285,6 @@ const Block = memo(
         ) {
           updatedChildren.push({
             type: 'br' as 'br',
-            style: {
-              fontStyle: 'normal',
-              fontWeight: 'regular',
-              color: 'black',
-              backgroundColor: 'white',
-              width: 'auto',
-              height: 'auto',
-            },
-            content: '',
           });
         }
 
@@ -399,15 +299,6 @@ const Block = memo(
         const updatedBlockList = [...blockList];
         updatedBlockList[i].children.splice(offset, 0, {
           type: 'br',
-          style: {
-            fontStyle: 'normal',
-            fontWeight: 'regular',
-            color: 'black',
-            backgroundColor: 'white',
-            width: 'auto',
-            height: 'auto',
-          },
-          content: '',
         });
 
         setBlockList(updatedBlockList);
