@@ -14,15 +14,12 @@ const splitBlock = (
   const parent = blockRef.current[index];
   const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
   const currentChildNodeIndex =
-    childNodes.indexOf(startContainer as HTMLElement) === -1 &&
-    startContainer?.nodeType === Node.TEXT_NODE
+    childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
       ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
       : childNodes.indexOf(startContainer as HTMLElement);
 
-  const beforeText =
-    currentChildNodeIndex === -1 ? '' : startContainer.textContent?.slice(0, startOffset) || '';
-  const afterText =
-    currentChildNodeIndex === -1 ? '' : startContainer.textContent?.slice(startOffset) || '';
+  const beforeText = currentChildNodeIndex === -1 ? '' : startContainer.textContent?.slice(0, startOffset) || '';
+  const afterText = currentChildNodeIndex === -1 ? '' : startContainer.textContent?.slice(startOffset) || '';
 
   const beforeBlock = childNodes
     .filter((_node, idx) => {
@@ -172,8 +169,7 @@ const splitLine = (
   const parent = blockRef.current[index];
   const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
   const currentChildNodeIndex =
-    childNodes.indexOf(startContainer as HTMLElement) === -1 &&
-    startContainer?.nodeType === Node.TEXT_NODE
+    childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
       ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
       : childNodes.indexOf(startContainer as HTMLElement);
   const newChildren = [...blockList[index].children];
@@ -257,11 +253,7 @@ const splitLine = (
   }
 };
 
-const mergeBlock = (
-  index: number,
-  blockList: ITextBlock[],
-  setBlockList: (blockList: ITextBlock[]) => void,
-) => {
+const mergeBlock = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
   const updatedBlockList = [...blockList];
   const previousBlock = updatedBlockList[index - 1];
   const currentBlock = updatedBlockList[index];
@@ -316,17 +308,12 @@ const handleKeyDown = (
     const parent = blockRef.current[index];
     const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
     const currentChildNodeIndex =
-      childNodes.indexOf(startContainer as HTMLElement) === -1 &&
-      startContainer?.nodeType === Node.TEXT_NODE
+      childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
         ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
         : childNodes.indexOf(startContainer as HTMLElement);
 
     // 첫 블록 첫 커서에서 백스페이스 방지
-    if (
-      index === 0 &&
-      (currentChildNodeIndex === -1 || currentChildNodeIndex === 0) &&
-      startOffset === 0
-    ) {
+    if (index === 0 && (currentChildNodeIndex === -1 || currentChildNodeIndex === 0) && startOffset === 0) {
       event.preventDefault();
       return;
     }

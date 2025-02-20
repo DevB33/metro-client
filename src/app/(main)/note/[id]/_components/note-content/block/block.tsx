@@ -38,15 +38,7 @@ const blockDiv = css({
 });
 
 const Block = memo(
-  ({
-    block,
-    index,
-    blockRef,
-    blockList,
-    setBlockList,
-    isTyping: _isTyping,
-    setIsTyping,
-  }: IBlockComponent) => {
+  ({ block, index, blockRef, blockList, setBlockList, isTyping: _isTyping, setIsTyping }: IBlockComponent) => {
     const [key, setKey] = useState(Date.now());
     const prevChildNodesLength = useRef(0);
 
@@ -67,9 +59,7 @@ const Block = memo(
           setIsTyping(true);
           handleInput(event, index, blockList, setBlockList, blockRef, prevChildNodesLength);
         }}
-        onKeyDown={event =>
-          handleKeyDown(event, index, blockList, setBlockList, blockRef, setIsTyping, setKey)
-        }
+        onKeyDown={event => handleKeyDown(event, index, blockList, setBlockList, blockRef, setIsTyping, setKey)}
         ref={element => {
           // eslint-disable-next-line no-param-reassign
           blockRef.current[index] = element;

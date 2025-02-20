@@ -8,11 +8,7 @@ interface IIconSelectorProps {
   isSelectorOpen: boolean;
 }
 
-const IconSelector = ({
-  handleSelectIcon,
-  handleSelectorClose,
-  isSelectorOpen,
-}: IIconSelectorProps) => {
+const IconSelector = ({ handleSelectIcon, handleSelectorClose, isSelectorOpen }: IIconSelectorProps) => {
   const onEmojiClick = (emojiObject: EmojiClickData) => {
     handleSelectIcon(emojiObject.emoji);
     handleSelectorClose();

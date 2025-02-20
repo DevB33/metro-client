@@ -74,11 +74,7 @@ const FinderCard = () => {
 
   return (
     <div className={finderCard}>
-      <div
-        className={pageItem}
-        onMouseEnter={() => setIsHover(true)}
-        onMouseLeave={() => setIsHover(false)}
-      >
+      <div className={pageItem} onMouseEnter={() => setIsHover(true)} onMouseLeave={() => setIsHover(false)}>
         기원 님의 workspace
         {isHover && (
           <div className={pageButtonContainer}>

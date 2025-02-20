@@ -39,10 +39,7 @@ const image = css({
   cursor: 'pointer',
 });
 
-const DropdownContent = ({
-  handleSelectCover,
-  handleCoverModalClose,
-}: ICoverDropdownContentProps) => {
+const DropdownContent = ({ handleSelectCover, handleCoverModalClose }: ICoverDropdownContentProps) => {
   const handleClick = (color: string) => {
     handleSelectCover(color);
     handleCoverModalClose();

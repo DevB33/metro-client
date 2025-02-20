@@ -96,18 +96,9 @@ const NoteHeader = () => {
 
   return (
     <>
-      {cover && (
-        <NoteCover
-          cover={cover}
-          handleCoverModalOpen={handleCoverModalOpen}
-          deleteCover={deleteCover}
-        />
-      )}
+      {cover && <NoteCover cover={cover} handleCoverModalOpen={handleCoverModalOpen} deleteCover={deleteCover} />}
       {isCoverModalOpen && (
-        <CoverDropdown
-          handleSelectCover={handleSelectCover}
-          handleCoverModalClose={handleCoverModalClose}
-        />
+        <CoverDropdown handleSelectCover={handleSelectCover} handleCoverModalClose={handleCoverModalClose} />
       )}
 
       <div
