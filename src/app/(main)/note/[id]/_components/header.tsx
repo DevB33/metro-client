@@ -5,7 +5,7 @@ import { css } from '@/../styled-system/css';
 import LeftArrowIcon from '@/icons/left-arrow-icon';
 import RightArrowIcon from '@/icons/right-arrow-icon';
 import HorizonDotIcon from '@/icons/horizon-dot-icon';
-import DropDown from '@/app/(main)/_components/dropdown/dropdown';
+import DropDown from '@/components/dropdown/dropdown';
 import TrashIcon from '@/icons/trash-icon';
 import { useState } from 'react';
 

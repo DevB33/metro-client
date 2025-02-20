@@ -14,7 +14,7 @@ import { createPage, deletePage, getPageList } from '@/apis/side-bar';
 import { mutate } from 'swr';
 import TrashIcon from '@/icons/trash-icon';
 import PencilSquareIcon from '@/icons/pencil-square';
-import DropDown from '../../dropdown/dropdown';
+import DropDown from '../../../../../components/dropdown/dropdown';
 
 const pageItemContainer = css({
   display: 'flex',
