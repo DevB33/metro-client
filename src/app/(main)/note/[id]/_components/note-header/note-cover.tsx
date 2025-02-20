@@ -20,13 +20,12 @@ const coverContainer = css({
   minHeight: '17.5rem',
   zIndex: 1,
   pt: '1rem',
-  pr: '1rem',
 });
 
 const innerContainer = css({
   width: '100%',
   maxWidth: '44.5rem',
-  height: 'full',
+  height: '17.5rem',
   display: 'flex',
   alignItems: 'start',
   justifyContent: 'end',

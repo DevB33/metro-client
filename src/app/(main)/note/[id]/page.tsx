@@ -26,19 +26,20 @@ const noteContainer = css({
   position: 'relative',
   width: 'auto',
   minWidth: '54.5rem',
-  height: '100%',
+  minHeight: '100%',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'start',
   gap: 'tiny',
   zIndex: 3,
+  mb: '10rem',
 });
 
 const divider = css({
   backgroundColor: 'gray',
   width: '44.5rem',
-  height: '1px',
+  height: '.5px',
   borderRadius: '1rem',
 });
 
