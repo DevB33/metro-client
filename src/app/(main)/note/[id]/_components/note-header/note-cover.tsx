@@ -1,4 +1,5 @@
 import { css } from '@/../styled-system/css';
+import { useState } from 'react';
 
 interface INoteCoverProps {
   handleCoverModalOpen: () => void;
@@ -16,6 +17,7 @@ const coverContainer = css({
   width: '100%',
   minWidth: '54.5rem',
   height: '17.5rem',
+  minHeight: '17.5rem',
   zIndex: 1,
   pt: '1rem',
 });
@@ -59,17 +61,34 @@ const secondButton = css({
 });
 
 const NoteCover = ({ handleCoverModalOpen, deleteCover, cover }: INoteCoverProps) => {
+  const [isHover, setIsHover] = useState(false);
+
+  const handleMouseEnter = () => {
+    setIsHover(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHover(false);
+  };
+
   return (
-    <div className={coverContainer} style={{ backgroundColor: cover }}>
+    <div
+      className={coverContainer}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      style={{ backgroundColor: cover }}
+    >
       <div className={innerContainer}>
-        <div className={buttonContainer}>
-          <div className={firstButton} onClick={handleCoverModalOpen}>
-            커버변경
+        {isHover && (
+          <div className={buttonContainer}>
+            <div className={firstButton} onClick={handleCoverModalOpen}>
+              커버변경
+            </div>
+            <div className={secondButton} onClick={deleteCover}>
+              커버제거
+            </div>
           </div>
-          <div className={secondButton} onClick={deleteCover}>
-            커버제거
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

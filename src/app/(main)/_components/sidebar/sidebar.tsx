@@ -14,6 +14,7 @@ const sideBarContainer = css({
   height: '100vh',
   marginRight: '.1rem',
   transition: '0.3s',
+  userSelect: 'none',
 });
 
 const sideBar = css({
