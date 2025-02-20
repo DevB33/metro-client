@@ -1,4 +1,4 @@
-import { useState, memo } from 'react';
+import { useState, memo, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
@@ -47,17 +47,112 @@ const Block = memo(
     setIsTyping,
   }: IBlockComponent) => {
     const [key, setKey] = useState(Date.now());
+    const prevChildNodesLength = useRef(0);
 
-    const handleInput = (e: React.FormEvent<HTMLDivElement>, i: number) => {
+    useEffect(() => {
+      prevChildNodesLength.current = blockList[index].children.length;
+    }, [blockList, index]);
+
+    const handleInput = (event: React.FormEvent<HTMLDivElement>, i: number) => {
       setIsTyping(true);
       const updatedBlockList = [...blockList];
-      const target = e.currentTarget;
-      updatedBlockList[i].children[0].content = target.textContent || '';
-      setBlockList(updatedBlockList);
-      if (blockRef.current[index]?.innerText.trim() === '') {
+      const target = event.currentTarget;
+
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+
+      const range = selection.getRangeAt(0);
+      const offset = range.startOffset;
+      const container = range.startContainer;
+      const childNodes = Array.from(target.childNodes as NodeListOf<HTMLElement>);
+      const currentChildNodeIndex =
+        childNodes.indexOf(container as HTMLElement) === -1 &&
+        container?.nodeType === Node.TEXT_NODE
+          ? childNodes.indexOf(container.parentNode as HTMLElement)
+          : childNodes.indexOf(container as HTMLElement);
+
+      // 블록에 모든 내용이 지워졌을 때 빈 블록으로 변경 로직
+      if (currentChildNodeIndex === -1 && blockRef.current[index] && childNodes.length === 1) {
         // eslint-disable-next-line no-param-reassign
-        blockRef.current[index].innerHTML = '';
+        blockRef.current[index]!.innerHTML = '';
+        return;
       }
+
+      // block의 자식 노드가 지워졌을 때 blockList에 반영하는 로직
+      if (prevChildNodesLength.current > childNodes.length && currentChildNodeIndex !== -1) {
+        updatedBlockList[i].children.splice(currentChildNodeIndex + 1, 1);
+      }
+
+      if (
+        currentChildNodeIndex !== -1 &&
+        updatedBlockList[i].children[currentChildNodeIndex].type === 'br'
+      ) {
+        if (currentChildNodeIndex !== childNodes.length - 1) {
+          // "안녕"<br><br>"하세요" 이 구조에서는 중간의 빈 줄에 text 입력 시 <br>과 <br> 사이에 textNode가 생성되어야함
+          updatedBlockList[i].children.splice(currentChildNodeIndex, 0, {
+            type: 'text',
+            style: {
+              fontStyle: 'normal',
+              fontWeight: 'regular',
+              color: 'black',
+              backgroundColor: 'white',
+              width: 'auto',
+              height: 'auto',
+            },
+            content: '',
+          });
+        } else {
+          // "안녕하세요"<br><br> 이 구조에서는 마지막 <br>이 textNode로 변경되어야함
+          updatedBlockList[i].children.splice(currentChildNodeIndex, 1, {
+            type: 'text',
+            style: {
+              fontStyle: 'normal',
+              fontWeight: 'regular',
+              color: 'black',
+              backgroundColor: 'white',
+              width: 'auto',
+              height: 'auto',
+            },
+            content: '',
+          });
+        }
+      }
+
+      // 블록에 입력된 내용을 blockList에 반영하는 로직
+      updatedBlockList[i].children[
+        currentChildNodeIndex === -1 ? offset : currentChildNodeIndex
+      ].content =
+        currentChildNodeIndex !== -1 ? childNodes[currentChildNodeIndex].textContent || '' : '';
+
+      // 블록 중간에 빈 textNode가 생기면 삭제하고, 마지막 줄에 빈 textNode 생기면 <br>로 변경
+      const updatedChildList = updatedBlockList[i].children
+        .map((child, idx) => {
+          if (child.type === 'text' && child.content === '') {
+            if (idx === updatedBlockList[i].children.length - 1) {
+              return {
+                type: 'br' as 'br',
+                style: {
+                  fontStyle: 'normal',
+                  fontWeight: 'regular',
+                  color: 'black',
+                  backgroundColor: 'white',
+                  width: 'auto',
+                  height: 'auto',
+                },
+                content: '',
+              };
+            }
+
+            return '';
+          }
+          return child;
+        })
+        .filter(child => child !== '');
+
+      updatedBlockList[i].children = updatedChildList;
+
+      setBlockList(updatedBlockList);
+      prevChildNodesLength.current = childNodes.length;
     };
 
     const splitBlock = (i: number) => {
@@ -68,32 +163,66 @@ const Block = memo(
       const container = range.startContainer;
       const offset = range.startOffset;
       const parent = blockRef.current[i];
-      const children = parent?.childNodes;
-      const childNodes = Array.from(children as NodeListOf<HTMLElement>);
+      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+      const currentChildNodeIndex =
+        childNodes.indexOf(container as HTMLElement) === -1 &&
+        container?.nodeType === Node.TEXT_NODE
+          ? childNodes.indexOf(container.parentNode as HTMLElement)
+          : childNodes.indexOf(container as HTMLElement);
 
-      const beforeBlock = Array.from(childNodes as HTMLElement[])
+      const beforeText =
+        currentChildNodeIndex === -1 ? '' : container.textContent?.slice(0, offset) || '';
+      const afterText =
+        currentChildNodeIndex === -1 ? '' : container.textContent?.slice(offset) || '';
+
+      const beforeBlock = childNodes
         .filter((_node, idx) => {
-          return idx <= Array.from(childNodes as HTMLElement[]).indexOf(container as HTMLElement);
+          return currentChildNodeIndex === -1 ? idx <= offset : idx <= currentChildNodeIndex;
         })
         .map((node, idx) => {
-          if (idx === Array.from(childNodes as HTMLElement[]).indexOf(container as HTMLElement)) {
-            const newNode = document.createTextNode(node.textContent?.slice(0, offset) || '');
+          if ((currentChildNodeIndex === -1 && idx === offset) || idx === currentChildNodeIndex) {
+            if (beforeText === '' && idx !== 0) {
+              return;
+            }
+
+            if (node.nodeName === 'SPAN') {
+              const newNode = document.createElement('span');
+              newNode.style.cssText = node.style.cssText;
+              newNode.textContent = beforeText;
+              return newNode;
+            }
+
+            const newNode = document.createTextNode(beforeText);
             return newNode;
           }
           return node;
-        });
+        })
+        .filter(node => node != null);
 
-      const afterBlock = Array.from(childNodes as HTMLElement[])
+      const afterBlock = childNodes
         .filter((_node, idx) => {
-          return idx >= Array.from(childNodes as HTMLElement[]).indexOf(container as HTMLElement);
+          return currentChildNodeIndex === -1 ? idx >= offset : idx >= currentChildNodeIndex;
         })
         .map((node, idx) => {
           if (idx === 0) {
-            const newNode = document.createTextNode(node.textContent?.slice(offset) || '');
+            const filteredNodeCount = childNodes.filter(n => n != null).length;
+            if (afterText === '' && idx !== filteredNodeCount - 1) {
+              return;
+            }
+
+            if (node.nodeName === 'SPAN') {
+              const newNode = document.createElement('span');
+              newNode.style.cssText = node.style.cssText;
+              newNode.textContent = afterText;
+              return newNode;
+            }
+
+            const newNode = document.createTextNode(afterText);
             return newNode;
           }
           return node;
-        });
+        })
+        .filter(node => node != null);
 
       const updatedBlockList = [...blockList];
 
@@ -110,6 +239,21 @@ const Block = memo(
               height: 'auto',
             },
             content: '',
+          };
+        }
+
+        if (node.nodeName === 'SPAN') {
+          return {
+            type: 'span' as 'span',
+            style: {
+              fontStyle: node instanceof HTMLElement ? node.style.fontStyle : 'normal',
+              fontWeight: node instanceof HTMLElement ? node.style.fontWeight : 'regular',
+              color: node instanceof HTMLElement ? node.style.color : 'black',
+              backgroundColor: node instanceof HTMLElement ? node.style.backgroundColor : 'white',
+              width: 'auto',
+              height: 'auto',
+            },
+            content: node.textContent,
           };
         }
 
@@ -143,6 +287,21 @@ const Block = memo(
           };
         }
 
+        if (node.nodeName === 'SPAN') {
+          return {
+            type: 'span' as 'span',
+            style: {
+              fontStyle: node instanceof HTMLElement ? node.style.fontStyle : 'normal',
+              fontWeight: node instanceof HTMLElement ? node.style.fontWeight : 'regular',
+              color: node instanceof HTMLElement ? node.style.color : 'black',
+              backgroundColor: node instanceof HTMLElement ? node.style.backgroundColor : 'white',
+              width: 'auto',
+              height: 'auto',
+            },
+            content: node.textContent,
+          };
+        }
+
         return {
           type: 'text' as 'text',
           style: {
@@ -157,7 +316,38 @@ const Block = memo(
         };
       });
 
-      updatedBlockList[i].children = [];
+      // 한 줄의 맨 앞에 커서를 두고 블록 나눌 때 beforeBlock 맨 뒤에 br 추가
+      if (newBeforeBlock[newBeforeBlock.length - 1]?.type === 'br' && beforeText === '') {
+        newBeforeBlock.push({
+          type: 'br' as 'br',
+          style: {
+            fontStyle: 'normal',
+            fontWeight: 'regular',
+            color: 'black',
+            backgroundColor: 'white',
+            width: 'auto',
+            height: 'auto',
+          },
+          content: '',
+        });
+      }
+
+      // 빈 줄에서 블록 나눌 때 afterBlock 맨 앞에 br 추가
+      if (beforeText === '' && afterText === '') {
+        newAfterBlock.unshift({
+          type: 'br' as 'br',
+          style: {
+            fontStyle: 'normal',
+            fontWeight: 'regular',
+            color: 'black',
+            backgroundColor: 'white',
+            width: 'auto',
+            height: 'auto',
+          },
+          content: '',
+        });
+      }
+
       updatedBlockList[i].children = newBeforeBlock;
 
       updatedBlockList.splice(i + 1, 0, {
@@ -173,35 +363,257 @@ const Block = memo(
       }, 0);
     };
 
+    const splitLine = (i: number) => {
+      const selection = window.getSelection();
+      if (!selection) return;
+
+      const range = selection.getRangeAt(0);
+      const container = range.startContainer;
+      const offset = range.startOffset;
+      const parent = blockRef.current[i];
+      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+      const currentChildNodeIndex =
+        childNodes.indexOf(container as HTMLElement) === -1 &&
+        container?.nodeType === Node.TEXT_NODE
+          ? childNodes.indexOf(container.parentNode as HTMLElement)
+          : childNodes.indexOf(container as HTMLElement);
+      const newChildren = [...block.children];
+
+      if (container.nodeType === Node.TEXT_NODE) {
+        const textBefore = container.textContent?.substring(0, offset);
+        const textAfter = container.textContent?.substring(offset);
+
+        // 줄 바꿈이 반영된 children 배열 생성
+        const updatedChildren = [
+          ...newChildren.slice(0, currentChildNodeIndex),
+          textBefore && {
+            type: (container.parentNode as Element)?.tagName === 'DIV' ? 'text' : 'span',
+            style: {
+              fontStyle:
+                (container.parentNode as Element)?.tagName === 'DIV'
+                  ? 'normal'
+                  : (container.parentNode as HTMLElement)?.style.fontStyle || 'normal',
+              fontWeight:
+                (container.parentNode as Element)?.tagName === 'DIV'
+                  ? 'regular'
+                  : (container.parentNode as HTMLElement)?.style.fontWeight || 'regular',
+              color:
+                (container.parentNode as Element)?.tagName === 'DIV'
+                  ? 'black'
+                  : (container.parentNode as HTMLElement)?.style.color || 'black',
+              backgroundColor:
+                (container.parentNode as Element)?.tagName === 'DIV'
+                  ? 'white'
+                  : (container.parentNode as HTMLElement)?.style.backgroundColor || 'white',
+              width: 'auto',
+              height: 'auto',
+            },
+            content: textBefore || '',
+          },
+          textBefore && textAfter
+            ? {
+                type: 'br' as 'br',
+                style: {
+                  fontStyle: 'normal',
+                  fontWeight: 'regular',
+                  color: 'black',
+                  backgroundColor: 'white',
+                  width: 'auto',
+                  height: 'auto',
+                },
+                content: '',
+              }
+            : null,
+          textAfter && {
+            type: (container.parentNode as Element)?.tagName === 'DIV' ? 'text' : 'span',
+            style: {
+              fontStyle:
+                (container.parentNode as Element)?.tagName === 'DIV'
+                  ? 'normal'
+                  : (container.parentNode as HTMLElement)?.style.fontStyle || 'normal',
+              fontWeight:
+                (container.parentNode as Element)?.tagName === 'DIV'
+                  ? 'regular'
+                  : (container.parentNode as HTMLElement)?.style.fontWeight || 'regular',
+              color:
+                (container.parentNode as Element)?.tagName === 'DIV'
+                  ? 'black'
+                  : (container.parentNode as HTMLElement)?.style.color || 'black',
+              backgroundColor:
+                (container.parentNode as Element)?.tagName === 'DIV'
+                  ? 'white'
+                  : (container.parentNode as HTMLElement)?.style.backgroundColor || 'white',
+              width: 'auto',
+              height: 'auto',
+            },
+            content: textAfter || '',
+          },
+          ...newChildren.slice(currentChildNodeIndex + 1),
+        ]
+          .map(child => {
+            if (child === '') {
+              return {
+                type: 'br' as 'br',
+                style: {
+                  fontStyle: 'normal',
+                  fontWeight: 'regular',
+                  color: 'black',
+                  backgroundColor: 'white',
+                  width: 'auto',
+                  height: 'auto',
+                },
+                content: '',
+              };
+            }
+
+            return child;
+          })
+          .filter(child => child !== null);
+
+        // 줄의 맨 마지막에서 줄바꿈을 할 떄는 <br> 태그가 하나 더 추가 되야함 ex) 줄바꿈 후 두 번째 줄이 빈 문자열일 때: ""<br><br>
+        if (
+          updatedChildren[updatedChildren.length - 1]?.type === 'br' &&
+          updatedChildren[updatedChildren.length - 2]?.type !== 'br'
+        ) {
+          updatedChildren.push({
+            type: 'br' as 'br',
+            style: {
+              fontStyle: 'normal',
+              fontWeight: 'regular',
+              color: 'black',
+              backgroundColor: 'white',
+              width: 'auto',
+              height: 'auto',
+            },
+            content: '',
+          });
+        }
+
+        const updatedBlockList = [...blockList];
+        updatedBlockList[i] = {
+          ...updatedBlockList[i],
+          children: updatedChildren as ITextBlock['children'],
+        };
+        setBlockList(updatedBlockList);
+      } else {
+        // 현재 커서 위치 한 곳이 빈 문자열일 때 → 중복 줄바꿈 로직
+        const updatedBlockList = [...blockList];
+        updatedBlockList[i].children.splice(offset, 0, {
+          type: 'br',
+          style: {
+            fontStyle: 'normal',
+            fontWeight: 'regular',
+            color: 'black',
+            backgroundColor: 'white',
+            width: 'auto',
+            height: 'auto',
+          },
+          content: '',
+        });
+
+        setBlockList(updatedBlockList);
+      }
+    };
+
     const mergeBlock = (i: number) => {
       const updatedBlockList = [...blockList];
       const previousBlock = updatedBlockList[i - 1];
       const currentBlock = updatedBlockList[i];
 
       previousBlock.children = [...previousBlock.children, ...currentBlock.children];
-
       updatedBlockList.splice(i, 1);
+
       setBlockList(updatedBlockList);
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, i: number) => {
-      if (e.key === keyName.enter && !e.shiftKey) {
-        e.preventDefault();
-        if (e.nativeEvent.isComposing) {
-          return;
-        }
+    const mergeLine = (i: number, currentChildNodeIndex: number) => {
+      const updatedBlockList = [...blockList];
+      const newChildren = [...block.children];
+      newChildren.splice(currentChildNodeIndex - 1, 1);
+      updatedBlockList[i] = { ...updatedBlockList[i], children: newChildren };
+
+      setBlockList(updatedBlockList);
+    };
+
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>, i: number) => {
+      if (event.key === keyName.enter && !event.shiftKey) {
+        event.preventDefault();
         setIsTyping(false);
         setKey(Math.random());
         splitBlock(i);
       }
 
-      if (e.key === keyName.backspace) {
+      if (event.key === keyName.enter && event.shiftKey) {
+        event.preventDefault();
+        setIsTyping(false);
+        setKey(Math.random());
+        splitLine(i);
+      }
+
+      if (event.key === keyName.backspace) {
         const selection = window.getSelection();
         const cursorPosition = selection?.focusOffset || 0;
 
-        if (cursorPosition === 0 && i > 0) {
-          e.preventDefault();
-          mergeBlock(i);
+        const range = selection?.getRangeAt(0);
+        const container = range?.startContainer;
+        const parent = blockRef.current[i];
+        const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+        const currentChildNodeIndex =
+          childNodes.indexOf(container as HTMLElement) === -1 &&
+          container?.nodeType === Node.TEXT_NODE
+            ? childNodes.indexOf(container.parentNode as HTMLElement)
+            : childNodes.indexOf(container as HTMLElement);
+
+        // 첫 블록 첫 커서에서 백스페이스 방지
+        if (
+          i === 0 &&
+          (currentChildNodeIndex === -1 || currentChildNodeIndex === 0) &&
+          cursorPosition === 0
+        ) {
+          event.preventDefault();
+          return;
+        }
+
+        // 한 줄이 다 지워졌을 때
+        if (currentChildNodeIndex === -1) {
+          event.preventDefault();
+          setIsTyping(false);
+          setKey(Math.random());
+
+          if (cursorPosition === 0) {
+            // 블록 합치기 로직
+            mergeBlock(i);
+          } else {
+            // 줄 합치기 로직
+            const updatedBlockList = [...blockList];
+
+            if (
+              (updatedBlockList[i].children[cursorPosition - 1].type === 'br' &&
+                updatedBlockList[i].children[cursorPosition - 2].type !== 'br' &&
+                !updatedBlockList[i].children[cursorPosition + 1]) ||
+              updatedBlockList[i].children.length !== blockRef.current[i]?.childNodes.length
+            ) {
+              updatedBlockList[i].children.splice(cursorPosition - 1, 2);
+            } else {
+              updatedBlockList[i].children.splice(cursorPosition, 1);
+            }
+
+            setBlockList(updatedBlockList);
+          }
+
+          return;
+        }
+
+        // 줄 또는 블록 합치기 로직
+        if (cursorPosition === 0) {
+          event.preventDefault();
+          setIsTyping(false);
+          setKey(Math.random());
+          if (currentChildNodeIndex <= 0) {
+            mergeBlock(i);
+          } else if (currentChildNodeIndex > 0) {
+            mergeLine(i, currentChildNodeIndex);
+          }
         }
       }
     };

@@ -5,7 +5,7 @@ export interface ITextBlock {
 }
 
 interface ITextBlockChild {
-  type: 'text' | 'codeBlock' | 'h1' | 'h2' | 'h3' | 'br';
+  type: 'text' | 'span' | 'br';
   style: IBlockStyle;
   content: string | null;
 }
