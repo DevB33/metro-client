@@ -38,24 +38,23 @@ const NoteContent = () => {
   ]);
 
   const [isTyping, setIsTyping] = useState(false);
-  const [isHover, setIsHover] = useState<boolean[]>([]);
-  const isHoverRef = useRef<boolean[]>([]);
+  const blockButtonRef = useRef<(HTMLDivElement | null)[]>([]);
   const blockRef = useRef<(HTMLDivElement | null)[]>([]);
 
   const handleMouseEnter = (index: number) => {
-    isHoverRef.current[index] = true;
-    setIsHover([...isHoverRef.current]);
+    blockButtonRef.current[index]?.style.setProperty('display', 'flex');
   };
 
   const handleMouseLeave = (index: number) => {
-    isHoverRef.current[index] = false;
-    setIsHover([...isHoverRef.current]);
+    blockButtonRef.current[index]?.style.setProperty('display', 'none');
   };
 
   return (
     <>
       {blockList.map((block, index) => (
         <div
+          role="button"
+          tabIndex={0}
           key={block.id}
           className={blockContainer}
           onMouseEnter={() => handleMouseEnter(index)}
@@ -63,7 +62,15 @@ const NoteContent = () => {
           onKeyDown={() => handleMouseLeave(index)}
           onMouseMove={() => handleMouseEnter(index)}
         >
-          {isHover[index] && <BlockButton />}
+          <div
+            className={css({ display: 'none' })}
+            ref={element => {
+              // eslint-disable-next-line no-param-reassign
+              blockButtonRef.current[index] = element;
+            }}
+          >
+            <BlockButton />
+          </div>
           <Block
             index={index}
             block={block}
