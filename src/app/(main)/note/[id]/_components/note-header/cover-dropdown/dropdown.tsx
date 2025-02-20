@@ -1,5 +1,5 @@
 import { css } from '@/../styled-system/css';
-import useClickOutside from '@/app/hooks/useOutterClick';
+import useClickOutside from '@/app/hooks/useClickOutside';
 import DropdownHeader from './dropdown-header';
 import DropdownContent from './dropdown-content';
 

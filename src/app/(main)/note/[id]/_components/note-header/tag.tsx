@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import ITagType from '@/types/tag-type';
 import LineColor from '@/constants/line-color';
 import keyName from '@/constants/key-name';
-import useClickOutside from '@/app/hooks/useOutterClick';
+import useClickOutside from '@/app/hooks/useClickOutside';
 import TagBox from './tag-box';
 
 const tagContainer = css({
