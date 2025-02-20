@@ -102,9 +102,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
     setIsOpen(!isOpen);
   };
 
-  const openPage = (
-    event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>,
-  ) => {
+  const openPage = (event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>) => {
     if (
       toggleButtoonRef.current?.contains(event.target as Node) ||
       settingButtonRef.current?.contains(event.target as Node) ||
@@ -161,20 +159,10 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
         <div className={pageTitle}>{page.title === null ? '새 페이지' : page.title}</div>
         {isHover && (
           <div className={pageButtonContainer}>
-            <button
-              type="button"
-              ref={settingButtonRef}
-              className={pageButton}
-              onClick={openSettingDropdown}
-            >
+            <button type="button" ref={settingButtonRef} className={pageButton} onClick={openSettingDropdown}>
               <HorizonDotIcon />
             </button>
-            <button
-              type="button"
-              ref={plusButtonRef}
-              className={pageButton}
-              onClick={handlePlusButtonClick}
-            >
+            <button type="button" ref={plusButtonRef} className={pageButton} onClick={handlePlusButtonClick}>
               <PlusIcon />
             </button>
           </div>

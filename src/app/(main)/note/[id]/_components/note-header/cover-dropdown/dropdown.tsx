@@ -30,10 +30,7 @@ const CoverDropdown = ({ handleSelectCover, handleCoverModalClose }: ICoverDropd
   return (
     <div ref={coverModalRef} className={dropdownContainer}>
       <DropdownHeader />
-      <DropdownContent
-        handleSelectCover={handleSelectCover}
-        handleCoverModalClose={handleCoverModalClose}
-      />
+      <DropdownContent handleSelectCover={handleSelectCover} handleCoverModalClose={handleCoverModalClose} />
     </div>
   );
 };

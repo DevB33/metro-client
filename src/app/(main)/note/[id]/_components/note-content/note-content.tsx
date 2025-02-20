@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { css } from '@/../styled-system/css';
 import { ITextBlock } from '@/types/block-type';
-import Block from './block';
+import Block from './block/block';
 import BlockButton from './block-button';
 
 const blockContainer = css({

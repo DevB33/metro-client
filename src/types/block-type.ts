@@ -6,8 +6,8 @@ export interface ITextBlock {
 
 interface ITextBlockChild {
   type: 'text' | 'span' | 'br';
-  style: IBlockStyle;
-  content: string | null;
+  style?: IBlockStyle;
+  content?: string;
 }
 
 interface IBlockStyle {
