@@ -1,5 +1,5 @@
 import { css } from '@/../styled-system/css';
-import { useEffect, useRef } from 'react';
+import useClickOutside from '@/hooks/useClickOutside';
 import DropdownHeader from './dropdown-header';
 import DropdownContent from './dropdown-content';
 
@@ -25,17 +25,7 @@ const dropdownContainer = css({
 });
 
 const CoverDropdown = ({ handleSelectCover, handleCoverModalClose }: ICoverDropdownProps) => {
-  const coverModalRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const handleOutterClick = (e: MouseEvent) => {
-      if (coverModalRef.current && !coverModalRef.current.contains(e.target as Node)) {
-        handleCoverModalClose();
-      }
-    };
-    window.addEventListener('mousedown', handleOutterClick);
-    return () => window.removeEventListener('mousedown', handleOutterClick);
-  }, [coverModalRef]);
+  const coverModalRef = useClickOutside(handleCoverModalClose);
 
   return (
     <div ref={coverModalRef} className={dropdownContainer}>

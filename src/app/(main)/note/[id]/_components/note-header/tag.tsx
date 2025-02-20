@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import ITagType from '@/types/tag-type';
 import LineColor from '@/constants/line-color';
 import keyName from '@/constants/key-name';
+import useClickOutside from '@/hooks/useClickOutside';
 import TagBox from './tag-box';
 
 const tagContainer = css({
@@ -66,7 +67,6 @@ const Tag = () => {
   const [tagList, setTagList] = useState<ITagType[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const tagRef = useRef<HTMLDivElement>(null);
 
   const getRandomColor = (): keyof typeof LineColor => {
     const colorKeys = Object.keys(LineColor) as Array<keyof typeof LineColor>;
@@ -74,25 +74,21 @@ const Tag = () => {
     return colorKeys[randomIndex];
   };
 
-  const handleEditing = () => {
+  const startEditing = () => {
     setIsEditing(true);
   };
+
+  const endEditing = () => {
+    setIsEditing(false);
+  };
+
+  const tagRef = useClickOutside(endEditing);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus();
     }
   }, [isEditing]);
-
-  useEffect(() => {
-    const handleOutterClick = (e: MouseEvent) => {
-      if (tagRef.current && !tagRef.current.contains(e.target as Node)) {
-        setIsEditing(false);
-      }
-    };
-    window.addEventListener('mousedown', handleOutterClick);
-    return () => window.removeEventListener('mousedown', handleOutterClick);
-  }, [tagRef]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const inputValue = e.currentTarget.value;
@@ -129,10 +125,10 @@ const Tag = () => {
         role="button"
         tabIndex={0}
         className={tagBoxContainer}
-        onClick={handleEditing}
+        onClick={startEditing}
         onKeyDown={e => {
           if (e.key === keyName.enter) {
-            handleEditing();
+            startEditing();
           }
         }}
       >

@@ -1,6 +1,6 @@
 'use client';
 
-import EmojiPicker from 'emoji-picker-react';
+import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 
 interface IIconSelectorProps {
   handleSelectIcon: (icon: string) => void;
@@ -13,7 +13,7 @@ const IconSelector = ({
   handleSelectorClose,
   isSelectorOpen,
 }: IIconSelectorProps) => {
-  const onEmojiClick = (emojiObject: any) => {
+  const onEmojiClick = (emojiObject: EmojiClickData) => {
     handleSelectIcon(emojiObject.emoji);
     handleSelectorClose();
   };
