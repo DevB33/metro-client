@@ -10,12 +10,22 @@ export const editIcon = async (noteId: string, selectedIcon: string | null) => {
   );
 };
 
-export const editCover = async (noteId: string, selectedColor: String) => {
+export const editCover = async (noteId: string, selectedColor: String | null) => {
   const instance = await getInstance();
   await instance.patch(
     `/documents/${noteId}/cover`,
     JSON.stringify({
       value: selectedColor,
+    }),
+  );
+};
+
+export const editTitle = async (noteId: string, title: String | null) => {
+  const instance = await getInstance();
+  await instance.patch(
+    `/documents/${noteId}/title`,
+    JSON.stringify({
+      value: title,
     }),
   );
 };

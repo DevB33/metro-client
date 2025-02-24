@@ -1,5 +1,11 @@
 import { useState, useRef } from 'react';
 import { css } from '@/../styled-system/css';
+import useSWR, { mutate } from 'swr';
+import { editTitle, getNoteInfo } from '@/apis/note-header';
+
+interface ITitle {
+  noteId: string;
+}
 
 const titleFont = css({
   fontSize: 'lg',
@@ -20,14 +26,21 @@ const titleFont = css({
   },
 });
 
-const Title = () => {
-  const [value, setValue] = useState('');
+const Title = ({ noteId }: ITitle) => {
+  const { data } = useSWR(`noteHeaderData`);
+
+  const [value, setValue] = useState(data.title);
+
   const isHovered = useRef(false);
   const [isScrollable, setIsScrollable] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setValue(e.target.value);
+
+    await editTitle(noteId, e.target.value);
+    await mutate('noteHeaderData', getNoteInfo(noteId), false);
+
     const textarea = textareaRef.current;
 
     if (textarea) {

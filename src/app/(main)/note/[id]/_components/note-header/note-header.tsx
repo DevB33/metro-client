@@ -96,8 +96,9 @@ const NoteHeader = () => {
     await mutate('noteHeaderData', getNoteInfo(noteId), false);
   };
 
-  const deleteCover = () => {
-    setCover(null);
+  const deleteCover = async () => {
+    await editCover(noteId, null);
+    await mutate('noteHeaderData', getNoteInfo(noteId), false);
   };
 
   const iconSelectorRef = useClickOutside(handleSelectorClose);
@@ -146,7 +147,7 @@ const NoteHeader = () => {
           handleSelectIcon={handleSelectIcon}
           handleSelectCover={handleSelectCover}
         />
-        <Title />
+        <Title noteId={noteId} />
       </div>
       <Tag />
     </>
