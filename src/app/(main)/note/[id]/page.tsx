@@ -46,11 +46,12 @@ const divider = css({
   borderRadius: '1rem',
 });
 
-const Note = async ({ params }: { params: { id: string } }) => {
+const Note = async ({ params }: { params: Promise<{ id: string }> }) => {
   const cookie = await cookies();
   const accessToken = cookie?.get('accessToken')?.value;
+  const { id } = await params;
 
-  const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/documents/${params.id}`, {
+  const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/documents/${id}`, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
