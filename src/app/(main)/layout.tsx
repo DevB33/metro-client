@@ -22,13 +22,13 @@ const RootLayout = async ({ children, modal }: Readonly<{ children: React.ReactN
     },
   });
 
-  const sidebarData = response.data;
+  const pageList = response.data;
 
   return (
     <SWRConfig
       value={{
         fallback: {
-          [`pageList`]: sidebarData,
+          [`pageList`]: pageList,
         },
       }}
     >
