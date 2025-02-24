@@ -5,7 +5,7 @@ import { css } from '@/../styled-system/css';
 import useClickOutside from '@/hooks/useClickOutside';
 import useSWR, { mutate } from 'swr';
 import { useParams } from 'next/navigation';
-import { editIcon, getNoteInfo } from '@/apis/note-header';
+import { editCover, editIcon, getNoteInfo } from '@/apis/note-header';
 import IconSelector from './icon-selector';
 import Tag from './tag';
 import Title from './title';
@@ -91,8 +91,9 @@ const NoteHeader = () => {
     setIsCoverModalOpen(false);
   };
 
-  const handleSelectCover = (selectedColor: string) => {
-    setCover(selectedColor);
+  const handleSelectCover = async (selectedColor: string) => {
+    await editCover(noteId, selectedColor);
+    await mutate('noteHeaderData', getNoteInfo(noteId), false);
   };
 
   const deleteCover = () => {
