@@ -149,7 +149,7 @@ const NoteHeader = () => {
         />
         <Title noteId={noteId} />
       </div>
-      <Tag />
+      <Tag noteId={noteId} />
     </>
   );
 };

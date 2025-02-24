@@ -1,3 +1,4 @@
+import ITagType from '@/types/tag-type';
 import getInstance from '.';
 
 export const editIcon = async (noteId: string, selectedIcon: string | null) => {
@@ -30,9 +31,20 @@ export const editTitle = async (noteId: string, title: String | null) => {
   );
 };
 
+export const editTags = async (noteId: string, tags: ITagType[]) => {
+  const instance = await getInstance();
+  await instance.patch(
+    `/documents/${noteId}/tags`,
+    JSON.stringify({
+      tags,
+    }),
+  );
+};
+
 export const getNoteInfo = async (noteId: string | null) => {
   const instance = await getInstance();
   const response = await instance.get(`/documents/${noteId}`);
+  console.log(response.data);
 
   return response.data;
 };

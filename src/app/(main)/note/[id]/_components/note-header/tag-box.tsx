@@ -25,12 +25,12 @@ const tagBox = cva({
   },
   variants: {
     color: {
-      lineOne: { backgroundColor: 'lineOne' },
-      lineTwo: { backgroundColor: 'lineTwo' },
-      lineThree: { backgroundColor: 'lineThree' },
-      lineFour: { backgroundColor: 'lineFour' },
-      lineFive: { backgroundColor: 'lineFive' },
-      lineSix: { backgroundColor: 'lineSix' },
+      LINE_ONE: { backgroundColor: 'lineOne' },
+      LINE_TWO: { backgroundColor: 'lineTwo' },
+      LINE_THREE: { backgroundColor: 'lineThree' },
+      LINE_FOUR: { backgroundColor: 'lineFour' },
+      LINE_FIVE: { backgroundColor: 'lineFive' },
+      LINE_SIX: { backgroundColor: 'lineSix' },
     },
   },
 });
