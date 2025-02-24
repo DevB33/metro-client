@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { css } from '@/../styled-system/css';
 
 import ProfileCard from './profile/profile-card';
@@ -12,8 +12,9 @@ const sideBarContainer = css({
   display: 'flex',
   width: 'auto',
   height: '100vh',
-  marginRight: '1rem',
+  marginRight: '.1rem',
   transition: '0.3s',
+  userSelect: 'none',
 });
 
 const sideBar = css({

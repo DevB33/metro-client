@@ -43,16 +43,11 @@ const SideBarResizeHandle = ({
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isOpen) {
       const startX = e.clientX;
-      const startWidth = sideBarRef.current
-        ? parseFloat(getComputedStyle(sideBarRef.current).width) / 16
-        : 20;
+      const startWidth = sideBarRef.current ? parseFloat(getComputedStyle(sideBarRef.current).width) / 16 : 20;
 
       const onMouseMove = (moveEvent: MouseEvent) => {
         setMousePosition({ x: moveEvent.clientX, y: moveEvent.clientY });
-        const newWidth = Math.min(
-          Math.max(minWidth, startWidth + (moveEvent.clientX - startX) / 16),
-          maxWidth,
-        );
+        const newWidth = Math.min(Math.max(minWidth, startWidth + (moveEvent.clientX - startX) / 16), maxWidth);
         const sidebarElement = sideBarRef.current;
         if (sidebarElement) {
           sidebarElement.style.width = `${newWidth}rem`;

@@ -3,25 +3,16 @@
 import { useState, useRef } from 'react';
 import { css } from '@/../styled-system/css';
 import { ITextBlock } from '@/types/block-type';
-import Block from './block';
+import Block from './block/block';
 import BlockButton from './block-button';
 
 const blockContainer = css({
+  boxSizing: 'content-box',
+  position: 'relative',
+  width: '44.5rem',
   display: 'flex',
   flexDirection: 'row',
-});
-
-const focusTextStyle = css({
-  position: 'absolute',
-  top: '0.1rem',
-  color: 'gray',
-  fontSize: 'md',
-  pointerEvents: 'none',
-});
-
-const wrapper = css({
-  position: 'relative',
-  verticalAlign: 'middle',
+  px: '5rem',
 });
 
 const NoteContent = () => {
@@ -47,51 +38,48 @@ const NoteContent = () => {
   ]);
 
   const [isTyping, setIsTyping] = useState(false);
-  const [isFocused, setIsFocused] = useState<boolean[]>([false]);
-  const [isHover, setIsHover] = useState<boolean[]>([]);
-
+  const blockButtonRef = useRef<(HTMLDivElement | null)[]>([]);
   const blockRef = useRef<(HTMLDivElement | null)[]>([]);
 
   const handleMouseEnter = (index: number) => {
-    const newHoverState = [...isHover];
-    newHoverState[index] = true;
-    setIsHover(newHoverState);
+    blockButtonRef.current[index]?.style.setProperty('display', 'flex');
   };
 
   const handleMouseLeave = (index: number) => {
-    const newHoverState = [...isHover];
-    newHoverState[index] = false;
-    setIsHover(newHoverState);
+    blockButtonRef.current[index]?.style.setProperty('display', 'none');
   };
 
   return (
     <>
       {blockList.map((block, index) => (
-        <div className={wrapper} key={block.id}>
+        <div
+          role="button"
+          tabIndex={0}
+          key={block.id}
+          className={blockContainer}
+          onMouseEnter={() => handleMouseEnter(index)}
+          onMouseLeave={() => handleMouseLeave(index)}
+          onKeyDown={() => handleMouseLeave(index)}
+          onMouseMove={() => handleMouseEnter(index)}
+        >
           <div
-            className={blockContainer}
-            onMouseEnter={() => handleMouseEnter(index)}
-            onMouseLeave={() => handleMouseLeave(index)}
+            className={css({ display: 'none' })}
+            ref={element => {
+              // eslint-disable-next-line no-param-reassign
+              blockButtonRef.current[index] = element;
+            }}
           >
-            {isHover[index] && <BlockButton />}
-            {isFocused[index] && block.children[0].content?.trim() === '' && (
-              <div className={focusTextStyle}>
-                글을 작성하거나 AI를 사용하려면 '스페이스' 키를, 명령어를 사용하려면 '/' 키를
-                누르세요.
-              </div>
-            )}
-            <Block
-              block={block}
-              index={index}
-              blockRef={blockRef}
-              blockList={blockList}
-              setBlockList={setBlockList}
-              isTyping={isTyping}
-              setIsTyping={setIsTyping}
-              isFocused={isFocused}
-              setIsFocused={setIsFocused}
-            />
+            <BlockButton />
           </div>
+          <Block
+            index={index}
+            block={block}
+            blockRef={blockRef}
+            blockList={blockList}
+            setBlockList={setBlockList}
+            isTyping={isTyping}
+            setIsTyping={setIsTyping}
+          />
         </div>
       ))}
     </>

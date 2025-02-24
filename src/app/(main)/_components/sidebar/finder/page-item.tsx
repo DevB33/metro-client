@@ -1,15 +1,20 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { css } from '@/../styled-system/css';
 
-import IPageType from '@/types/page-type';
 import PageCloseIcon from '@/icons/page-close-icon';
 import PageOpenIcon from '@/icons/page-open-icon';
 import PageIcon from '@/icons/page-icon';
 import HorizonDotIcon from '@/icons/horizon-dot-icon';
 import PlusIcon from '@/icons/plus-icon';
+import IDocuments from '@/types/document-type';
+import { createPage, deletePage, getPageList } from '@/apis/side-bar';
+import { mutate } from 'swr';
+import TrashIcon from '@/icons/trash-icon';
+import PencilSquareIcon from '@/icons/pencil-square';
+import DropDown from '../../../../../components/dropdown/dropdown';
 
 const pageItemContainer = css({
   display: 'flex',
@@ -84,22 +89,20 @@ const noChildren = css({
   overflow: 'hidden',
 });
 
-const PageItem = ({ page, depth }: { page: IPageType; depth: number }) => {
+const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
   const router = useRouter();
   const toggleButtoonRef = useRef<HTMLButtonElement>(null);
   const settingButtonRef = useRef<HTMLButtonElement>(null);
   const plusButtonRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isHover, setIsHover] = useState(false);
-  const [currentPage, setCurrentPage] = useState<IPageType>(page);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const togglePage = () => {
     setIsOpen(!isOpen);
   };
 
-  const openPage = (
-    event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>,
-  ) => {
+  const openPage = (event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>) => {
     if (
       toggleButtoonRef.current?.contains(event.target as Node) ||
       settingButtonRef.current?.contains(event.target as Node) ||
@@ -107,48 +110,35 @@ const PageItem = ({ page, depth }: { page: IPageType; depth: number }) => {
     )
       return;
 
-    router.push(`/note/${page.pageId}`);
+    router.push(`/note/${page.id}`);
   };
 
   const openSettingDropdown = () => {
-    // TODD: 페이지 설정 드롭다운 열기
+    setIsDropdownOpen(true);
   };
 
-  const deletePage = () => {
-    // TODD: 페이지 삭제
+  const closeSettingDropdown = () => {
+    setIsDropdownOpen(false);
   };
 
-  const createChildPage = () => {
-    togglePage();
-    const newChildPage: IPageType = {
-      pageId: Date.now(),
-      title: '새 페이지',
-      icon: '',
-      children: [],
-    };
-    setCurrentPage(prevPage => ({
-      ...prevPage,
-      children: [...prevPage.children, newChildPage],
-    }));
+  const handleDeleteButtonClick = async () => {
+    try {
+      await deletePage(page.id);
+      await mutate('pageList', getPageList, false);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  useEffect(() => {
-    const storedPageList = localStorage.getItem('pageList');
-    if (!storedPageList) return;
-
-    const parsedPageList: IPageType[] = JSON.parse(storedPageList);
-
-    const updatePagesRecursively = (pages: IPageType[]): IPageType[] => {
-      return pages.map(p =>
-        p.pageId === currentPage.pageId
-          ? currentPage
-          : { ...p, children: updatePagesRecursively(p.children) },
-      );
-    };
-
-    const updatedPageList = updatePagesRecursively(parsedPageList);
-    localStorage.setItem('pageList', JSON.stringify(updatedPageList));
-  }, [currentPage]);
+  const handlePlusButtonClick = async () => {
+    try {
+      if (!isOpen) togglePage();
+      await createPage(page.id);
+      await mutate('pageList', getPageList, false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div className={pageItemContainer}>
@@ -166,33 +156,35 @@ const PageItem = ({ page, depth }: { page: IPageType; depth: number }) => {
           {isOpen ? <PageOpenIcon color="black" /> : <PageCloseIcon color="black" />}
         </button>
         <div className={pageIcon}>{page.icon ? `${page.icon}` : <PageIcon />}</div>
-        <div className={pageTitle}>{page.title}</div>
+        <div className={pageTitle}>{page.title === null ? '새 페이지' : page.title}</div>
         {isHover && (
           <div className={pageButtonContainer}>
-            <button
-              type="button"
-              ref={settingButtonRef}
-              className={pageButton}
-              onClick={openSettingDropdown}
-            >
+            <button type="button" ref={settingButtonRef} className={pageButton} onClick={openSettingDropdown}>
               <HorizonDotIcon />
             </button>
-            <button
-              type="button"
-              ref={plusButtonRef}
-              className={pageButton}
-              onClick={createChildPage}
-            >
+            <button type="button" ref={plusButtonRef} className={pageButton} onClick={handlePlusButtonClick}>
               <PlusIcon />
             </button>
           </div>
         )}
+        <DropDown handleClose={closeSettingDropdown}>
+          <DropDown.Menu isOpen={isDropdownOpen} top="1rem" left="-3.7rem">
+            <DropDown.Item>
+              <PencilSquareIcon />
+              제목 수정하기
+            </DropDown.Item>
+            <DropDown.Item onClick={handleDeleteButtonClick}>
+              <TrashIcon />
+              삭제하기
+            </DropDown.Item>
+          </DropDown.Menu>
+        </DropDown>
       </div>
       {isOpen &&
-        (currentPage.children.length ? (
+        (page.children.length ? (
           <div className={pageChildren}>
-            {currentPage.children.map(child => (
-              <PageItem key={child.pageId} page={child} depth={depth + 1} />
+            {page.children.map(child => (
+              <PageItem key={child.id} page={child} depth={depth + 1} />
             ))}
           </div>
         ) : (

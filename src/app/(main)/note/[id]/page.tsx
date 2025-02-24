@@ -6,33 +6,40 @@ import LineInfo from './_components/line-info/line-info';
 import NoteConent from './_components/note-content/note-content';
 
 const container = css({
-  width: '100vw',
+  position: 'relative',
+  width: '100%',
   height: '100vh',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  gap: 'huge',
+  justifyItems: 'start',
+  overflowX: 'scroll',
+});
+
+const contentContainer = css({
+  width: '100%',
+  height: '100%',
+  overflowX: 'scroll',
 });
 
 const noteContainer = css({
-  width: 'full',
-  display: 'flex',
-  overflowY: 'auto',
-  alignItems: 'start',
-  justifyContent: 'center',
-});
-
-const content = css({
+  position: 'relative',
+  width: 'auto',
+  minWidth: '54.5rem',
+  minHeight: '100%',
   display: 'flex',
   flexDirection: 'column',
-  width: '44.5rem',
-  minHeight: '48rem',
+  alignItems: 'center',
+  justifyContent: 'start',
   gap: 'tiny',
+  zIndex: 3,
+  mb: '10rem',
 });
 
 const divider = css({
   backgroundColor: 'gray',
-  height: '1px',
+  width: '44.5rem',
+  height: '.5px',
   borderRadius: '1rem',
 });
 
@@ -40,8 +47,8 @@ const Note = () => {
   return (
     <div className={container}>
       <Header />
-      <div className={noteContainer}>
-        <div className={content}>
+      <div className={contentContainer}>
+        <div className={noteContainer}>
           <NoteHeader />
           <div className={divider} />
           <LineInfo />

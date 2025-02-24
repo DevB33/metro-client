@@ -7,6 +7,7 @@ const profileContainer = css({
   alignItems: 'center',
   px: 'small',
   gap: 'tiny',
+  userSelect: 'none',
 });
 
 const profileImage = css({
@@ -18,7 +19,6 @@ const profileImage = css({
 
 const profileName = css({
   fontSize: 'md',
-  userSelect: 'none',
 });
 
 const ProfileSection = () => {
