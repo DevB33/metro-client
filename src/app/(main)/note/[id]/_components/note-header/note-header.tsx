@@ -3,6 +3,9 @@
 import { useRef, useState } from 'react';
 import { css } from '@/../styled-system/css';
 import useClickOutside from '@/hooks/useClickOutside';
+import useSWR, { mutate } from 'swr';
+import { useParams } from 'next/navigation';
+import { editIcon, getNoteInfo } from '@/apis/note-header';
 import IconSelector from './icon-selector';
 import Tag from './tag';
 import Title from './title';
@@ -51,10 +54,13 @@ const noIcon = css({
 const NoteHeader = () => {
   const [isHover, setIsHover] = useState(false);
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
-  const [icon, setIcon] = useState<string | null>(null);
-  const [cover, setCover] = useState<string | null>(null);
   const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
   const iconRef = useRef<HTMLButtonElement>(null);
+
+  const params = useParams();
+  const noteId = params.id as string;
+
+  const { data } = useSWR(`noteHeaderData`);
 
   const handleMouseEnter = () => {
     setIsHover(true);
@@ -64,8 +70,9 @@ const NoteHeader = () => {
     setIsHover(false);
   };
 
-  const handleSelectIcon = (selectedIcon: string | null) => {
-    setIcon(selectedIcon);
+  const handleSelectIcon = async (selectedIcon: string | null) => {
+    await editIcon(noteId, selectedIcon);
+    await mutate('noteHeaderData', getNoteInfo(noteId), false);
   };
 
   const handleSelectorOpen = () => {
@@ -96,7 +103,9 @@ const NoteHeader = () => {
 
   return (
     <>
-      {cover && <NoteCover cover={cover} handleCoverModalOpen={handleCoverModalOpen} deleteCover={deleteCover} />}
+      {data.cover && (
+        <NoteCover cover={data.cover} handleCoverModalOpen={handleCoverModalOpen} deleteCover={deleteCover} />
+      )}
       {isCoverModalOpen && (
         <CoverDropdown handleSelectCover={handleSelectCover} handleCoverModalClose={handleCoverModalClose} />
       )}
@@ -105,9 +114,9 @@ const NoteHeader = () => {
         className={headerConatiner}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        style={{ top: cover ? '-3rem' : '0rem' }}
+        style={{ top: data.cover ? '-3rem' : '0rem' }}
       >
-        {icon && (
+        {data.icon && (
           <>
             <button
               ref={iconRef}
@@ -115,12 +124,12 @@ const NoteHeader = () => {
               onClick={isSelectorOpen ? handleSelectorClose : handleSelectorOpen}
               className={IconContainer}
             >
-              {icon}
+              {data.icon}
             </button>
             <div className={IconMargin} />
           </>
         )}
-        {!icon && <div className={noIcon} />}
+        {!data.icon && <div className={noIcon} />}
         <div className={IconSelectorContainer} ref={iconSelectorRef}>
           <IconSelector
             handleSelectIcon={handleSelectIcon}
@@ -129,8 +138,8 @@ const NoteHeader = () => {
           />
         </div>
         <HoverMenu
-          icon={icon}
-          cover={cover}
+          icon={data.icon}
+          cover={data.cover}
           isHover={isHover}
           handleSelectorOpen={handleSelectorOpen}
           handleSelectIcon={handleSelectIcon}
