@@ -85,7 +85,7 @@ const Title = ({ noteId }: ITitle) => {
       className={titleFont}
       placeholder="새 페이지"
       rows={1}
-      value={value}
+      value={value === null ? '' : value}
       onChange={handleChange}
       onMouseLeave={handleMouseLeave}
       onMouseEnter={handleMouseEnter}
