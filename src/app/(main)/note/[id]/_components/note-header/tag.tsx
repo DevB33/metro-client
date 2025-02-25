@@ -7,6 +7,7 @@ import keyName from '@/constants/key-name';
 import useClickOutside from '@/hooks/useClickOutside';
 import useSWR, { mutate } from 'swr';
 import { editTags, getNoteInfo } from '@/apis/note-header';
+import { getPageList } from '@/apis/side-bar';
 import TagBox from './tag-box';
 
 interface ITag {
@@ -115,6 +116,7 @@ const Tag = ({ noteId }: ITag) => {
       }
 
       await editTags(noteId, [...tagList, { name: inputValue.trim(), color: getRandomColor() }]);
+      await mutate('pageList', getPageList, false);
       await mutate('noteHeaderData', getNoteInfo(noteId), false);
 
       setIsEditing(false);
@@ -126,6 +128,7 @@ const Tag = ({ noteId }: ITag) => {
       noteId,
       tagList.filter(tag => tag.name !== tagToDelete),
     );
+    await mutate('pageList', getPageList, false);
     await mutate('noteHeaderData', getNoteInfo(noteId), false);
   };
 

@@ -61,7 +61,7 @@ const emptyPageContainer = css({
 const FinderCard = () => {
   const [isHover, setIsHover] = useState(false);
 
-  const { data } = useSWR(`pageList`);
+  const { data: pageList } = useSWR('pageList');
 
   const handleClick = async () => {
     try {
@@ -84,8 +84,8 @@ const FinderCard = () => {
           </div>
         )}
       </div>
-      {data?.node.length ? (
-        data.node.map((page: IDocuments) => <PageItem key={page.id} page={page} depth={1} />)
+      {pageList?.node.length ? (
+        pageList.node.map((page: IDocuments) => <PageItem key={page.id} page={page} depth={1} />)
       ) : (
         <p className={emptyPageContainer}>문서가 없습니다.</p>
       )}

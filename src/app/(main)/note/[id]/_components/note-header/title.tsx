@@ -1,10 +1,12 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
-import useSWR, { mutate } from 'swr';
+import { mutate } from 'swr';
 import { editTitle, getNoteInfo } from '@/apis/note-header';
+import { getPageList } from '@/apis/side-bar';
 
 interface ITitle {
   noteId: string;
+  title: string;
 }
 
 const titleFont = css({
@@ -26,21 +28,25 @@ const titleFont = css({
   },
 });
 
-const Title = ({ noteId }: ITitle) => {
-  const { data } = useSWR(`noteHeaderData`);
-
-  const [value, setValue] = useState(data.title);
+const Title = ({ noteId, title }: ITitle) => {
+  const [value, setValue] = useState(title);
 
   const isHovered = useRef(false);
   const [isScrollable, setIsScrollable] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const updateTitle = async (titleValue: string) => {
+    await editTitle(noteId, titleValue);
+    await mutate('pageList', getPageList, false);
+    await mutate('noteHeaderData', getNoteInfo(noteId), false);
+  };
+
+  useEffect(() => {
+    updateTitle(value);
+  }, [value]);
+
   const handleChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setValue(e.target.value);
-
-    await editTitle(noteId, e.target.value);
-    await mutate('noteHeaderData', getNoteInfo(noteId), false);
-
     const textarea = textareaRef.current;
 
     if (textarea) {

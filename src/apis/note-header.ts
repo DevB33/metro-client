@@ -44,7 +44,6 @@ export const editTags = async (noteId: string, tags: ITagType[]) => {
 export const getNoteInfo = async (noteId: string | null) => {
   const instance = await getInstance();
   const response = await instance.get(`/documents/${noteId}`);
-  console.log(response.data);
 
   return response.data;
 };

@@ -1,11 +1,12 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { css } from '@/../styled-system/css';
 import useClickOutside from '@/hooks/useClickOutside';
 import useSWR, { mutate } from 'swr';
 import { useParams } from 'next/navigation';
 import { editCover, editIcon, getNoteInfo } from '@/apis/note-header';
+import { getPageList } from '@/apis/side-bar';
 import IconSelector from './icon-selector';
 import Tag from './tag';
 import Title from './title';
@@ -60,7 +61,11 @@ const NoteHeader = () => {
   const params = useParams();
   const noteId = params.id as string;
 
-  const { data } = useSWR(`noteHeaderData`);
+  const { data } = useSWR('noteHeaderData');
+
+  useEffect(() => {
+    mutate('noteHeaderData', getNoteInfo(noteId));
+  }, []);
 
   const handleMouseEnter = () => {
     setIsHover(true);
@@ -72,7 +77,8 @@ const NoteHeader = () => {
 
   const handleSelectIcon = async (selectedIcon: string | null) => {
     await editIcon(noteId, selectedIcon);
-    await mutate('noteHeaderData', getNoteInfo(noteId), false);
+    await mutate('pageList', getPageList, false);
+    await mutate('noteHeaderData', getNoteInfo(noteId));
   };
 
   const handleSelectorOpen = () => {
@@ -93,15 +99,18 @@ const NoteHeader = () => {
 
   const handleSelectCover = async (selectedColor: string) => {
     await editCover(noteId, selectedColor);
+    await mutate('pageList', getPageList, false);
     await mutate('noteHeaderData', getNoteInfo(noteId), false);
   };
 
   const deleteCover = async () => {
     await editCover(noteId, null);
+    await mutate('pageList', getPageList, false);
     await mutate('noteHeaderData', getNoteInfo(noteId), false);
   };
 
   const iconSelectorRef = useClickOutside(handleSelectorClose);
+  if (!data) return null;
 
   return (
     <>
@@ -147,7 +156,7 @@ const NoteHeader = () => {
           handleSelectIcon={handleSelectIcon}
           handleSelectCover={handleSelectCover}
         />
-        <Title noteId={noteId} />
+        <Title title={data.title} noteId={noteId} />
       </div>
       <Tag noteId={noteId} />
     </>
