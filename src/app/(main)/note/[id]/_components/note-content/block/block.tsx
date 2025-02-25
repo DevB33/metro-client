@@ -19,7 +19,7 @@ interface IBlockComponent {
 const blockDiv = css({
   boxSizing: 'border-box',
   width: 'full',
-  minHeight: '2rem',
+  minHeight: '1.5rem',
   height: 'auto',
   outline: 'none',
   overflowY: 'hidden',

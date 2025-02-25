@@ -28,6 +28,24 @@ const placeholderDiv = css({
   },
 });
 
+const placeholderH1 = css({
+  position: 'relative',
+
+  '.parent:focus-within &': {
+    '&[data-empty=true]': {
+      '&::before': {
+        position: 'absolute',
+        top: '0',
+        left: '5rem',
+        content: 'attr(data-placeholder)',
+        color: 'gray',
+        fontSize: 'lg',
+        pointerEvents: 'none',
+      },
+    },
+  },
+});
+
 const BlockTag = ({ block, index, blockRef, children }: IBlockTag) => {
   if (block.type === 'default') {
     return (
@@ -42,6 +60,22 @@ const BlockTag = ({ block, index, blockRef, children }: IBlockTag) => {
       >
         {children}
       </p>
+    );
+  }
+
+  if (block.type === 'h1') {
+    return (
+      <h1
+        data-placeholder={placeholder.h1}
+        data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
+        className={placeholderH1}
+        ref={element => {
+          // eslint-disable-next-line no-param-reassign
+          blockRef.current[index] = element;
+        }}
+      >
+        {children}
+      </h1>
     );
   }
 

@@ -288,6 +288,14 @@ const mergeLine = (
   setBlockList(updatedBlockList);
 };
 
+const turnIntoH1 = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
+  const updatedBlockList = [...blockList];
+  updatedBlockList[index].type = 'h1';
+  updatedBlockList[index].children[0].content = (updatedBlockList[index].children[0].content as string).substring(1);
+
+  setBlockList(updatedBlockList);
+};
+
 const handleKeyDown = (
   event: React.KeyboardEvent<HTMLDivElement>,
   index: number,
@@ -368,6 +376,30 @@ const handleKeyDown = (
       } else if (currentChildNodeIndex > 0) {
         mergeLine(index, currentChildNodeIndex, blockList, setBlockList);
       }
+    }
+  }
+
+  if (event.key === keyName.space) {
+    const { startOffset, startContainer } = getSelectionInfo(0) || {};
+    if (startOffset === undefined || startOffset === null || !startContainer) return;
+
+    const parent = blockRef.current[index];
+    const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+    const currentChildNodeIndex =
+      childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
+        ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
+        : childNodes.indexOf(startContainer as HTMLElement);
+
+    if (
+      currentChildNodeIndex === 0 &&
+      startOffset === 1 &&
+      startContainer.textContent &&
+      startContainer.textContent[0] === '#'
+    ) {
+      event.preventDefault();
+      setIsTyping(false);
+      setKey(Math.random());
+      turnIntoH1(index, blockList, setBlockList);
     }
   }
 };
