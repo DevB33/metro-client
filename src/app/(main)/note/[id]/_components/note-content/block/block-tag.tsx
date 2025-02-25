@@ -49,6 +49,14 @@ const placeholderStyles = cva({
           },
         },
       },
+      h3: {
+        '.parent:focus-within &': {
+          '&[data-empty=true]::before': {
+            left: '5rem',
+            fontSize: '1.25rem',
+          },
+        },
+      },
     },
   },
 });
@@ -99,6 +107,22 @@ const BlockTag = ({ block, index, blockRef, children }: IBlockTag) => {
       >
         {children}
       </h2>
+    );
+  }
+
+  if (block.type === 'h3') {
+    return (
+      <h3
+        data-placeholder={placeholder.h3}
+        data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
+        className={placeholderStyles({ tag: 'h3' })}
+        ref={element => {
+          // eslint-disable-next-line no-param-reassign
+          blockRef.current[index] = element;
+        }}
+      >
+        {children}
+      </h3>
     );
   }
 

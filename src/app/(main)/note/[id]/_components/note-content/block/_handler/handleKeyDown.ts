@@ -304,6 +304,14 @@ const turnIntoH2 = (index: number, blockList: ITextBlock[], setBlockList: (block
   setBlockList(updatedBlockList);
 };
 
+const turnIntoH3 = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
+  const updatedBlockList = [...blockList];
+  updatedBlockList[index].type = 'h3';
+  updatedBlockList[index].children[0].content = (updatedBlockList[index].children[0].content as string).substring(3);
+
+  setBlockList(updatedBlockList);
+};
+
 const handleKeyDown = (
   event: React.KeyboardEvent<HTMLDivElement>,
   index: number,
@@ -425,6 +433,22 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       turnIntoH2(index, blockList, setBlockList);
+    }
+
+    // h3으로 전환
+    if (
+      currentChildNodeIndex === 0 &&
+      startOffset === 3 &&
+      startContainer.textContent &&
+      startContainer.textContent[0] === '#' &&
+      startContainer.textContent[1] === '#' &&
+      startContainer.textContent[2] === '#' &&
+      blockList[index].type !== 'h3'
+    ) {
+      event.preventDefault();
+      setIsTyping(false);
+      setKey(Math.random());
+      turnIntoH3(index, blockList, setBlockList);
     }
   }
 };
