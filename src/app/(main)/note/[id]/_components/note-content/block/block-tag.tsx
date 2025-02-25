@@ -1,4 +1,4 @@
-import { css } from '@/../styled-system/css';
+import { cva } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
 import placeholder from '@/constants/placeholder';
@@ -10,37 +10,44 @@ interface IBlockTag {
   children: React.ReactNode[];
 }
 
-const placeholderDiv = css({
-  position: 'relative',
-
-  '.parent:focus-within &': {
-    '&[data-empty=true]': {
-      '&::before': {
+const placeholderStyles = cva({
+  base: {
+    position: 'relative',
+    '.parent:focus-within &': {
+      '&[data-empty=true]::before': {
         position: 'absolute',
         top: '0',
-        left: '0',
-        content: 'attr(data-placeholder)',
         color: 'gray',
-        fontSize: 'md',
         pointerEvents: 'none',
+        content: 'attr(data-placeholder)',
       },
     },
   },
-});
-
-const placeholderH1 = css({
-  position: 'relative',
-
-  '.parent:focus-within &': {
-    '&[data-empty=true]': {
-      '&::before': {
-        position: 'absolute',
-        top: '0',
-        left: '5rem',
-        content: 'attr(data-placeholder)',
-        color: 'gray',
-        fontSize: 'lg',
-        pointerEvents: 'none',
+  variants: {
+    tag: {
+      div: {
+        '.parent:focus-within &': {
+          '&[data-empty=true]::before': {
+            left: '0',
+            fontSize: 'md',
+          },
+        },
+      },
+      h1: {
+        '.parent:focus-within &': {
+          '&[data-empty=true]::before': {
+            left: '5rem',
+            fontSize: 'lg',
+          },
+        },
+      },
+      h2: {
+        '.parent:focus-within &': {
+          '&[data-empty=true]::before': {
+            left: '5rem',
+            fontSize: '1.5rem',
+          },
+        },
       },
     },
   },
@@ -52,7 +59,7 @@ const BlockTag = ({ block, index, blockRef, children }: IBlockTag) => {
       <p
         data-placeholder={placeholder.block}
         data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
-        className={placeholderDiv}
+        className={placeholderStyles({ tag: 'div' })}
         ref={element => {
           // eslint-disable-next-line no-param-reassign
           blockRef.current[index] = element;
@@ -68,7 +75,7 @@ const BlockTag = ({ block, index, blockRef, children }: IBlockTag) => {
       <h1
         data-placeholder={placeholder.h1}
         data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
-        className={placeholderH1}
+        className={placeholderStyles({ tag: 'h1' })}
         ref={element => {
           // eslint-disable-next-line no-param-reassign
           blockRef.current[index] = element;
@@ -76,6 +83,22 @@ const BlockTag = ({ block, index, blockRef, children }: IBlockTag) => {
       >
         {children}
       </h1>
+    );
+  }
+
+  if (block.type === 'h2') {
+    return (
+      <h2
+        data-placeholder={placeholder.h2}
+        data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
+        className={placeholderStyles({ tag: 'h2' })}
+        ref={element => {
+          // eslint-disable-next-line no-param-reassign
+          blockRef.current[index] = element;
+        }}
+      >
+        {children}
+      </h2>
     );
   }
 

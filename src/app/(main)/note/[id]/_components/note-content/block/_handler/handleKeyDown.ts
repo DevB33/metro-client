@@ -296,6 +296,14 @@ const turnIntoH1 = (index: number, blockList: ITextBlock[], setBlockList: (block
   setBlockList(updatedBlockList);
 };
 
+const turnIntoH2 = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
+  const updatedBlockList = [...blockList];
+  updatedBlockList[index].type = 'h2';
+  updatedBlockList[index].children[0].content = (updatedBlockList[index].children[0].content as string).substring(2);
+
+  setBlockList(updatedBlockList);
+};
+
 const handleKeyDown = (
   event: React.KeyboardEvent<HTMLDivElement>,
   index: number,
@@ -390,16 +398,33 @@ const handleKeyDown = (
         ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
         : childNodes.indexOf(startContainer as HTMLElement);
 
+    // h1으로 전환
     if (
       currentChildNodeIndex === 0 &&
       startOffset === 1 &&
       startContainer.textContent &&
-      startContainer.textContent[0] === '#'
+      startContainer.textContent[0] === '#' &&
+      blockList[index].type !== 'h1'
     ) {
       event.preventDefault();
       setIsTyping(false);
       setKey(Math.random());
       turnIntoH1(index, blockList, setBlockList);
+    }
+
+    // h2로 전환
+    if (
+      currentChildNodeIndex === 0 &&
+      startOffset === 2 &&
+      startContainer.textContent &&
+      startContainer.textContent[0] === '#' &&
+      startContainer.textContent[1] === '#' &&
+      blockList[index].type !== 'h2'
+    ) {
+      event.preventDefault();
+      setIsTyping(false);
+      setKey(Math.random());
+      turnIntoH2(index, blockList, setBlockList);
     }
   }
 };
