@@ -1,1 +1,16 @@
 @layer reset, base, tokens, recipes, utilities;
+
+h1 {
+  all: revert;
+  margin: 0;
+}
+
+h2 {
+  all: revert;
+  margin: 0;
+}
+
+h3 {
+  all: revert;
+  margin: 0;
+}

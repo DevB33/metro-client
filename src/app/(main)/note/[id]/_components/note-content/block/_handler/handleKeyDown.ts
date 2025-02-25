@@ -51,7 +51,9 @@ const splitBlock = (
     })
     .map((node, idx) => {
       if (idx === 0) {
-        const filteredNodeCount = childNodes.filter(n => n != null).length;
+        const filteredNodeCount = childNodes.filter((_node, i) => {
+          return currentChildNodeIndex === -1 ? idx >= startOffset : i >= currentChildNodeIndex;
+        }).length;
         if (afterText === '' && idx !== filteredNodeCount - 1) {
           return;
         }
@@ -179,18 +181,18 @@ const splitLine = (
     const textAfter = startContainer.textContent?.substring(startOffset);
 
     const parentNode = startContainer.parentNode as HTMLElement;
-    const isDiv = parentNode?.tagName === 'DIV';
+    const isSpan = parentNode?.tagName === 'SPAN';
 
     // 줄 바꿈이 반영된 children 배열 생성
     const updatedChildren = [
       ...newChildren.slice(0, currentChildNodeIndex),
       textBefore && {
-        type: isDiv ? 'text' : 'span',
+        type: !isSpan ? 'text' : 'span',
         style: {
-          fontStyle: isDiv ? 'normal' : parentNode?.style.fontStyle || 'normal',
-          fontWeight: isDiv ? 'regular' : parentNode?.style.fontWeight || 'regular',
-          color: isDiv ? 'black' : parentNode?.style.color || 'black',
-          backgroundColor: isDiv ? 'white' : parentNode?.style.backgroundColor || 'white',
+          fontStyle: !isSpan ? 'normal' : parentNode?.style.fontStyle || 'normal',
+          fontWeight: !isSpan ? 'regular' : parentNode?.style.fontWeight || 'regular',
+          color: !isSpan ? 'black' : parentNode?.style.color || 'black',
+          backgroundColor: !isSpan ? 'white' : parentNode?.style.backgroundColor || 'white',
           width: 'auto',
           height: 'auto',
         },
@@ -202,12 +204,12 @@ const splitLine = (
           }
         : null,
       textAfter && {
-        type: isDiv ? 'text' : 'span',
+        type: !isSpan ? 'text' : 'span',
         style: {
-          fontStyle: isDiv ? 'normal' : parentNode?.style.fontStyle || 'normal',
-          fontWeight: isDiv ? 'regular' : parentNode?.style.fontWeight || 'regular',
-          color: isDiv ? 'black' : parentNode?.style.color || 'black',
-          backgroundColor: isDiv ? 'white' : parentNode?.style.backgroundColor || 'white',
+          fontStyle: !isSpan ? 'normal' : parentNode?.style.fontStyle || 'normal',
+          fontWeight: !isSpan ? 'regular' : parentNode?.style.fontWeight || 'regular',
+          color: !isSpan ? 'black' : parentNode?.style.color || 'black',
+          backgroundColor: !isSpan ? 'white' : parentNode?.style.backgroundColor || 'white',
           width: 'auto',
           height: 'auto',
         },
@@ -245,6 +247,11 @@ const splitLine = (
   } else {
     // 현재 커서 위치 한 곳이 빈 문자열일 때 → 중복 줄바꿈 로직
     const updatedBlockList = [...blockList];
+    if (updatedBlockList[index].children.length === 1 && updatedBlockList[index].children[0].content === '') {
+      updatedBlockList[index].children.splice(startOffset, 0, {
+        type: 'br',
+      });
+    }
     updatedBlockList[index].children.splice(startOffset, 0, {
       type: 'br',
     });
@@ -255,10 +262,13 @@ const splitLine = (
 
 const mergeBlock = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
   const updatedBlockList = [...blockList];
+
   const previousBlock = updatedBlockList[index - 1];
   const currentBlock = updatedBlockList[index];
 
-  previousBlock.children = [...previousBlock.children, ...currentBlock.children];
+  const updatedChildren = [...previousBlock.children, ...currentBlock.children];
+
+  updatedBlockList[index - 1].children = updatedChildren;
   updatedBlockList.splice(index, 1);
 
   setBlockList(updatedBlockList);

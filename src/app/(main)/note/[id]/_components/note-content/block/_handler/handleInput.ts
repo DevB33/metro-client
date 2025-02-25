@@ -6,14 +6,15 @@ const handleInput = (
   index: number,
   blockList: ITextBlock[],
   setBlockList: (blockList: ITextBlock[]) => void,
-  blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   prevChildNodesLength: React.RefObject<number>,
 ) => {
   const updatedBlockList = [...blockList];
-  const target = event.currentTarget;
+  const target = event.currentTarget.childNodes[0] as HTMLElement;
+
+  target.setAttribute('data-empty', 'false');
 
   const { startOffset, startContainer } = getSelectionInfo(0) || {};
-  if (!startOffset || !startContainer) return;
+  if (startOffset === undefined || startOffset === null || !startContainer) return;
 
   const childNodes = Array.from(target.childNodes as NodeListOf<HTMLElement>);
   const currentChildNodeIndex =
@@ -21,11 +22,8 @@ const handleInput = (
       ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
       : childNodes.indexOf(startContainer as HTMLElement);
 
-  // 블록에 모든 내용이 지워졌을 때 빈 블록으로 변경 로직
-  if (currentChildNodeIndex === -1 && blockRef.current[index] && childNodes.length === 1) {
-    // eslint-disable-next-line no-param-reassign
-    blockRef.current[index]!.innerHTML = '';
-    return;
+  if (childNodes.length === 1 && target.textContent === '') {
+    target.setAttribute('data-empty', 'true');
   }
 
   // block의 자식 노드가 지워졌을 때 blockList에 반영하는 로직
@@ -57,6 +55,9 @@ const handleInput = (
   const updatedChildList = updatedBlockList[index].children
     .map((child, idx) => {
       if (child.type === 'text' && child.content === '') {
+        if (updatedBlockList[index].children.length === 1) {
+          return child;
+        }
         if (idx === updatedBlockList[index].children.length - 1) {
           return {
             type: 'br' as 'br',

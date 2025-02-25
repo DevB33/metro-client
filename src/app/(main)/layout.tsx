@@ -6,7 +6,7 @@ import { SWRConfig } from 'swr';
 import axios from 'axios';
 import Sidebar from './_components/sidebar/sidebar';
 
-const RootLayout = async ({ children, modal }: Readonly<{ children: React.ReactNode; modal: React.ReactNode }>) => {
+const MainLayout = async ({ children, modal }: Readonly<{ children: React.ReactNode; modal: React.ReactNode }>) => {
   const cookie = await cookies();
   const isLogin = cookie.has('accessToken');
   const accessToken = cookie?.get('accessToken')?.value;
@@ -41,4 +41,4 @@ const RootLayout = async ({ children, modal }: Readonly<{ children: React.ReactN
   );
 };
 
-export default RootLayout;
+export default MainLayout;

@@ -2,9 +2,9 @@ import { useState, memo, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
-import placeholder from '@/constants/placeholder';
 import handleInput from './_handler/handleInput';
 import handleKeyDown from './_handler/handleKeyDown';
+import BlockTag from './block-tag';
 
 interface IBlockComponent {
   block: ITextBlock;
@@ -17,7 +17,6 @@ interface IBlockComponent {
 }
 
 const blockDiv = css({
-  position: 'relative',
   boxSizing: 'border-box',
   width: 'full',
   minHeight: '2rem',
@@ -25,16 +24,6 @@ const blockDiv = css({
   outline: 'none',
   overflowY: 'hidden',
   flexShrink: 0,
-
-  '&:focus:empty::before': {
-    position: 'absolute',
-    top: '0',
-    left: '0',
-    content: 'attr(data-placeholder)',
-    color: 'gray',
-    fontSize: 'md',
-    pointerEvents: 'none',
-  },
 });
 
 const Block = memo(
@@ -53,33 +42,31 @@ const Block = memo(
         tabIndex={0}
         contentEditable
         suppressContentEditableWarning
-        data-placeholder={placeholder.block}
-        className={blockDiv}
+        className={`parent ${blockDiv}`}
         onInput={event => {
           setIsTyping(true);
-          handleInput(event, index, blockList, setBlockList, blockRef, prevChildNodesLength);
+          handleInput(event, index, blockList, setBlockList, prevChildNodesLength);
         }}
         onKeyDown={event => handleKeyDown(event, index, blockList, setBlockList, blockRef, setIsTyping, setKey)}
-        ref={element => {
-          // eslint-disable-next-line no-param-reassign
-          blockRef.current[index] = element;
-        }}
       >
-        {block.children.map(child => {
-          if (child.type === 'br') {
-            return <br key={Math.random()} />;
-          }
+        <BlockTag block={block} index={index} blockRef={blockRef}>
+          {block.children.length === 1 && block.children[0].content === '' && <br />}
+          {block.children.map(child => {
+            if (child.type === 'br') {
+              return <br key={Math.random()} />;
+            }
 
-          if (child.type === 'text') {
-            return child.content;
-          }
+            if (child.type === 'text') {
+              return child.content;
+            }
 
-          return (
-            <span key={Math.random()} style={child.style}>
-              {child.content}
-            </span>
-          );
-        })}
+            return (
+              <span key={Math.random()} style={child.style}>
+                {child.content}
+              </span>
+            );
+          })}
+        </BlockTag>
       </div>
     );
   },
