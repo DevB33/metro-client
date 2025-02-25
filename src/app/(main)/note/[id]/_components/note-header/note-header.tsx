@@ -156,7 +156,7 @@ const NoteHeader = () => {
           handleSelectIcon={handleSelectIcon}
           handleSelectCover={handleSelectCover}
         />
-        <Title title={data.title} noteId={noteId} />
+        <Title noteId={noteId} />
       </div>
       <Tag noteId={noteId} />
     </>

@@ -1,12 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
-import { mutate } from 'swr';
+import useSWR, { mutate } from 'swr';
 import { editTitle, getNoteInfo } from '@/apis/note-header';
 import { getPageList } from '@/apis/side-bar';
 
 interface ITitle {
   noteId: string;
-  title: string;
 }
 
 const titleFont = css({
@@ -28,12 +27,16 @@ const titleFont = css({
   },
 });
 
-const Title = ({ noteId, title }: ITitle) => {
-  const [value, setValue] = useState(title);
-
+const Title = ({ noteId }: ITitle) => {
+  const [value, setValue] = useState('');
   const isHovered = useRef(false);
   const [isScrollable, setIsScrollable] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const getNewTitle = async () => {
+    const newTitle = await mutate('noteHeaderData', getNoteInfo(noteId), false);
+    setValue(newTitle.title);
+  };
 
   const updateTitle = async (titleValue: string) => {
     await editTitle(noteId, titleValue);
@@ -42,13 +45,13 @@ const Title = ({ noteId, title }: ITitle) => {
   };
 
   useEffect(() => {
-    updateTitle(value);
-  }, [value]);
+    getNewTitle();
+  }, []);
 
-  const handleChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setValue(e.target.value);
+    updateTitle(e.target.value);
     const textarea = textareaRef.current;
-
     if (textarea) {
       textarea.style.height = 'auto';
       textarea.style.height = `${Math.min(textarea.scrollHeight, 110)}px`;
@@ -58,9 +61,8 @@ const Title = ({ noteId, title }: ITitle) => {
   const handleMouseEnter = () => {
     isHovered.current = true;
     setIsScrollable(true);
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.overflowY = 'auto';
+    if (textareaRef.current) {
+      textareaRef.current.style.overflowY = 'auto';
     }
   };
 
@@ -69,13 +71,7 @@ const Title = ({ noteId, title }: ITitle) => {
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.scrollTo({ top: 0, behavior: 'smooth' });
-
-      setTimeout(
-        () => {
-          setIsScrollable(false);
-        },
-        (textarea?.scrollTop ?? 1) * 3,
-      );
+      setTimeout(() => setIsScrollable(false), (textarea.scrollTop ?? 1) * 3);
     }
   };
 
@@ -91,7 +87,7 @@ const Title = ({ noteId, title }: ITitle) => {
       className={titleFont}
       placeholder="새 페이지"
       rows={1}
-      value={value === null ? '' : value}
+      value={value || ''}
       onChange={handleChange}
       onMouseLeave={handleMouseLeave}
       onMouseEnter={handleMouseEnter}
