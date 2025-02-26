@@ -130,6 +130,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
     } catch (error) {
       console.log(error);
     }
+    closeSettingDropdown();
   };
 
   const handlePlusButtonClick = async () => {
@@ -178,19 +179,19 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
             </button>
           </div>
         )}
-        <DropDown handleClose={closeSettingDropdown}>
-          <DropDown.Menu isOpen={isDropdownOpen} top="1rem" left="-3.7rem">
-            <DropDown.Item onClick={openEditModal}>
-              <PencilSquareIcon />
-              제목 수정하기
-            </DropDown.Item>
-            <DropDown.Item onClick={handleDeleteButtonClick}>
-              <TrashIcon />
-              삭제하기
-            </DropDown.Item>
-          </DropDown.Menu>
-        </DropDown>
       </div>
+      <DropDown handleClose={closeSettingDropdown}>
+        <DropDown.Menu isOpen={isDropdownOpen} top="0.5rem" left="5rem">
+          <DropDown.Item onClick={openEditModal}>
+            <PencilSquareIcon />
+            제목 수정하기
+          </DropDown.Item>
+          <DropDown.Item onClick={handleDeleteButtonClick}>
+            <TrashIcon />
+            삭제하기
+          </DropDown.Item>
+        </DropDown.Menu>
+      </DropDown>
       {isEditModalOpen && <EditTitleModal noteId={page.id} closeEditModal={closeEditModal} />}
       {isOpen &&
         (page.children.length ? (
