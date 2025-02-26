@@ -14,8 +14,8 @@ import { createPage, deletePage, getPageList } from '@/apis/side-bar';
 import { mutate } from 'swr';
 import TrashIcon from '@/icons/trash-icon';
 import PencilSquareIcon from '@/icons/pencil-square';
-import { editTitle, getNoteInfo } from '@/apis/note-header';
 import DropDown from '../../../../../components/dropdown/dropdown';
+import EditTitleModal from './edit-title-modal';
 
 const pageItemContainer = css({
   display: 'flex',
@@ -96,6 +96,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
   const settingButtonRef = useRef<HTMLButtonElement>(null);
   const plusButtonRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isHover, setIsHover] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -141,10 +142,13 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
     }
   };
 
-  const handleTest = async () => {
-    await editTitle(page.id, 'aa');
-    await mutate('pageList', getPageList, false);
-    await mutate('noteHeaderData', getNoteInfo(page.id), false);
+  const openEditModal = () => {
+    setIsEditModalOpen(true);
+    closeSettingDropdown();
+  };
+
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
   };
 
   return (
@@ -176,7 +180,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
         )}
         <DropDown handleClose={closeSettingDropdown}>
           <DropDown.Menu isOpen={isDropdownOpen} top="1rem" left="-3.7rem">
-            <DropDown.Item onClick={handleTest}>
+            <DropDown.Item onClick={openEditModal}>
               <PencilSquareIcon />
               제목 수정하기
             </DropDown.Item>
@@ -187,6 +191,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
           </DropDown.Menu>
         </DropDown>
       </div>
+      {isEditModalOpen && <EditTitleModal noteId={page.id} closeEditModal={closeEditModal} />}
       {isOpen &&
         (page.children.length ? (
           <div className={pageChildren}>
