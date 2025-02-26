@@ -11,7 +11,8 @@ const handleInput = (
 ) => {
   const updatedBlockList = [...blockList];
   const target = event.currentTarget;
-
+  console.log('input');
+  console.log('target', target);
   const { startOffset, startContainer } = getSelectionInfo(0) || {};
   if (!startOffset || !startContainer) return;
 

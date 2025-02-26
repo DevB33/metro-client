@@ -11,9 +11,9 @@ const RootLayout = async ({ children, modal }: Readonly<{ children: React.ReactN
   const isLogin = cookie.has('accessToken');
   const accessToken = cookie?.get('accessToken')?.value;
 
-  // if (!isLogin) {
-  //   redirect('/login');
-  // }
+  if (!isLogin) {
+    redirect('/login');
+  }
 
   const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/documents`, {
     headers: {

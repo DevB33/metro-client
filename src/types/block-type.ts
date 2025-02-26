@@ -4,7 +4,7 @@ export interface ITextBlock {
   children: ITextBlockChild[];
 }
 
-interface ITextBlockChild {
+export interface ITextBlockChild {
   type: 'text' | 'span' | 'br';
   style?: IBlockStyle;
   content?: string;
@@ -17,4 +17,5 @@ interface IBlockStyle {
   backgroundColor: 'white' | string;
   width: number | string;
   height: number | string;
+  // borderRadious: number | string;
 }

@@ -1,4 +1,4 @@
-import { ITextBlock } from '@/types/block-type';
+import { ITextBlock, ITextBlockChild } from '@/types/block-type';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import keyName from '@/constants/key-name';
 
@@ -173,7 +173,12 @@ const splitLine = (
       ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
       : childNodes.indexOf(startContainer as HTMLElement);
   const newChildren = [...blockList[index].children];
-
+  console.log('parent', parent);
+  console.log('childNodes', childNodes);
+  console.log('currentChildNodeIndex', currentChildNodeIndex);
+  console.log('newChildren', newChildren);
+  console.log('startContainer', startContainer);
+  console.log('startOffset', startOffset);
   if (startContainer.nodeType === Node.TEXT_NODE) {
     const textBefore = startContainer.textContent?.substring(0, startOffset);
     const textAfter = startContainer.textContent?.substring(startOffset);
@@ -278,6 +283,77 @@ const mergeLine = (
   setBlockList(updatedBlockList);
 };
 
+const createSlashNode = (
+  index: number,
+  blockList: ITextBlock[],
+  setBlockList: (blockList: ITextBlock[]) => void,
+  blockRef: React.RefObject<(HTMLDivElement | null)[]>,
+) => {
+  console.log('slash');
+  console.log('blockList', blockList);
+  const { startOffset, startContainer } = getSelectionInfo(0) || {};
+  console.log('startContainer', startContainer);
+  console.log('startOffset', startOffset);
+  if (startOffset === undefined || startOffset === null || !startContainer) return;
+  const parent = blockRef.current[index];
+  const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+  const currentChildNodeIndex =
+    childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
+      ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
+      : childNodes.indexOf(startContainer as HTMLElement);
+  const newChildren = [...blockList[index].children];
+
+  // 현재 커서 위치의 텍스트 요소 찾기
+  const currentTextSpan = newChildren[currentChildNodeIndex];
+
+  if (!currentTextSpan || currentTextSpan.type !== 'text') return;
+
+  const originalText = currentTextSpan.content || '';
+  const beforeText = originalText.slice(0, startOffset);
+  const afterText = originalText.slice(startOffset);
+
+  // `/` 앞에 공백이 없는 경우 함수 실행 중단
+  const lastChar = beforeText[beforeText.length - 1].replace(/\u00A0/g, ' ');
+  if (beforeText.length > 0 && lastChar !== ' ') {
+    return;
+  }
+
+  // 새로운 `/` 강조 span 생성
+  const newSlashSpan: ITextBlockChild = {
+    type: 'span',
+    style: {
+      fontStyle: 'normal',
+      fontWeight: 'regular',
+      color: 'black',
+      backgroundColor: 'lightgray',
+      width: 'auto',
+      height: 'auto',
+    },
+    content: '/',
+  };
+
+  // 새로운 children 배열 생성
+  const updatedChildren: ITextBlockChild[] = [
+    ...newChildren.slice(0, currentChildNodeIndex),
+    ...(beforeText ? [{ ...currentTextSpan, content: beforeText }] : []),
+    newSlashSpan,
+    ...(afterText ? [{ ...currentTextSpan, content: afterText }] : []),
+    ...newChildren.slice(currentChildNodeIndex + 1),
+  ];
+
+  console.log('updatedChildren', updatedChildren);
+
+  const updatedBlockList = [...blockList];
+  console.log('before-BlockList', updatedBlockList);
+  updatedBlockList[index] = {
+    ...updatedBlockList[index],
+    children: updatedChildren,
+  };
+  console.log('after-BlockList', updatedBlockList);
+
+  setBlockList(updatedBlockList);
+};
+
 const handleKeyDown = (
   event: React.KeyboardEvent<HTMLDivElement>,
   index: number,
@@ -359,6 +435,13 @@ const handleKeyDown = (
         mergeLine(index, currentChildNodeIndex, blockList, setBlockList);
       }
     }
+  }
+
+  if (event.key === '/') {
+    event.preventDefault();
+    setIsTyping(false);
+    setKey(Math.random());
+    createSlashNode(index, blockList, setBlockList, blockRef);
   }
 };
 
