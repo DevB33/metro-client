@@ -45,7 +45,7 @@ const Block = memo(
         className={`parent ${blockDiv}`}
         onInput={event => {
           setIsTyping(true);
-          handleInput(event, index, blockList, setBlockList, prevChildNodesLength);
+          handleInput(event, index, blockList, setBlockList, blockRef, prevChildNodesLength);
         }}
         onKeyDown={event => handleKeyDown(event, index, blockList, setBlockList, blockRef, setIsTyping, setKey)}
       >

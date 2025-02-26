@@ -144,6 +144,13 @@ const splitBlock = (
     });
   }
 
+  if (newAfterBlock.length === 1 && newAfterBlock[0]?.type === 'br') {
+    newAfterBlock[0] = {
+      type: 'text',
+      content: '',
+    };
+  }
+
   updatedBlockList[index].children = newBeforeBlock;
 
   updatedBlockList.splice(index + 1, 0, {
@@ -266,10 +273,23 @@ const mergeBlock = (index: number, blockList: ITextBlock[], setBlockList: (block
   const previousBlock = updatedBlockList[index - 1];
   const currentBlock = updatedBlockList[index];
 
+  // 이전 블록의 마지막이 <br>인 상태에서 블록을 합치면 이전 블록의 <br> 제거
+  if (previousBlock.children[previousBlock.children.length - 1].type === 'br') {
+    previousBlock.children.pop();
+  }
   const updatedChildren = [...previousBlock.children, ...currentBlock.children];
 
   updatedBlockList[index - 1].children = updatedChildren;
   updatedBlockList.splice(index, 1);
+
+  // 빈 블록 두개 합치기 후 빈 텍스트 노드가 두개 중복해서 생기면 하나 지우기
+  if (
+    updatedBlockList[index - 1].children.length === 2 &&
+    updatedBlockList[index - 1].children[0].content === '' &&
+    updatedBlockList[index - 1].children[1].content === ''
+  ) {
+    updatedBlockList[index - 1].children.shift();
+  }
 
   setBlockList(updatedBlockList);
 };
@@ -323,6 +343,9 @@ const handleKeyDown = (
 ) => {
   if (event.key === keyName.enter && !event.shiftKey) {
     event.preventDefault();
+    if (event.nativeEvent.isComposing) {
+      return;
+    }
     setIsTyping(false);
     setKey(Math.random());
     splitBlock(index, blockList, setBlockList, blockRef);
@@ -454,3 +477,14 @@ const handleKeyDown = (
 };
 
 export default handleKeyDown;
+
+// server: fetch -> fallback
+// client: fetch: (fallback, fetcher)
+
+// null은 아닌건 같다. client사용하듯이 똑같이 해야한다
+
+// A 컴포넌트: useSWR('headerData', fetcher)
+// B 컴포넌트: useSWR('headerData', fetcher)
+// C 컴포넌트: mutation('headerData')
+// 서버에서 HTML을 그려줄 때 미리 받아와서 캐시 데이터에 넣고 싶다.
+// client에서는 fallback에 저장된 데이터를 쓰겠다.
