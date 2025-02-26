@@ -14,6 +14,7 @@ import { createPage, deletePage, getPageList } from '@/apis/side-bar';
 import { mutate } from 'swr';
 import TrashIcon from '@/icons/trash-icon';
 import PencilSquareIcon from '@/icons/pencil-square';
+import { editTitle, getNoteInfo } from '@/apis/note-header';
 import DropDown from '../../../../../components/dropdown/dropdown';
 
 const pageItemContainer = css({
@@ -140,6 +141,12 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
     }
   };
 
+  const handleTest = async () => {
+    await editTitle(page.id, 'aa');
+    await mutate('pageList', getPageList, false);
+    await mutate('noteHeaderData', getNoteInfo(page.id), false);
+  };
+
   return (
     <div className={pageItemContainer}>
       <div
@@ -169,7 +176,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
         )}
         <DropDown handleClose={closeSettingDropdown}>
           <DropDown.Menu isOpen={isDropdownOpen} top="1rem" left="-3.7rem">
-            <DropDown.Item>
+            <DropDown.Item onClick={handleTest}>
               <PencilSquareIcon />
               제목 수정하기
             </DropDown.Item>
