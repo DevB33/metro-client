@@ -1,4 +1,4 @@
-import { useState, memo, useRef, useEffect } from 'react';
+import { memo, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
@@ -14,6 +14,7 @@ interface IBlockComponent {
   setBlockList: (blockList: ITextBlock[]) => void;
   isTyping: boolean;
   setIsTyping: (isTyping: boolean) => void;
+  setKey: (key: number) => void;
 }
 
 const blockDiv = css({
@@ -27,8 +28,7 @@ const blockDiv = css({
 });
 
 const Block = memo(
-  ({ block, index, blockRef, blockList, setBlockList, isTyping: _isTyping, setIsTyping }: IBlockComponent) => {
-    const [key, setKey] = useState(Date.now());
+  ({ block, index, blockRef, blockList, setBlockList, isTyping: _isTyping, setIsTyping, setKey }: IBlockComponent) => {
     const prevChildNodesLength = useRef(0);
 
     useEffect(() => {
@@ -37,7 +37,6 @@ const Block = memo(
 
     return (
       <div
-        key={key}
         role="textbox"
         tabIndex={0}
         contentEditable
