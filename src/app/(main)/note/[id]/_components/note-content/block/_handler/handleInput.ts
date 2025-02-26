@@ -33,9 +33,6 @@ const handleInput = (
       type: 'text',
       content: '',
     };
-
-    // setBlockList(updatedBlockList);
-    // return;
   }
 
   // block의 자식 노드가 지워졌을 때 blockList에 반영하는 로직

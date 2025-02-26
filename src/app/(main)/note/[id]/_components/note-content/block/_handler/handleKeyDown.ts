@@ -477,14 +477,3 @@ const handleKeyDown = (
 };
 
 export default handleKeyDown;
-
-// server: fetch -> fallback
-// client: fetch: (fallback, fetcher)
-
-// null은 아닌건 같다. client사용하듯이 똑같이 해야한다
-
-// A 컴포넌트: useSWR('headerData', fetcher)
-// B 컴포넌트: useSWR('headerData', fetcher)
-// C 컴포넌트: mutation('headerData')
-// 서버에서 HTML을 그려줄 때 미리 받아와서 캐시 데이터에 넣고 싶다.
-// client에서는 fallback에 저장된 데이터를 쓰겠다.
