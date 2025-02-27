@@ -4,6 +4,8 @@ import { getPageList } from '@/apis/side-bar';
 import IconSelector from '@/app/(main)/note/[id]/_components/note-header/icon-selector';
 import keyName from '@/constants/key-name';
 import useClickOutside from '@/hooks/useClickOutside';
+import PageIcon from '@/icons/page-icon';
+import IPageType from '@/types/page-type';
 import { useEffect, useRef, useState } from 'react';
 import useSWR, { mutate } from 'swr';
 
@@ -64,20 +66,22 @@ const IconSelectorContainer = css({
 });
 
 const EditTitleModal = ({ noteId, closeEditModal }: IEditTitleModal) => {
-  const { data } = useSWR('noteInfo', () => getNoteInfo(noteId));
+  const { data } = useSWR(`pageList`);
+
   const [value, setValue] = useState('');
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const [index, setIndex] = useState(0);
 
   const editModalRef = useClickOutside(closeEditModal);
 
-  const getNewTitle = async () => {
-    const newTitle = await mutate('noteHeaderData', getNoteInfo(noteId), false);
-    setValue(newTitle.title);
-  };
-
   useEffect(() => {
-    getNewTitle();
+    if (!data) return;
+    const dataIndex = data.node.findIndex((item: IPageType) => item.id === noteId);
+    setIndex(dataIndex);
+    if (data.node[dataIndex]?.title) {
+      setValue(data.node[dataIndex].title);
+    }
   }, []);
 
   useEffect(() => {
@@ -86,8 +90,7 @@ const EditTitleModal = ({ noteId, closeEditModal }: IEditTitleModal) => {
     debounceTimer.current = setTimeout(async () => {
       await editTitle(noteId, value);
       await mutate('pageList', getPageList, false);
-      await mutate('noteHeaderData', getNoteInfo(noteId), false);
-      await mutate('noteInfo', getNoteInfo(noteId), false);
+      await mutate(`noteHedaerData-${noteId}`, getNoteInfo(noteId), false);
     }, 100);
 
     return () => {
@@ -102,8 +105,7 @@ const EditTitleModal = ({ noteId, closeEditModal }: IEditTitleModal) => {
   const handleSelectIcon = async (selectedIcon: string | null) => {
     await editIcon(noteId, selectedIcon);
     await mutate('pageList', getPageList, false);
-    await mutate('noteHeaderData', getNoteInfo(noteId));
-    await mutate('noteInfo', getNoteInfo(noteId), false);
+    await mutate(`noteHedaerData-${noteId}`, getNoteInfo(noteId));
   };
 
   const handleSelectorOpen = () => {
@@ -126,7 +128,7 @@ const EditTitleModal = ({ noteId, closeEditModal }: IEditTitleModal) => {
     <div ref={editModalRef} className={container}>
       <div className={modalContainer}>
         <div className={iconContainer} onClick={handleSelectorOpen}>
-          {data.icon ?? ''}
+          {data.node[index].icon ?? <PageIcon />}
         </div>
         <input value={value || ''} onChange={handleChange} onKeyDown={handleKeyDown} className={inputContainer} />
       </div>
