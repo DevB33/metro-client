@@ -1,5 +1,5 @@
 interface IPageType {
-  pageId: number;
+  id: string;
   title: string;
   icon: string;
   children: IPageType[];
