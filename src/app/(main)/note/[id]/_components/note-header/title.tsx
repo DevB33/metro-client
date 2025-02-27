@@ -28,7 +28,7 @@ const titleFont = css({
 });
 
 const Title = ({ noteId }: ITitle) => {
-  const { data } = useSWR('noteHeaderData');
+  const { data } = useSWR(`noteHeaderData-${noteId}`);
 
   const [value, setValue] = useState(data.title);
   const isHovered = useRef(false);
@@ -37,7 +37,7 @@ const Title = ({ noteId }: ITitle) => {
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   const getNewTitle = async () => {
-    const newTitle = await mutate('noteHeaderData', getNoteInfo(noteId), false);
+    const newTitle = await mutate(`noteHeaderData-${noteId}`, getNoteInfo(noteId), false);
     setValue(newTitle.title);
   };
 

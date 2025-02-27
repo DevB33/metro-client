@@ -71,7 +71,8 @@ const tagInput = css({
 });
 
 const Tag = ({ noteId }: ITag) => {
-  const { data = { tags: [] } } = useSWR<{ tags: ITagType[] }>('noteHeaderData');
+  const { data = { tags: [] } } = useSWR<{ tags: ITagType[] }>(`noteHeaderData-${noteId}`);
+
   const tagList = data.tags;
 
   const [isEditing, setIsEditing] = useState(false);
@@ -117,7 +118,7 @@ const Tag = ({ noteId }: ITag) => {
 
       await editTags(noteId, [...tagList, { name: inputValue.trim(), color: getRandomColor() }]);
       await mutate('pageList', getPageList, false);
-      await mutate('noteHeaderData', getNoteInfo(noteId), false);
+      await mutate(`noteHeaderData-${noteId}`, getNoteInfo(noteId), false);
 
       setIsEditing(false);
     }
@@ -129,7 +130,7 @@ const Tag = ({ noteId }: ITag) => {
       tagList.filter(tag => tag.name !== tagToDelete),
     );
     await mutate('pageList', getPageList, false);
-    await mutate('noteHeaderData', getNoteInfo(noteId), false);
+    await mutate(`noteHeaderData-${noteId}`, getNoteInfo(noteId), false);
   };
 
   return (
