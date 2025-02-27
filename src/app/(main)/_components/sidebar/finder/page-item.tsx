@@ -181,7 +181,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
         )}
       </div>
       <DropDown handleClose={closeSettingDropdown}>
-        <DropDown.Menu isOpen={isDropdownOpen} top="0.5rem" left="5rem">
+        <DropDown.Menu isOpen={isDropdownOpen} top="0.2rem" left="10.7rem">
           <DropDown.Item onClick={openEditModal}>
             <PencilSquareIcon />
             제목 수정하기
