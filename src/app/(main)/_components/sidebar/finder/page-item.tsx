@@ -15,6 +15,7 @@ import { mutate } from 'swr';
 import TrashIcon from '@/icons/trash-icon';
 import PencilSquareIcon from '@/icons/pencil-square';
 import DropDown from '../../../../../components/dropdown/dropdown';
+import EditTitleModal from './edit-title-modal';
 
 const pageItemContainer = css({
   display: 'flex',
@@ -95,6 +96,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
   const settingButtonRef = useRef<HTMLButtonElement>(null);
   const plusButtonRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isHover, setIsHover] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -128,6 +130,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
     } catch (error) {
       console.log(error);
     }
+    closeSettingDropdown();
   };
 
   const handlePlusButtonClick = async () => {
@@ -138,6 +141,15 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const openEditModal = () => {
+    setIsEditModalOpen(true);
+    closeSettingDropdown();
+  };
+
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
   };
 
   return (
@@ -156,7 +168,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
           {isOpen ? <PageOpenIcon color="black" /> : <PageCloseIcon color="black" />}
         </button>
         <div className={pageIcon}>{page.icon ? `${page.icon}` : <PageIcon />}</div>
-        <div className={pageTitle}>{page.title === null ? '새 페이지' : page.title}</div>
+        <div className={pageTitle}>{page.title === null || page.title === '' ? '새 페이지' : page.title}</div>
         {isHover && (
           <div className={pageButtonContainer}>
             <button type="button" ref={settingButtonRef} className={pageButton} onClick={openSettingDropdown}>
@@ -167,19 +179,20 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
             </button>
           </div>
         )}
-        <DropDown handleClose={closeSettingDropdown}>
-          <DropDown.Menu isOpen={isDropdownOpen} top="1rem" left="-3.7rem">
-            <DropDown.Item>
-              <PencilSquareIcon />
-              제목 수정하기
-            </DropDown.Item>
-            <DropDown.Item onClick={handleDeleteButtonClick}>
-              <TrashIcon />
-              삭제하기
-            </DropDown.Item>
-          </DropDown.Menu>
-        </DropDown>
       </div>
+      <DropDown handleClose={closeSettingDropdown}>
+        <DropDown.Menu isOpen={isDropdownOpen} top="0.2rem" left="10.7rem">
+          <DropDown.Item onClick={openEditModal}>
+            <PencilSquareIcon />
+            제목 수정하기
+          </DropDown.Item>
+          <DropDown.Item onClick={handleDeleteButtonClick}>
+            <TrashIcon />
+            삭제하기
+          </DropDown.Item>
+        </DropDown.Menu>
+      </DropDown>
+      {isEditModalOpen && <EditTitleModal noteId={page.id} closeEditModal={closeEditModal} />}
       {isOpen &&
         (page.children.length ? (
           <div className={pageChildren}>

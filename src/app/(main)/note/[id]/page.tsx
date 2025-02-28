@@ -1,5 +1,8 @@
 import { css } from '@/../styled-system/css';
 
+import axios from 'axios';
+import { cookies } from 'next/headers';
+import { SWRConfig } from 'swr';
 import Header from './_components/header';
 import NoteHeader from './_components/note-header/note-header';
 import LineInfo from './_components/line-info/line-info';
@@ -43,20 +46,41 @@ const divider = css({
   borderRadius: '1rem',
 });
 
-const Note = () => {
+const Note = async ({ params }: { params: Promise<{ id: string }> }) => {
+  const cookie = await cookies();
+  const accessToken = cookie?.get('accessToken')?.value;
+  const { id } = await params;
+
+  const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/documents/${id}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  const noteHeaderData = response.data;
+
   return (
-    <div className={container}>
-      <Header />
-      <div className={contentContainer}>
-        <div className={noteContainer}>
-          <NoteHeader />
-          <div className={divider} />
-          <LineInfo />
-          <div className={divider} />
-          <NoteConent />
+    <SWRConfig
+      value={{
+        fallback: {
+          [`noteHeaderData-${id}`]: noteHeaderData,
+        },
+      }}
+    >
+      <div className={container}>
+        <Header />
+        <div className={contentContainer}>
+          <div className={noteContainer}>
+            <NoteHeader />
+            <div className={divider} />
+            <LineInfo />
+            <div className={divider} />
+            <NoteConent />
+          </div>
         </div>
       </div>
-    </div>
+    </SWRConfig>
   );
 };
 

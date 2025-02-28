@@ -6,7 +6,7 @@ import { SWRConfig } from 'swr';
 import axios from 'axios';
 import Sidebar from './_components/sidebar/sidebar';
 
-const RootLayout = async ({ children, modal }: Readonly<{ children: React.ReactNode; modal: React.ReactNode }>) => {
+const MainLayout = async ({ children, modal }: Readonly<{ children: React.ReactNode; modal: React.ReactNode }>) => {
   const cookie = await cookies();
   const isLogin = cookie.has('accessToken');
   const accessToken = cookie?.get('accessToken')?.value;
@@ -15,20 +15,22 @@ const RootLayout = async ({ children, modal }: Readonly<{ children: React.ReactN
     redirect('/login');
   }
 
-  const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/documents`, {
+  const pageResponse = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/documents`, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
     },
   });
 
-  const sidebarData = response.data;
+  const noteHeaderData = null;
+  const pageList = pageResponse.data;
 
   return (
     <SWRConfig
       value={{
         fallback: {
-          [`pageList`]: sidebarData,
+          [`pageList`]: pageList,
+          [`noteHeaderData`]: noteHeaderData,
         },
       }}
     >
@@ -41,4 +43,4 @@ const RootLayout = async ({ children, modal }: Readonly<{ children: React.ReactN
   );
 };
 
-export default RootLayout;
+export default MainLayout;

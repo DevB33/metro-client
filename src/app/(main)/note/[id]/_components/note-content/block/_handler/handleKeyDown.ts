@@ -51,7 +51,9 @@ const splitBlock = (
     })
     .map((node, idx) => {
       if (idx === 0) {
-        const filteredNodeCount = childNodes.filter(n => n != null).length;
+        const filteredNodeCount = childNodes.filter((_node, i) => {
+          return currentChildNodeIndex === -1 ? idx >= startOffset : i >= currentChildNodeIndex;
+        }).length;
         if (afterText === '' && idx !== filteredNodeCount - 1) {
           return;
         }
@@ -142,6 +144,13 @@ const splitBlock = (
     });
   }
 
+  if (newAfterBlock.length === 1 && newAfterBlock[0]?.type === 'br') {
+    newAfterBlock[0] = {
+      type: 'text',
+      content: '',
+    };
+  }
+
   updatedBlockList[index].children = newBeforeBlock;
 
   updatedBlockList.splice(index + 1, 0, {
@@ -184,18 +193,18 @@ const splitLine = (
     const textAfter = startContainer.textContent?.substring(startOffset);
 
     const parentNode = startContainer.parentNode as HTMLElement;
-    const isDiv = parentNode?.tagName === 'DIV';
+    const isSpan = parentNode?.tagName === 'SPAN';
 
     // 줄 바꿈이 반영된 children 배열 생성
     const updatedChildren = [
       ...newChildren.slice(0, currentChildNodeIndex),
       textBefore && {
-        type: isDiv ? 'text' : 'span',
+        type: !isSpan ? 'text' : 'span',
         style: {
-          fontStyle: isDiv ? 'normal' : parentNode?.style.fontStyle || 'normal',
-          fontWeight: isDiv ? 'regular' : parentNode?.style.fontWeight || 'regular',
-          color: isDiv ? 'black' : parentNode?.style.color || 'black',
-          backgroundColor: isDiv ? 'white' : parentNode?.style.backgroundColor || 'white',
+          fontStyle: !isSpan ? 'normal' : parentNode?.style.fontStyle || 'normal',
+          fontWeight: !isSpan ? 'regular' : parentNode?.style.fontWeight || 'regular',
+          color: !isSpan ? 'black' : parentNode?.style.color || 'black',
+          backgroundColor: !isSpan ? 'white' : parentNode?.style.backgroundColor || 'white',
           width: 'auto',
           height: 'auto',
         },
@@ -207,12 +216,12 @@ const splitLine = (
           }
         : null,
       textAfter && {
-        type: isDiv ? 'text' : 'span',
+        type: !isSpan ? 'text' : 'span',
         style: {
-          fontStyle: isDiv ? 'normal' : parentNode?.style.fontStyle || 'normal',
-          fontWeight: isDiv ? 'regular' : parentNode?.style.fontWeight || 'regular',
-          color: isDiv ? 'black' : parentNode?.style.color || 'black',
-          backgroundColor: isDiv ? 'white' : parentNode?.style.backgroundColor || 'white',
+          fontStyle: !isSpan ? 'normal' : parentNode?.style.fontStyle || 'normal',
+          fontWeight: !isSpan ? 'regular' : parentNode?.style.fontWeight || 'regular',
+          color: !isSpan ? 'black' : parentNode?.style.color || 'black',
+          backgroundColor: !isSpan ? 'white' : parentNode?.style.backgroundColor || 'white',
           width: 'auto',
           height: 'auto',
         },
@@ -250,6 +259,11 @@ const splitLine = (
   } else {
     // 현재 커서 위치 한 곳이 빈 문자열일 때 → 중복 줄바꿈 로직
     const updatedBlockList = [...blockList];
+    if (updatedBlockList[index].children.length === 1 && updatedBlockList[index].children[0].content === '') {
+      updatedBlockList[index].children.splice(startOffset, 0, {
+        type: 'br',
+      });
+    }
     updatedBlockList[index].children.splice(startOffset, 0, {
       type: 'br',
     });
@@ -260,11 +274,27 @@ const splitLine = (
 
 const mergeBlock = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
   const updatedBlockList = [...blockList];
+
   const previousBlock = updatedBlockList[index - 1];
   const currentBlock = updatedBlockList[index];
 
-  previousBlock.children = [...previousBlock.children, ...currentBlock.children];
+  // 이전 블록의 마지막이 <br>인 상태에서 블록을 합치면 이전 블록의 <br> 제거
+  if (previousBlock.children[previousBlock.children.length - 1].type === 'br') {
+    previousBlock.children.pop();
+  }
+  const updatedChildren = [...previousBlock.children, ...currentBlock.children];
+
+  updatedBlockList[index - 1].children = updatedChildren;
   updatedBlockList.splice(index, 1);
+
+  // 빈 블록 두개 합치기 후 빈 텍스트 노드가 두개 중복해서 생기면 하나 지우기
+  if (
+    updatedBlockList[index - 1].children.length === 2 &&
+    updatedBlockList[index - 1].children[0].content === '' &&
+    updatedBlockList[index - 1].children[1].content === ''
+  ) {
+    updatedBlockList[index - 1].children.shift();
+  }
 
   setBlockList(updatedBlockList);
 };
@@ -279,6 +309,30 @@ const mergeLine = (
   const newChildren = [...blockList[index].children];
   newChildren.splice(currentChildNodeIndex - 1, 1);
   updatedBlockList[index] = { ...updatedBlockList[index], children: newChildren };
+
+  setBlockList(updatedBlockList);
+};
+
+const turnIntoH1 = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
+  const updatedBlockList = [...blockList];
+  updatedBlockList[index].type = 'h1';
+  updatedBlockList[index].children[0].content = (updatedBlockList[index].children[0].content as string).substring(1);
+
+  setBlockList(updatedBlockList);
+};
+
+const turnIntoH2 = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
+  const updatedBlockList = [...blockList];
+  updatedBlockList[index].type = 'h2';
+  updatedBlockList[index].children[0].content = (updatedBlockList[index].children[0].content as string).substring(2);
+
+  setBlockList(updatedBlockList);
+};
+
+const turnIntoH3 = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
+  const updatedBlockList = [...blockList];
+  updatedBlockList[index].type = 'h3';
+  updatedBlockList[index].children[0].content = (updatedBlockList[index].children[0].content as string).substring(3);
 
   setBlockList(updatedBlockList);
 };
@@ -365,6 +419,9 @@ const handleKeyDown = (
 ) => {
   if (event.key === keyName.enter && !event.shiftKey) {
     event.preventDefault();
+    if (event.nativeEvent.isComposing) {
+      return;
+    }
     setIsTyping(false);
     setKey(Math.random());
     splitBlock(index, blockList, setBlockList, blockRef);
@@ -442,6 +499,63 @@ const handleKeyDown = (
     setIsTyping(false);
     setKey(Math.random());
     createSlashNode(index, blockList, setBlockList, blockRef);
+  }
+
+  if (event.key === keyName.space) {
+    const { startOffset, startContainer } = getSelectionInfo(0) || {};
+    if (startOffset === undefined || startOffset === null || !startContainer) return;
+
+    const parent = blockRef.current[index];
+    const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+    const currentChildNodeIndex =
+      childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
+        ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
+        : childNodes.indexOf(startContainer as HTMLElement);
+
+    // h1으로 전환
+    if (
+      currentChildNodeIndex === 0 &&
+      startOffset === 1 &&
+      startContainer.textContent &&
+      startContainer.textContent[0] === '#' &&
+      blockList[index].type !== 'h1'
+    ) {
+      event.preventDefault();
+      setIsTyping(false);
+      setKey(Math.random());
+      turnIntoH1(index, blockList, setBlockList);
+    }
+
+    // h2로 전환
+    if (
+      currentChildNodeIndex === 0 &&
+      startOffset === 2 &&
+      startContainer.textContent &&
+      startContainer.textContent[0] === '#' &&
+      startContainer.textContent[1] === '#' &&
+      blockList[index].type !== 'h2'
+    ) {
+      event.preventDefault();
+      setIsTyping(false);
+      setKey(Math.random());
+      turnIntoH2(index, blockList, setBlockList);
+    }
+
+    // h3으로 전환
+    if (
+      currentChildNodeIndex === 0 &&
+      startOffset === 3 &&
+      startContainer.textContent &&
+      startContainer.textContent[0] === '#' &&
+      startContainer.textContent[1] === '#' &&
+      startContainer.textContent[2] === '#' &&
+      blockList[index].type !== 'h3'
+    ) {
+      event.preventDefault();
+      setIsTyping(false);
+      setKey(Math.random());
+      turnIntoH3(index, blockList, setBlockList);
+    }
   }
 };
 

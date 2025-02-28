@@ -37,6 +37,7 @@ const NoteContent = () => {
     },
   ]);
 
+  const [key, setKey] = useState(Date.now());
   const [isTyping, setIsTyping] = useState(false);
   const blockButtonRef = useRef<(HTMLDivElement | null)[]>([]);
   const blockRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -50,7 +51,7 @@ const NoteContent = () => {
   };
 
   return (
-    <>
+    <div key={key}>
       {blockList.map((block, index) => (
         <div
           role="button"
@@ -79,10 +80,11 @@ const NoteContent = () => {
             setBlockList={setBlockList}
             isTyping={isTyping}
             setIsTyping={setIsTyping}
+            setKey={setKey}
           />
         </div>
       ))}
-    </>
+    </div>
   );
 };
 

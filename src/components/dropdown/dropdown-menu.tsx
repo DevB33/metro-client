@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { css, cx } from '@/../styled-system/css';
+import { css } from '@/../styled-system/css';
 
 interface IDropDownMenuProps {
   children: ReactNode;
@@ -24,9 +24,13 @@ const dropdownMenuContainer = css({
 });
 
 const DropDownMenu = ({ children, isOpen, top, left, right, bottom }: IDropDownMenuProps) => {
-  const menuPositionStyle = css({ top, left, right, bottom });
-
-  return isOpen && <div className={cx(menuPositionStyle, dropdownMenuContainer)}>{children}</div>;
+  return (
+    isOpen && (
+      <div className={dropdownMenuContainer} style={{ top, left, right, bottom }}>
+        {children}
+      </div>
+    )
+  );
 };
 
 export default DropDownMenu;

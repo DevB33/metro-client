@@ -5,7 +5,14 @@ import ITagType from '@/types/tag-type';
 import LineColor from '@/constants/line-color';
 import keyName from '@/constants/key-name';
 import useClickOutside from '@/hooks/useClickOutside';
+import useSWR, { mutate } from 'swr';
+import { editTags, getNoteInfo } from '@/apis/note-header';
+import { getPageList } from '@/apis/side-bar';
 import TagBox from './tag-box';
+
+interface ITag {
+  noteId: string;
+}
 
 const tagContainer = css({
   minHeight: '2rem',
@@ -63,8 +70,11 @@ const tagInput = css({
   color: 'black',
 });
 
-const Tag = () => {
-  const [tagList, setTagList] = useState<ITagType[]>([]);
+const Tag = ({ noteId }: ITag) => {
+  const { data = { tags: [] } } = useSWR<{ tags: ITagType[] }>(`noteHeaderData-${noteId}`);
+
+  const tagList = data.tags;
+
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -90,7 +100,7 @@ const Tag = () => {
     }
   }, [isEditing]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     const inputValue = e.currentTarget.value;
     const isDuplicate = tagList.some(tag => tag.name === inputValue);
 
@@ -98,6 +108,7 @@ const Tag = () => {
       if (e.nativeEvent.isComposing) {
         return;
       }
+
       if (isDuplicate || inputValue.trim() === '') {
         inputRef.current?.blur();
         e.currentTarget.value = '';
@@ -105,14 +116,21 @@ const Tag = () => {
         return;
       }
 
-      setTagList([...tagList, { name: inputValue.trim(), color: getRandomColor() }]);
-      e.currentTarget.value = '';
+      await editTags(noteId, [...tagList, { name: inputValue.trim(), color: getRandomColor() }]);
+      await mutate('pageList', getPageList, false);
+      await mutate(`noteHeaderData-${noteId}`, getNoteInfo(noteId), false);
+
       setIsEditing(false);
     }
   };
 
-  const handleTagDelete = (tagToDelete: string) => {
-    setTagList(tagList.filter(tag => tag.name !== tagToDelete));
+  const handleTagDelete = async (tagToDelete: string) => {
+    await editTags(
+      noteId,
+      tagList.filter(tag => tag.name !== tagToDelete),
+    );
+    await mutate('pageList', getPageList, false);
+    await mutate(`noteHeaderData-${noteId}`, getNoteInfo(noteId), false);
   };
 
   return (

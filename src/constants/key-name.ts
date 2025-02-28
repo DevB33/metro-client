@@ -2,6 +2,7 @@ const keyName = {
   enter: 'Enter',
   backspace: 'Backspace',
   slash: '/',
+  space: ' ',
   arrowLeft: 'ArrowLeft',
   arrowRight: 'ArrowRight',
   arrowUp: 'ArrowUp',
