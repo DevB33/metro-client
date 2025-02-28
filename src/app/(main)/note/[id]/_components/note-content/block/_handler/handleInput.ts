@@ -10,10 +10,12 @@ const handleInput = (
   prevChildNodesLength: React.RefObject<number>,
 ) => {
   const updatedBlockList = [...blockList];
-  const target = event.currentTarget;
+  const target = event.currentTarget.childNodes[0] as HTMLElement;
+
+  target.setAttribute('data-empty', 'false');
 
   const { startOffset, startContainer } = getSelectionInfo(0) || {};
-  if (!startOffset || !startContainer) return;
+  if (startOffset === undefined || startOffset === null || !startContainer) return;
 
   const childNodes = Array.from(target.childNodes as NodeListOf<HTMLElement>);
   const currentChildNodeIndex =
@@ -21,11 +23,16 @@ const handleInput = (
       ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
       : childNodes.indexOf(startContainer as HTMLElement);
 
+  if (childNodes.length === 1 && target.textContent === '') {
+    target.setAttribute('data-empty', 'true');
+  }
+
   // 블록에 모든 내용이 지워졌을 때 빈 블록으로 변경 로직
   if (currentChildNodeIndex === -1 && blockRef.current[index] && childNodes.length === 1) {
-    // eslint-disable-next-line no-param-reassign
-    blockRef.current[index]!.innerHTML = '';
-    return;
+    updatedBlockList[index].children[0] = {
+      type: 'text',
+      content: '',
+    };
   }
 
   // block의 자식 노드가 지워졌을 때 blockList에 반영하는 로직
@@ -54,21 +61,26 @@ const handleInput = (
     currentChildNodeIndex !== -1 ? childNodes[currentChildNodeIndex].textContent || '' : '';
 
   // 블록 중간에 빈 textNode가 생기면 삭제하고, 마지막 줄에 빈 textNode 생기면 <br>로 변경
-  const updatedChildList = updatedBlockList[index].children
-    .map((child, idx) => {
-      if (child.type === 'text' && child.content === '') {
-        if (idx === updatedBlockList[index].children.length - 1) {
-          return {
-            type: 'br' as 'br',
-          };
+  if (currentChildNodeIndex === -1) {
+    const updatedChildList = updatedBlockList[index].children
+      .map((child, idx) => {
+        if (child.type === 'text' && child.content === '') {
+          if (updatedBlockList[index].children.length === 1) {
+            return child;
+          }
+          if (idx === updatedBlockList[index].children.length - 1) {
+            return {
+              type: 'br' as 'br',
+            };
+          }
+          return '';
         }
-        return '';
-      }
-      return child;
-    })
-    .filter(child => child !== '');
+        return child;
+      })
+      .filter(child => child !== '');
 
-  updatedBlockList[index].children = updatedChildList;
+    updatedBlockList[index].children = updatedChildList;
+  }
 
   setBlockList(updatedBlockList);
   // eslint-disable-next-line no-param-reassign
