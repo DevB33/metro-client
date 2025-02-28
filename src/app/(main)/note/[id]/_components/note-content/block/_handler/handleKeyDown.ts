@@ -332,6 +332,14 @@ const turnIntoH3 = (index: number, blockList: ITextBlock[], setBlockList: (block
   setBlockList(updatedBlockList);
 };
 
+const turnIntoUl = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
+  const updatedBlockList = [...blockList];
+  updatedBlockList[index].type = 'ul';
+  updatedBlockList[index].children[0].content = (updatedBlockList[index].children[0].content as string).substring(1);
+
+  setBlockList(updatedBlockList);
+};
+
 const handleKeyDown = (
   event: React.KeyboardEvent<HTMLDivElement>,
   index: number,
@@ -372,6 +380,11 @@ const handleKeyDown = (
     // 첫 블록 첫 커서에서 백스페이스 방지
     if (index === 0 && (currentChildNodeIndex === -1 || currentChildNodeIndex === 0) && startOffset === 0) {
       event.preventDefault();
+      if (blockList[index].type === 'ul') {
+        const updatedBlockList = [...blockList];
+        updatedBlockList[index].type = 'default';
+        setBlockList(updatedBlockList);
+      }
       return;
     }
 
@@ -383,7 +396,14 @@ const handleKeyDown = (
 
       if (startOffset === 0) {
         // 블록 합치기 로직
-        mergeBlock(index, blockList, setBlockList);
+        if (blockList[index].type === 'ul') {
+          // ul이나 ol일 때는 블록을 합치는 대신 블록을 default로 변경
+          const updatedBlockList = [...blockList];
+          updatedBlockList[index].type = 'default';
+          setBlockList(updatedBlockList);
+        } else {
+          mergeBlock(index, blockList, setBlockList);
+        }
       } else {
         // 줄 합치기 로직
         const updatedBlockList = [...blockList];
@@ -411,7 +431,13 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       if (currentChildNodeIndex <= 0) {
-        mergeBlock(index, blockList, setBlockList);
+        if (blockList[index].type === 'ul') {
+          const updatedBlockList = [...blockList];
+          updatedBlockList[index].type = 'default';
+          setBlockList(updatedBlockList);
+        } else {
+          mergeBlock(index, blockList, setBlockList);
+        }
       } else if (currentChildNodeIndex > 0) {
         mergeLine(index, currentChildNodeIndex, blockList, setBlockList);
       }
@@ -472,6 +498,20 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       turnIntoH3(index, blockList, setBlockList);
+    }
+
+    // ul로 전환
+    if (
+      currentChildNodeIndex === 0 &&
+      startOffset === 1 &&
+      startContainer.textContent &&
+      startContainer.textContent[0] === '-' &&
+      blockList[index].type !== 'ul'
+    ) {
+      event.preventDefault();
+      setIsTyping(false);
+      setKey(Math.random());
+      turnIntoUl(index, blockList, setBlockList);
     }
   }
 };

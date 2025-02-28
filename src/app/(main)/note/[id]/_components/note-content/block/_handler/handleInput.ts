@@ -10,7 +10,10 @@ const handleInput = (
   prevChildNodesLength: React.RefObject<number>,
 ) => {
   const updatedBlockList = [...blockList];
-  const target = event.currentTarget.childNodes[0] as HTMLElement;
+  const target =
+    blockList[index].type === 'ul'
+      ? (event.currentTarget.childNodes[0].childNodes[0].childNodes[0] as HTMLElement)
+      : (event.currentTarget.childNodes[0] as HTMLElement);
 
   target.setAttribute('data-empty', 'false');
 
@@ -55,6 +58,8 @@ const handleInput = (
       });
     }
   }
+
+  console.log('currentChildNodeIndex', currentChildNodeIndex);
 
   // 블록에 입력된 내용을 blockList에 반영하는 로직
   updatedBlockList[index].children[currentChildNodeIndex === -1 ? startOffset : currentChildNodeIndex].content =

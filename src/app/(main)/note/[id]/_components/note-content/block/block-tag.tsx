@@ -25,10 +25,9 @@ const placeholderStyles = cva({
   },
   variants: {
     tag: {
-      div: {
+      p: {
         '.parent:focus-within &': {
           '&[data-empty=true]::before': {
-            left: '0',
             fontSize: 'md',
           },
         },
@@ -67,7 +66,7 @@ const BlockTag = ({ block, index, blockRef, children }: IBlockTag) => {
       <p
         data-placeholder={placeholder.block}
         data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
-        className={placeholderStyles({ tag: 'div' })}
+        className={placeholderStyles({ tag: 'p' })}
         ref={element => {
           // eslint-disable-next-line no-param-reassign
           blockRef.current[index] = element;
@@ -123,6 +122,26 @@ const BlockTag = ({ block, index, blockRef, children }: IBlockTag) => {
       >
         {children}
       </h3>
+    );
+  }
+
+  if (block.type === 'ul') {
+    return (
+      <ul>
+        <li>
+          <p
+            data-placeholder={placeholder.li}
+            data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
+            className={placeholderStyles({ tag: 'p' })}
+            ref={element => {
+              // eslint-disable-next-line no-param-reassign
+              blockRef.current[index] = element;
+            }}
+          >
+            {children}
+          </p>
+        </li>
+      </ul>
     );
   }
 
