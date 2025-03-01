@@ -71,24 +71,47 @@ const EditTitleModal = ({ noteId, closeEditModal }: IEditTitleModal) => {
   const [value, setValue] = useState('');
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
-  const [index, setIndex] = useState(0);
+  const [pageNode, setPageNode] = useState<IPageType | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const editModalRef = useClickOutside(closeEditModal);
 
+  const findNode = (nodes: IPageType[], id: string): IPageType | null => {
+    if (!nodes) return null;
+
+    const directFoundNode = nodes.find(node => node.id === id);
+    if (directFoundNode) return directFoundNode;
+
+    let foundNode: IPageType | null = null;
+    nodes.some(node => {
+      if (node.children?.length) {
+        foundNode = findNode(node.children, id);
+      }
+      return foundNode !== null;
+    });
+
+    return foundNode;
+  };
+
+  useEffect(() => {
+    const foundNode = findNode(data.node, noteId);
+    setPageNode(foundNode);
+  }, [data]);
+
   useEffect(() => {
     if (!data) return;
-    const dataIndex = data.node.findIndex((item: IPageType) => item.id === noteId);
-    setIndex(dataIndex);
-    if (data.node[dataIndex]?.title) {
-      setValue(data.node[dataIndex].title);
+
+    const foundNode = findNode(data.node, noteId);
+    setPageNode(foundNode);
+
+    if (foundNode) {
+      setValue(foundNode.title ?? '');
     }
 
     setTimeout(() => {
       if (inputRef.current) {
         inputRef.current.focus();
         inputRef.current.select();
-        console.log(inputRef);
       }
     }, 0);
   }, []);
@@ -133,11 +156,12 @@ const EditTitleModal = ({ noteId, closeEditModal }: IEditTitleModal) => {
   };
 
   if (!data) return;
+
   return (
     <div ref={editModalRef} className={container}>
       <div className={modalContainer}>
         <div className={iconContainer} onClick={handleSelectorOpen}>
-          {data.node[index].icon ?? <PageIcon />}
+          {pageNode?.icon ?? <PageIcon />}
         </div>
         <input
           ref={inputRef}
