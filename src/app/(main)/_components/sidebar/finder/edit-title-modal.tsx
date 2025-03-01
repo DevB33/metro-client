@@ -73,6 +73,7 @@ const EditTitleModal = ({ noteId, closeEditModal }: IEditTitleModal) => {
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const [index, setIndex] = useState(0);
 
+  const inputRef = useRef<HTMLInputElement>(null);
   const editModalRef = useClickOutside(closeEditModal);
 
   useEffect(() => {
@@ -82,6 +83,14 @@ const EditTitleModal = ({ noteId, closeEditModal }: IEditTitleModal) => {
     if (data.node[dataIndex]?.title) {
       setValue(data.node[dataIndex].title);
     }
+
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+        inputRef.current.select();
+        console.log(inputRef);
+      }
+    }, 0);
   }, []);
 
   useEffect(() => {
@@ -130,7 +139,13 @@ const EditTitleModal = ({ noteId, closeEditModal }: IEditTitleModal) => {
         <div className={iconContainer} onClick={handleSelectorOpen}>
           {data.node[index].icon ?? <PageIcon />}
         </div>
-        <input value={value || ''} onChange={handleChange} onKeyDown={handleKeyDown} className={inputContainer} />
+        <input
+          ref={inputRef}
+          value={value || ''}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          className={inputContainer}
+        />
       </div>
       <div className={IconSelectorContainer}>
         <IconSelector
