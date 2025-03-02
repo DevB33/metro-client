@@ -64,7 +64,29 @@ const NoteContent = () => {
   const handleMouseUp = () => {
     isMouseDown.current = false;
     setStartBlockIndex(null);
-    console.log(`Final Selection: ${Array.from(selectRef.current)}`);
+
+    const selectedBlocks = Array.from(selectRef.current);
+    console.log(`Final Selection: ${selectedBlocks}`);
+
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      let startNode = range.startContainer;
+      let { startOffset } = range;
+      let endNode = range.endContainer;
+      let { endOffset } = range;
+
+      // 🔹 선택 방향 정규화
+      if (range.compareBoundaryPoints(Range.START_TO_END, range) > 0) {
+        [startNode, endNode] = [endNode, startNode];
+        [startOffset, endOffset] = [endOffset, startOffset];
+      }
+
+      console.log(`Selection Start: Block ${selectedBlocks[0]}, Node: ${startNode.nodeName}, Offset: ${startOffset}`);
+      console.log(
+        `Selection End: Block ${selectedBlocks[selectedBlocks.length - 1]}, Node: ${endNode.nodeName}, Offset: ${endOffset}`,
+      );
+    }
   };
 
   return (
