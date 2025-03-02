@@ -17,41 +17,58 @@ const blockContainer = css({
 
 const NoteContent = () => {
   const [blockList, setBlockList] = useState<ITextBlock[]>([
-    {
-      id: 1,
-      type: 'default',
-      children: [
-        {
-          type: 'text',
-          style: {
-            fontStyle: 'normal',
-            fontWeight: 'regular',
-            color: 'black',
-            backgroundColor: 'white',
-            width: 'auto',
-            height: 'auto',
-          },
-          content: '',
-        },
-      ],
-    },
+    { id: 1, type: 'default', children: [{ type: 'text', content: '' }] },
+    { id: 2, type: 'default', children: [{ type: 'text', content: '' }] },
+    { id: 3, type: 'default', children: [{ type: 'text', content: '' }] },
+    { id: 4, type: 'default', children: [{ type: 'text', content: '' }] },
   ]);
 
   const [key, setKey] = useState(Date.now());
   const [isTyping, setIsTyping] = useState(false);
+  const [startBlockIndex, setStartBlockIndex] = useState<number | null>(null);
   const blockButtonRef = useRef<(HTMLDivElement | null)[]>([]);
   const blockRef = useRef<(HTMLDivElement | null)[]>([]);
+  const selectRef = useRef<Set<number>>(new Set());
+  const isMouseDown = useRef(false);
+
+  const handleMouseDown = (index: number) => {
+    isMouseDown.current = true;
+    setStartBlockIndex(index);
+    selectRef.current.clear();
+    selectRef.current.add(index);
+    console.log(`Selection Start: ${Array.from(selectRef.current)}`);
+  };
 
   const handleMouseEnter = (index: number) => {
     blockButtonRef.current[index]?.style.setProperty('display', 'flex');
+
+    if (isMouseDown.current && startBlockIndex !== null) {
+      const min = Math.min(startBlockIndex, index);
+      const max = Math.max(startBlockIndex, index);
+
+      // 시작 블록과 현재 블록 사이의 모든 블록 선택
+      selectRef.current.clear();
+      for (let i = min; i <= max; i++) {
+        selectRef.current.add(i);
+      }
+
+      console.log(`Dragging - Selected Blocks: ${Array.from(selectRef.current)}`);
+    }
   };
 
   const handleMouseLeave = (index: number) => {
     blockButtonRef.current[index]?.style.setProperty('display', 'none');
+    // 마우스를 벗어나도 중간 블록이 선택 해제되지 않음
+  };
+
+  const handleMouseUp = () => {
+    isMouseDown.current = false;
+    setStartBlockIndex(null);
+    console.log(`Final Selection: ${Array.from(selectRef.current)}`);
   };
 
   return (
-    <div key={key}>
+    <div key={key} onMouseUp={handleMouseUp}>
       {blockList.map((block, index) => (
         <div
           role="button"
@@ -60,13 +77,11 @@ const NoteContent = () => {
           className={blockContainer}
           onMouseEnter={() => handleMouseEnter(index)}
           onMouseLeave={() => handleMouseLeave(index)}
-          onKeyDown={() => handleMouseLeave(index)}
-          onMouseMove={() => handleMouseEnter(index)}
+          onMouseDown={() => handleMouseDown(index)}
         >
           <div
             className={css({ display: 'none' })}
             ref={element => {
-              // eslint-disable-next-line no-param-reassign
               blockButtonRef.current[index] = element;
             }}
           >
