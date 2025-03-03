@@ -50,6 +50,9 @@ const NoteContent = () => {
     blockButtonRef.current[index]?.style.setProperty('display', 'none');
   };
 
+  const [isSlashMenuOpen, setIsSlashMenuOpen] = useState(false);
+  const [slashMenuPosition, setSlashMenuPosition] = useState({ x: 0, y: 0 });
+
   return (
     <div key={key}>
       {blockList.map((block, index) => (
@@ -81,6 +84,10 @@ const NoteContent = () => {
             isTyping={isTyping}
             setIsTyping={setIsTyping}
             setKey={setKey}
+            isSlashMenuOpen={isSlashMenuOpen}
+            setIsSlashMenuOpen={setIsSlashMenuOpen}
+            slashMenuPosition={slashMenuPosition}
+            setSlashMenuPosition={setSlashMenuPosition}
           />
         </div>
       ))}

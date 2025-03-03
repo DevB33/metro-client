@@ -182,12 +182,7 @@ const splitLine = (
       ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
       : childNodes.indexOf(startContainer as HTMLElement);
   const newChildren = [...blockList[index].children];
-  console.log('parent', parent);
-  console.log('childNodes', childNodes);
-  console.log('currentChildNodeIndex', currentChildNodeIndex);
-  console.log('newChildren', newChildren);
-  console.log('startContainer', startContainer);
-  console.log('startOffset', startOffset);
+
   if (startContainer.nodeType === Node.TEXT_NODE) {
     const textBefore = startContainer.textContent?.substring(0, startOffset);
     const textAfter = startContainer.textContent?.substring(startOffset);
@@ -342,10 +337,14 @@ const createSlashNode = (
   blockList: ITextBlock[],
   setBlockList: (blockList: ITextBlock[]) => void,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
+  isSlashMenuOpen: boolean,
+  setIsSlashMenuOpen: (isSlashMenuOpen: boolean) => void,
+  setSlashMenuPosition: (position: { x: number; y: number }) => void,
 ) => {
-  console.log('slash');
-  console.log('blockList', blockList);
-  const { startOffset, startContainer } = getSelectionInfo(0) || {};
+  setIsSlashMenuOpen(true);
+
+  // console.log('blockList', blockList);
+  const { startOffset, startContainer, range } = getSelectionInfo(0) || {};
   console.log('startContainer', startContainer);
   console.log('startOffset', startOffset);
   if (startOffset === undefined || startOffset === null || !startContainer) return;
@@ -356,6 +355,20 @@ const createSlashNode = (
       ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
       : childNodes.indexOf(startContainer as HTMLElement);
   const newChildren = [...blockList[index].children];
+
+  // 메뉴 띄울 슬래시 위치 받아오기
+  // const { range } = getSelectionInfo(0) || {};
+  const rect = range ? range.getBoundingClientRect() : null;
+  console.log('rect', rect);
+  if (rect) {
+    setSlashMenuPosition({
+      x: rect.left,
+      y: rect.top + rect.height,
+    });
+    console.log('isSlashMenuOpen', isSlashMenuOpen);
+    console.log('slashMenuPosition-left', rect.left);
+    console.log('slashMenuPosition-top', rect.top + rect.height);
+  }
 
   // 현재 커서 위치의 텍스트 요소 찾기
   const currentTextSpan = newChildren[currentChildNodeIndex];
@@ -416,6 +429,9 @@ const handleKeyDown = (
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   setIsTyping: (isTyping: boolean) => void,
   setKey: (key: number) => void,
+  isSlashMenuOpen: boolean,
+  setIsSlashMenuOpen: (isSlashMenuOpen: boolean) => void,
+  setSlashMenuPosition: (position: { x: number; y: number }) => void,
 ) => {
   if (event.key === keyName.enter && !event.shiftKey) {
     event.preventDefault();
@@ -498,7 +514,19 @@ const handleKeyDown = (
     event.preventDefault();
     setIsTyping(false);
     setKey(Math.random());
-    createSlashNode(index, blockList, setBlockList, blockRef);
+    console.log('---slash processing start');
+    console.log(setSlashMenuPosition);
+    createSlashNode(
+      index,
+      blockList,
+      setBlockList,
+      blockRef,
+      isSlashMenuOpen,
+      setIsSlashMenuOpen,
+      setSlashMenuPosition,
+    );
+    // setIsSlashMenuOpen(true);
+    console.log('---slash processing complete');
   }
 
   if (event.key === keyName.space) {

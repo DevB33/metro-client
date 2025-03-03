@@ -1,10 +1,11 @@
-import { memo, useRef, useEffect } from 'react';
+import { memo, useRef, useEffect, useState, useCallback } from 'react';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
 import handleInput from './_handler/handleInput';
 import handleKeyDown from './_handler/handleKeyDown';
 import BlockTag from './block-tag';
+import SlashMenu from './slash-menu';
 
 interface IBlockComponent {
   block: ITextBlock;
@@ -15,6 +16,10 @@ interface IBlockComponent {
   isTyping: boolean;
   setIsTyping: (isTyping: boolean) => void;
   setKey: (key: number) => void;
+  isSlashMenuOpen: boolean;
+  setIsSlashMenuOpen: (isSlashMenu: boolean) => void;
+  slashMenuPosition: { x: number; y: number };
+  setSlashMenuPosition: (slashMenuPosition: { x: number; y: number }) => void;
 }
 
 const blockDiv = css({
@@ -28,12 +33,31 @@ const blockDiv = css({
 });
 
 const Block = memo(
-  ({ block, index, blockRef, blockList, setBlockList, isTyping: _isTyping, setIsTyping, setKey }: IBlockComponent) => {
+  ({
+    block,
+    index,
+    blockRef,
+    blockList,
+    setBlockList,
+    isTyping: _isTyping,
+    setIsTyping,
+    setKey,
+    isSlashMenuOpen,
+    setIsSlashMenuOpen,
+    slashMenuPosition,
+    setSlashMenuPosition,
+  }: IBlockComponent) => {
     const prevChildNodesLength = useRef(0);
 
     useEffect(() => {
       prevChildNodesLength.current = blockList[index].children.length;
     }, [blockList, index]);
+
+    console.log('Block Render:', index);
+    useEffect(() => {
+      console.log('SlashMenu Open:', isSlashMenuOpen);
+      console.log('SlashMenu Position:', slashMenuPosition);
+    }, [isSlashMenuOpen, slashMenuPosition]);
 
     return (
       <div
@@ -46,7 +70,20 @@ const Block = memo(
           setIsTyping(true);
           handleInput(event, index, blockList, setBlockList, blockRef, prevChildNodesLength);
         }}
-        onKeyDown={event => handleKeyDown(event, index, blockList, setBlockList, blockRef, setIsTyping, setKey)}
+        onKeyDown={event => {
+          handleKeyDown(
+            event,
+            index,
+            blockList,
+            setBlockList,
+            blockRef,
+            setIsTyping,
+            setKey,
+            isSlashMenuOpen,
+            setIsSlashMenuOpen,
+            setSlashMenuPosition,
+          );
+        }}
       >
         <BlockTag block={block} index={index} blockRef={blockRef}>
           {block.children.length === 1 && block.children[0].content === '' && <br />}
@@ -66,6 +103,7 @@ const Block = memo(
             );
           })}
         </BlockTag>
+        {isSlashMenuOpen && <SlashMenu position={slashMenuPosition} />}
       </div>
     );
   },
