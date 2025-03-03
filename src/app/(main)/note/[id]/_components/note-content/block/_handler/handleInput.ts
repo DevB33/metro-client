@@ -11,7 +11,7 @@ const handleInput = (
 ) => {
   const updatedBlockList = [...blockList];
   const target =
-    blockList[index].type === 'ul'
+    blockList[index].type === 'ul' || blockList[index].type === 'ol'
       ? (event.currentTarget.childNodes[0].childNodes[0].childNodes[0] as HTMLElement)
       : (event.currentTarget.childNodes[0] as HTMLElement);
 
@@ -58,8 +58,6 @@ const handleInput = (
       });
     }
   }
-
-  console.log('currentChildNodeIndex', currentChildNodeIndex);
 
   // 블록에 입력된 내용을 blockList에 반영하는 로직
   updatedBlockList[index].children[currentChildNodeIndex === -1 ? startOffset : currentChildNodeIndex].content =

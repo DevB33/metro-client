@@ -5,6 +5,7 @@ import placeholder from '@/constants/placeholder';
 
 interface IBlockTag {
   block: ITextBlock;
+  blockList: ITextBlock[];
   index: number;
   blockRef: React.RefObject<(HTMLDivElement | null)[]>;
   children: React.ReactNode[];
@@ -60,7 +61,7 @@ const placeholderStyles = cva({
   },
 });
 
-const BlockTag = ({ block, index, blockRef, children }: IBlockTag) => {
+const BlockTag = ({ block, blockList, index, blockRef, children }: IBlockTag) => {
   if (block.type === 'default') {
     return (
       <p
@@ -142,6 +143,38 @@ const BlockTag = ({ block, index, blockRef, children }: IBlockTag) => {
           </p>
         </li>
       </ul>
+    );
+  }
+
+  if (block.type === 'ol') {
+    let startNumber = 1;
+
+    blockList.forEach((item, idx) => {
+      if (idx >= index) return;
+
+      if (item.type === 'ol') {
+        startNumber += 1;
+      } else {
+        startNumber = 1;
+      }
+    });
+
+    return (
+      <ol start={startNumber}>
+        <li>
+          <p
+            data-placeholder={placeholder.li}
+            data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
+            className={placeholderStyles({ tag: 'p' })}
+            ref={element => {
+              // eslint-disable-next-line no-param-reassign
+              blockRef.current[index] = element;
+            }}
+          >
+            {children}
+          </p>
+        </li>
+      </ol>
     );
   }
 

@@ -340,6 +340,21 @@ const turnIntoUl = (index: number, blockList: ITextBlock[], setBlockList: (block
   setBlockList(updatedBlockList);
 };
 
+const turnIntoOl = (
+  index: number,
+  blockList: ITextBlock[],
+  setBlockList: (blockList: ITextBlock[]) => void,
+  offset: number,
+) => {
+  const updatedBlockList = [...blockList];
+  updatedBlockList[index].type = 'ol';
+  updatedBlockList[index].children[0].content = (updatedBlockList[index].children[0].content as string).substring(
+    offset,
+  );
+
+  setBlockList(updatedBlockList);
+};
+
 const handleKeyDown = (
   event: React.KeyboardEvent<HTMLDivElement>,
   index: number,
@@ -380,7 +395,10 @@ const handleKeyDown = (
     // 첫 블록 첫 커서에서 백스페이스 방지
     if (index === 0 && (currentChildNodeIndex === -1 || currentChildNodeIndex === 0) && startOffset === 0) {
       event.preventDefault();
-      if (blockList[index].type === 'ul') {
+      setIsTyping(false);
+      setKey(Math.random());
+
+      if (blockList[index].type === 'ul' || blockList[index].type === 'ol') {
         const updatedBlockList = [...blockList];
         updatedBlockList[index].type = 'default';
         setBlockList(updatedBlockList);
@@ -396,7 +414,7 @@ const handleKeyDown = (
 
       if (startOffset === 0) {
         // 블록 합치기 로직
-        if (blockList[index].type === 'ul') {
+        if (blockList[index].type === 'ul' || blockList[index].type === 'ol') {
           // ul이나 ol일 때는 블록을 합치는 대신 블록을 default로 변경
           const updatedBlockList = [...blockList];
           updatedBlockList[index].type = 'default';
@@ -431,7 +449,7 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       if (currentChildNodeIndex <= 0) {
-        if (blockList[index].type === 'ul') {
+        if (blockList[index].type === 'ul' || blockList[index].type === 'ol') {
           const updatedBlockList = [...blockList];
           updatedBlockList[index].type = 'default';
           setBlockList(updatedBlockList);
@@ -512,6 +530,20 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       turnIntoUl(index, blockList, setBlockList);
+    }
+
+    // ol로 전환
+    if (
+      currentChildNodeIndex === 0 &&
+      startContainer.textContent &&
+      startContainer.textContent[startOffset - 1] === '.' &&
+      /^\d+$/.test(startContainer.textContent.slice(0, startOffset - 1)) &&
+      blockList[index].type !== 'ol'
+    ) {
+      event.preventDefault();
+      setIsTyping(false);
+      setKey(Math.random());
+      turnIntoOl(index, blockList, setBlockList, startOffset);
     }
   }
 };
