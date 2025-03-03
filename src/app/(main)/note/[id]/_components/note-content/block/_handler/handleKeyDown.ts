@@ -415,8 +415,8 @@ const handleKeyDown = (
 
       if (startOffset === 0) {
         // 블록 합치기 로직
-        if (blockList[index].type === 'ul' || blockList[index].type === 'ol') {
-          // ul이나 ol일 때는 블록을 합치는 대신 블록을 default로 변경
+        if (blockList[index].type !== 'default') {
+          // default 블록이 아닐 때는 블록을 합치는 대신 블록을 default로 변경
           const updatedBlockList = [...blockList];
           updatedBlockList[index].type = 'default';
           setBlockList(updatedBlockList);
