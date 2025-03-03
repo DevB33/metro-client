@@ -392,13 +392,14 @@ const handleKeyDown = (
         ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
         : childNodes.indexOf(startContainer as HTMLElement);
 
-    // 첫 블록 첫 커서에서 백스페이스 방지
+    // 첫 블록 첫 커서일 때
     if (index === 0 && (currentChildNodeIndex === -1 || currentChildNodeIndex === 0) && startOffset === 0) {
       event.preventDefault();
       setIsTyping(false);
       setKey(Math.random());
 
-      if (blockList[index].type === 'ul' || blockList[index].type === 'ol') {
+      // default 블록이 아닐 때는 default로 변경
+      if (blockList[index].type !== 'default') {
         const updatedBlockList = [...blockList];
         updatedBlockList[index].type = 'default';
         setBlockList(updatedBlockList);
@@ -449,7 +450,7 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       if (currentChildNodeIndex <= 0) {
-        if (blockList[index].type === 'ul' || blockList[index].type === 'ol') {
+        if (blockList[index].type !== 'default') {
           const updatedBlockList = [...blockList];
           updatedBlockList[index].type = 'default';
           setBlockList(updatedBlockList);
