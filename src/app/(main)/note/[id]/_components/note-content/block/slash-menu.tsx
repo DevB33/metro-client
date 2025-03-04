@@ -87,19 +87,15 @@ const MENU_ITEMS: {
 
 const SlashMenu = ({ position, index, blockList, setBlockList, setIsSlashMenuOpen }: ISlashMenuProps) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
-
-  console.log('SlashMenu render');
-  console.log('blockList', blockList);
+  const menuHeight = 19;
 
   const changeBlock = (type: 'default' | 'h1' | 'h2' | 'h3' | 'ul' | 'ol' | 'quote') => {
     const newBlockList = [...blockList];
     newBlockList[index].type = type;
     setBlockList(newBlockList);
     setIsSlashMenuOpen(false);
-    console.log('newBlockList', newBlockList);
-    console.log('changed type', type);
   };
-  // 키보드 이벤트 핸들러 추가
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'ArrowDown') {
@@ -107,7 +103,6 @@ const SlashMenu = ({ position, index, blockList, setBlockList, setIsSlashMenuOpe
       } else if (event.key === 'ArrowUp') {
         setSelectedIndex(prev => (prev - 1 + MENU_ITEMS.length) % MENU_ITEMS.length);
       } else if (event.key === 'Enter') {
-        console.log(`선택된 항목: ${MENU_ITEMS[selectedIndex].label}`);
         changeBlock(MENU_ITEMS[selectedIndex].type);
       }
     };
@@ -117,7 +112,7 @@ const SlashMenu = ({ position, index, blockList, setBlockList, setIsSlashMenuOpe
   }, [selectedIndex]);
 
   return (
-    <div style={{ top: `calc(${position.y}px - 17rem)`, left: position.x }} className={menu}>
+    <div style={{ top: `calc(${position.y}px - ${menuHeight}rem)`, left: position.x }} className={menu}>
       <div className={menuTitle}>blocks</div>
       {MENU_ITEMS.map((item, i) => (
         <div key={item.label} className={`${slashButton} ${selectedIndex === i ? selectedButton : ''}`}>

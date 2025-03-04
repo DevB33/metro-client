@@ -41,6 +41,7 @@ const NoteContent = () => {
   const [isTyping, setIsTyping] = useState(false);
   const blockButtonRef = useRef<(HTMLDivElement | null)[]>([]);
   const blockRef = useRef<(HTMLDivElement | null)[]>([]);
+  const noteRef = useRef<HTMLDivElement | null>(null);
 
   const handleMouseEnter = (index: number) => {
     blockButtonRef.current[index]?.style.setProperty('display', 'flex');
@@ -55,18 +56,21 @@ const NoteContent = () => {
 
   // isSlashMenuOpen 상태에 따라 스크롤 막기
   useEffect(() => {
+    const grandParent = noteRef.current?.parentElement?.parentElement;
+    if (!grandParent) return;
     if (isSlashMenuOpen) {
-      document.body.style.overflow = 'hidden';
+      grandParent.style.overflowY = 'hidden';
     } else {
-      document.body.style.overflow = 'auto';
+      grandParent.style.overflowY = '';
     }
 
     return () => {
-      document.body.style.overflow = 'auto'; // cleanup
+      grandParent.style.overflow = '';
     };
   }, [isSlashMenuOpen]);
+
   return (
-    <div key={key}>
+    <div key={key} ref={noteRef}>
       {blockList.map((block, index) => (
         <div
           role="button"
