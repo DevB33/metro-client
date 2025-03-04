@@ -1,4 +1,4 @@
-import { ITextBlock, ITextBlockChild } from '@/types/block-type';
+import { ITextBlock } from '@/types/block-type';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import keyName from '@/constants/key-name';
 
@@ -333,92 +333,20 @@ const turnIntoH3 = (index: number, blockList: ITextBlock[], setBlockList: (block
 };
 
 const createSlashNode = (
-  index: number,
-  blockList: ITextBlock[],
-  setBlockList: (blockList: ITextBlock[]) => void,
-  blockRef: React.RefObject<(HTMLDivElement | null)[]>,
-  isSlashMenuOpen: boolean,
   setIsSlashMenuOpen: (isSlashMenuOpen: boolean) => void,
   setSlashMenuPosition: (position: { x: number; y: number }) => void,
 ) => {
   setIsSlashMenuOpen(true);
 
-  // console.log('blockList', blockList);
-  const { startOffset, startContainer, range } = getSelectionInfo(0) || {};
-  console.log('startContainer', startContainer);
-  console.log('startOffset', startOffset);
-  if (startOffset === undefined || startOffset === null || !startContainer) return;
-  const parent = blockRef.current[index];
-  const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
-  const currentChildNodeIndex =
-    childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
-      ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
-      : childNodes.indexOf(startContainer as HTMLElement);
-  const newChildren = [...blockList[index].children];
-
   // 메뉴 띄울 슬래시 위치 받아오기
-  // const { range } = getSelectionInfo(0) || {};
+  const { range } = getSelectionInfo(0) || {};
   const rect = range ? range.getBoundingClientRect() : null;
-  console.log('rect', rect);
   if (rect) {
     setSlashMenuPosition({
       x: rect.left,
       y: rect.top + rect.height,
     });
-    console.log('isSlashMenuOpen', isSlashMenuOpen);
-    console.log('slashMenuPosition-left', rect.left);
-    console.log('slashMenuPosition-top', rect.top + rect.height);
   }
-
-  // 현재 커서 위치의 텍스트 요소 찾기
-  const currentTextSpan = newChildren[currentChildNodeIndex];
-
-  if (!currentTextSpan || currentTextSpan.type !== 'text') return;
-
-  const originalText = currentTextSpan.content || '';
-  const beforeText = originalText.slice(0, startOffset);
-  const afterText = originalText.slice(startOffset);
-
-  // `/` 앞에 공백이 없는 경우 함수 실행 중단
-  const lastChar = beforeText[beforeText.length - 1].replace(/\u00A0/g, ' ');
-  if (beforeText.length > 0 && lastChar !== ' ') {
-    return;
-  }
-
-  // 새로운 `/` 강조 span 생성
-  const newSlashSpan: ITextBlockChild = {
-    type: 'span',
-    style: {
-      fontStyle: 'normal',
-      fontWeight: 'regular',
-      color: 'black',
-      backgroundColor: 'lightgray',
-      width: 'auto',
-      height: 'auto',
-    },
-    content: '/',
-  };
-
-  // 새로운 children 배열 생성
-  const updatedChildren: ITextBlockChild[] = [
-    ...newChildren.slice(0, currentChildNodeIndex),
-    ...(beforeText ? [{ ...currentTextSpan, content: beforeText }] : []),
-    newSlashSpan,
-    ...(afterText ? [{ ...currentTextSpan, content: afterText }] : []),
-    ...newChildren.slice(currentChildNodeIndex + 1),
-  ];
-
-  console.log('updatedChildren', updatedChildren);
-
-  const updatedBlockList = [...blockList];
-  console.log('before-BlockList', updatedBlockList);
-  updatedBlockList[index] = {
-    ...updatedBlockList[index],
-    children: updatedChildren,
-  };
-  console.log('after-BlockList', updatedBlockList);
-
-  setBlockList(updatedBlockList);
 };
 
 const handleKeyDown = (
@@ -510,23 +438,15 @@ const handleKeyDown = (
     }
   }
 
+  if (isSlashMenuOpen && event.key !== 'ArrowUp' && event.key !== 'ArrowDown') {
+    setIsSlashMenuOpen(false);
+  }
+
   if (event.key === '/') {
     event.preventDefault();
     setIsTyping(false);
     setKey(Math.random());
-    console.log('---slash processing start');
-    console.log(setSlashMenuPosition);
-    createSlashNode(
-      index,
-      blockList,
-      setBlockList,
-      blockRef,
-      isSlashMenuOpen,
-      setIsSlashMenuOpen,
-      setSlashMenuPosition,
-    );
-    // setIsSlashMenuOpen(true);
-    console.log('---slash processing complete');
+    createSlashNode(setIsSlashMenuOpen, setSlashMenuPosition);
   }
 
   if (event.key === keyName.space) {

@@ -1,4 +1,4 @@
-import { memo, useRef, useEffect, useState, useCallback } from 'react';
+import { memo, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
@@ -53,12 +53,6 @@ const Block = memo(
       prevChildNodesLength.current = blockList[index].children.length;
     }, [blockList, index]);
 
-    console.log('Block Render:', index);
-    useEffect(() => {
-      console.log('SlashMenu Open:', isSlashMenuOpen);
-      console.log('SlashMenu Position:', slashMenuPosition);
-    }, [isSlashMenuOpen, slashMenuPosition]);
-
     return (
       <div
         role="textbox"
@@ -103,7 +97,15 @@ const Block = memo(
             );
           })}
         </BlockTag>
-        {isSlashMenuOpen && <SlashMenu position={slashMenuPosition} />}
+        {isSlashMenuOpen && (
+          <SlashMenu
+            position={slashMenuPosition}
+            index={index}
+            blockList={blockList}
+            setBlockList={setBlockList}
+            setIsSlashMenuOpen={setIsSlashMenuOpen}
+          />
+        )}
       </div>
     );
   },

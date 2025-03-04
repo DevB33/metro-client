@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 import { ITextBlock } from '@/types/block-type';
 import Block from './block/block';
@@ -53,6 +53,18 @@ const NoteContent = () => {
   const [isSlashMenuOpen, setIsSlashMenuOpen] = useState(false);
   const [slashMenuPosition, setSlashMenuPosition] = useState({ x: 0, y: 0 });
 
+  // isSlashMenuOpen 상태에 따라 스크롤 막기
+  useEffect(() => {
+    if (isSlashMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+
+    return () => {
+      document.body.style.overflow = 'auto'; // cleanup
+    };
+  }, [isSlashMenuOpen]);
   return (
     <div key={key}>
       {blockList.map((block, index) => (
