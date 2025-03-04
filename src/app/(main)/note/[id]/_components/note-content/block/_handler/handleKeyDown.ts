@@ -332,6 +332,14 @@ const turnIntoH3 = (index: number, blockList: ITextBlock[], setBlockList: (block
   setBlockList(updatedBlockList);
 };
 
+const turnIntoQuote = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
+  const updatedBlockList = [...blockList];
+  updatedBlockList[index].type = 'quote';
+  updatedBlockList[index].children[0].content = (updatedBlockList[index].children[0].content as string).substring(1);
+
+  setBlockList(updatedBlockList);
+};
+
 const handleKeyDown = (
   event: React.KeyboardEvent<HTMLDivElement>,
   index: number,
@@ -472,6 +480,20 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       turnIntoH3(index, blockList, setBlockList);
+    }
+
+    // 인용문으로 전환
+    if (
+      currentChildNodeIndex === 0 &&
+      startOffset === 1 &&
+      startContainer.textContent &&
+      startContainer.textContent[0] === '|' &&
+      blockList[index].type !== 'quote'
+    ) {
+      event.preventDefault();
+      setIsTyping(false);
+      setKey(Math.random());
+      turnIntoQuote(index, blockList, setBlockList);
     }
   }
 };

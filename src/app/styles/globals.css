@@ -14,3 +14,12 @@ h3 {
   all: revert;
   margin: 0;
 }
+
+blockquote {
+  border-left: 4px solid #d3d3d3;
+  background-color: #f7f7f7;
+  padding: 12px 16px;
+  margin: 16px 0;
+  color: #555;
+  border-radius: 4px;
+}
