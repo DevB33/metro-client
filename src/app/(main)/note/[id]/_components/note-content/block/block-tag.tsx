@@ -5,6 +5,7 @@ import placeholder from '@/constants/placeholder';
 
 interface IBlockTag {
   block: ITextBlock;
+  blockList: ITextBlock[];
   index: number;
   blockRef: React.RefObject<(HTMLDivElement | null)[]>;
   children: React.ReactNode[];
@@ -25,10 +26,9 @@ const placeholderStyles = cva({
   },
   variants: {
     tag: {
-      div: {
+      p: {
         '.parent:focus-within &': {
           '&[data-empty=true]::before': {
-            left: '0',
             fontSize: 'md',
           },
         },
@@ -61,13 +61,13 @@ const placeholderStyles = cva({
   },
 });
 
-const BlockTag = ({ block, index, blockRef, children }: IBlockTag) => {
+const BlockTag = ({ block, blockList, index, blockRef, children }: IBlockTag) => {
   if (block.type === 'default') {
     return (
       <p
         data-placeholder={placeholder.block}
         data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
-        className={placeholderStyles({ tag: 'div' })}
+        className={placeholderStyles({ tag: 'p' })}
         ref={element => {
           // eslint-disable-next-line no-param-reassign
           blockRef.current[index] = element;
@@ -126,6 +126,58 @@ const BlockTag = ({ block, index, blockRef, children }: IBlockTag) => {
     );
   }
 
+  if (block.type === 'ul') {
+    return (
+      <ul>
+        <li>
+          <p
+            data-placeholder={placeholder.li}
+            data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
+            className={placeholderStyles({ tag: 'p' })}
+            ref={element => {
+              // eslint-disable-next-line no-param-reassign
+              blockRef.current[index] = element;
+            }}
+          >
+            {children}
+          </p>
+        </li>
+      </ul>
+    );
+  }
+
+  if (block.type === 'ol') {
+    let startNumber = 1;
+
+    blockList.forEach((item, idx) => {
+      if (idx >= index) return;
+
+      if (item.type === 'ol') {
+        startNumber += 1;
+      } else {
+        startNumber = 1;
+      }
+    });
+
+    return (
+      <ol start={startNumber}>
+        <li>
+          <p
+            data-placeholder={placeholder.li}
+            data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
+            className={placeholderStyles({ tag: 'p' })}
+            ref={element => {
+              // eslint-disable-next-line no-param-reassign
+              blockRef.current[index] = element;
+            }}
+          >
+            {children}
+          </p>
+        </li>
+      </ol>
+    );
+  }
+  
   if (block.type === 'quote') {
     return (
       <blockquote>

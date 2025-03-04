@@ -3,6 +3,7 @@ const placeholder = {
   h1: '제목1',
   h2: '제목2',
   h3: '제목3',
+  li: '리스트',
   quote: '비어 있는 인용',
   noteTitle: '새 페이지',
   searchModal: 'Search Page or Keyword',
