@@ -177,6 +177,24 @@ const BlockTag = ({ block, blockList, index, blockRef, children }: IBlockTag) =>
       </ol>
     );
   }
+  
+  if (block.type === 'quote') {
+    return (
+      <blockquote>
+        <p
+          data-placeholder={placeholder.quote}
+          data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
+          className={placeholderStyles({ tag: 'div' })}
+          ref={element => {
+            // eslint-disable-next-line no-param-reassign
+            blockRef.current[index] = element;
+          }}
+        >
+          {children}
+        </p>
+      </blockquote>
+    );
+  }
 
   return null;
 };

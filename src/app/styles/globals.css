@@ -26,3 +26,12 @@ ol {
   margin: 0;
   padding: 0 0 0 20px;
 }
+
+blockquote {
+  border-left: 4px solid #d3d3d3;
+  background-color: #f7f7f7;
+  padding: 12px 16px;
+  margin: 16px 0;
+  color: #555;
+  border-radius: 4px;
+}
