@@ -60,6 +60,7 @@ const Block = memo(
         contentEditable
         suppressContentEditableWarning
         className={`parent ${blockDiv}`}
+        data-block-id={block.id}
         onInput={event => {
           setIsTyping(true);
           handleInput(event, index, blockList, setBlockList, blockRef, prevChildNodesLength);

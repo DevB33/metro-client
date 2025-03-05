@@ -96,7 +96,7 @@ const SlashMenu = ({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const menuHeight = 19;
 
-  const changeBlock = (type: 'default' | 'h1' | 'h2' | 'h3' | 'ul' | 'ol' | 'quote') => {
+  const makeBlock = (type: 'default' | 'h1' | 'h2' | 'h3' | 'ul' | 'ol' | 'quote') => {
     const newBlockList = [...blockList];
     const newBlock: ITextBlock = {
       id: Date.now(),
@@ -109,6 +109,14 @@ const SlashMenu = ({
     const newIsSlashMenuOpen = [...isSlashMenuOpen];
     newIsSlashMenuOpen[index] = false;
     setIsSlashMenuOpen(newIsSlashMenuOpen);
+
+    setTimeout(() => {
+      const nextBlock = document.querySelector(`[data-block-id="${newBlock.id}"]`);
+      console.log(nextBlock);
+      if (nextBlock) {
+        (nextBlock as HTMLElement).focus();
+      }
+    }, 0);
   };
 
   useEffect(() => {
@@ -118,7 +126,7 @@ const SlashMenu = ({
       } else if (event.key === 'ArrowUp') {
         setSelectedIndex(prev => (prev - 1 + MENU_ITEMS.length) % MENU_ITEMS.length);
       } else if (event.key === 'Enter') {
-        changeBlock(MENU_ITEMS[selectedIndex].type);
+        makeBlock(MENU_ITEMS[selectedIndex].type);
       }
     };
 
@@ -133,7 +141,7 @@ const SlashMenu = ({
         <div
           key={item.label}
           className={`${slashButton} ${selectedIndex === i ? selectedButton : ''}`}
-          onClick={() => changeBlock(item.type)}
+          onClick={() => makeBlock(item.type)}
           onMouseEnter={() => setSelectedIndex(i)}
         >
           <div className={buttonName}>
