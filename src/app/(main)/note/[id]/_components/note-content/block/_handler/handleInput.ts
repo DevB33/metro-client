@@ -10,7 +10,15 @@ const handleInput = (
   prevChildNodesLength: React.RefObject<number>,
 ) => {
   const updatedBlockList = [...blockList];
-  const target = event.currentTarget.childNodes[0] as HTMLElement;
+  let target;
+
+  if (blockList[index].type === 'ol' || blockList[index].type === 'ul') {
+    target = event.currentTarget.childNodes[0]?.childNodes[0]?.childNodes[0] as HTMLElement;
+  } else if (blockList[index].type === 'quote') {
+    target = event.currentTarget.childNodes[0]?.childNodes[0] as HTMLElement;
+  } else {
+    target = event.currentTarget.childNodes[0] as HTMLElement;
+  }
 
   target.setAttribute('data-empty', 'false');
 
