@@ -12,6 +12,7 @@ interface IBlockTag {
 
 const placeholderStyles = cva({
   base: {
+    userSelect: 'none',
     position: 'relative',
     '.parent:focus-within &': {
       '&[data-empty=true]::before': {

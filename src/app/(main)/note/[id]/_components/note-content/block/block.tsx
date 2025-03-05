@@ -25,6 +25,7 @@ const blockDiv = css({
   outline: 'none',
   overflowY: 'hidden',
   flexShrink: 0,
+  userSelect: 'none',
 });
 
 const Block = memo(
