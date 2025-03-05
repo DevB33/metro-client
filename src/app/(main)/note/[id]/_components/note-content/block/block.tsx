@@ -16,8 +16,8 @@ interface IBlockComponent {
   isTyping: boolean;
   setIsTyping: (isTyping: boolean) => void;
   setKey: (key: number) => void;
-  isSlashMenuOpen: boolean;
-  setIsSlashMenuOpen: (isSlashMenu: boolean) => void;
+  isSlashMenuOpen: boolean[];
+  setIsSlashMenuOpen: (isSlashMenu: boolean[]) => void;
   slashMenuPosition: { x: number; y: number };
   setSlashMenuPosition: (slashMenuPosition: { x: number; y: number }) => void;
 }
@@ -97,12 +97,13 @@ const Block = memo(
             );
           })}
         </BlockTag>
-        {isSlashMenuOpen && (
+        {isSlashMenuOpen[index] && (
           <SlashMenu
             position={slashMenuPosition}
             index={index}
             blockList={blockList}
             setBlockList={setBlockList}
+            isSlashMenuOpen={isSlashMenuOpen}
             setIsSlashMenuOpen={setIsSlashMenuOpen}
           />
         )}

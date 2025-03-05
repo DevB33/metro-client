@@ -333,10 +333,14 @@ const turnIntoH3 = (index: number, blockList: ITextBlock[], setBlockList: (block
 };
 
 const createSlashNode = (
-  setIsSlashMenuOpen: (isSlashMenuOpen: boolean) => void,
+  index: number,
+  isSlashMenuOpen: boolean[],
+  setIsSlashMenuOpen: (isSlashMenuOpen: boolean[]) => void,
   setSlashMenuPosition: (position: { x: number; y: number }) => void,
 ) => {
-  setIsSlashMenuOpen(true);
+  const newIsSlashMenuOpen = [...isSlashMenuOpen];
+  newIsSlashMenuOpen[index] = true;
+  setIsSlashMenuOpen(newIsSlashMenuOpen);
 
   // 메뉴 띄울 슬래시 위치 받아오기
   const { range } = getSelectionInfo(0) || {};
@@ -357,8 +361,8 @@ const handleKeyDown = (
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   setIsTyping: (isTyping: boolean) => void,
   setKey: (key: number) => void,
-  isSlashMenuOpen: boolean,
-  setIsSlashMenuOpen: (isSlashMenuOpen: boolean) => void,
+  isSlashMenuOpen: boolean[],
+  setIsSlashMenuOpen: (isSlashMenuOpen: boolean[]) => void,
   setSlashMenuPosition: (position: { x: number; y: number }) => void,
 ) => {
   if (event.key === keyName.enter && !event.shiftKey) {
@@ -439,14 +443,16 @@ const handleKeyDown = (
   }
 
   if (isSlashMenuOpen && event.key !== 'ArrowUp' && event.key !== 'ArrowDown') {
-    setIsSlashMenuOpen(false);
+    const newIsSlashMenuOpen = [...isSlashMenuOpen];
+    newIsSlashMenuOpen[index] = false;
+    setIsSlashMenuOpen(newIsSlashMenuOpen);
   }
 
   if (event.key === '/') {
     event.preventDefault();
     setIsTyping(false);
     setKey(Math.random());
-    createSlashNode(setIsSlashMenuOpen, setSlashMenuPosition);
+    createSlashNode(index, isSlashMenuOpen, setIsSlashMenuOpen, setSlashMenuPosition);
   }
 
   if (event.key === keyName.space) {

@@ -51,7 +51,13 @@ const NoteContent = () => {
     blockButtonRef.current[index]?.style.setProperty('display', 'none');
   };
 
-  const [isSlashMenuOpen, setIsSlashMenuOpen] = useState(false);
+  const [isSlashMenuOpen, setIsSlashMenuOpen] = useState<boolean[]>([]);
+
+  // blockList 길이에 맞게 isSlashMenuOpen 배열을 다시 설정
+  useEffect(() => {
+    setIsSlashMenuOpen(Array(blockList.length).fill(false));
+  }, [blockList.length]);
+
   const [slashMenuPosition, setSlashMenuPosition] = useState({ x: 0, y: 0 });
 
   // isSlashMenuOpen 상태에 따라 스크롤 막기

@@ -15,7 +15,8 @@ interface ISlashMenuProps {
   index: number;
   blockList: ITextBlock[];
   setBlockList: (blockList: ITextBlock[]) => void;
-  setIsSlashMenuOpen: (isSlashMenu: boolean) => void;
+  isSlashMenuOpen: boolean[];
+  setIsSlashMenuOpen: (isSlashMenu: boolean[]) => void;
 }
 
 const menu = css({
@@ -46,7 +47,6 @@ const slashButton = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  backgroundColor: { base: 'none', _hover: '#F1F1F0' },
   borderRadius: '.3rem',
   px: 'tiny',
   gap: 'tiny',
@@ -54,7 +54,7 @@ const slashButton = css({
 });
 
 const selectedButton = css({
-  backgroundColor: 'lightgray', // 선택된 버튼 색상 변경
+  backgroundColor: 'lightgray',
 });
 
 const buttonName = css({
@@ -85,15 +85,27 @@ const MENU_ITEMS: {
   { label: 'Text', type: 'default', icon: <TextIcon color="black" />, markdown: '' },
 ];
 
-const SlashMenu = ({ position, index, blockList, setBlockList, setIsSlashMenuOpen }: ISlashMenuProps) => {
+const SlashMenu = ({
+  position,
+  index,
+  blockList,
+  setBlockList,
+  isSlashMenuOpen,
+  setIsSlashMenuOpen,
+}: ISlashMenuProps) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const menuHeight = 19;
+  console.log('SlashMenu');
+  console.log('block', blockList[index]);
 
   const changeBlock = (type: 'default' | 'h1' | 'h2' | 'h3' | 'ul' | 'ol' | 'quote') => {
     const newBlockList = [...blockList];
     newBlockList[index].type = type;
     setBlockList(newBlockList);
-    setIsSlashMenuOpen(false);
+
+    const newIsSlashMenuOpen = [...isSlashMenuOpen];
+    newIsSlashMenuOpen[index] = false;
+    setIsSlashMenuOpen(newIsSlashMenuOpen);
   };
 
   useEffect(() => {
@@ -115,7 +127,12 @@ const SlashMenu = ({ position, index, blockList, setBlockList, setIsSlashMenuOpe
     <div style={{ top: `calc(${position.y}px - ${menuHeight}rem)`, left: position.x }} className={menu}>
       <div className={menuTitle}>blocks</div>
       {MENU_ITEMS.map((item, i) => (
-        <div key={item.label} className={`${slashButton} ${selectedIndex === i ? selectedButton : ''}`}>
+        <div
+          key={item.label}
+          className={`${slashButton} ${selectedIndex === i ? selectedButton : ''}`}
+          onClick={() => changeBlock(item.type)}
+          onMouseEnter={() => setSelectedIndex(i)}
+        >
           <div className={buttonName}>
             {item.icon}
             {item.label}
