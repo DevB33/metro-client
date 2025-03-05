@@ -13,6 +13,7 @@ const blockContainer = css({
   display: 'flex',
   flexDirection: 'row',
   px: '5rem',
+  mb: '0.5rem',
 });
 
 const NoteContent = () => {

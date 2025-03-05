@@ -353,6 +353,37 @@ const createSlashNode = (
   }
 };
 
+const turnIntoUl = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
+  const updatedBlockList = [...blockList];
+  updatedBlockList[index].type = 'ul';
+  updatedBlockList[index].children[0].content = (updatedBlockList[index].children[0].content as string).substring(1);
+
+  setBlockList(updatedBlockList);
+};
+
+const turnIntoOl = (
+  index: number,
+  blockList: ITextBlock[],
+  setBlockList: (blockList: ITextBlock[]) => void,
+  offset: number,
+) => {
+  const updatedBlockList = [...blockList];
+  updatedBlockList[index].type = 'ol';
+  updatedBlockList[index].children[0].content = (updatedBlockList[index].children[0].content as string).substring(
+    offset,
+  );
+
+  setBlockList(updatedBlockList);
+};
+
+const turnIntoQuote = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
+  const updatedBlockList = [...blockList];
+  updatedBlockList[index].type = 'quote';
+  updatedBlockList[index].children[0].content = (updatedBlockList[index].children[0].content as string).substring(1);
+
+  setBlockList(updatedBlockList);
+};
+
 const handleKeyDown = (
   event: React.KeyboardEvent<HTMLDivElement>,
   index: number,
@@ -393,9 +424,18 @@ const handleKeyDown = (
         ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
         : childNodes.indexOf(startContainer as HTMLElement);
 
-    // 첫 블록 첫 커서에서 백스페이스 방지
+    // 첫 블록 첫 커서일 때
     if (index === 0 && (currentChildNodeIndex === -1 || currentChildNodeIndex === 0) && startOffset === 0) {
       event.preventDefault();
+      setIsTyping(false);
+      setKey(Math.random());
+
+      // default 블록이 아닐 때는 default로 변경
+      if (blockList[index].type !== 'default') {
+        const updatedBlockList = [...blockList];
+        updatedBlockList[index].type = 'default';
+        setBlockList(updatedBlockList);
+      }
       return;
     }
 
@@ -407,7 +447,14 @@ const handleKeyDown = (
 
       if (startOffset === 0) {
         // 블록 합치기 로직
-        mergeBlock(index, blockList, setBlockList);
+        if (blockList[index].type !== 'default') {
+          // default 블록이 아닐 때는 블록을 합치는 대신 블록을 default로 변경
+          const updatedBlockList = [...blockList];
+          updatedBlockList[index].type = 'default';
+          setBlockList(updatedBlockList);
+        } else {
+          mergeBlock(index, blockList, setBlockList);
+        }
       } else {
         // 줄 합치기 로직
         const updatedBlockList = [...blockList];
@@ -435,7 +482,13 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       if (currentChildNodeIndex <= 0) {
-        mergeBlock(index, blockList, setBlockList);
+        if (blockList[index].type !== 'default') {
+          const updatedBlockList = [...blockList];
+          updatedBlockList[index].type = 'default';
+          setBlockList(updatedBlockList);
+        } else {
+          mergeBlock(index, blockList, setBlockList);
+        }
       } else if (currentChildNodeIndex > 0) {
         mergeLine(index, currentChildNodeIndex, blockList, setBlockList);
       }
@@ -509,6 +562,48 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       turnIntoH3(index, blockList, setBlockList);
+    }
+
+    // ul로 전환
+    if (
+      currentChildNodeIndex === 0 &&
+      startOffset === 1 &&
+      startContainer.textContent &&
+      startContainer.textContent[0] === '-' &&
+      blockList[index].type !== 'ul'
+    ) {
+      event.preventDefault();
+      setIsTyping(false);
+      setKey(Math.random());
+      turnIntoUl(index, blockList, setBlockList);
+    }
+
+    // ol로 전환
+    if (
+      currentChildNodeIndex === 0 &&
+      startContainer.textContent &&
+      startContainer.textContent[startOffset - 1] === '.' &&
+      /^\d+$/.test(startContainer.textContent.slice(0, startOffset - 1)) &&
+      blockList[index].type !== 'ol'
+    ) {
+      event.preventDefault();
+      setIsTyping(false);
+      setKey(Math.random());
+      turnIntoOl(index, blockList, setBlockList, startOffset);
+    }
+
+    // 인용문으로 전환
+    if (
+      currentChildNodeIndex === 0 &&
+      startOffset === 1 &&
+      startContainer.textContent &&
+      startContainer.textContent[0] === '|' &&
+      blockList[index].type !== 'quote'
+    ) {
+      event.preventDefault();
+      setIsTyping(false);
+      setKey(Math.random());
+      turnIntoQuote(index, blockList, setBlockList);
     }
   }
 };

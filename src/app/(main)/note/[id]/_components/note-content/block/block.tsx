@@ -79,7 +79,7 @@ const Block = memo(
           );
         }}
       >
-        <BlockTag block={block} index={index} blockRef={blockRef}>
+        <BlockTag block={block} blockList={blockList} index={index} blockRef={blockRef}>
           {block.children.length === 1 && block.children[0].content === '' && <br />}
           {block.children.map(child => {
             if (child.type === 'br') {
