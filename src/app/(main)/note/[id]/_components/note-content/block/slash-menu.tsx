@@ -95,12 +95,15 @@ const SlashMenu = ({
 }: ISlashMenuProps) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const menuHeight = 19;
-  console.log('SlashMenu');
-  console.log('block', blockList[index]);
 
   const changeBlock = (type: 'default' | 'h1' | 'h2' | 'h3' | 'ul' | 'ol' | 'quote') => {
     const newBlockList = [...blockList];
-    newBlockList[index].type = type;
+    const newBlock: ITextBlock = {
+      id: Date.now(),
+      type: type,
+      children: [{ type: 'text', content: '' }],
+    };
+    newBlockList.splice(index + 1, 0, newBlock);
     setBlockList(newBlockList);
 
     const newIsSlashMenuOpen = [...isSlashMenuOpen];
