@@ -65,7 +65,8 @@ const NoteContent = () => {
   useEffect(() => {
     const grandParent = noteRef.current?.parentElement?.parentElement;
     if (!grandParent) return;
-    if (isSlashMenuOpen) {
+    const isAnyMenuOpen = isSlashMenuOpen.some(state => state === true);
+    if (isAnyMenuOpen) {
       grandParent.style.overflowY = 'hidden';
     } else {
       grandParent.style.overflowY = '';

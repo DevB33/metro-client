@@ -332,7 +332,7 @@ const turnIntoH3 = (index: number, blockList: ITextBlock[], setBlockList: (block
   setBlockList(updatedBlockList);
 };
 
-const createSlashNode = (
+const openSlashMenu = (
   index: number,
   isSlashMenuOpen: boolean[],
   setIsSlashMenuOpen: (isSlashMenuOpen: boolean[]) => void,
@@ -505,7 +505,7 @@ const handleKeyDown = (
     event.preventDefault();
     setIsTyping(false);
     setKey(Math.random());
-    createSlashNode(index, isSlashMenuOpen, setIsSlashMenuOpen, setSlashMenuPosition);
+    openSlashMenu(index, isSlashMenuOpen, setIsSlashMenuOpen, setSlashMenuPosition);
   }
 
   if (event.key === keyName.space) {
