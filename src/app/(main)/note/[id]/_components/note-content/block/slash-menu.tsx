@@ -112,9 +112,25 @@ const SlashMenu = ({
 
     setTimeout(() => {
       const nextBlock = document.querySelector(`[data-block-id="${newBlock.id}"]`);
-      console.log(nextBlock);
       if (nextBlock) {
         (nextBlock as HTMLElement).focus();
+      }
+    }, 0);
+  };
+
+  const changeBlock = (type: 'default' | 'h1' | 'h2' | 'h3' | 'ul' | 'ol' | 'quote') => {
+    const newBlockList = [...blockList];
+    newBlockList[index].type = type;
+    setBlockList(newBlockList);
+
+    const newIsSlashMenuOpen = [...isSlashMenuOpen];
+    newIsSlashMenuOpen[index] = false;
+    setIsSlashMenuOpen(newIsSlashMenuOpen);
+
+    setTimeout(() => {
+      const currentBlock = document.querySelector(`[data-block-id="${blockList[index].id}"]`);
+      if (currentBlock) {
+        (currentBlock as HTMLElement).focus();
       }
     }, 0);
   };
@@ -126,7 +142,11 @@ const SlashMenu = ({
       } else if (event.key === 'ArrowUp') {
         setSelectedIndex(prev => (prev - 1 + MENU_ITEMS.length) % MENU_ITEMS.length);
       } else if (event.key === 'Enter') {
-        makeBlock(MENU_ITEMS[selectedIndex].type);
+        if (blockList[index].children[0].content === '') {
+          changeBlock(MENU_ITEMS[selectedIndex].type);
+        } else {
+          makeBlock(MENU_ITEMS[selectedIndex].type);
+        }
       }
     };
 

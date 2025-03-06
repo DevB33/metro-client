@@ -162,8 +162,6 @@ const splitBlock = (
   setBlockList(updatedBlockList);
 
   setTimeout(() => {
-    console.log('Focus');
-    console.log(blockRef.current[index + 1]);
     blockRef.current[index + 1]?.focus();
   }, 0);
 };
@@ -337,6 +335,7 @@ const turnIntoH3 = (index: number, blockList: ITextBlock[], setBlockList: (block
 const openSlashMenu = (
   index: number,
   isSlashMenuOpen: boolean[],
+  blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   setIsSlashMenuOpen: (isSlashMenuOpen: boolean[]) => void,
   setSlashMenuPosition: (position: { x: number; y: number }) => void,
 ) => {
@@ -346,7 +345,15 @@ const openSlashMenu = (
 
   // 메뉴 띄울 슬래시 위치 받아오기
   const { range } = getSelectionInfo(0) || {};
-  const rect = range ? range.getBoundingClientRect() : null;
+  let rect = range ? range.getBoundingClientRect() : null;
+
+  if (!rect || (rect.left === 0 && rect.top === 0)) {
+    const blockElement = blockRef.current?.[index];
+    if (blockElement) {
+      rect = blockElement.getBoundingClientRect();
+    }
+  }
+
   if (rect) {
     setSlashMenuPosition({
       x: rect.left,
@@ -507,7 +514,7 @@ const handleKeyDown = (
     event.preventDefault();
     setIsTyping(false);
     setKey(Math.random());
-    openSlashMenu(index, isSlashMenuOpen, setIsSlashMenuOpen, setSlashMenuPosition);
+    openSlashMenu(index, isSlashMenuOpen, blockRef, setIsSlashMenuOpen, setSlashMenuPosition);
   }
 
   if (event.key === keyName.space) {
