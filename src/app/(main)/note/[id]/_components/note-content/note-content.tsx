@@ -24,14 +24,6 @@ const NoteContent = () => {
       children: [
         {
           type: 'text',
-          style: {
-            fontStyle: 'normal',
-            fontWeight: 'regular',
-            color: 'black',
-            backgroundColor: 'white',
-            width: 'auto',
-            height: 'auto',
-          },
           content: '',
         },
       ],
@@ -42,6 +34,13 @@ const NoteContent = () => {
   const [isTyping, setIsTyping] = useState(false);
   const blockButtonRef = useRef<(HTMLDivElement | null)[]>([]);
   const blockRef = useRef<(HTMLDivElement | null)[]>([]);
+
+  const [startOffest, setStartOffset] = useState(0);
+
+  const [isDragging, setIsDragging] = useState(false);
+  const [startBlockIndex, setStartBlockIndex] = useState(0);
+  const [endBlockIndex, setEndBlockIndex] = useState(0);
+  const [isUp, setIsUp] = useState(false);
 
   const handleMouseEnter = (index: number) => {
     blockButtonRef.current[index]?.style.setProperty('display', 'flex');
@@ -82,6 +81,16 @@ const NoteContent = () => {
             isTyping={isTyping}
             setIsTyping={setIsTyping}
             setKey={setKey}
+            isDragging={isDragging}
+            setIsDragging={setIsDragging}
+            startOffest={startOffest}
+            setStartOffset={setStartOffset}
+            startBlockIndex={startBlockIndex}
+            setStartBlockIndex={setStartBlockIndex}
+            endBlockIndex={endBlockIndex}
+            setEndBlockIndex={setEndBlockIndex}
+            isUp={isUp}
+            setIsUp={setIsUp}
           />
         </div>
       ))}

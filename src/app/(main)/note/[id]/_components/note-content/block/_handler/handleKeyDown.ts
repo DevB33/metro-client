@@ -255,9 +255,9 @@ const splitLine = (
     // 현재 커서 위치 한 곳이 빈 문자열일 때 → 중복 줄바꿈 로직
     const updatedBlockList = [...blockList];
     if (updatedBlockList[index].children.length === 1 && updatedBlockList[index].children[0].content === '') {
-      updatedBlockList[index].children.splice(startOffset, 0, {
+      updatedBlockList[index].children[0] = {
         type: 'br',
-      });
+      };
     }
     updatedBlockList[index].children.splice(startOffset, 0, {
       type: 'br',
@@ -332,7 +332,6 @@ const turnIntoH3 = (index: number, blockList: ITextBlock[], setBlockList: (block
   setBlockList(updatedBlockList);
 };
 
-
 const turnIntoUl = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
   const updatedBlockList = [...blockList];
   updatedBlockList[index].type = 'ul';
@@ -340,7 +339,6 @@ const turnIntoUl = (index: number, blockList: ITextBlock[], setBlockList: (block
 
   setBlockList(updatedBlockList);
 };
-
 
 const turnIntoOl = (
   index: number,
@@ -356,7 +354,7 @@ const turnIntoOl = (
 
   setBlockList(updatedBlockList);
 };
-  
+
 const turnIntoQuote = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
   const updatedBlockList = [...blockList];
   updatedBlockList[index].type = 'quote';
@@ -364,7 +362,7 @@ const turnIntoQuote = (index: number, blockList: ITextBlock[], setBlockList: (bl
 
   setBlockList(updatedBlockList);
 };
-  
+
 const handleKeyDown = (
   event: React.KeyboardEvent<HTMLDivElement>,
   index: number,
@@ -438,10 +436,10 @@ const handleKeyDown = (
         const updatedBlockList = [...blockList];
 
         if (
-          (updatedBlockList[index].children[startOffset - 1].type === 'br' &&
-            updatedBlockList[index].children[startOffset - 2].type !== 'br' &&
-            !updatedBlockList[index].children[startOffset + 1]) ||
-          updatedBlockList[index].children.length !== blockRef.current[index]?.childNodes.length
+          updatedBlockList[index].children[startOffset - 1].type === 'br' &&
+          (!updatedBlockList[index].children[startOffset - 2] ||
+            updatedBlockList[index].children[startOffset - 2].type !== 'br') &&
+          !updatedBlockList[index].children[startOffset + 1]
         ) {
           updatedBlockList[index].children.splice(startOffset - 1, 2);
         } else {
@@ -556,7 +554,7 @@ const handleKeyDown = (
       setKey(Math.random());
       turnIntoOl(index, blockList, setBlockList, startOffset);
     }
-    
+
     // 인용문으로 전환
     if (
       currentChildNodeIndex === 0 &&
