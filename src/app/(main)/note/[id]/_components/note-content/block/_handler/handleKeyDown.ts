@@ -162,6 +162,8 @@ const splitBlock = (
   setBlockList(updatedBlockList);
 
   setTimeout(() => {
+    console.log('Focus');
+    console.log(blockRef.current[index + 1]);
     blockRef.current[index + 1]?.focus();
   }, 0);
 };
@@ -255,9 +257,9 @@ const splitLine = (
     // 현재 커서 위치 한 곳이 빈 문자열일 때 → 중복 줄바꿈 로직
     const updatedBlockList = [...blockList];
     if (updatedBlockList[index].children.length === 1 && updatedBlockList[index].children[0].content === '') {
-      updatedBlockList[index].children.splice(startOffset, 0, {
+      updatedBlockList[index].children[0] = {
         type: 'br',
-      });
+      };
     }
     updatedBlockList[index].children.splice(startOffset, 0, {
       type: 'br',
@@ -460,10 +462,10 @@ const handleKeyDown = (
         const updatedBlockList = [...blockList];
 
         if (
-          (updatedBlockList[index].children[startOffset - 1].type === 'br' &&
-            updatedBlockList[index].children[startOffset - 2].type !== 'br' &&
-            !updatedBlockList[index].children[startOffset + 1]) ||
-          updatedBlockList[index].children.length !== blockRef.current[index]?.childNodes.length
+          updatedBlockList[index].children[startOffset - 1].type === 'br' &&
+          (!updatedBlockList[index].children[startOffset - 2] ||
+            updatedBlockList[index].children[startOffset - 2].type !== 'br') &&
+          !updatedBlockList[index].children[startOffset + 1]
         ) {
           updatedBlockList[index].children.splice(startOffset - 1, 2);
         } else {
