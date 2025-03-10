@@ -14,6 +14,7 @@ interface ISlashMenuProps {
   position: { x: number; y: number };
   index: number;
   blockList: ITextBlock[];
+  blockRef: React.RefObject<(HTMLDivElement | null)[]>;
   setBlockList: (blockList: ITextBlock[]) => void;
   isSlashMenuOpen: boolean[];
   setIsSlashMenuOpen: (isSlashMenu: boolean[]) => void;
@@ -89,6 +90,7 @@ const SlashMenu = ({
   position,
   index,
   blockList,
+  blockRef,
   setBlockList,
   isSlashMenuOpen,
   setIsSlashMenuOpen,
@@ -109,13 +111,6 @@ const SlashMenu = ({
     const newIsSlashMenuOpen = [...isSlashMenuOpen];
     newIsSlashMenuOpen[index] = false;
     setIsSlashMenuOpen(newIsSlashMenuOpen);
-
-    setTimeout(() => {
-      const nextBlock = document.querySelector(`[data-block-id="${newBlock.id}"]`);
-      if (nextBlock) {
-        (nextBlock as HTMLElement).focus();
-      }
-    }, 0);
   };
 
   const changeBlock = (type: 'default' | 'h1' | 'h2' | 'h3' | 'ul' | 'ol' | 'quote') => {
@@ -126,13 +121,6 @@ const SlashMenu = ({
     const newIsSlashMenuOpen = [...isSlashMenuOpen];
     newIsSlashMenuOpen[index] = false;
     setIsSlashMenuOpen(newIsSlashMenuOpen);
-
-    setTimeout(() => {
-      const currentBlock = document.querySelector(`[data-block-id="${blockList[index].id}"]`);
-      if (currentBlock) {
-        (currentBlock as HTMLElement).focus();
-      }
-    }, 0);
   };
 
   useEffect(() => {
@@ -150,6 +138,7 @@ const SlashMenu = ({
       }
     };
 
+    // TODO: 이벤트 리스너를 document말고 다른곳에 달기
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [selectedIndex]);

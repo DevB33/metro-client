@@ -102,6 +102,7 @@ const Block = memo(
             position={slashMenuPosition}
             index={index}
             blockList={blockList}
+            blockRef={blockRef}
             setBlockList={setBlockList}
             isSlashMenuOpen={isSlashMenuOpen}
             setIsSlashMenuOpen={setIsSlashMenuOpen}
