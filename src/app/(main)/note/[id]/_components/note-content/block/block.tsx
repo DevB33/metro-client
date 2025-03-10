@@ -5,6 +5,7 @@ import { ITextBlock } from '@/types/block-type';
 import handleInput from './_handler/handleInput';
 import handleKeyDown from './_handler/handleKeyDown';
 import BlockTag from './block-tag';
+import SlashMenu from './slash-menu';
 
 interface IBlockComponent {
   block: ITextBlock;
@@ -15,6 +16,10 @@ interface IBlockComponent {
   isTyping: boolean;
   setIsTyping: (isTyping: boolean) => void;
   setKey: (key: number) => void;
+  isSlashMenuOpen: boolean[];
+  setIsSlashMenuOpen: (isSlashMenu: boolean[]) => void;
+  slashMenuPosition: { x: number; y: number };
+  setSlashMenuPosition: (slashMenuPosition: { x: number; y: number }) => void;
 }
 
 const blockDiv = css({
@@ -28,7 +33,20 @@ const blockDiv = css({
 });
 
 const Block = memo(
-  ({ block, index, blockRef, blockList, setBlockList, isTyping: _isTyping, setIsTyping, setKey }: IBlockComponent) => {
+  ({
+    block,
+    index,
+    blockRef,
+    blockList,
+    setBlockList,
+    isTyping: _isTyping,
+    setIsTyping,
+    setKey,
+    isSlashMenuOpen,
+    setIsSlashMenuOpen,
+    slashMenuPosition,
+    setSlashMenuPosition,
+  }: IBlockComponent) => {
     const prevChildNodesLength = useRef(0);
 
     useEffect(() => {
@@ -46,7 +64,20 @@ const Block = memo(
           setIsTyping(true);
           handleInput(event, index, blockList, setBlockList, blockRef, prevChildNodesLength);
         }}
-        onKeyDown={event => handleKeyDown(event, index, blockList, setBlockList, blockRef, setIsTyping, setKey)}
+        onKeyDown={event =>
+          handleKeyDown(
+            event,
+            index,
+            blockList,
+            setBlockList,
+            blockRef,
+            setIsTyping,
+            setKey,
+            isSlashMenuOpen,
+            setIsSlashMenuOpen,
+            setSlashMenuPosition,
+          )
+        }
       >
         <BlockTag block={block} blockList={blockList} index={index} blockRef={blockRef}>
           {block.children.length === 1 && block.children[0].content === '' && <br />}
@@ -66,6 +97,17 @@ const Block = memo(
             );
           })}
         </BlockTag>
+        {isSlashMenuOpen[index] && (
+          <SlashMenu
+            position={slashMenuPosition}
+            index={index}
+            blockList={blockList}
+            blockRef={blockRef}
+            setBlockList={setBlockList}
+            isSlashMenuOpen={isSlashMenuOpen}
+            setIsSlashMenuOpen={setIsSlashMenuOpen}
+          />
+        )}
       </div>
     );
   },
