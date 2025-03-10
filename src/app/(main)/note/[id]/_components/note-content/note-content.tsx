@@ -36,10 +36,12 @@ const NoteContent = () => {
   const blockRef = useRef<(HTMLDivElement | null)[]>([]);
 
   const [startOffest, setStartOffset] = useState(0);
-
+  const [endOffset, setEndOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [startBlockIndex, setStartBlockIndex] = useState(0);
   const [endBlockIndex, setEndBlockIndex] = useState(0);
+  const [startChildNodeIndex, setStartChildNodeIndex] = useState(0);
+  const [endChildNodeIndex, setEndChildNodeIndex] = useState(0);
   const [isUp, setIsUp] = useState(false);
 
   const handleMouseEnter = (index: number) => {
@@ -85,10 +87,16 @@ const NoteContent = () => {
             setIsDragging={setIsDragging}
             startOffest={startOffest}
             setStartOffset={setStartOffset}
+            endOffset={endOffset}
+            setEndOffset={setEndOffset}
             startBlockIndex={startBlockIndex}
             setStartBlockIndex={setStartBlockIndex}
             endBlockIndex={endBlockIndex}
             setEndBlockIndex={setEndBlockIndex}
+            startChildNodeIndex={startChildNodeIndex}
+            setStartChildNodeIndex={setStartChildNodeIndex}
+            endChildNodeIndex={endChildNodeIndex}
+            setEndChildNodeIndex={setEndChildNodeIndex}
             isUp={isUp}
             setIsUp={setIsUp}
           />

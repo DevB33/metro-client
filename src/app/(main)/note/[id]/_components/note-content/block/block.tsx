@@ -19,11 +19,16 @@ interface IBlockComponent {
   setIsDragging: (isDragging: boolean) => void;
   startOffest: number;
   setStartOffset: (startOffset: number) => void;
+  endOffset: number;
+  setEndOffset: (endOffset: number) => void;
   startBlockIndex: number;
   setStartBlockIndex: (startBlockIndex: number) => void;
   endBlockIndex: number;
   setEndBlockIndex: (endBlockIndex: number) => void;
-
+  startChildNodeIndex: number;
+  setStartChildNodeIndex: (startChildNodeIndex: number) => void;
+  endChildNodeIndex: number;
+  setEndChildNodeIndex: (endChildNodeIndex: number) => void;
   isUp: boolean;
   setIsUp: (isUp: boolean) => void;
 }
@@ -52,10 +57,16 @@ const Block = memo(
     setIsDragging,
     startOffest,
     setStartOffset,
+    endOffset,
+    setEndOffset,
     startBlockIndex,
     setStartBlockIndex,
     endBlockIndex,
     setEndBlockIndex,
+    startChildNodeIndex,
+    setStartChildNodeIndex,
+    endChildNodeIndex,
+    setEndChildNodeIndex,
     isUp,
     setIsUp,
   }: IBlockComponent) => {
@@ -63,18 +74,44 @@ const Block = memo(
 
     const prevClientY = useRef(0);
 
+    const selectedBlockIndex = useRef<number | null>(null);
+
     useEffect(() => {
       prevChildNodesLength.current = blockList[index].children.length;
     }, [blockList, index]);
 
     const handleMouseDown = (e: any) => {
+      const parent = blockRef.current[index];
+      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+      const textNode = document.caretPositionFromPoint(e.clientX, e.clientY)?.offsetNode;
+      const currentChildNodeIndex =
+        childNodes.indexOf(textNode as HTMLElement) === -1 && textNode?.nodeType === Node.TEXT_NODE
+          ? childNodes.indexOf(textNode.parentNode as HTMLElement)
+          : childNodes.indexOf(textNode as HTMLElement);
+
       setIsDragging(true);
       setIsTyping(false);
-      setKey(Date.now());
+      setKey(Math.random());
 
+      selectedBlockIndex.current = index;
+
+      const range = document.createRange();
       const charIdx = document.caretPositionFromPoint(e.clientX, e.clientY)?.offset as number;
+
       setStartOffset(charIdx);
       setStartBlockIndex(index);
+      setStartChildNodeIndex(currentChildNodeIndex);
+
+      setTimeout(() => {
+        if (range) {
+          blockRef.current[index]?.parentNode?.focus();
+          const selection = window.getSelection();
+          range?.setStart(blockRef.current[0]?.childNodes[currentChildNodeIndex] as Node, charIdx);
+
+          selection?.removeAllRanges();
+          selection?.addRange(range);
+        }
+      }, 0);
     };
 
     const handleMouseMove = (e: any) => {
@@ -84,9 +121,22 @@ const Block = memo(
         setEndBlockIndex(index);
       }
 
+      const parent = blockRef.current[index];
+      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+      const textNode = document.caretPositionFromPoint(e.clientX, e.clientY)?.offsetNode;
+      const currentChildNodeIndex =
+        childNodes.indexOf(textNode as HTMLElement) === -1 && textNode?.nodeType === Node.TEXT_NODE
+          ? childNodes.indexOf(textNode.parentNode as HTMLElement)
+          : childNodes.indexOf(textNode as HTMLElement);
+
+      if (currentChildNodeIndex !== endChildNodeIndex) {
+        setEndChildNodeIndex(currentChildNodeIndex);
+      }
+
       const charIdx = document.caretPositionFromPoint(e.clientX, e.clientY)?.offset as number;
-      const textNode = document.caretPositionFromPoint(e.clientX + 10, e.clientY)?.offsetNode;
       const range = document.createRange();
+
+      setEndOffset(charIdx);
 
       if (index === startBlockIndex && index === endBlockIndex) {
         if (charIdx < startOffest) {
@@ -118,7 +168,7 @@ const Block = memo(
 
       const rect = range.getBoundingClientRect();
       const el = blockRef.current[index];
-      const elLeft = el?.getBoundingClientRect().left;
+      const elLeft = el?.getBoundingClientRect().left || 0;
       if (!el) return;
       el.style.backgroundImage = `linear-gradient(to right,
       transparent ${rect.left - elLeft}px,
@@ -134,6 +184,7 @@ const Block = memo(
         e.clientX + 10,
         isUp ? e.clientY + 10 : e.clientY - 10,
       )?.offsetNode;
+
       const range = document.createRange();
 
       if (startBlockIndex < endBlockIndex) {
@@ -160,7 +211,7 @@ const Block = memo(
 
       const rect = range.getBoundingClientRect();
       const el = blockRef.current[index];
-      const elLeft = el?.getBoundingClientRect().left;
+      const elLeft = el?.getBoundingClientRect().left || 0;
       if (!el) return;
       el.style.backgroundImage = `linear-gradient(to right,
       transparent ${rect.left - elLeft}px,
@@ -180,14 +231,15 @@ const Block = memo(
           setIsTyping(true);
           handleInput(event, index, blockList, setBlockList, blockRef, prevChildNodesLength);
         }}
-        onKeyDown={event => handleKeyDown(event, index, blockList, setBlockList, blockRef, setIsTyping, setKey)}
-        onMouseUp={() => setIsDragging(false)}
-        onMouseDown={e => handleMouseDown(e)}
-        onMouseMove={e => {
-          console.log('mouse move');
-          handleMouseMove(e);
+        onKeyDown={event => {
+          handleKeyDown(event, index, blockList, setBlockList, blockRef, setIsTyping, setKey);
         }}
-        onMouseLeave={e => handleMouseLeave(e)}
+        onMouseUp={() => {
+          setIsDragging(false);
+        }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
       >
         <BlockTag block={block} blockList={blockList} index={index} blockRef={blockRef}>
           {block.children.length === 1 && block.children[0].content === '' && <br />}
