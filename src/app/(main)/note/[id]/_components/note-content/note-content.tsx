@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { css } from '@/../styled-system/css';
-import { ITextBlock } from '@/types/block-type';
+import ITextBlock from '@/types/block-type';
 import Block from './block/block';
 import BlockButton from './block-button';
 
@@ -17,6 +17,9 @@ const blockContainer = css({
 });
 
 const NoteContent = () => {
+  const blockButtonRef = useRef<(HTMLDivElement | null)[]>([]);
+  const blockRef = useRef<(HTMLDivElement | null)[]>([]);
+
   const [blockList, setBlockList] = useState<ITextBlock[]>([
     {
       id: 1,
@@ -29,20 +32,21 @@ const NoteContent = () => {
       ],
     },
   ]);
-
   const [key, setKey] = useState(Date.now());
   const [isTyping, setIsTyping] = useState(false);
-  const blockButtonRef = useRef<(HTMLDivElement | null)[]>([]);
-  const blockRef = useRef<(HTMLDivElement | null)[]>([]);
-
-  const [startOffest, setStartOffset] = useState(0);
-  const [endOffset, setEndOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [startBlockIndex, setStartBlockIndex] = useState(0);
-  const [endBlockIndex, setEndBlockIndex] = useState(0);
-  const [startChildNodeIndex, setStartChildNodeIndex] = useState(0);
-  const [endChildNodeIndex, setEndChildNodeIndex] = useState(0);
   const [isUp, setIsUp] = useState(false);
+
+  const [selectionStartPosition, setSelectionStartPosition] = useState({
+    blockIndex: 0,
+    childNodeIndex: 0,
+    offset: 0,
+  });
+  const [selectionEndPosition, setSelectionEndPosition] = useState({
+    blockIndex: 0,
+    childNodeIndex: 0,
+    offset: 0,
+  });
 
   const handleMouseEnter = (index: number) => {
     blockButtonRef.current[index]?.style.setProperty('display', 'flex');
@@ -85,20 +89,12 @@ const NoteContent = () => {
             setKey={setKey}
             isDragging={isDragging}
             setIsDragging={setIsDragging}
-            startOffest={startOffest}
-            setStartOffset={setStartOffset}
-            endOffset={endOffset}
-            setEndOffset={setEndOffset}
-            startBlockIndex={startBlockIndex}
-            setStartBlockIndex={setStartBlockIndex}
-            endBlockIndex={endBlockIndex}
-            setEndBlockIndex={setEndBlockIndex}
-            startChildNodeIndex={startChildNodeIndex}
-            setStartChildNodeIndex={setStartChildNodeIndex}
-            endChildNodeIndex={endChildNodeIndex}
-            setEndChildNodeIndex={setEndChildNodeIndex}
             isUp={isUp}
             setIsUp={setIsUp}
+            selectionStartPosition={selectionStartPosition}
+            setSelectionStartPosition={setSelectionStartPosition}
+            selectionEndPosition={selectionEndPosition}
+            setSelectionEndPosition={setSelectionEndPosition}
           />
         </div>
       ))}

@@ -1,4 +1,4 @@
-import { ITextBlock } from '@/types/block-type';
+import ITextBlock from '@/types/block-type';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import keyName from '@/constants/key-name';
 

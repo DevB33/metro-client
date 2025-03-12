@@ -1,7 +1,8 @@
 import { memo, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 
-import { ITextBlock } from '@/types/block-type';
+import ITextBlock from '@/types/block-type';
+import ISelectionPosition from '@/types/selection-position';
 import handleInput from './_handler/handleInput';
 import handleKeyDown from './_handler/handleKeyDown';
 import BlockTag from './block-tag';
@@ -17,19 +18,12 @@ interface IBlockComponent {
   setKey: (key: number) => void;
   isDragging: boolean;
   setIsDragging: (isDragging: boolean) => void;
-  startOffest: number;
-  setStartOffset: (startOffset: number) => void;
-  setEndOffset: (endOffset: number) => void;
-  startBlockIndex: number;
-  setStartBlockIndex: (startBlockIndex: number) => void;
-  endBlockIndex: number;
-  setEndBlockIndex: (endBlockIndex: number) => void;
-  startChildNodeIndex: number;
-  setStartChildNodeIndex: (startChildNodeIndex: number) => void;
-  endChildNodeIndex: number;
-  setEndChildNodeIndex: (endChildNodeIndex: number) => void;
   isUp: boolean;
   setIsUp: (isUp: boolean) => void;
+  selectionStartPosition: ISelectionPosition;
+  setSelectionStartPosition: React.Dispatch<React.SetStateAction<ISelectionPosition>>;
+  selectionEndPosition: ISelectionPosition;
+  setSelectionEndPosition: React.Dispatch<React.SetStateAction<ISelectionPosition>>;
 }
 
 const blockDiv = css({
@@ -54,19 +48,12 @@ const Block = memo(
     setKey,
     isDragging,
     setIsDragging,
-    startOffest,
-    setStartOffset,
-    setEndOffset,
-    startBlockIndex,
-    setStartBlockIndex,
-    endBlockIndex,
-    setEndBlockIndex,
-    startChildNodeIndex,
-    setStartChildNodeIndex,
-    endChildNodeIndex,
-    setEndChildNodeIndex,
     isUp,
     setIsUp,
+    selectionStartPosition,
+    setSelectionStartPosition,
+    selectionEndPosition,
+    setSelectionEndPosition,
   }: IBlockComponent) => {
     const prevChildNodesLength = useRef(0);
 
@@ -96,13 +83,15 @@ const Block = memo(
       const range = document.createRange();
       const charIdx = document.caretPositionFromPoint(e.clientX, e.clientY)?.offset as number;
 
-      setStartOffset(charIdx);
-      setStartBlockIndex(index);
-      setStartChildNodeIndex(currentChildNodeIndex);
+      setSelectionStartPosition({
+        blockIndex: index,
+        childNodeIndex: currentChildNodeIndex,
+        offset: charIdx,
+      });
 
       setTimeout(() => {
         if (range) {
-          blockRef.current[index]?.parentNode?.focus();
+          (blockRef.current[index]?.parentNode as HTMLElement)?.focus();
           const selection = window.getSelection();
           range?.setStart(blockRef.current[index]?.childNodes[currentChildNodeIndex] as Node, charIdx);
 
@@ -115,8 +104,11 @@ const Block = memo(
     const handleMouseMove = (e: any) => {
       if (!isDragging) return;
 
-      if (index !== endBlockIndex) {
-        setEndBlockIndex(index);
+      if (index !== selectionEndPosition.blockIndex) {
+        setSelectionEndPosition((prev: ISelectionPosition) => ({
+          ...prev,
+          blockIndex: index,
+        }));
       }
 
       const parent = blockRef.current[index];
@@ -127,26 +119,33 @@ const Block = memo(
           ? childNodes.indexOf(textNode.parentNode as HTMLElement)
           : childNodes.indexOf(textNode as HTMLElement);
 
-      if (currentChildNodeIndex !== endChildNodeIndex) {
-        setEndChildNodeIndex(currentChildNodeIndex);
+      if (currentChildNodeIndex !== selectionEndPosition.childNodeIndex) {
+        setSelectionEndPosition((prev: ISelectionPosition) => ({
+          ...prev,
+          childNodeIndex: currentChildNodeIndex,
+        }));
       }
 
       const charIdx = document.caretPositionFromPoint(e.clientX, e.clientY)?.offset as number;
-      setEndOffset(charIdx);
+
+      setSelectionEndPosition((prev: ISelectionPosition) => ({
+        ...prev,
+        offset: charIdx,
+      }));
 
       // 첫 번째 블록에서
-      if (index === startBlockIndex && index === endBlockIndex) {
-        if (currentChildNodeIndex < startChildNodeIndex) {
+      if (index === selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex) {
+        if (currentChildNodeIndex < selectionStartPosition.childNodeIndex) {
           // 왼쪽으로 드래그
           let left = 99999;
           let right = 0;
           childNodes.forEach((childNode, idx) => {
-            if (idx <= startChildNodeIndex && idx >= currentChildNodeIndex) {
+            if (idx <= selectionStartPosition.childNodeIndex && idx >= currentChildNodeIndex) {
               const range = document.createRange();
-              if (startChildNodeIndex === idx) {
+              if (selectionStartPosition.childNodeIndex === idx) {
                 range.setStart(childNode as Node, 0);
-                range.setEnd(childNode as Node, startOffest);
-              } else if (currentChildNodeIndex < idx && startChildNodeIndex > idx) {
+                range.setEnd(childNode as Node, selectionStartPosition.offset);
+              } else if (currentChildNodeIndex < idx && selectionStartPosition.childNodeIndex > idx) {
                 range.setStart(childNode as Node, 0);
                 range.setEnd(childNode as Node, childNode.textContent?.length || 0);
               } else if (currentChildNodeIndex === idx) {
@@ -176,27 +175,27 @@ const Block = memo(
           let left = 99999;
           let right = 0;
           childNodes.forEach((childNode, idx) => {
-            if (idx <= currentChildNodeIndex && idx >= startChildNodeIndex) {
+            if (idx <= currentChildNodeIndex && idx >= selectionStartPosition.childNodeIndex) {
               const range = document.createRange();
 
-              if (currentChildNodeIndex === idx && startChildNodeIndex === idx) {
-                if (startOffest < charIdx) {
-                  range.setStart(childNode as Node, startOffest);
+              if (currentChildNodeIndex === idx && selectionStartPosition.childNodeIndex === idx) {
+                if (selectionStartPosition.offset < charIdx) {
+                  range.setStart(childNode as Node, selectionStartPosition.offset);
                   range.setEnd(childNode as Node, charIdx);
                 } else {
                   range.setStart(childNode as Node, charIdx);
-                  range.setEnd(childNode as Node, startOffest);
+                  range.setEnd(childNode as Node, selectionStartPosition.offset);
                 }
               } else {
                 // eslint-disable-next-line no-lonely-if
                 if (currentChildNodeIndex === idx) {
                   range.setStart(childNode as Node, 0);
                   range.setEnd(childNode as Node, charIdx);
-                } else if (startChildNodeIndex < idx && currentChildNodeIndex > idx) {
+                } else if (selectionStartPosition.childNodeIndex < idx && currentChildNodeIndex > idx) {
                   range.setStart(childNode as Node, 0);
                   range.setEnd(childNode as Node, childNode.textContent?.length || 0);
-                } else if (startChildNodeIndex === idx) {
-                  range.setStart(childNode as Node, startOffest);
+                } else if (selectionStartPosition.childNodeIndex === idx) {
+                  range.setStart(childNode as Node, selectionStartPosition.offset);
                   range.setEnd(childNode as Node, childNode.textContent?.length || 0);
                 }
               }
@@ -223,8 +222,8 @@ const Block = memo(
       }
 
       // 마지막 블록에서
-      if (index !== startBlockIndex && index === endBlockIndex) {
-        if (startBlockIndex < endBlockIndex) {
+      if (index !== selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex) {
+        if (selectionStartPosition.blockIndex < selectionEndPosition.blockIndex) {
           // 아래로 드래그 된 상태일 때
           let left = 99999;
           let right = 0;
@@ -248,6 +247,7 @@ const Block = memo(
               if (right < rect.right) {
                 right = rect.right;
               }
+              console.log(range);
             }
           });
           const el = blockRef.current[index];
@@ -311,10 +311,10 @@ const Block = memo(
       const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
 
       // 아래로 드래그한 상태 일때
-      if (startBlockIndex < endBlockIndex) {
+      if (selectionStartPosition.blockIndex < selectionEndPosition.blockIndex) {
         let left = 99999;
         let right = 0;
-        if (index !== startBlockIndex && index === endBlockIndex && !isUp) {
+        if (index !== selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex && !isUp) {
           // 아래로 드래그 할 때
           childNodes.forEach(childNode => {
             const range = document.createRange();
@@ -337,7 +337,7 @@ const Block = memo(
             lightblue ${left - elLeft}px,
             lightblue ${right - elLeft}px,
             transparent ${right - elLeft}px)`;
-        } else if (index !== startBlockIndex && index === endBlockIndex && isUp) {
+        } else if (index !== selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex && isUp) {
           // 위로 드래그 할 때
           const el = blockRef.current[index];
           if (!el) return;
@@ -348,7 +348,7 @@ const Block = memo(
         let left = 99999;
         let right = 0;
         // eslint-disable-next-line no-lonely-if
-        if (index !== startBlockIndex && index === endBlockIndex && isUp) {
+        if (index !== selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex && isUp) {
           // 위로 드래그 할 때
           childNodes.forEach(childNode => {
             const range = document.createRange();
@@ -371,7 +371,7 @@ const Block = memo(
             lightblue ${left - elLeft}px,
             lightblue ${right - elLeft}px,
             transparent ${right - elLeft}px)`;
-        } else if (index !== startBlockIndex && index === endBlockIndex && !isUp) {
+        } else if (index !== selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex && !isUp) {
           // 아래로 드래그 할 때
           const el = blockRef.current[index];
           if (!el) return;
@@ -380,18 +380,18 @@ const Block = memo(
       }
 
       // 시작 블록에서 떠날 때
-      if (index === startBlockIndex && index === endBlockIndex) {
+      if (index === selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex) {
         let left = 99999;
         let right = 0;
         if (!isUp) {
           // 위로 떠날 때
           childNodes.forEach((childNode, idx) => {
             const range = document.createRange();
-            if (idx > startChildNodeIndex) {
+            if (idx > selectionStartPosition.childNodeIndex) {
               range.setStart(childNode as Node, 0);
               range.setEnd(childNode as Node, childNode.textContent?.length || 0);
-            } else if (idx === startChildNodeIndex) {
-              range.setStart(childNode as Node, startOffest);
+            } else if (idx === selectionStartPosition.childNodeIndex) {
+              range.setStart(childNode as Node, selectionStartPosition.offset);
 
               range.setEnd(childNode as Node, childNode.textContent?.length || 0);
             }
@@ -416,12 +416,12 @@ const Block = memo(
           // 아래로 떠날 때
           childNodes.forEach((childNode, idx) => {
             const range = document.createRange();
-            if (idx < startChildNodeIndex) {
+            if (idx < selectionStartPosition.childNodeIndex) {
               range.setStart(childNode as Node, 0);
               range.setEnd(childNode as Node, childNode.textContent?.length || 0);
-            } else if (idx === startChildNodeIndex) {
+            } else if (idx === selectionStartPosition.childNodeIndex) {
               range.setStart(childNode as Node, 0);
-              range.setEnd(childNode as Node, startOffest);
+              range.setEnd(childNode as Node, selectionStartPosition.offset);
             }
             const rect = range.getBoundingClientRect();
             if (left > rect.left) {
