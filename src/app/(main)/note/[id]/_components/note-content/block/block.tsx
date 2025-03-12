@@ -19,7 +19,6 @@ interface IBlockComponent {
   setIsDragging: (isDragging: boolean) => void;
   startOffest: number;
   setStartOffset: (startOffset: number) => void;
-  endOffset: number;
   setEndOffset: (endOffset: number) => void;
   startBlockIndex: number;
   setStartBlockIndex: (startBlockIndex: number) => void;
@@ -57,7 +56,6 @@ const Block = memo(
     setIsDragging,
     startOffest,
     setStartOffset,
-    endOffset,
     setEndOffset,
     startBlockIndex,
     setStartBlockIndex,
@@ -106,7 +104,7 @@ const Block = memo(
         if (range) {
           blockRef.current[index]?.parentNode?.focus();
           const selection = window.getSelection();
-          range?.setStart(blockRef.current[0]?.childNodes[currentChildNodeIndex] as Node, charIdx);
+          range?.setStart(blockRef.current[index]?.childNodes[currentChildNodeIndex] as Node, charIdx);
 
           selection?.removeAllRanges();
           selection?.addRange(range);
@@ -134,27 +132,166 @@ const Block = memo(
       }
 
       const charIdx = document.caretPositionFromPoint(e.clientX, e.clientY)?.offset as number;
-      const range = document.createRange();
-
       setEndOffset(charIdx);
 
+      // 첫 번째 블록에서
       if (index === startBlockIndex && index === endBlockIndex) {
-        if (charIdx < startOffest) {
-          range.setStart(textNode as Node, charIdx);
-          range.setEnd(textNode as Node, startOffest);
+        if (currentChildNodeIndex < startChildNodeIndex) {
+          // 왼쪽으로 드래그
+          let left = 99999;
+          let right = 0;
+          childNodes.forEach((childNode, idx) => {
+            if (idx <= startChildNodeIndex && idx >= currentChildNodeIndex) {
+              const range = document.createRange();
+              if (startChildNodeIndex === idx) {
+                range.setStart(childNode as Node, 0);
+                range.setEnd(childNode as Node, startOffest);
+              } else if (currentChildNodeIndex < idx && startChildNodeIndex > idx) {
+                range.setStart(childNode as Node, 0);
+                range.setEnd(childNode as Node, childNode.textContent?.length || 0);
+              } else if (currentChildNodeIndex === idx) {
+                range.setStart(childNode as Node, charIdx);
+                range.setEnd(childNode as Node, childNode.textContent?.length || 0);
+              }
+              const rect = range.getBoundingClientRect();
+              if (left > rect.left) {
+                left = rect.left;
+              }
+
+              if (right < rect.right) {
+                right = rect.right;
+              }
+            }
+          });
+          const el = blockRef.current[index];
+          const elLeft = el?.getBoundingClientRect().left || 0;
+          if (!el) return;
+          el.style.backgroundImage = `linear-gradient(to right,
+            transparent ${left - elLeft}px,
+            lightblue ${left - elLeft}px,
+            lightblue ${right - elLeft}px,
+            transparent ${right - elLeft}px)`;
         } else {
-          range.setStart(textNode as Node, startOffest);
-          range.setEnd(textNode as Node, charIdx);
+          // 오른쪽으로 드래그
+          let left = 99999;
+          let right = 0;
+          childNodes.forEach((childNode, idx) => {
+            if (idx <= currentChildNodeIndex && idx >= startChildNodeIndex) {
+              const range = document.createRange();
+
+              if (currentChildNodeIndex === idx && startChildNodeIndex === idx) {
+                if (startOffest < charIdx) {
+                  range.setStart(childNode as Node, startOffest);
+                  range.setEnd(childNode as Node, charIdx);
+                } else {
+                  range.setStart(childNode as Node, charIdx);
+                  range.setEnd(childNode as Node, startOffest);
+                }
+              } else {
+                // eslint-disable-next-line no-lonely-if
+                if (currentChildNodeIndex === idx) {
+                  range.setStart(childNode as Node, 0);
+                  range.setEnd(childNode as Node, charIdx);
+                } else if (startChildNodeIndex < idx && currentChildNodeIndex > idx) {
+                  range.setStart(childNode as Node, 0);
+                  range.setEnd(childNode as Node, childNode.textContent?.length || 0);
+                } else if (startChildNodeIndex === idx) {
+                  range.setStart(childNode as Node, startOffest);
+                  range.setEnd(childNode as Node, childNode.textContent?.length || 0);
+                }
+              }
+
+              const rect = range.getBoundingClientRect();
+              if (left > rect.left) {
+                left = rect.left;
+              }
+
+              if (right < rect.right) {
+                right = rect.right;
+              }
+            }
+          });
+          const el = blockRef.current[index];
+          const elLeft = el?.getBoundingClientRect().left || 0;
+          if (!el) return;
+          el.style.backgroundImage = `linear-gradient(to right,
+            transparent ${left - elLeft}px,
+            lightblue ${left - elLeft}px,
+            lightblue ${right - elLeft}px,
+            transparent ${right - elLeft}px)`;
         }
       }
 
+      // 마지막 블록에서
       if (index !== startBlockIndex && index === endBlockIndex) {
         if (startBlockIndex < endBlockIndex) {
-          range.setStart(textNode as Node, 0);
-          range.setEnd(textNode as Node, charIdx);
+          // 아래로 드래그 된 상태일 때
+          let left = 99999;
+          let right = 0;
+          childNodes.forEach((childNode, idx) => {
+            if (idx <= currentChildNodeIndex) {
+              const range = document.createRange();
+
+              if (currentChildNodeIndex === idx) {
+                range.setStart(childNode as Node, 0);
+                range.setEnd(childNode as Node, charIdx);
+              } else {
+                range.setStart(childNode as Node, 0);
+                range.setEnd(childNode as Node, childNode.textContent?.length || 0);
+              }
+
+              const rect = range.getBoundingClientRect();
+              if (left > rect.left) {
+                left = rect.left;
+              }
+
+              if (right < rect.right) {
+                right = rect.right;
+              }
+            }
+          });
+          const el = blockRef.current[index];
+          const elLeft = el?.getBoundingClientRect().left || 0;
+          if (!el) return;
+          el.style.backgroundImage = `linear-gradient(to right,
+            transparent ${left - elLeft}px,
+            lightblue ${left - elLeft}px,
+            lightblue ${right - elLeft}px,
+            transparent ${right - elLeft}px)`;
         } else {
-          range.setStart(textNode as Node, charIdx);
-          range.setEnd(textNode as Node, e.target.textContent.length);
+          // 위로 드래그 된 상태일 때
+          let left = 99999;
+          let right = 0;
+          childNodes.forEach((childNode, idx) => {
+            if (idx >= currentChildNodeIndex) {
+              const range = document.createRange();
+
+              if (currentChildNodeIndex === idx) {
+                range.setStart(childNode as Node, charIdx);
+                range.setEnd(childNode as Node, childNode.textContent?.length || 0);
+              } else {
+                range.setStart(childNode as Node, 0);
+                range.setEnd(childNode as Node, childNode.textContent?.length || 0);
+              }
+
+              const rect = range.getBoundingClientRect();
+              if (left > rect.left) {
+                left = rect.left;
+              }
+
+              if (right < rect.right) {
+                right = rect.right;
+              }
+            }
+          });
+          const el = blockRef.current[index];
+          const elLeft = el?.getBoundingClientRect().left || 0;
+          if (!el) return;
+          el.style.backgroundImage = `linear-gradient(to right,
+            transparent ${left - elLeft}px,
+            lightblue ${left - elLeft}px,
+            lightblue ${right - elLeft}px,
+            transparent ${right - elLeft}px)`;
         }
       }
 
@@ -165,59 +302,146 @@ const Block = memo(
         setIsUp(true);
         prevClientY.current = e.clientY;
       }
-
-      const rect = range.getBoundingClientRect();
-      const el = blockRef.current[index];
-      const elLeft = el?.getBoundingClientRect().left || 0;
-      if (!el) return;
-      el.style.backgroundImage = `linear-gradient(to right,
-      transparent ${rect.left - elLeft}px,
-      lightblue ${rect.left - elLeft}px,
-      lightblue ${rect.right - elLeft}px,
-      transparent ${rect.right - elLeft}px)`;
     };
 
-    const handleMouseLeave = (e: any) => {
+    const handleMouseLeave = () => {
       if (!isDragging) return;
 
-      const textNode = document.caretPositionFromPoint(
-        e.clientX + 10,
-        isUp ? e.clientY + 10 : e.clientY - 10,
-      )?.offsetNode;
+      const parent = blockRef.current[index];
+      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
 
-      const range = document.createRange();
-
+      // 아래로 드래그한 상태 일때
       if (startBlockIndex < endBlockIndex) {
+        let left = 99999;
+        let right = 0;
         if (index !== startBlockIndex && index === endBlockIndex && !isUp) {
-          range.setStart(textNode as Node, 0);
-          range.setEnd(textNode as Node, e.target.textContent.length);
+          // 아래로 드래그 할 때
+          childNodes.forEach(childNode => {
+            const range = document.createRange();
+            range.setStart(childNode as Node, 0);
+            range.setEnd(childNode as Node, childNode.textContent?.length || 0);
+            const rect = range.getBoundingClientRect();
+            if (left > rect.left) {
+              left = rect.left;
+            }
+
+            if (right < rect.right) {
+              right = rect.right;
+            }
+          });
+          const el = blockRef.current[index];
+          const elLeft = el?.getBoundingClientRect().left || 0;
+          if (!el) return;
+          el.style.backgroundImage = `linear-gradient(to right,
+            transparent ${left - elLeft}px,
+            lightblue ${left - elLeft}px,
+            lightblue ${right - elLeft}px,
+            transparent ${right - elLeft}px)`;
+        } else if (index !== startBlockIndex && index === endBlockIndex && isUp) {
+          // 위로 드래그 할 때
+          const el = blockRef.current[index];
+          if (!el) return;
+          el.style.backgroundImage = `none`;
         }
       } else {
+        // 위로 드래그한 상태 일 때
+        let left = 99999;
+        let right = 0;
+        // eslint-disable-next-line no-lonely-if
         if (index !== startBlockIndex && index === endBlockIndex && isUp) {
-          range.setStart(textNode as Node, 0);
-          range.setEnd(textNode as Node, e.target.textContent.length);
+          // 위로 드래그 할 때
+          childNodes.forEach(childNode => {
+            const range = document.createRange();
+            range.setStart(childNode as Node, 0);
+            range.setEnd(childNode as Node, childNode.textContent?.length || 0);
+            const rect = range.getBoundingClientRect();
+            if (left > rect.left) {
+              left = rect.left;
+            }
+
+            if (right < rect.right) {
+              right = rect.right;
+            }
+          });
+          const el = blockRef.current[index];
+          const elLeft = el?.getBoundingClientRect().left || 0;
+          if (!el) return;
+          el.style.backgroundImage = `linear-gradient(to right,
+            transparent ${left - elLeft}px,
+            lightblue ${left - elLeft}px,
+            lightblue ${right - elLeft}px,
+            transparent ${right - elLeft}px)`;
+        } else if (index !== startBlockIndex && index === endBlockIndex && !isUp) {
+          // 아래로 드래그 할 때
+          const el = blockRef.current[index];
+          if (!el) return;
+          el.style.backgroundImage = `none`;
         }
       }
 
+      // 시작 블록에서 떠날 때
       if (index === startBlockIndex && index === endBlockIndex) {
+        let left = 99999;
+        let right = 0;
         if (!isUp) {
-          range.setStart(textNode as Node, startOffest);
-          range.setEnd(textNode as Node, e.target.textContent.length);
+          // 위로 떠날 때
+          childNodes.forEach((childNode, idx) => {
+            const range = document.createRange();
+            if (idx > startChildNodeIndex) {
+              range.setStart(childNode as Node, 0);
+              range.setEnd(childNode as Node, childNode.textContent?.length || 0);
+            } else if (idx === startChildNodeIndex) {
+              range.setStart(childNode as Node, startOffest);
+
+              range.setEnd(childNode as Node, childNode.textContent?.length || 0);
+            }
+            const rect = range.getBoundingClientRect();
+            if (left > rect.left) {
+              left = rect.left;
+            }
+
+            if (right < rect.right) {
+              right = rect.right;
+            }
+          });
+          const el = blockRef.current[index];
+          const elLeft = el?.getBoundingClientRect().left || 0;
+          if (!el) return;
+          el.style.backgroundImage = `linear-gradient(to right,
+            transparent ${left - elLeft}px,
+            lightblue ${left - elLeft}px,
+            lightblue ${right - elLeft}px,
+            transparent ${right - elLeft}px)`;
         } else {
-          range.setStart(textNode as Node, 0);
-          range.setEnd(textNode as Node, startOffest);
+          // 아래로 떠날 때
+          childNodes.forEach((childNode, idx) => {
+            const range = document.createRange();
+            if (idx < startChildNodeIndex) {
+              range.setStart(childNode as Node, 0);
+              range.setEnd(childNode as Node, childNode.textContent?.length || 0);
+            } else if (idx === startChildNodeIndex) {
+              range.setStart(childNode as Node, 0);
+              range.setEnd(childNode as Node, startOffest);
+            }
+            const rect = range.getBoundingClientRect();
+            if (left > rect.left) {
+              left = rect.left;
+            }
+
+            if (right < rect.right) {
+              right = rect.right;
+            }
+          });
+          const el = blockRef.current[index];
+          const elLeft = el?.getBoundingClientRect().left || 0;
+          if (!el) return;
+          el.style.backgroundImage = `linear-gradient(to right,
+            transparent ${left - elLeft}px,
+            lightblue ${left - elLeft}px,
+            lightblue ${right - elLeft}px,
+            transparent ${right - elLeft}px)`;
         }
       }
-
-      const rect = range.getBoundingClientRect();
-      const el = blockRef.current[index];
-      const elLeft = el?.getBoundingClientRect().left || 0;
-      if (!el) return;
-      el.style.backgroundImage = `linear-gradient(to right,
-      transparent ${rect.left - elLeft}px,
-      lightblue ${rect.left - elLeft}px,
-      lightblue ${rect.right - elLeft}px,
-      transparent ${rect.right - elLeft}px)`;
     };
 
     return (
