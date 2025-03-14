@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 import ITextBlock from '@/types/block-type';
 import Block from './block/block';
@@ -19,6 +19,7 @@ const blockContainer = css({
 const NoteContent = () => {
   const blockButtonRef = useRef<(HTMLDivElement | null)[]>([]);
   const blockRef = useRef<(HTMLDivElement | null)[]>([]);
+  const noteRef = useRef<HTMLDivElement | null>(null);
 
   const [blockList, setBlockList] = useState<ITextBlock[]>([
     {
@@ -34,6 +35,7 @@ const NoteContent = () => {
   ]);
   const [key, setKey] = useState(Date.now());
   const [isTyping, setIsTyping] = useState(false);
+
   const [isDragging, setIsDragging] = useState(false);
   const [isUp, setIsUp] = useState(false);
 
@@ -56,8 +58,33 @@ const NoteContent = () => {
     blockButtonRef.current[index]?.style.setProperty('display', 'none');
   };
 
+  const [isSlashMenuOpen, setIsSlashMenuOpen] = useState<boolean[]>([]);
+
+  // blockList 길이에 맞게 isSlashMenuOpen 배열을 다시 설정
+  useEffect(() => {
+    setIsSlashMenuOpen(Array(blockList.length).fill(false));
+  }, [blockList.length]);
+
+  const [slashMenuPosition, setSlashMenuPosition] = useState({ x: 0, y: 0 });
+
+  // isSlashMenuOpen 상태에 따라 스크롤 막기
+  useEffect(() => {
+    const grandParent = noteRef.current?.parentElement?.parentElement;
+    if (!grandParent) return;
+    const isAnyMenuOpen = isSlashMenuOpen.some(state => state === true);
+    if (isAnyMenuOpen) {
+      grandParent.style.overflowY = 'hidden';
+    } else {
+      grandParent.style.overflowY = '';
+    }
+
+    return () => {
+      grandParent.style.overflow = '';
+    };
+  }, [isSlashMenuOpen]);
+
   return (
-    <div key={key}>
+    <div key={key} ref={noteRef}>
       {blockList.map((block, index) => (
         <div
           role="button"
@@ -94,6 +121,10 @@ const NoteContent = () => {
             setSelectionStartPosition={setSelectionStartPosition}
             selectionEndPosition={selectionEndPosition}
             setSelectionEndPosition={setSelectionEndPosition}
+            isSlashMenuOpen={isSlashMenuOpen}
+            setIsSlashMenuOpen={setIsSlashMenuOpen}
+            slashMenuPosition={slashMenuPosition}
+            setSlashMenuPosition={setSlashMenuPosition}
           />
         </div>
       ))}

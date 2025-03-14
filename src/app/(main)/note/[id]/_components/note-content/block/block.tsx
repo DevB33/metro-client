@@ -9,6 +9,8 @@ import handleMouseLeave from './_handler/handleMouseLeave';
 import BlockTag from './block-tag';
 import handleMouseDown from './_handler/handleMouseDown';
 import handleMouseMove from './_handler/handleMouseMove';
+import SlashMenu from './slash-menu';
+
 
 interface IBlockComponent {
   block: ITextBlock;
@@ -27,6 +29,10 @@ interface IBlockComponent {
   setSelectionStartPosition: React.Dispatch<React.SetStateAction<ISelectionPosition>>;
   selectionEndPosition: ISelectionPosition;
   setSelectionEndPosition: React.Dispatch<React.SetStateAction<ISelectionPosition>>;
+  isSlashMenuOpen: boolean[];
+  setIsSlashMenuOpen: React.Dispatch<React.SetStateAction<boolean[]>>;
+  slashMenuPosition: { x: number; y: number };
+  setSlashMenuPosition: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
 }
 
 const blockDiv = css({
@@ -58,6 +64,10 @@ const Block = memo(
     setSelectionStartPosition,
     selectionEndPosition,
     setSelectionEndPosition,
+    isSlashMenuOpen,
+    setIsSlashMenuOpen,
+    slashMenuPosition,
+    setSlashMenuPosition,
   }: IBlockComponent) => {
     const prevChildNodesLength = useRef(0);
     const prevClientY = useRef(0);
@@ -77,9 +87,20 @@ const Block = memo(
           setIsTyping(true);
           handleInput(event, index, blockList, setBlockList, blockRef, prevChildNodesLength);
         }}
-        onKeyDown={event => {
-          handleKeyDown(event, index, blockList, setBlockList, blockRef, setIsTyping, setKey);
-        }}
+        onKeyDown={event =>
+          handleKeyDown(
+            event,
+            index,
+            blockList,
+            setBlockList,
+            blockRef,
+            setIsTyping,
+            setKey,
+            isSlashMenuOpen,
+            setIsSlashMenuOpen,
+            setSlashMenuPosition,
+          )
+        }
         onMouseUp={() => {
           setIsDragging(false);
         }}
@@ -121,6 +142,17 @@ const Block = memo(
             );
           })}
         </BlockTag>
+        {isSlashMenuOpen[index] && (
+          <SlashMenu
+            position={slashMenuPosition}
+            index={index}
+            blockList={blockList}
+            blockRef={blockRef}
+            setBlockList={setBlockList}
+            isSlashMenuOpen={isSlashMenuOpen}
+            setIsSlashMenuOpen={setIsSlashMenuOpen}
+          />
+        )}
       </div>
     );
   },

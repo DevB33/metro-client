@@ -308,6 +308,36 @@ const mergeLine = (
   setBlockList(updatedBlockList);
 };
 
+const openSlashMenu = (
+  index: number,
+  isSlashMenuOpen: boolean[],
+  blockRef: React.RefObject<(HTMLDivElement | null)[]>,
+  setIsSlashMenuOpen: (isSlashMenuOpen: boolean[]) => void,
+  setSlashMenuPosition: (position: { x: number; y: number }) => void,
+) => {
+  const newIsSlashMenuOpen = [...isSlashMenuOpen];
+  newIsSlashMenuOpen[index] = true;
+  setIsSlashMenuOpen(newIsSlashMenuOpen);
+
+  // 메뉴 띄울 슬래시 위치 받아오기
+  const { range } = getSelectionInfo(0) || {};
+  let rect = range ? range.getBoundingClientRect() : null;
+
+  if (!rect || (rect.left === 0 && rect.top === 0)) {
+    const blockElement = blockRef.current?.[index];
+    if (blockElement) {
+      rect = blockElement.getBoundingClientRect();
+    }
+  }
+
+  if (rect) {
+    setSlashMenuPosition({
+      x: rect.left,
+      y: rect.top + rect.height,
+    });
+  }
+};
+
 const turnIntoH1 = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
   const updatedBlockList = [...blockList];
   updatedBlockList[index].type = 'h1';
@@ -371,6 +401,9 @@ const handleKeyDown = (
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   setIsTyping: (isTyping: boolean) => void,
   setKey: (key: number) => void,
+  isSlashMenuOpen: boolean[],
+  setIsSlashMenuOpen: (isSlashMenuOpen: boolean[]) => void,
+  setSlashMenuPosition: (position: { x: number; y: number }) => void,
 ) => {
   if (event.key === keyName.enter && !event.shiftKey) {
     event.preventDefault();
@@ -568,6 +601,13 @@ const handleKeyDown = (
       setKey(Math.random());
       turnIntoQuote(index, blockList, setBlockList);
     }
+  }
+
+  if (event.key === '/') {
+    event.preventDefault();
+    setIsTyping(false);
+    setKey(Math.random());
+    openSlashMenu(index, isSlashMenuOpen, blockRef, setIsSlashMenuOpen, setSlashMenuPosition);
   }
 };
 
