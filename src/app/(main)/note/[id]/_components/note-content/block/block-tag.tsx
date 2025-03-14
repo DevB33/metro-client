@@ -69,7 +69,6 @@ const BlockTag = ({ block, blockList, index, blockRef, children }: IBlockTag) =>
         data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
         className={placeholderStyles({ tag: 'p' })}
         ref={element => {
-          // eslint-disable-next-line no-param-reassign
           blockRef.current[index] = element;
         }}
       >
@@ -85,7 +84,6 @@ const BlockTag = ({ block, blockList, index, blockRef, children }: IBlockTag) =>
         data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
         className={placeholderStyles({ tag: 'h1' })}
         ref={element => {
-          // eslint-disable-next-line no-param-reassign
           blockRef.current[index] = element;
         }}
       >
@@ -101,7 +99,6 @@ const BlockTag = ({ block, blockList, index, blockRef, children }: IBlockTag) =>
         data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
         className={placeholderStyles({ tag: 'h2' })}
         ref={element => {
-          // eslint-disable-next-line no-param-reassign
           blockRef.current[index] = element;
         }}
       >
@@ -117,7 +114,6 @@ const BlockTag = ({ block, blockList, index, blockRef, children }: IBlockTag) =>
         data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
         className={placeholderStyles({ tag: 'h3' })}
         ref={element => {
-          // eslint-disable-next-line no-param-reassign
           blockRef.current[index] = element;
         }}
       >
@@ -135,7 +131,6 @@ const BlockTag = ({ block, blockList, index, blockRef, children }: IBlockTag) =>
             data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
             className={placeholderStyles({ tag: 'p' })}
             ref={element => {
-              // eslint-disable-next-line no-param-reassign
               blockRef.current[index] = element;
             }}
           >
@@ -167,7 +162,6 @@ const BlockTag = ({ block, blockList, index, blockRef, children }: IBlockTag) =>
             data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
             className={placeholderStyles({ tag: 'p' })}
             ref={element => {
-              // eslint-disable-next-line no-param-reassign
               blockRef.current[index] = element;
             }}
           >
@@ -186,7 +180,6 @@ const BlockTag = ({ block, blockList, index, blockRef, children }: IBlockTag) =>
           data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
           className={placeholderStyles({ tag: 'p' })}
           ref={element => {
-            // eslint-disable-next-line no-param-reassign
             blockRef.current[index] = element;
           }}
         >

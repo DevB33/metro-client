@@ -1,4 +1,12 @@
 import ISelectionPosition from '@/types/selection-position';
+import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundImage';
+
+const getNodeBounds = (node: Node, startOffset: number, endOffset: number) => {
+  const range = document.createRange();
+  range.setStart(node as Node, startOffset);
+  range.setEnd(node as Node, endOffset);
+  return range.getBoundingClientRect();
+};
 
 const handleMouseMove = (
   event: React.MouseEvent<HTMLDivElement>,
@@ -44,91 +52,88 @@ const handleMouseMove = (
 
   // 첫 번째 블록에서
   if (index === selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex) {
+    // 한 노드 내에서 드래그
+    if (currentChildNodeIndex === selectionStartPosition.childNodeIndex) {
+      const rect =
+        charIdx > selectionStartPosition.offset
+          ? getNodeBounds(childNodes[currentChildNodeIndex] as Node, selectionStartPosition.offset, charIdx)
+          : getNodeBounds(childNodes[currentChildNodeIndex] as Node, charIdx, selectionStartPosition.offset);
+
+      const blockElement = blockRef.current[index];
+      const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+      if (!blockElement) return;
+      fillHTMLElementBackgroundImage(
+        blockElement,
+        rect.left - blockElementMarginLeft,
+        rect.right - blockElementMarginLeft,
+      );
+    }
+
+    // 왼쪽으로 드래그
     if (currentChildNodeIndex < selectionStartPosition.childNodeIndex) {
-      // 왼쪽으로 드래그
       let left = 99999;
       let right = 0;
       childNodes.forEach((childNode, idx) => {
-        if (idx <= selectionStartPosition.childNodeIndex && idx >= currentChildNodeIndex) {
-          const range = document.createRange();
-          if (selectionStartPosition.childNodeIndex === idx) {
-            range.setStart(childNode as Node, 0);
-            range.setEnd(childNode as Node, selectionStartPosition.offset);
-          } else if (currentChildNodeIndex < idx && selectionStartPosition.childNodeIndex > idx) {
-            range.setStart(childNode as Node, 0);
-            range.setEnd(childNode as Node, childNode.textContent?.length || 0);
-          } else if (currentChildNodeIndex === idx) {
-            range.setStart(childNode as Node, charIdx);
-            range.setEnd(childNode as Node, childNode.textContent?.length || 0);
-          } else {
-            return;
-          }
-          const rect = range.getBoundingClientRect();
-          if (left > rect.left) {
-            left = rect.left;
-          }
+        // 드래그를 시작한 노드일 때
+        if (selectionStartPosition.childNodeIndex === idx) {
+          const rect = getNodeBounds(childNode as Node, 0, selectionStartPosition.offset);
+          left = Math.min(left, rect.left);
+          right = Math.max(right, rect.right);
+        }
 
-          if (right < rect.right) {
-            right = rect.right;
-          }
+        // 드래그를 끝낸 노드일 때
+        if (currentChildNodeIndex === idx) {
+          const rect = getNodeBounds(childNode as Node, charIdx, childNode.textContent?.length as number);
+          left = Math.min(left, rect.left);
+          right = Math.max(right, rect.right);
+        }
+
+        // 드래그를 시작한 노드와 끝낸 노드 사이의 노드일 때
+        if (currentChildNodeIndex < idx && selectionStartPosition.childNodeIndex > idx) {
+          const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
+          left = Math.min(left, rect.left);
+          right = Math.max(right, rect.right);
         }
       });
-      const el = blockRef.current[index];
-      const elLeft = el?.getBoundingClientRect().left || 0;
-      if (!el) return;
-      el.style.backgroundImage = `linear-gradient(to right,
-          transparent ${left - elLeft}px,
-          lightblue ${left - elLeft}px,
-          lightblue ${right - elLeft}px,
-          transparent ${right - elLeft}px)`;
-    } else {
-      // 오른쪽으로 드래그
+      const blockElement = blockRef.current[index];
+      const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+      if (!blockElement) return;
+      fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+    }
+    // 오른쪽으로 드래그
+    if (currentChildNodeIndex > selectionStartPosition.childNodeIndex) {
       let left = 99999;
       let right = 0;
       childNodes.forEach((childNode, idx) => {
-        if (idx <= currentChildNodeIndex && idx >= selectionStartPosition.childNodeIndex) {
-          const range = document.createRange();
+        // 드래그를 시작한 노드일 때
+        if (selectionStartPosition.childNodeIndex === idx) {
+          const rect = getNodeBounds(
+            childNode as Node,
+            selectionStartPosition.offset,
+            childNode.textContent?.length as number,
+          );
+          left = Math.min(left, rect.left);
+          right = Math.max(right, rect.right);
+        }
 
-          if (currentChildNodeIndex === idx && selectionStartPosition.childNodeIndex === idx) {
-            if (selectionStartPosition.offset < charIdx) {
-              range.setStart(childNode as Node, selectionStartPosition.offset);
-              range.setEnd(childNode as Node, charIdx);
-            } else {
-              range.setStart(childNode as Node, charIdx);
-              range.setEnd(childNode as Node, selectionStartPosition.offset);
-            }
-          } else {
-            // eslint-disable-next-line no-lonely-if
-            if (currentChildNodeIndex === idx) {
-              range.setStart(childNode as Node, 0);
-              range.setEnd(childNode as Node, charIdx);
-            } else if (selectionStartPosition.childNodeIndex < idx && currentChildNodeIndex > idx) {
-              range.setStart(childNode as Node, 0);
-              range.setEnd(childNode as Node, childNode.textContent?.length || 0);
-            } else if (selectionStartPosition.childNodeIndex === idx) {
-              range.setStart(childNode as Node, selectionStartPosition.offset);
-              range.setEnd(childNode as Node, childNode.textContent?.length || 0);
-            }
-          }
+        // 드래그를 끝낸 노드일 때
+        if (currentChildNodeIndex === idx) {
+          const rect = getNodeBounds(childNode as Node, 0, charIdx);
+          left = Math.min(left, rect.left);
+          right = Math.max(right, rect.right);
+        }
 
-          const rect = range.getBoundingClientRect();
-          if (left > rect.left) {
-            left = rect.left;
-          }
-
-          if (right < rect.right) {
-            right = rect.right;
-          }
+        // 드래그를 시작한 노드와 끝낸 노드 사이의 노드일 때
+        if (currentChildNodeIndex < idx && selectionStartPosition.childNodeIndex > idx) {
+          const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
+          left = Math.min(left, rect.left);
+          right = Math.max(right, rect.right);
         }
       });
-      const el = blockRef.current[index];
-      const elLeft = el?.getBoundingClientRect().left || 0;
-      if (!el) return;
-      el.style.backgroundImage = `linear-gradient(to right,
-          transparent ${left - elLeft}px,
-          lightblue ${left - elLeft}px,
-          lightblue ${right - elLeft}px,
-          transparent ${right - elLeft}px)`;
+      const blockElement = blockRef.current[index];
+      const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+      if (!blockElement) return;
+      fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
     }
   }
 
@@ -139,79 +144,57 @@ const handleMouseMove = (
       let left = 99999;
       let right = 0;
       childNodes.forEach((childNode, idx) => {
-        if (idx <= currentChildNodeIndex) {
-          const range = document.createRange();
+        // 드래그를 끝낸 노드일 때
+        if (currentChildNodeIndex === idx) {
+          const rect = getNodeBounds(childNode as Node, 0, charIdx);
+          left = Math.min(left, rect.left);
+          right = Math.max(right, rect.right);
+        }
 
-          if (currentChildNodeIndex === idx) {
-            range.setStart(childNode as Node, 0);
-            range.setEnd(childNode as Node, charIdx);
-          } else {
-            range.setStart(childNode as Node, 0);
-            range.setEnd(childNode as Node, childNode.textContent?.length || 0);
-          }
-
-          const rect = range.getBoundingClientRect();
-          if (left > rect.left) {
-            left = rect.left;
-          }
-
-          if (right < rect.right) {
-            right = rect.right;
-          }
+        // 드래그를 끝낸 노드보다 전에 있는 노드일 때
+        if (currentChildNodeIndex > idx) {
+          const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
+          left = Math.min(left, rect.left);
+          right = Math.max(right, rect.right);
         }
       });
-      const el = blockRef.current[index];
-      const elLeft = el?.getBoundingClientRect().left || 0;
-      if (!el) return;
-      el.style.backgroundImage = `linear-gradient(to right,
-          transparent ${left - elLeft}px,
-          lightblue ${left - elLeft}px,
-          lightblue ${right - elLeft}px,
-          transparent ${right - elLeft}px)`;
-    } else {
-      // 위로 드래그 된 상태일 때
+      const blockElement = blockRef.current[index];
+      const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+      if (!blockElement) return;
+      fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+    }
+
+    // 위로 드래그 된 상태일 때
+    if (selectionStartPosition.blockIndex > selectionEndPosition.blockIndex) {
       let left = 99999;
       let right = 0;
       childNodes.forEach((childNode, idx) => {
-        if (idx >= currentChildNodeIndex) {
-          const range = document.createRange();
+        // 드래그를 끝낸 노드일 때
+        if (currentChildNodeIndex === idx) {
+          const rect = getNodeBounds(childNode as Node, charIdx, childNode.textContent?.length as number);
+          left = Math.min(left, rect.left);
+          right = Math.max(right, rect.right);
+        }
 
-          if (currentChildNodeIndex === idx) {
-            range.setStart(childNode as Node, charIdx);
-            range.setEnd(childNode as Node, childNode.textContent?.length || 0);
-          } else {
-            range.setStart(childNode as Node, 0);
-            range.setEnd(childNode as Node, childNode.textContent?.length || 0);
-          }
-
-          const rect = range.getBoundingClientRect();
-          if (left > rect.left) {
-            left = rect.left;
-          }
-
-          if (right < rect.right) {
-            right = rect.right;
-          }
+        // 드래그를 끝낸 노드보다 후에 있는 노드일 때
+        if (currentChildNodeIndex < idx) {
+          const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
+          left = Math.min(left, rect.left);
+          right = Math.max(right, rect.right);
         }
       });
-      const el = blockRef.current[index];
-      const elLeft = el?.getBoundingClientRect().left || 0;
-      if (!el) return;
-      el.style.backgroundImage = `linear-gradient(to right,
-          transparent ${left - elLeft}px,
-          lightblue ${left - elLeft}px,
-          lightblue ${right - elLeft}px,
-          transparent ${right - elLeft}px)`;
+      const blockElement = blockRef.current[index];
+      const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+      if (!blockElement) return;
+      fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
     }
   }
 
   if (prevClientY.current < event.clientY) {
     setIsUp(false);
-    // eslint-disable-next-line no-param-reassign
     prevClientY.current = event.clientY;
   } else if (prevClientY.current > event.clientY) {
     setIsUp(true);
-    // eslint-disable-next-line no-param-reassign
     prevClientY.current = event.clientY;
   }
 };

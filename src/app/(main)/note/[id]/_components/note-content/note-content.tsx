@@ -72,7 +72,6 @@ const NoteContent = () => {
           <div
             className={css({ display: 'none' })}
             ref={element => {
-              // eslint-disable-next-line no-param-reassign
               blockButtonRef.current[index] = element;
             }}
           >

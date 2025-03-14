@@ -91,7 +91,6 @@ const handleInput = (
   }
 
   setBlockList(updatedBlockList);
-  // eslint-disable-next-line no-param-reassign
   prevChildNodesLength.current = childNodes.length;
 };
 
