@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
-import { ITextBlock } from '@/types/block-type';
+import ITextBlock from '@/types/block-type';
 import Block from './block/block';
 import BlockButton from './block-button';
 
@@ -17,6 +17,10 @@ const blockContainer = css({
 });
 
 const NoteContent = () => {
+  const blockButtonRef = useRef<(HTMLDivElement | null)[]>([]);
+  const blockRef = useRef<(HTMLDivElement | null)[]>([]);
+  const noteRef = useRef<HTMLDivElement | null>(null);
+
   const [blockList, setBlockList] = useState<ITextBlock[]>([
     {
       id: 1,
@@ -24,25 +28,27 @@ const NoteContent = () => {
       children: [
         {
           type: 'text',
-          style: {
-            fontStyle: 'normal',
-            fontWeight: 'regular',
-            color: 'black',
-            backgroundColor: 'white',
-            width: 'auto',
-            height: 'auto',
-          },
           content: '',
         },
       ],
     },
   ]);
-
   const [key, setKey] = useState(Date.now());
   const [isTyping, setIsTyping] = useState(false);
-  const blockButtonRef = useRef<(HTMLDivElement | null)[]>([]);
-  const blockRef = useRef<(HTMLDivElement | null)[]>([]);
-  const noteRef = useRef<HTMLDivElement | null>(null);
+
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUp, setIsUp] = useState(false);
+
+  const [selectionStartPosition, setSelectionStartPosition] = useState({
+    blockIndex: 0,
+    childNodeIndex: 0,
+    offset: 0,
+  });
+  const [selectionEndPosition, setSelectionEndPosition] = useState({
+    blockIndex: 0,
+    childNodeIndex: 0,
+    offset: 0,
+  });
 
   const handleMouseEnter = (index: number) => {
     blockButtonRef.current[index]?.style.setProperty('display', 'flex');
@@ -93,7 +99,6 @@ const NoteContent = () => {
           <div
             className={css({ display: 'none' })}
             ref={element => {
-              // eslint-disable-next-line no-param-reassign
               blockButtonRef.current[index] = element;
             }}
           >
@@ -108,6 +113,14 @@ const NoteContent = () => {
             isTyping={isTyping}
             setIsTyping={setIsTyping}
             setKey={setKey}
+            isDragging={isDragging}
+            setIsDragging={setIsDragging}
+            isUp={isUp}
+            setIsUp={setIsUp}
+            selectionStartPosition={selectionStartPosition}
+            setSelectionStartPosition={setSelectionStartPosition}
+            selectionEndPosition={selectionEndPosition}
+            setSelectionEndPosition={setSelectionEndPosition}
             isSlashMenuOpen={isSlashMenuOpen}
             setIsSlashMenuOpen={setIsSlashMenuOpen}
             slashMenuPosition={slashMenuPosition}
