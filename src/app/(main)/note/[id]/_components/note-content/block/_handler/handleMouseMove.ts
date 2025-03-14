@@ -20,6 +20,8 @@ const handleMouseMove = (
   prevClientY: React.RefObject<number>,
 ) => {
   if (!isDragging) return;
+  const selection = window.getSelection();
+  if (selection) selection.removeAllRanges();
 
   if (index !== selectionEndPosition.blockIndex) {
     setSelectionEndPosition((prev: ISelectionPosition) => ({
@@ -35,6 +37,8 @@ const handleMouseMove = (
     childNodes.indexOf(textNode as HTMLElement) === -1 && textNode?.nodeType === Node.TEXT_NODE
       ? childNodes.indexOf(textNode.parentNode as HTMLElement)
       : childNodes.indexOf(textNode as HTMLElement);
+
+  if (currentChildNodeIndex === -1) return;
 
   if (currentChildNodeIndex !== selectionEndPosition.childNodeIndex) {
     setSelectionEndPosition((prev: ISelectionPosition) => ({

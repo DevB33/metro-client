@@ -34,6 +34,7 @@ const handleMouseDown = (
     if (range) {
       (blockRef.current[index]?.parentNode as HTMLElement)?.focus();
       const selection = window.getSelection();
+      if (currentChildNodeIndex === -1) return;
       range?.setStart(blockRef.current[index]?.childNodes[currentChildNodeIndex] as Node, charIdx);
 
       selection?.removeAllRanges();
