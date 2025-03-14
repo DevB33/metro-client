@@ -1,4 +1,4 @@
-import { memo, useRef, useEffect } from 'react';
+import { memo, useRef, useEffect, useState } from 'react';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
@@ -6,6 +6,7 @@ import handleInput from './_handler/handleInput';
 import handleKeyDown from './_handler/handleKeyDown';
 import BlockTag from './block-tag';
 import SlashMenu from './slash-menu';
+
 
 interface IBlockComponent {
   block: ITextBlock;
@@ -48,6 +49,9 @@ const Block = memo(
     setSlashMenuPosition,
   }: IBlockComponent) => {
     const prevChildNodesLength = useRef(0);
+
+    // const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(true);
+    // const [selectionMenuPosition, setSelectionMenuPosition] = useState({ x: 0, y: 0 });
 
     useEffect(() => {
       prevChildNodesLength.current = blockList[index].children.length;

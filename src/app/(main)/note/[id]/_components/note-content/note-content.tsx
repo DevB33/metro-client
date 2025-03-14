@@ -5,6 +5,7 @@ import { css } from '@/../styled-system/css';
 import { ITextBlock } from '@/types/block-type';
 import Block from './block/block';
 import BlockButton from './block-button';
+import SelectionMenu from './block/selection-menu';
 
 const blockContainer = css({
   boxSizing: 'content-box',
@@ -61,6 +62,9 @@ const NoteContent = () => {
 
   const [slashMenuPosition, setSlashMenuPosition] = useState({ x: 0, y: 0 });
 
+  const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(true);
+  const [selectionMenuPosition, setSelectionMenuPosition] = useState({ x: 0, y: 0 });
+
   // isSlashMenuOpen 상태에 따라 스크롤 막기
   useEffect(() => {
     const grandParent = noteRef.current?.parentElement?.parentElement;
@@ -77,8 +81,38 @@ const NoteContent = () => {
     };
   }, [isSlashMenuOpen]);
 
+  const handleMouseUp = () => {
+    const selection = window.getSelection();
+    console.log(selection?.rangeCount);
+    if (!selection || selection.rangeCount === 0) {
+      setIsSelectionMenuOpen(false);
+      return;
+    }
+    const range = selection.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+    console.log(rect);
+
+    if (!rect || rect.width === 0 || rect.height === 0 || selection.toString().trim() === '') {
+      setIsSelectionMenuOpen(false);
+      return;
+    }
+
+    setSelectionMenuPosition({
+      x: rect.left,
+      y: rect.top,
+    });
+
+    setIsSelectionMenuOpen(true);
+  };
+
   return (
-    <div key={key} ref={noteRef}>
+    <div
+      key={key}
+      ref={noteRef}
+      onMouseUp={handleMouseUp}
+      onMouseDown={() => setIsSelectionMenuOpen(false)}
+      onKeyDown={() => setIsSelectionMenuOpen(false)}
+    >
       {blockList.map((block, index) => (
         <div
           role="button"
@@ -115,6 +149,7 @@ const NoteContent = () => {
           />
         </div>
       ))}
+      {isSelectionMenuOpen && <SelectionMenu position={selectionMenuPosition} />}
     </div>
   );
 };
