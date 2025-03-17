@@ -1,10 +1,14 @@
 import { memo, useRef, useEffect, useState } from 'react';
 import { css } from '@/../styled-system/css';
 
-import { ITextBlock } from '@/types/block-type';
+import ITextBlock from '@/types/block-type';
+import ISelectionPosition from '@/types/selection-position';
 import handleInput from './_handler/handleInput';
 import handleKeyDown from './_handler/handleKeyDown';
+import handleMouseLeave from './_handler/handleMouseLeave';
 import BlockTag from './block-tag';
+import handleMouseDown from './_handler/handleMouseDown';
+import handleMouseMove from './_handler/handleMouseMove';
 import SlashMenu from './slash-menu';
 
 
@@ -15,12 +19,20 @@ interface IBlockComponent {
   blockList: ITextBlock[];
   setBlockList: (blockList: ITextBlock[]) => void;
   isTyping: boolean;
-  setIsTyping: (isTyping: boolean) => void;
-  setKey: (key: number) => void;
+  setIsTyping: React.Dispatch<React.SetStateAction<boolean>>;
+  setKey: React.Dispatch<React.SetStateAction<number>>;
+  isDragging: boolean;
+  setIsDragging: React.Dispatch<React.SetStateAction<boolean>>;
+  isUp: boolean;
+  setIsUp: React.Dispatch<React.SetStateAction<boolean>>;
+  selectionStartPosition: ISelectionPosition;
+  setSelectionStartPosition: React.Dispatch<React.SetStateAction<ISelectionPosition>>;
+  selectionEndPosition: ISelectionPosition;
+  setSelectionEndPosition: React.Dispatch<React.SetStateAction<ISelectionPosition>>;
   isSlashMenuOpen: boolean[];
-  setIsSlashMenuOpen: (isSlashMenu: boolean[]) => void;
+  setIsSlashMenuOpen: React.Dispatch<React.SetStateAction<boolean[]>>;
   slashMenuPosition: { x: number; y: number };
-  setSlashMenuPosition: (slashMenuPosition: { x: number; y: number }) => void;
+  setSlashMenuPosition: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
 }
 
 const blockDiv = css({
@@ -31,6 +43,7 @@ const blockDiv = css({
   outline: 'none',
   overflowY: 'hidden',
   flexShrink: 0,
+  userSelect: 'none',
 });
 
 const Block = memo(
@@ -43,12 +56,21 @@ const Block = memo(
     isTyping: _isTyping,
     setIsTyping,
     setKey,
+    isDragging,
+    setIsDragging,
+    isUp,
+    setIsUp,
+    selectionStartPosition,
+    setSelectionStartPosition,
+    selectionEndPosition,
+    setSelectionEndPosition,
     isSlashMenuOpen,
     setIsSlashMenuOpen,
     slashMenuPosition,
     setSlashMenuPosition,
   }: IBlockComponent) => {
     const prevChildNodesLength = useRef(0);
+    const prevClientY = useRef(0);
 
     // const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(true);
     // const [selectionMenuPosition, setSelectionMenuPosition] = useState({ x: 0, y: 0 });
@@ -81,6 +103,28 @@ const Block = memo(
             setIsSlashMenuOpen,
             setSlashMenuPosition,
           )
+        }
+        onMouseUp={() => {
+          setIsDragging(false);
+        }}
+        onMouseDown={event =>
+          handleMouseDown(event, blockRef, index, setIsDragging, setIsTyping, setKey, setSelectionStartPosition)
+        }
+        onMouseMove={event =>
+          handleMouseMove(
+            event,
+            index,
+            blockRef,
+            isDragging,
+            selectionStartPosition,
+            selectionEndPosition,
+            setSelectionEndPosition,
+            setIsUp,
+            prevClientY,
+          )
+        }
+        onMouseLeave={() =>
+          handleMouseLeave(index, isDragging, isUp, blockRef, selectionStartPosition, selectionEndPosition)
         }
       >
         <BlockTag block={block} blockList={blockList} index={index} blockRef={blockRef}>
