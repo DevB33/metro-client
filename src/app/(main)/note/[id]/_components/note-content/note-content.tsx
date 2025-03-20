@@ -51,6 +51,14 @@ const NoteContent = () => {
     offset: 0,
   });
 
+  const [isSlashMenuOpen, setIsSlashMenuOpen] = useState<boolean[]>([]);
+  const [slashMenuPosition, setSlashMenuPosition] = useState({ x: 0, y: 0 });
+
+  const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(true);
+  const [selectionMenuPosition, setSelectionMenuPosition] = useState({ x: 0, y: 0 });
+
+  const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
+
   const handleMouseEnter = (index: number) => {
     blockButtonRef.current[index]?.style.setProperty('display', 'flex');
   };
@@ -59,17 +67,10 @@ const NoteContent = () => {
     blockButtonRef.current[index]?.style.setProperty('display', 'none');
   };
 
-  const [isSlashMenuOpen, setIsSlashMenuOpen] = useState<boolean[]>([]);
-
   // blockList 길이에 맞게 isSlashMenuOpen 배열을 다시 설정
   useEffect(() => {
     setIsSlashMenuOpen(Array(blockList.length).fill(false));
   }, [blockList.length]);
-
-  const [slashMenuPosition, setSlashMenuPosition] = useState({ x: 0, y: 0 });
-
-  const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(true);
-  const [selectionMenuPosition, setSelectionMenuPosition] = useState({ x: 0, y: 0 });
 
   // isSlashMenuOpen 상태에 따라 스크롤 막기
   useEffect(() => {
@@ -87,35 +88,10 @@ const NoteContent = () => {
     };
   }, [isSlashMenuOpen]);
 
-  const handleMouseUp = () => {
-    const selection = window.getSelection();
-    console.log(selection?.rangeCount);
-    if (!selection || selection.rangeCount === 0) {
-      setIsSelectionMenuOpen(false);
-      return;
-    }
-    const range = selection.getRangeAt(0);
-    const rect = range.getBoundingClientRect();
-    console.log(rect);
-
-    if (!rect || rect.width === 0 || rect.height === 0 || selection.toString().trim() === '') {
-      setIsSelectionMenuOpen(false);
-      return;
-    }
-
-    setSelectionMenuPosition({
-      x: rect.left,
-      y: rect.top,
-    });
-
-    setIsSelectionMenuOpen(true);
-  };
-
   return (
     <div
       key={key}
       ref={noteRef}
-      onMouseUp={handleMouseUp}
       onMouseDown={() => setIsSelectionMenuOpen(false)}
       onKeyDown={() => setIsSelectionMenuOpen(false)}
     >
@@ -159,6 +135,10 @@ const NoteContent = () => {
             setIsSlashMenuOpen={setIsSlashMenuOpen}
             slashMenuPosition={slashMenuPosition}
             setSlashMenuPosition={setSlashMenuPosition}
+            startPosition={startPosition}
+            setStartPosition={setStartPosition}
+            setIsSelectionMenuOpen={setIsSelectionMenuOpen}
+            setSelectionMenuPosition={setSelectionMenuPosition}
           />
         </div>
       ))}

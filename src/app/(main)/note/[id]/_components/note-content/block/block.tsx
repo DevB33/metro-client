@@ -11,7 +11,6 @@ import handleMouseDown from './_handler/handleMouseDown';
 import handleMouseMove from './_handler/handleMouseMove';
 import SlashMenu from './slash-menu';
 
-
 interface IBlockComponent {
   block: ITextBlock;
   index: number;
@@ -33,6 +32,10 @@ interface IBlockComponent {
   setIsSlashMenuOpen: React.Dispatch<React.SetStateAction<boolean[]>>;
   slashMenuPosition: { x: number; y: number };
   setSlashMenuPosition: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
+  startPosition: { x: number; y: number };
+  setStartPosition: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
+  setIsSelectionMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setSelectionMenuPosition: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
 }
 
 const blockDiv = css({
@@ -68,6 +71,10 @@ const Block = memo(
     setIsSlashMenuOpen,
     slashMenuPosition,
     setSlashMenuPosition,
+    startPosition,
+    setStartPosition,
+    setIsSelectionMenuOpen,
+    setSelectionMenuPosition,
   }: IBlockComponent) => {
     const prevChildNodesLength = useRef(0);
     const prevClientY = useRef(0);
@@ -78,6 +85,40 @@ const Block = memo(
     useEffect(() => {
       prevChildNodesLength.current = blockList[index].children.length;
     }, [blockList, index]);
+
+    const handleMouseUp = (event: React.MouseEvent<HTMLDivElement>) => {
+      setIsDragging(false);
+
+      const textNode = document.caretPositionFromPoint(event.clientX, event.clientY)?.offsetNode;
+      const element =
+        textNode.nodeType === Node.TEXT_NODE ? (textNode.parentNode as HTMLElement) : (textNode as HTMLElement);
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        const endX = rect.left;
+        const endY = rect.top;
+        console.log('end 좌표:', rect.left, rect.top);
+
+        // selection이 없을 때, 다른 곳 클릭시 메뉴 닫기
+        // if (selectionStartPosition === selectionEndPosition) {
+        //   setIsSelectionMenuOpen(false);
+        //   return;
+        // }
+
+        if (startPosition.y <= endY) {
+          setSelectionMenuPosition({ x: startPosition.x, y: startPosition.y });
+          setIsSelectionMenuOpen(true);
+          console.log('위에서 아래로 드래그');
+        }
+
+        if (startPosition.y > endY) {
+          setSelectionMenuPosition({ x: endX, y: endY });
+          setIsSelectionMenuOpen(true);
+          console.log('아래에서 위로 드래그');
+        }
+      }
+
+      setIsSelectionMenuOpen(true);
+    };
 
     return (
       <div
@@ -104,11 +145,18 @@ const Block = memo(
             setSlashMenuPosition,
           )
         }
-        onMouseUp={() => {
-          setIsDragging(false);
-        }}
+        onMouseUp={event => handleMouseUp(event)}
         onMouseDown={event =>
-          handleMouseDown(event, blockRef, index, setIsDragging, setIsTyping, setKey, setSelectionStartPosition)
+          handleMouseDown(
+            event,
+            blockRef,
+            index,
+            setIsDragging,
+            setIsTyping,
+            setKey,
+            setSelectionStartPosition,
+            setStartPosition,
+          )
         }
         onMouseMove={event =>
           handleMouseMove(
