@@ -9,18 +9,10 @@ const handleMouseDown = (
   setIsTyping: React.Dispatch<React.SetStateAction<boolean>>,
   setKey: React.Dispatch<React.SetStateAction<number>>,
   setSelectionStartPosition: React.Dispatch<React.SetStateAction<ISelectionPosition>>,
-  setStartPosition: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>,
 ) => {
   const parent = blockRef.current[index];
   const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
   const textNode = document.caretPositionFromPoint(event.clientX, event.clientY)?.offsetNode;
-  const element =
-    textNode.nodeType === Node.TEXT_NODE ? (textNode.parentNode as HTMLElement) : (textNode as HTMLElement);
-  if (element) {
-    const rect = element.getBoundingClientRect();
-    setStartPosition({ x: rect.left, y: rect.top });
-    console.log('클릭한 노드의 좌표:', rect.left, rect.top);
-  }
 
   const currentChildNodeIndex =
     childNodes.indexOf(textNode as HTMLElement) === -1 && textNode?.nodeType === Node.TEXT_NODE

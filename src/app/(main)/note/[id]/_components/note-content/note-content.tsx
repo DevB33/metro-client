@@ -57,14 +57,49 @@ const NoteContent = () => {
   const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(true);
   const [selectionMenuPosition, setSelectionMenuPosition] = useState({ x: 0, y: 0 });
 
-  const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
-
   const handleMouseEnter = (index: number) => {
     blockButtonRef.current[index]?.style.setProperty('display', 'flex');
   };
 
   const handleMouseLeave = (index: number) => {
     blockButtonRef.current[index]?.style.setProperty('display', 'none');
+  };
+
+  const handleMouseUp = () => {
+    const startParent = blockRef.current[selectionStartPosition.blockIndex];
+    const endParent = blockRef.current[selectionEndPosition.blockIndex];
+    if (!startParent || !endParent) return;
+
+    console.log('---start 좌표:', startParent.getBoundingClientRect().left, startParent.getBoundingClientRect().top);
+    console.log('---end 좌표:', endParent.getBoundingClientRect().left, endParent.getBoundingClientRect().top);
+
+    const startRect = startParent.getBoundingClientRect();
+    const startX = startRect.left;
+    const startY = startRect.top;
+
+    const endRect = endParent.getBoundingClientRect();
+    const endX = endRect.left;
+    const endY = endRect.top;
+
+    // selection이 없을 때, 다른 곳 클릭시 메뉴 닫기
+    // if (selectionStartPosition === selectionEndPosition) {
+    //   setIsSelectionMenuOpen(false);
+    //   return;
+    // }
+
+    if (startY <= endY) {
+      setSelectionMenuPosition({ x: startX, y: startY });
+      setIsSelectionMenuOpen(true);
+      console.log('위에서 아래로 드래그');
+    }
+
+    if (startY > endY) {
+      setSelectionMenuPosition({ x: endX, y: endY });
+      setIsSelectionMenuOpen(true);
+      console.log('아래에서 위로 드래그');
+    }
+
+    setIsSelectionMenuOpen(true);
   };
 
   // blockList 길이에 맞게 isSlashMenuOpen 배열을 다시 설정
@@ -92,6 +127,7 @@ const NoteContent = () => {
     <div
       key={key}
       ref={noteRef}
+      onMouseUp={handleMouseUp}
       onMouseDown={() => setIsSelectionMenuOpen(false)}
       onKeyDown={() => setIsSelectionMenuOpen(false)}
     >
@@ -135,10 +171,6 @@ const NoteContent = () => {
             setIsSlashMenuOpen={setIsSlashMenuOpen}
             slashMenuPosition={slashMenuPosition}
             setSlashMenuPosition={setSlashMenuPosition}
-            startPosition={startPosition}
-            setStartPosition={setStartPosition}
-            setIsSelectionMenuOpen={setIsSelectionMenuOpen}
-            setSelectionMenuPosition={setSelectionMenuPosition}
           />
         </div>
       ))}
