@@ -70,6 +70,9 @@ const NoteContent = () => {
     const endParent = blockRef.current[selectionEndPosition.blockIndex];
     if (!startParent || !endParent) return;
 
+    console.log('---start:', selectionStartPosition);
+    console.log('---end:', selectionEndPosition);
+
     console.log('---start 좌표:', startParent.getBoundingClientRect().left, startParent.getBoundingClientRect().top);
     console.log('---end 좌표:', endParent.getBoundingClientRect().left, endParent.getBoundingClientRect().top);
 
@@ -82,10 +85,15 @@ const NoteContent = () => {
     const endY = endRect.top;
 
     // selection이 없을 때, 다른 곳 클릭시 메뉴 닫기
-    // if (selectionStartPosition === selectionEndPosition) {
-    //   setIsSelectionMenuOpen(false);
-    //   return;
-    // }
+    if (
+      (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex &&
+        selectionStartPosition.childNodeIndex === selectionEndPosition.childNodeIndex &&
+        selectionStartPosition.offset === selectionEndPosition.offset) ||
+      selectionStartPosition.childNodeIndex === -1
+    ) {
+      setIsSelectionMenuOpen(false);
+      return;
+    }
 
     if (startY <= endY) {
       setSelectionMenuPosition({ x: startX, y: startY });
