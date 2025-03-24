@@ -2,6 +2,22 @@ import ITextBlock from '@/types/block-type';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import keyName from '@/constants/key-name';
 
+const focusCurrentBlock = (
+  index: number,
+  blockRef: React.RefObject<(HTMLDivElement | null)[]>,
+  blockList: ITextBlock[],
+) => {
+  setTimeout(() => {
+    if (blockList[index].type === 'ul' || blockList[index].type === 'ol') {
+      (blockRef.current[index]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
+    } else if (blockList[index].type === 'quote') {
+      (blockRef.current[index]?.parentNode?.parentNode as HTMLElement)?.focus();
+    } else {
+      (blockRef.current[index]?.parentNode as HTMLElement)?.focus();
+    }
+  }, 0);
+};
+
 const splitBlock = (
   index: number,
   blockList: ITextBlock[],
@@ -527,6 +543,7 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       turnIntoH1(index, blockList, setBlockList);
+      focusCurrentBlock(index, blockRef, blockList);
     }
 
     // h2로 전환
@@ -542,6 +559,7 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       turnIntoH2(index, blockList, setBlockList);
+      focusCurrentBlock(index, blockRef, blockList);
     }
 
     // h3으로 전환
@@ -558,6 +576,7 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       turnIntoH3(index, blockList, setBlockList);
+      focusCurrentBlock(index, blockRef, blockList);
     }
 
     // ul로 전환
@@ -572,6 +591,7 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       turnIntoUl(index, blockList, setBlockList);
+      focusCurrentBlock(index, blockRef, blockList);
     }
 
     // ol로 전환
@@ -586,6 +606,7 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       turnIntoOl(index, blockList, setBlockList, startOffset);
+      focusCurrentBlock(index, blockRef, blockList);
     }
 
     // 인용문으로 전환
@@ -600,6 +621,7 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       turnIntoQuote(index, blockList, setBlockList);
+      focusCurrentBlock(index, blockRef, blockList);
     }
   }
 

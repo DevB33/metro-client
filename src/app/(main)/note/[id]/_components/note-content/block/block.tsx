@@ -11,7 +11,6 @@ import handleMouseDown from './_handler/handleMouseDown';
 import handleMouseMove from './_handler/handleMouseMove';
 import SlashMenu from './slash-menu';
 
-
 interface IBlockComponent {
   block: ITextBlock;
   index: number;
@@ -105,7 +104,16 @@ const Block = memo(
           setIsDragging(false);
         }}
         onMouseDown={event =>
-          handleMouseDown(event, blockRef, index, setIsDragging, setIsTyping, setKey, setSelectionStartPosition)
+          handleMouseDown(
+            event,
+            blockRef,
+            index,
+            blockList,
+            setIsDragging,
+            setIsTyping,
+            setKey,
+            setSelectionStartPosition,
+          )
         }
         onMouseMove={event =>
           handleMouseMove(
