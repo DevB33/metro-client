@@ -281,7 +281,12 @@ const splitLine = (
   }
 };
 
-const mergeBlock = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
+const mergeBlock = (
+  index: number,
+  blockList: ITextBlock[],
+  setBlockList: (blockList: ITextBlock[]) => void,
+  blockRef: React.RefObject<(HTMLDivElement | null)[]>,
+) => {
   const updatedBlockList = [...blockList];
 
   const previousBlock = updatedBlockList[index - 1];
@@ -306,6 +311,25 @@ const mergeBlock = (index: number, blockList: ITextBlock[], setBlockList: (block
   }
 
   setBlockList(updatedBlockList);
+
+  const range = document.createRange();
+  const prevBlockLength = blockRef.current[index - 1]?.childNodes.length as number;
+  setTimeout(() => {
+    if (range) {
+      if (blockList[index - 1].type === 'ul' || blockList[index - 1].type === 'ol') {
+        (blockRef.current[index - 1]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
+      } else if (blockList[index - 1].type === 'quote') {
+        (blockRef.current[index - 1]?.parentNode?.parentNode as HTMLElement)?.focus();
+      } else {
+        (blockRef.current[index - 1]?.parentNode as HTMLElement)?.focus();
+      }
+      const selection = window.getSelection();
+      range?.setStart(blockRef.current[index - 1]?.childNodes[prevBlockLength] as Node, 0);
+
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    }
+  }, 0);
 };
 
 const mergeLine = (
@@ -478,7 +502,7 @@ const handleKeyDown = (
           setBlockList(updatedBlockList);
           focusCurrentBlock(index, blockRef, blockList);
         } else {
-          mergeBlock(index, blockList, setBlockList);
+          mergeBlock(index, blockList, setBlockList, blockRef);
         }
       } else {
         // 줄 합치기 로직
@@ -513,7 +537,7 @@ const handleKeyDown = (
           setBlockList(updatedBlockList);
           focusCurrentBlock(index, blockRef, blockList);
         } else {
-          mergeBlock(index, blockList, setBlockList);
+          mergeBlock(index, blockList, setBlockList, blockRef);
         }
       } else if (currentChildNodeIndex > 0) {
         mergeLine(index, currentChildNodeIndex, blockList, setBlockList);
