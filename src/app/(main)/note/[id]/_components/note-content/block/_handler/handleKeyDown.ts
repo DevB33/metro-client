@@ -177,9 +177,7 @@ const splitBlock = (
 
   setBlockList(updatedBlockList);
 
-  setTimeout(() => {
-    blockRef.current[index + 1]?.focus();
-  }, 0);
+  focusCurrentBlock(index + 1, blockRef, updatedBlockList);
 };
 
 const splitLine = (
@@ -460,6 +458,7 @@ const handleKeyDown = (
         const updatedBlockList = [...blockList];
         updatedBlockList[index].type = 'default';
         setBlockList(updatedBlockList);
+        focusCurrentBlock(index, blockRef, blockList);
       }
       return;
     }
@@ -477,6 +476,7 @@ const handleKeyDown = (
           const updatedBlockList = [...blockList];
           updatedBlockList[index].type = 'default';
           setBlockList(updatedBlockList);
+          focusCurrentBlock(index, blockRef, blockList);
         } else {
           mergeBlock(index, blockList, setBlockList);
         }
@@ -511,6 +511,7 @@ const handleKeyDown = (
           const updatedBlockList = [...blockList];
           updatedBlockList[index].type = 'default';
           setBlockList(updatedBlockList);
+          focusCurrentBlock(index, blockRef, blockList);
         } else {
           mergeBlock(index, blockList, setBlockList);
         }
