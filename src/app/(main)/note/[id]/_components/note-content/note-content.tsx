@@ -20,6 +20,7 @@ const blockContainer = css({
 const NoteContent = () => {
   const blockButtonRef = useRef<(HTMLDivElement | null)[]>([]);
   const blockRef = useRef<(HTMLDivElement | null)[]>([]);
+  const noteRef = useRef<HTMLDivElement | null>(null);
 
   const [blockList, setBlockList] = useState<ITextBlock[]>([
     {
@@ -39,12 +40,6 @@ const NoteContent = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isUp, setIsUp] = useState(false);
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const noteRef = useMouseUpOutside(handleMouseUp);
-
   const [selectionStartPosition, setSelectionStartPosition] = useState({
     blockIndex: 0,
     childNodeIndex: 0,
@@ -55,6 +50,11 @@ const NoteContent = () => {
     childNodeIndex: 0,
     offset: 0,
   });
+
+  const resetSelection = () => {
+    setSelectionStartPosition({ blockIndex: 0, childNodeIndex: 0, offset: 0 });
+    setSelectionEndPosition({ blockIndex: 0, childNodeIndex: 0, offset: 0 });
+  };
 
   const handleMouseEnter = (index: number) => {
     blockButtonRef.current[index]?.style.setProperty('display', 'flex');
@@ -88,6 +88,37 @@ const NoteContent = () => {
       grandParent.style.overflow = '';
     };
   }, [isSlashMenuOpen]);
+
+  useEffect(() => {
+    const handleMouseUp = (event: MouseEvent) => {
+      console.log(event.target);
+      if (blockRef.current.some(block => block?.contains(event.target as Node))) {
+        return;
+      }
+      if (noteRef.current && !noteRef.current.contains(event.target as Node)) {
+        setIsDragging(false);
+      }
+    };
+
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (blockRef.current.some(block => block?.contains(event.target as Node))) {
+        return;
+      }
+
+      if (noteRef.current && !noteRef.current.contains(event.target as Node)) {
+        resetSelection();
+        setKey(Math.random());
+      }
+    };
+
+    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('mousedown', handleOutsideClick, true);
+
+    return () => {
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.addEventListener('mousedown', handleOutsideClick);
+    };
+  }, []);
 
   return (
     <div key={key} ref={noteRef}>
