@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 import ITextBlock from '@/types/block-type';
+import { useMouseUpOutside } from '@/hooks/useClickOutside';
 import Block from './block/block';
 import BlockButton from './block-button';
 
@@ -19,7 +20,6 @@ const blockContainer = css({
 const NoteContent = () => {
   const blockButtonRef = useRef<(HTMLDivElement | null)[]>([]);
   const blockRef = useRef<(HTMLDivElement | null)[]>([]);
-  const noteRef = useRef<HTMLDivElement | null>(null);
 
   const [blockList, setBlockList] = useState<ITextBlock[]>([
     {
@@ -38,6 +38,12 @@ const NoteContent = () => {
 
   const [isDragging, setIsDragging] = useState(false);
   const [isUp, setIsUp] = useState(false);
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const noteRef = useMouseUpOutside(handleMouseUp);
 
   const [selectionStartPosition, setSelectionStartPosition] = useState({
     blockIndex: 0,
