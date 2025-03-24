@@ -6,6 +6,7 @@ import ITextBlock from '@/types/block-type';
 import Block from './block/block';
 import BlockButton from './block-button';
 import SelectionMenu from './block/selection-menu';
+import handleMouseUp from './block/_handler/handleMouseUp';
 
 const blockContainer = css({
   boxSizing: 'content-box',
@@ -65,52 +66,6 @@ const NoteContent = () => {
     blockButtonRef.current[index]?.style.setProperty('display', 'none');
   };
 
-  const handleMouseUp = () => {
-    const startParent = blockRef.current[selectionStartPosition.blockIndex];
-    const endParent = blockRef.current[selectionEndPosition.blockIndex];
-    if (!startParent || !endParent) return;
-
-    console.log('---start:', selectionStartPosition);
-    console.log('---end:', selectionEndPosition);
-
-    console.log('---start 좌표:', startParent.getBoundingClientRect().left, startParent.getBoundingClientRect().top);
-    console.log('---end 좌표:', endParent.getBoundingClientRect().left, endParent.getBoundingClientRect().top);
-
-    const startRect = startParent.getBoundingClientRect();
-    const startX = startRect.left;
-    const startY = startRect.top;
-
-    const endRect = endParent.getBoundingClientRect();
-    const endX = endRect.left;
-    const endY = endRect.top;
-
-    // selection이 없을 때, 다른 곳 클릭시 메뉴 닫기
-    if (
-      (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex &&
-        selectionStartPosition.childNodeIndex === selectionEndPosition.childNodeIndex &&
-        selectionStartPosition.offset === selectionEndPosition.offset) ||
-      selectionStartPosition.childNodeIndex === -1
-    ) {
-      setIsSelectionMenuOpen(false);
-      return;
-    }
-
-    if (startY <= endY) {
-      setSelectionMenuPosition({ x: startX, y: startY });
-      setIsSelectionMenuOpen(true);
-      console.log('위에서 아래로 드래그');
-    }
-
-    if (startY > endY) {
-      setSelectionMenuPosition({ x: endX, y: endY });
-      setIsSelectionMenuOpen(true);
-      console.log('아래에서 위로 드래그');
-    }
-
-    setIsSelectionMenuOpen(true);
-  };
-
-  // blockList 길이에 맞게 isSlashMenuOpen 배열을 다시 설정
   useEffect(() => {
     setIsSlashMenuOpen(Array(blockList.length).fill(false));
   }, [blockList.length]);
@@ -135,7 +90,15 @@ const NoteContent = () => {
     <div
       key={key}
       ref={noteRef}
-      onMouseUp={handleMouseUp}
+      onMouseUp={() =>
+        handleMouseUp(
+          blockRef,
+          selectionStartPosition,
+          selectionEndPosition,
+          setIsSelectionMenuOpen,
+          setSelectionMenuPosition,
+        )
+      }
       onMouseDown={() => setIsSelectionMenuOpen(false)}
       onKeyDown={() => setIsSelectionMenuOpen(false)}
     >

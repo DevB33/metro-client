@@ -1,4 +1,4 @@
-import { memo, useRef, useEffect, useState } from 'react';
+import { memo, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 
 import ITextBlock from '@/types/block-type';
@@ -10,6 +10,7 @@ import BlockTag from './block-tag';
 import handleMouseDown from './_handler/handleMouseDown';
 import handleMouseMove from './_handler/handleMouseMove';
 import SlashMenu from './slash-menu';
+import handleMouseUp from './_handler/handleMouseUp';
 
 interface IBlockComponent {
   block: ITextBlock;
@@ -71,9 +72,6 @@ const Block = memo(
     const prevChildNodesLength = useRef(0);
     const prevClientY = useRef(0);
 
-    // const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(true);
-    // const [selectionMenuPosition, setSelectionMenuPosition] = useState({ x: 0, y: 0 });
-
     useEffect(() => {
       prevChildNodesLength.current = blockList[index].children.length;
     }, [blockList, index]);
@@ -103,7 +101,10 @@ const Block = memo(
             setSlashMenuPosition,
           )
         }
-        onMouseUp={() => setIsDragging(false)}
+        onMouseUp={event => {
+          setIsDragging(false);
+          handleMouseUp(event, blockRef, index, selectionStartPosition, selectionEndPosition);
+        }}
         onMouseDown={event =>
           handleMouseDown(event, blockRef, index, setIsDragging, setIsTyping, setKey, setSelectionStartPosition)
         }
