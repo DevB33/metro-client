@@ -89,15 +89,15 @@ const NoteContent = () => {
     };
   }, [isSlashMenuOpen]);
 
+  const isDraggingRef = useRef(false);
+
   useEffect(() => {
     const handleMouseUp = (event: MouseEvent) => {
-      console.log(event.target);
       if (blockRef.current.some(block => block?.contains(event.target as Node))) {
         return;
       }
-      if (noteRef.current && !noteRef.current.contains(event.target as Node)) {
-        setIsDragging(false);
-      }
+      setIsDragging(false);
+      isDraggingRef.current = false;
     };
 
     const handleOutsideClick = (event: MouseEvent) => {
@@ -106,17 +106,27 @@ const NoteContent = () => {
       }
 
       if (noteRef.current && !noteRef.current.contains(event.target as Node)) {
+        setIsDragging(true);
+        isDraggingRef.current = true;
         resetSelection();
         setKey(Math.random());
       }
     };
 
+    const handleOutsideDrag = () => {
+      if (!isDraggingRef.current) return;
+      const selection = window.getSelection();
+      if (selection) selection.removeAllRanges();
+    };
+
     document.addEventListener('mouseup', handleMouseUp);
     document.addEventListener('mousedown', handleOutsideClick, true);
+    document.addEventListener('mousemove', handleOutsideDrag);
 
     return () => {
       document.removeEventListener('mouseup', handleMouseUp);
       document.addEventListener('mousedown', handleOutsideClick);
+      document.addEventListener('mousemove', handleOutsideDrag);
     };
   }, []);
 
