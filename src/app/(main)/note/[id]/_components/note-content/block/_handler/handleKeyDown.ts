@@ -279,6 +279,8 @@ const splitLine = (
 
     setBlockList(updatedBlockList);
   }
+
+  focusCurrentBlock(index, blockRef, blockList);
 };
 
 const mergeBlock = (
@@ -316,13 +318,6 @@ const mergeBlock = (
   const prevBlockLength = blockRef.current[index - 1]?.childNodes.length as number;
   setTimeout(() => {
     if (range) {
-      if (blockList[index - 1].type === 'ul' || blockList[index - 1].type === 'ol') {
-        (blockRef.current[index - 1]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
-      } else if (blockList[index - 1].type === 'quote') {
-        (blockRef.current[index - 1]?.parentNode?.parentNode as HTMLElement)?.focus();
-      } else {
-        (blockRef.current[index - 1]?.parentNode as HTMLElement)?.focus();
-      }
       const selection = window.getSelection();
       range?.setStart(blockRef.current[index - 1]?.childNodes[prevBlockLength] as Node, 0);
 
@@ -443,6 +438,7 @@ const handleKeyDown = (
   setIsSlashMenuOpen: (isSlashMenuOpen: boolean[]) => void,
   setSlashMenuPosition: (position: { x: number; y: number }) => void,
 ) => {
+  // enter 클릭
   if (event.key === keyName.enter && !event.shiftKey) {
     event.preventDefault();
     if (event.nativeEvent.isComposing) {
@@ -453,6 +449,7 @@ const handleKeyDown = (
     splitBlock(index, blockList, setBlockList, blockRef);
   }
 
+  // shift + enter 클릭
   if (event.key === keyName.enter && event.shiftKey) {
     event.preventDefault();
     setIsTyping(false);
@@ -460,6 +457,7 @@ const handleKeyDown = (
     splitLine(index, blockList, setBlockList, blockRef);
   }
 
+  // backspace 클릭
   if (event.key === keyName.backspace) {
     const { startOffset, startContainer } = getSelectionInfo(0) || {};
     if (startOffset === undefined || startOffset === null || !startContainer) return;
@@ -545,6 +543,7 @@ const handleKeyDown = (
     }
   }
 
+  // space 클릭
   if (event.key === keyName.space) {
     const { startOffset, startContainer } = getSelectionInfo(0) || {};
     if (startOffset === undefined || startOffset === null || !startContainer) return;
@@ -650,11 +649,97 @@ const handleKeyDown = (
     }
   }
 
-  if (event.key === '/') {
+  // slash 클릭
+  if (event.key === keyName.slash) {
     event.preventDefault();
     setIsTyping(false);
     setKey(Math.random());
     openSlashMenu(index, isSlashMenuOpen, blockRef, setIsSlashMenuOpen, setSlashMenuPosition);
+  }
+
+  // 방향키 클릭
+  if (
+    event.key === keyName.arrowUp ||
+    event.key === keyName.arrowDown ||
+    event.key === keyName.arrowLeft ||
+    event.key === keyName.arrowRight
+  ) {
+    const { range, startOffset, startContainer } = getSelectionInfo(0) || {};
+    const rect = range?.getBoundingClientRect() as DOMRect;
+    const cursorX = rect?.left ?? 0;
+    const firstChild = blockRef.current[index]?.childNodes[0];
+    const lastChild = blockRef.current[index]?.childNodes[(blockRef.current[index]?.childNodes.length as number) - 1];
+
+    // 이전 블록으로 커서 이동
+    if (event.key === keyName.arrowUp && index > 0) {
+      event.preventDefault();
+      const caret = document.caretPositionFromPoint(cursorX, rect.top - 10) as CaretPosition;
+      setTimeout(() => {
+        if (range) {
+          const { offsetNode, offset } = caret;
+
+          const newRange = document.createRange();
+          const selection = window.getSelection();
+
+          newRange.setStart(offsetNode, offset);
+          selection?.removeAllRanges();
+          selection?.addRange(newRange);
+        }
+      }, 0);
+    }
+
+    // 다음 블록으로 커서 이동
+    if (event.key === keyName.arrowDown && index < blockList.length - 1) {
+      event.preventDefault();
+      const caret = document.caretPositionFromPoint(cursorX, rect.bottom + 10) as CaretPosition;
+      setTimeout(() => {
+        if (range) {
+          const { offsetNode, offset } = caret;
+
+          const newRange = document.createRange();
+          const selection = window.getSelection();
+
+          newRange.setStart(offsetNode, offset);
+          selection?.removeAllRanges();
+          selection?.addRange(newRange);
+        }
+      }, 0);
+    }
+
+    // 블록의 맨 끝에서 오른쪽 방향키 클릭하면 다음 블록으로 커서 이동
+    if (
+      event.key === keyName.arrowRight &&
+      startOffset === (lastChild?.textContent?.length as number) &&
+      startContainer === lastChild &&
+      index < blockList.length - 1
+    ) {
+      event.preventDefault();
+      focusCurrentBlock(index + 1, blockRef, blockList);
+    }
+
+    // 블록의 맨 앞에서 왼쪽 방향키 클릭하면 이전 블록으로 커서 이동
+    if (event.key === keyName.arrowLeft && startOffset === 0 && startContainer === firstChild && index > 0) {
+      const prevBlockLastChild =
+        blockRef.current[index - 1]?.childNodes[(blockRef.current[index]?.childNodes.length as number) - 1];
+      setTimeout(() => {
+        if (range) {
+          if (blockList[index - 1].type === 'ul' || blockList[index - 1].type === 'ol') {
+            (blockRef.current[index - 1]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
+          } else if (blockList[index - 1].type === 'quote') {
+            (blockRef.current[index - 1]?.parentNode?.parentNode as HTMLElement)?.focus();
+          } else {
+            (blockRef.current[index - 1]?.parentNode as HTMLElement)?.focus();
+          }
+
+          const selection = window.getSelection();
+          range?.setStart(prevBlockLastChild as Node, prevBlockLastChild?.textContent?.length as number);
+          range.collapse(true);
+
+          selection?.removeAllRanges();
+          selection?.addRange(range);
+        }
+      }, 0);
+    }
   }
 };
 
