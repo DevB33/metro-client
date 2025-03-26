@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 import ITextBlock from '@/types/block-type';
-import { useMouseUpOutside } from '@/hooks/useClickOutside';
 import Block from './block/block';
 import BlockButton from './block-button';
 
@@ -15,6 +14,7 @@ const blockContainer = css({
   flexDirection: 'row',
   px: '5rem',
   mb: '0.5rem',
+  pointerEvents: 'none',
 });
 
 const NoteContent = () => {
@@ -91,6 +91,8 @@ const NoteContent = () => {
 
   const isDraggingRef = useRef(false);
 
+  const prevClientY = useRef(0);
+
   useEffect(() => {
     const handleMouseUp = (event: MouseEvent) => {
       if (blockRef.current.some(block => block?.contains(event.target as Node))) {
@@ -112,7 +114,14 @@ const NoteContent = () => {
       }
     };
 
-    const handleOutsideDrag = () => {
+    const handleOutsideDrag = (event: MouseEvent) => {
+      if (prevClientY.current < event.clientY) {
+        setIsUp(false);
+        prevClientY.current = event.clientY;
+      } else if (prevClientY.current > event.clientY) {
+        setIsUp(true);
+        prevClientY.current = event.clientY;
+      }
       if (!isDraggingRef.current) return;
       const selection = window.getSelection();
       if (selection) selection.removeAllRanges();
@@ -130,7 +139,7 @@ const NoteContent = () => {
   }, []);
 
   return (
-    <div key={key} ref={noteRef}>
+    <div style={{ pointerEvents: 'none' }} key={key} ref={noteRef}>
       {blockList.map((block, index) => (
         <div
           role="button"
@@ -143,7 +152,7 @@ const NoteContent = () => {
           onMouseMove={() => handleMouseEnter(index)}
         >
           <div
-            className={css({ display: 'none' })}
+            className={css({ display: 'none', pointerEvents: 'none' })}
             ref={element => {
               blockButtonRef.current[index] = element;
             }}

@@ -10,6 +10,7 @@ const blockBtnContainer = css({
   transform: 'translateY(-50%)',
   display: 'flex',
   flexDirection: 'row',
+  pointerEvents: 'none',
 });
 
 const blockBtn = css({
@@ -21,6 +22,7 @@ const blockBtn = css({
   justifyContent: 'center',
   borderRadius: '0.5rem',
   cursor: 'pointer',
+  pointerEvents: 'auto',
 
   _hover: {
     backgroundColor: '#F1F1F0',
