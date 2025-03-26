@@ -105,8 +105,7 @@ const NoteContent = () => {
         return;
       }
 
-      if (noteRef.current && !noteRef.current.contains(event.target as Node)) {
-        setIsDragging(true);
+      if (blockRef.current && !blockRef.current.some(block => block?.contains(event.target as Node))) {
         isDraggingRef.current = true;
         resetSelection();
         setKey(Math.random());
