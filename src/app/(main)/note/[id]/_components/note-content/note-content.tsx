@@ -87,65 +87,77 @@ const NoteContent = () => {
   }, [isSlashMenuOpen]);
 
   return (
-    <div
-      key={key}
-      ref={noteRef}
-      onMouseUp={() =>
-        handleMouseUp(
-          blockRef,
-          selectionStartPosition,
-          selectionEndPosition,
-          setIsSelectionMenuOpen,
-          setSelectionMenuPosition,
-        )
-      }
-      onMouseDown={() => setIsSelectionMenuOpen(false)}
-      onKeyDown={() => setIsSelectionMenuOpen(false)}
-    >
-      {blockList.map((block, index) => (
-        <div
-          role="button"
-          tabIndex={0}
-          key={block.id}
-          className={blockContainer}
-          onMouseEnter={() => handleMouseEnter(index)}
-          onMouseLeave={() => handleMouseLeave(index)}
-          onKeyDown={() => handleMouseLeave(index)}
-          onMouseMove={() => handleMouseEnter(index)}
-        >
+    <div>
+      <div
+        key={key}
+        ref={noteRef}
+        onMouseUp={() =>
+          handleMouseUp(
+            blockRef,
+            selectionStartPosition,
+            selectionEndPosition,
+            setIsSelectionMenuOpen,
+            setSelectionMenuPosition,
+          )
+        }
+        onMouseDown={() => setIsSelectionMenuOpen(false)}
+        onKeyDown={() => setIsSelectionMenuOpen(false)}
+      >
+        {blockList.map((block, index) => (
           <div
-            className={css({ display: 'none' })}
-            ref={element => {
-              blockButtonRef.current[index] = element;
-            }}
+            role="button"
+            tabIndex={0}
+            key={block.id}
+            className={blockContainer}
+            onMouseEnter={() => handleMouseEnter(index)}
+            onMouseLeave={() => handleMouseLeave(index)}
+            onKeyDown={() => handleMouseLeave(index)}
+            onMouseMove={() => handleMouseEnter(index)}
           >
-            <BlockButton />
+            <div
+              className={css({ display: 'none' })}
+              ref={element => {
+                blockButtonRef.current[index] = element;
+              }}
+            >
+              <BlockButton />
+            </div>
+            <Block
+              index={index}
+              block={block}
+              blockRef={blockRef}
+              blockList={blockList}
+              setBlockList={setBlockList}
+              isTyping={isTyping}
+              setIsTyping={setIsTyping}
+              setKey={setKey}
+              isDragging={isDragging}
+              setIsDragging={setIsDragging}
+              isUp={isUp}
+              setIsUp={setIsUp}
+              selectionStartPosition={selectionStartPosition}
+              setSelectionStartPosition={setSelectionStartPosition}
+              selectionEndPosition={selectionEndPosition}
+              setSelectionEndPosition={setSelectionEndPosition}
+              isSlashMenuOpen={isSlashMenuOpen}
+              setIsSlashMenuOpen={setIsSlashMenuOpen}
+              slashMenuPosition={slashMenuPosition}
+              setSlashMenuPosition={setSlashMenuPosition}
+            />
           </div>
-          <Block
-            index={index}
-            block={block}
-            blockRef={blockRef}
-            blockList={blockList}
-            setBlockList={setBlockList}
-            isTyping={isTyping}
-            setIsTyping={setIsTyping}
-            setKey={setKey}
-            isDragging={isDragging}
-            setIsDragging={setIsDragging}
-            isUp={isUp}
-            setIsUp={setIsUp}
-            selectionStartPosition={selectionStartPosition}
-            setSelectionStartPosition={setSelectionStartPosition}
-            selectionEndPosition={selectionEndPosition}
-            setSelectionEndPosition={setSelectionEndPosition}
-            isSlashMenuOpen={isSlashMenuOpen}
-            setIsSlashMenuOpen={setIsSlashMenuOpen}
-            slashMenuPosition={slashMenuPosition}
-            setSlashMenuPosition={setSlashMenuPosition}
-          />
-        </div>
-      ))}
-      {isSelectionMenuOpen && <SelectionMenu position={selectionMenuPosition} />}
+        ))}
+      </div>
+      {isSelectionMenuOpen && (
+        <SelectionMenu
+          position={selectionMenuPosition}
+          setKey={setKey}
+          selectionStartPosition={selectionStartPosition}
+          selectionEndPosition={selectionEndPosition}
+          blockList={blockList}
+          setBlockList={setBlockList}
+          blockRef={blockRef}
+        />
+      )}
     </div>
   );
 };

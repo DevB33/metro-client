@@ -1,13 +1,22 @@
 import { css } from '@/../styled-system/css';
 
+import ISelectionPosition from '@/types/selection-position';
+import ITextBlock from '@/types/block-type';
 import BoldIcon from '@/icons/bold-icon';
 import ItalicIcon from '@/icons/italic-icon';
 import UnderlineIcon from '@/icons/underline-icon';
 import StrikethroughIcon from '@/icons/strikethrough-icon';
 import CodeblockIcon from '@/icons/codeblock-icon';
+import selectionChange from './selectionChange';
 
 interface ISelectionMenuProps {
   position: { x: number; y: number };
+  setKey: (key: number) => void;
+  selectionStartPosition: ISelectionPosition;
+  selectionEndPosition: ISelectionPosition;
+  blockList: ITextBlock[];
+  setBlockList: (blockList: ITextBlock[]) => void;
+  blockRef: React.RefObject<(HTMLDivElement | null)[]>;
 }
 
 const menu = css({
@@ -48,13 +57,25 @@ const MENU_ITEMS: {
   { label: 'Codeblock', icon: <CodeblockIcon color="black" /> },
 ];
 
-const SelectionMenu = ({ position }: ISelectionMenuProps) => {
+const selectionMenu = ({
+  position,
+  setKey,
+  selectionStartPosition,
+  selectionEndPosition,
+  blockList,
+  setBlockList,
+  blockRef,
+}: ISelectionMenuProps) => {
   const menuHeight = 3;
 
-  const changeBlock = () => {};
+  const changeBlock = () => {
+    console.log('change block');
+    selectionChange(selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
+    setKey(Math.random());
+  };
 
-  console.log('selection ON');
-  console.log('selection position', position);
+  // console.log('selection ON');
+  // console.log('selection position', position);
 
   return (
     <div style={{ top: `calc(${position.y}px - ${menuHeight}rem)`, left: position.x }} className={menu}>
@@ -67,4 +88,4 @@ const SelectionMenu = ({ position }: ISelectionMenuProps) => {
   );
 };
 
-export default SelectionMenu;
+export default selectionMenu;

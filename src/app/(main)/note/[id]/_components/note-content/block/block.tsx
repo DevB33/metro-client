@@ -10,7 +10,6 @@ import BlockTag from './block-tag';
 import handleMouseDown from './_handler/handleMouseDown';
 import handleMouseMove from './_handler/handleMouseMove';
 import SlashMenu from './slash-menu';
-import handleMouseUp from './_handler/handleMouseUp';
 
 interface IBlockComponent {
   block: ITextBlock;
@@ -101,9 +100,8 @@ const Block = memo(
             setSlashMenuPosition,
           )
         }
-        onMouseUp={event => {
+        onMouseUp={() => {
           setIsDragging(false);
-          handleMouseUp(event, blockRef, index, selectionStartPosition, selectionEndPosition);
         }}
         onMouseDown={event =>
           handleMouseDown(event, blockRef, index, setIsDragging, setIsTyping, setKey, setSelectionStartPosition)

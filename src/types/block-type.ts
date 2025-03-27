@@ -12,7 +12,7 @@ interface ITextBlockChild {
 
 interface IBlockStyle {
   fontStyle: 'normal' | string;
-  fontWeight: 'regular' | string;
+  fontWeight: 'regular' | 'bold' | string;
   color: 'black' | string;
   backgroundColor: 'white' | string;
   width: number | string;
