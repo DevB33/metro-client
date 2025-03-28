@@ -264,6 +264,19 @@ const splitLine = (
       ...updatedBlockList[index],
       children: updatedChildren as ITextBlock['children'],
     };
+
+    setBlockList(updatedBlockList);
+  } else if ((startContainer as HTMLElement).tagName === 'BR') {
+    const updatedBlockList = [...blockList];
+    if (updatedBlockList[index].children.length === 1 && updatedBlockList[index].children[0].content === '') {
+      updatedBlockList[index].children[0] = {
+        type: 'br',
+      };
+    }
+    updatedBlockList[index].children.splice(currentChildNodeIndex, 0, {
+      type: 'br',
+    });
+
     setBlockList(updatedBlockList);
   } else {
     // 현재 커서 위치 한 곳이 빈 문자열일 때 → 중복 줄바꿈 로직
@@ -280,7 +293,24 @@ const splitLine = (
     setBlockList(updatedBlockList);
   }
 
-  focusCurrentBlock(index, blockRef, blockList);
+  setTimeout(() => {
+    const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
+    const range = document.createRange();
+    if (
+      (currentChildNodeIndex === 0 && startOffset === 0) ||
+      (childNodes[currentChildNodeIndex - 1]?.nodeName === 'BR' && startOffset === 0)
+    ) {
+      range.setStart(newChildNodes[currentChildNodeIndex + 1], 0);
+    } else if (currentChildNodeIndex === -1) {
+      range.setStart(newChildNodes[startOffset + 1], 0);
+    } else {
+      range.setStart(newChildNodes[currentChildNodeIndex + 2], 0);
+    }
+
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  }, 0);
 };
 
 const mergeBlock = (
@@ -666,7 +696,7 @@ const handleKeyDown = (
   ) {
     const { range, startOffset, startContainer } = getSelectionInfo(0) || {};
     const rect = range?.getBoundingClientRect() as DOMRect;
-    const cursorX = rect?.left ?? 0;
+    const cursorX = rect?.left;
     const firstChild = blockRef.current[index]?.childNodes[0];
     const lastChild = blockRef.current[index]?.childNodes[(blockRef.current[index]?.childNodes.length as number) - 1];
 
@@ -732,7 +762,7 @@ const handleKeyDown = (
           }
 
           const selection = window.getSelection();
-          range?.setStart(prevBlockLastChild as Node, prevBlockLastChild?.textContent?.length as number);
+          range?.setStart(prevBlockLastChild as Node, 4);
           range.collapse(true);
 
           selection?.removeAllRanges();
