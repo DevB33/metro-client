@@ -1,9 +1,11 @@
+import ITextBlock from '@/types/block-type';
 import ISelectionPosition from '@/types/selection-position';
 
 const handleMouseDown = (
   event: React.MouseEvent<HTMLDivElement>,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   index: number,
+  blockList: ITextBlock[],
   setIsDragging: React.Dispatch<React.SetStateAction<boolean>>,
   setIsTyping: React.Dispatch<React.SetStateAction<boolean>>,
   setKey: React.Dispatch<React.SetStateAction<number>>,
@@ -31,6 +33,17 @@ const handleMouseDown = (
   });
 
   setTimeout(() => {
+    // 블 블록일 때 클릭 한 블록에 focus
+    if (blockList[index].children.length === 1 && blockList[index].children[0].content === '') {
+      if (blockList[index].type === 'ul' || blockList[index].type === 'ol') {
+        (blockRef.current[index]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
+      } else if (blockList[index].type === 'quote') {
+        (blockRef.current[index]?.parentNode?.parentNode as HTMLElement)?.focus();
+      } else {
+        (blockRef.current[index]?.parentNode as HTMLElement)?.focus();
+      }
+    }
+
     if (range) {
       const selection = window.getSelection();
       if (currentChildNodeIndex === -1) return;
