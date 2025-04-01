@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 import ITextBlock from '@/types/block-type';
+import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundImage';
+import ISelectionPosition from '@/types/selection-position';
 import Block from './block/block';
 import BlockButton from './block-button';
 
@@ -14,7 +16,17 @@ const blockContainer = css({
   flexDirection: 'row',
   px: '5rem',
   mb: '0.5rem',
-  pointerEvents: 'none',
+});
+
+const fakeBox = css({
+  position: 'fixed',
+  left: '0',
+  right: '0',
+  width: '100vw',
+  height: 'var(--block-height)',
+  zIndex: '-1',
+
+  pointerEvents: 'auto',
 });
 
 const NoteContent = () => {
@@ -51,12 +63,26 @@ const NoteContent = () => {
     offset: 0,
   });
 
+  const updateBlockButtonPosition = (index: number) => {
+    const blockEl = blockRef.current[index];
+    const buttonEl = blockButtonRef.current[index];
+
+    if (blockEl && buttonEl) {
+      const rect = blockEl.getBoundingClientRect();
+      buttonEl.style.position = 'absolute';
+      buttonEl.style.top = '12px';
+      buttonEl.style.right = `${rect.right + 24}px`;
+      buttonEl.style.display = 'flex';
+    }
+  };
+
   const resetSelection = () => {
     setSelectionStartPosition({ blockIndex: 0, childNodeIndex: 0, offset: 0 });
     setSelectionEndPosition({ blockIndex: 0, childNodeIndex: 0, offset: 0 });
   };
 
   const handleMouseEnter = (index: number) => {
+    updateBlockButtonPosition(index);
     blockButtonRef.current[index]?.style.setProperty('display', 'flex');
   };
 
@@ -138,6 +164,114 @@ const NoteContent = () => {
     };
   }, []);
 
+  const fakeBoxRef = useRef<(HTMLDivElement | null)[]>([]);
+
+  const getNodeBounds = (node: Node, startOffset: number, endOffset: number) => {
+    const range = document.createRange();
+    range.setStart(node as Node, startOffset);
+    range.setEnd(node as Node, endOffset);
+    return range.getBoundingClientRect();
+  };
+
+  const handleFakeBoxMouseEnter = (index: number) => {
+    if (!isDragging) return;
+    const parent = blockRef.current[index];
+    const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+
+    setSelectionEndPosition((prev: ISelectionPosition) => ({
+      ...prev,
+      blockIndex: index,
+    }));
+
+    let left = 99999;
+    let right = 0;
+
+    childNodes.forEach(childNode => {
+      const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
+      left = Math.min(left, rect.left);
+      right = Math.max(right, rect.right);
+      const blockElement = blockRef.current[index];
+      const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+
+      if (!blockElement) return;
+      fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+    });
+  };
+
+  const handleFakeBoxMouseLeave = (index: number) => {
+    if (!isDragging) return;
+
+    const parent = blockRef.current[index];
+    const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+
+    if (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex) {
+      if (isUp && selectionStartPosition.blockIndex === 0) {
+        const el = blockRef.current[index];
+        if (!el) return;
+        el.style.backgroundImage = `none`;
+      }
+    }
+
+    // 아래로 드래그한 상태에서 블록을 떠날 때
+    if (selectionStartPosition.blockIndex < selectionEndPosition.blockIndex) {
+      if (index === selectionEndPosition.blockIndex && isUp) {
+        const el = blockRef.current[index];
+        if (!el) return;
+        el.style.backgroundImage = `none`;
+      }
+      // 아래로 드래그 할 때
+      if (index !== selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex && !isUp) {
+        let left = 99999;
+        let right = 0;
+        childNodes.forEach(childNode => {
+          const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
+          left = Math.min(left, rect.left);
+          right = Math.max(right, rect.right);
+          const blockElement = blockRef.current[index];
+          const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+          if (!blockElement) return;
+          fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+        });
+      }
+    }
+    // 위로 드래그한 상태에서 블록을 떠날 때
+    if (selectionStartPosition.blockIndex > selectionEndPosition.blockIndex) {
+      // 아래로 드래그 할 때
+      if (index !== selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex && !isUp) {
+        const el = blockRef.current[index];
+        if (!el) return;
+        el.style.backgroundImage = `none`;
+      }
+
+      // 위로 드래그 할 때
+      if (index !== selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex && isUp) {
+        let left = 99999;
+        let right = 0;
+        childNodes.forEach(childNode => {
+          const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
+          left = Math.min(left, rect.left);
+          right = Math.max(right, rect.right);
+          const blockElement = blockRef.current[index];
+          const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+          if (!blockElement) return;
+          fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+        });
+      }
+    }
+  };
+
+  useEffect(() => {
+    // 각 블록에 대해 반복하여 해당하는 fakeBox 높이 설정
+    blockRef.current.forEach((block, index) => {
+      if (block && fakeBoxRef.current[index]) {
+        const blockHeight = block.offsetHeight;
+        if (blockHeight) {
+          fakeBoxRef.current[index]?.style.setProperty('height', `${blockHeight}px`);
+        }
+      }
+    });
+  }, [key, blockList]);
+
   return (
     <div style={{ pointerEvents: 'none' }} key={key} ref={noteRef}>
       {blockList.map((block, index) => (
@@ -152,13 +286,23 @@ const NoteContent = () => {
           onMouseMove={() => handleMouseEnter(index)}
         >
           <div
-            className={css({ display: 'none', pointerEvents: 'none' })}
+            className={fakeBox}
             ref={element => {
-              blockButtonRef.current[index] = element;
+              fakeBoxRef.current[index] = element;
             }}
+            onMouseEnter={() => handleFakeBoxMouseEnter(index)}
+            onMouseLeave={() => handleFakeBoxMouseLeave(index)}
           >
-            <BlockButton />
+            <div
+              className={css({ display: 'none' })}
+              ref={element => {
+                blockButtonRef.current[index] = element;
+              }}
+            >
+              <BlockButton />
+            </div>
           </div>
+
           <Block
             index={index}
             block={block}
