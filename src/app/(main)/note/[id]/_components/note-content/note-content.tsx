@@ -83,7 +83,6 @@ const NoteContent = () => {
 
   const handleMouseEnter = (index: number) => {
     updateBlockButtonPosition(index);
-    blockButtonRef.current[index]?.style.setProperty('display', 'flex');
   };
 
   const handleMouseLeave = (index: number) => {
@@ -141,6 +140,7 @@ const NoteContent = () => {
     };
 
     const handleOutsideDrag = (event: MouseEvent) => {
+      console.log(isDraggingRef.current);
       if (prevClientY.current < event.clientY) {
         setIsUp(false);
         prevClientY.current = event.clientY;
