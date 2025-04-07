@@ -11,7 +11,6 @@ import handleMouseDown from './_handler/handleMouseDown';
 import handleMouseMove from './_handler/handleMouseMove';
 import SlashMenu from './slash-menu';
 
-
 interface IBlockComponent {
   block: ITextBlock;
   index: number;
@@ -36,6 +35,7 @@ interface IBlockComponent {
 }
 
 const blockDiv = css({
+  pointerEvents: 'auto',
   boxSizing: 'border-box',
   width: 'full',
   minHeight: '1.5rem',
@@ -44,6 +44,7 @@ const blockDiv = css({
   overflowY: 'hidden',
   flexShrink: 0,
   userSelect: 'none',
+  '--block-height': 'auto',
 });
 
 const Block = memo(

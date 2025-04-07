@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { css } from '@/../styled-system/css';
-import useClickOutside from '@/hooks/useClickOutside';
+import { useClickOutside } from '@/hooks/useClickOutside';
 import DropDownItem from './dropdown-item';
 import DropDownMenu from './dropdown-menu';
 
