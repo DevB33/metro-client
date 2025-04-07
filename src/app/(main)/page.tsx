@@ -1,4 +1,5 @@
 import { css } from '@/../styled-system/css';
+import Example from './_components/chart/chart';
 
 const homePage = css({
   display: 'flex',
@@ -17,14 +18,15 @@ const welcomeBanner = css({
 const visualContainer = css({
   width: '80%',
   height: '60%',
-  backgroundColor: 'grey',
 });
 
 const Home = () => {
   return (
     <div className={homePage}>
       <div className={welcomeBanner}>김기원 님, 안녕하세요.</div>
-      <div className={visualContainer}>sdf</div>
+      <div className={visualContainer}>
+        <Example width={1300} height={600} />
+      </div>
     </div>
   );
 };
