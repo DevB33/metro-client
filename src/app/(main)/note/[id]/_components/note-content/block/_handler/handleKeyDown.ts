@@ -267,6 +267,8 @@ const splitLine = (
 
     setBlockList(updatedBlockList);
   } else if ((startContainer as HTMLElement).tagName === 'BR') {
+    // 현재 커서 위치 한 곳이 빈 문자열일 때 → 중복 줄바꿈 로직
+    // 직접 focus를 줄 때는 startContainer가 <br>로 잡힘
     const updatedBlockList = [...blockList];
     if (updatedBlockList[index].children.length === 1 && updatedBlockList[index].children[0].content === '') {
       updatedBlockList[index].children[0] = {
@@ -280,6 +282,7 @@ const splitLine = (
     setBlockList(updatedBlockList);
   } else {
     // 현재 커서 위치 한 곳이 빈 문자열일 때 → 중복 줄바꿈 로직
+    // 직접 focus를 주지 않을 때는 startContainer가 부모로 잡혀 text node와 br이 아님
     const updatedBlockList = [...blockList];
     if (updatedBlockList[index].children.length === 1 && updatedBlockList[index].children[0].content === '') {
       updatedBlockList[index].children[0] = {
@@ -296,15 +299,18 @@ const splitLine = (
   setTimeout(() => {
     const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
     const range = document.createRange();
+
     if (
       (currentChildNodeIndex === 0 && startOffset === 0) ||
       (childNodes[currentChildNodeIndex - 1]?.nodeName === 'BR' && startOffset === 0)
     ) {
+      // 줄의 맨 앞에 커서를 두고 줄바꿈 했을 때
       range.setStart(newChildNodes[currentChildNodeIndex + 1], 0);
     } else if (currentChildNodeIndex === -1) {
+      // 직접 focus를 주지 않은 상태에서 빈 줄에서 줄바꿈 했을 때
       range.setStart(newChildNodes[startOffset + 1], 0);
     } else {
-      range.setStart(newChildNodes[currentChildNodeIndex + 2], 0);
+      range.setStart(newChildNodes[startOffset === 0 ? currentChildNodeIndex + 1 : currentChildNodeIndex + 2], 0);
     }
 
     const selection = window.getSelection();
@@ -361,6 +367,7 @@ const mergeLine = (
   index: number,
   currentChildNodeIndex: number,
   blockList: ITextBlock[],
+  blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   setBlockList: (blockList: ITextBlock[]) => void,
 ) => {
   const updatedBlockList = [...blockList];
@@ -369,6 +376,25 @@ const mergeLine = (
   updatedBlockList[index] = { ...updatedBlockList[index], children: newChildren };
 
   setBlockList(updatedBlockList);
+
+  setTimeout(() => {
+    const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
+    const range = document.createRange();
+
+    if (newChildNodes[currentChildNodeIndex - 1]?.nodeName === 'BR') {
+      range.setStart(newChildNodes[currentChildNodeIndex - 1], 0);
+    } else {
+      range.setStart(
+        newChildNodes[currentChildNodeIndex - 2],
+        newChildNodes[currentChildNodeIndex - 2].textContent?.length as number,
+      );
+    }
+
+    const selection = window.getSelection();
+
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  }, 0);
 };
 
 const openSlashMenu = (
@@ -548,6 +574,18 @@ const handleKeyDown = (
         }
 
         setBlockList(updatedBlockList);
+
+        setTimeout(() => {
+          const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
+          const range = document.createRange();
+
+          range.setStart(newChildNodes[startOffset - 2], newChildNodes[startOffset - 2].textContent?.length as number);
+
+          const selection = window.getSelection();
+
+          selection?.removeAllRanges();
+          selection?.addRange(range);
+        }, 0);
       }
 
       return;
@@ -555,10 +593,11 @@ const handleKeyDown = (
 
     // 줄 또는 블록 합치기 로직
     if (startOffset === 0) {
-      event.preventDefault();
-      setIsTyping(false);
-      setKey(Math.random());
       if (currentChildNodeIndex <= 0) {
+        event.preventDefault();
+        setIsTyping(false);
+        setKey(Math.random());
+
         if (blockList[index].type !== 'default') {
           const updatedBlockList = [...blockList];
           updatedBlockList[index].type = 'default';
@@ -568,7 +607,13 @@ const handleKeyDown = (
           mergeBlock(index, blockList, setBlockList, blockRef);
         }
       } else if (currentChildNodeIndex > 0) {
-        mergeLine(index, currentChildNodeIndex, blockList, setBlockList);
+        if (blockList[index].children[currentChildNodeIndex - 1].type === 'br') {
+          event.preventDefault();
+          setIsTyping(false);
+          setKey(Math.random());
+
+          mergeLine(index, currentChildNodeIndex, blockList, blockRef, setBlockList);
+        }
       }
     }
   }
