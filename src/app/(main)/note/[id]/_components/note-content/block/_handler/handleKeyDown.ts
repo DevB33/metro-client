@@ -381,7 +381,7 @@ const mergeLine = (
     const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
     const range = document.createRange();
 
-    if (newChildNodes[currentChildNodeIndex - 1]?.nodeName === 'BR') {
+    if (newChildNodes[currentChildNodeIndex - 2]?.nodeName === 'BR' || currentChildNodeIndex === 1) {
       range.setStart(newChildNodes[currentChildNodeIndex - 1], 0);
     } else {
       range.setStart(
@@ -528,11 +528,12 @@ const handleKeyDown = (
     // 첫 블록 첫 커서일 때
     if (index === 0 && (currentChildNodeIndex === -1 || currentChildNodeIndex === 0) && startOffset === 0) {
       event.preventDefault();
-      setIsTyping(false);
-      setKey(Math.random());
 
       // default 블록이 아닐 때는 default로 변경
       if (blockList[index].type !== 'default') {
+        setIsTyping(false);
+        setKey(Math.random());
+
         const updatedBlockList = [...blockList];
         updatedBlockList[index].type = 'default';
         setBlockList(updatedBlockList);
@@ -579,7 +580,7 @@ const handleKeyDown = (
           const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
           const range = document.createRange();
 
-          range.setStart(newChildNodes[startOffset - 2], newChildNodes[startOffset - 2].textContent?.length as number);
+          range.setStart(newChildNodes[startOffset - 1], newChildNodes[startOffset - 1].textContent?.length as number);
 
           const selection = window.getSelection();
 
