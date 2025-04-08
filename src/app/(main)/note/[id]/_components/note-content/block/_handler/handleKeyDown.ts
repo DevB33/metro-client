@@ -175,6 +175,10 @@ const splitBlock = (
     children: newAfterBlock,
   });
 
+  if (updatedBlockList[index + 1].children.length === 2 && updatedBlockList[index + 1].children[0].type === 'br') {
+    updatedBlockList[index + 1].children.shift();
+  }
+
   setBlockList(updatedBlockList);
 
   focusCurrentBlock(index + 1, blockRef, updatedBlockList);
@@ -334,6 +338,7 @@ const mergeBlock = (
   if (previousBlock.children[previousBlock.children.length - 1].type === 'br') {
     previousBlock.children.pop();
   }
+
   const updatedChildren = [...previousBlock.children, ...currentBlock.children];
 
   updatedBlockList[index - 1].children = updatedChildren;
@@ -351,12 +356,25 @@ const mergeBlock = (
   setBlockList(updatedBlockList);
 
   const range = document.createRange();
-  const prevBlockLength = blockRef.current[index - 1]?.childNodes.length as number;
   setTimeout(() => {
     if (range) {
+      const prevBlock = blockRef.current[index - 1];
+      const prevBlockLength = prevBlock?.childNodes.length as number;
       const selection = window.getSelection();
-      range?.setStart(blockRef.current[index - 1]?.childNodes[prevBlockLength] as Node, 0);
 
+      if (
+        prevBlock?.childNodes[0]?.nodeName !== 'BR' &&
+        currentBlock.children.length === 1 &&
+        currentBlock.children[0].type === 'text' &&
+        currentBlock.children[0].content === ''
+      ) {
+        range?.setStart(
+          prevBlock?.childNodes[prevBlockLength - 1] as Node,
+          prevBlock?.childNodes[prevBlockLength - 1].textContent?.length as number,
+        );
+      } else {
+        range?.setStart(prevBlock?.childNodes[prevBlockLength - 1] as Node, 0);
+      }
       selection?.removeAllRanges();
       selection?.addRange(range);
     }
@@ -808,7 +826,7 @@ const handleKeyDown = (
           }
 
           const selection = window.getSelection();
-          range?.setStart(prevBlockLastChild as Node, 4);
+          range?.setStart(prevBlockLastChild as Node, prevBlockLastChild?.textContent?.length as number);
           range.collapse(true);
 
           selection?.removeAllRanges();
