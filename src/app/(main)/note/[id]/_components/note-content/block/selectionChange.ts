@@ -11,6 +11,7 @@ const createNewStyle = (type: string, beforeStyle: IBlockStyle) => {
       backgroundColor: beforeStyle.backgroundColor,
       width: beforeStyle.width,
       height: beforeStyle.height,
+      borderRadius: beforeStyle.borderRadius,
     };
   }
   if (type === 'italic') {
@@ -22,6 +23,7 @@ const createNewStyle = (type: string, beforeStyle: IBlockStyle) => {
       backgroundColor: beforeStyle.backgroundColor,
       width: beforeStyle.width,
       height: beforeStyle.height,
+      borderRadius: beforeStyle.borderRadius,
     };
   }
   if (type === 'underline') {
@@ -33,6 +35,7 @@ const createNewStyle = (type: string, beforeStyle: IBlockStyle) => {
       backgroundColor: beforeStyle.backgroundColor,
       width: beforeStyle.width,
       height: beforeStyle.height,
+      borderRadius: beforeStyle.borderRadius,
     };
   }
   if (type === 'strikethrough') {
@@ -44,6 +47,7 @@ const createNewStyle = (type: string, beforeStyle: IBlockStyle) => {
       backgroundColor: beforeStyle.backgroundColor,
       width: beforeStyle.width,
       height: beforeStyle.height,
+      borderRadius: beforeStyle.borderRadius,
     };
   }
   if (type === 'codeblock') {
@@ -51,10 +55,12 @@ const createNewStyle = (type: string, beforeStyle: IBlockStyle) => {
       fontWeight: beforeStyle.fontWeight,
       fontStyle: beforeStyle.fontStyle,
       textDecoration: beforeStyle.textDecoration,
-      color: beforeStyle.color === 'red' ? 'white' : 'red',
-      backgroundColor: beforeStyle.backgroundColor === 'lightgrey' ? 'white' : 'lightgrey',
+      color: beforeStyle.color === 'red' ? 'black' : 'red',
+      backgroundColor:
+        beforeStyle.backgroundColor === 'rgba(161, 161, 161, 0.5)' ? 'transparent' : 'rgba(161, 161, 161, 0.5)',
       width: beforeStyle.width,
       height: beforeStyle.height,
+      borderRadius: beforeStyle.borderRadius === 3 ? 0 : 3,
     };
   }
 };
@@ -67,6 +73,7 @@ const defaultStyle = {
   backgroundColor: 'transparent',
   width: 'auto',
   height: 'auto',
+  borderRadius: '0',
 };
 
 const selectionChange = (
