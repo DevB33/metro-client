@@ -598,8 +598,17 @@ const handleKeyDown = (
           const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
           const range = document.createRange();
 
-          range.setStart(newChildNodes[startOffset - 1], newChildNodes[startOffset - 1].textContent?.length as number);
-
+          if (blockRef.current[index]?.childNodes[startOffset - 1]) {
+            range.setStart(
+              newChildNodes[startOffset - 1],
+              newChildNodes[startOffset - 1].textContent?.length as number,
+            );
+          } else {
+            range.setStart(
+              newChildNodes[startOffset - 2],
+              newChildNodes[startOffset - 2].textContent?.length as number,
+            );
+          }
           const selection = window.getSelection();
 
           selection?.removeAllRanges();
@@ -768,43 +777,52 @@ const handleKeyDown = (
     if (event.key === keyName.arrowUp && index > 0) {
       event.preventDefault();
       const caret = document.caretPositionFromPoint(cursorX, rect.top - 10) as CaretPosition;
-      setTimeout(() => {
-        if (range) {
-          const { offsetNode, offset } = caret;
+      if (blockList[index].children.length === 1 && blockList[index].children[0].content === '') {
+        focusCurrentBlock(index - 1, blockRef, blockList);
+      } else {
+        setTimeout(() => {
+          if (range) {
+            const { offsetNode, offset } = caret;
 
-          const newRange = document.createRange();
-          const selection = window.getSelection();
+            const newRange = document.createRange();
+            const selection = window.getSelection();
 
-          newRange.setStart(offsetNode, offset);
-          selection?.removeAllRanges();
-          selection?.addRange(newRange);
-        }
-      }, 0);
+            newRange.setStart(offsetNode, offset);
+
+            selection?.removeAllRanges();
+            selection?.addRange(newRange);
+          }
+        }, 0);
+      }
     }
 
     // 다음 블록으로 커서 이동
     if (event.key === keyName.arrowDown && index < blockList.length - 1) {
       event.preventDefault();
       const caret = document.caretPositionFromPoint(cursorX, rect.bottom + 10) as CaretPosition;
-      setTimeout(() => {
-        if (range) {
-          const { offsetNode, offset } = caret;
+      if (blockList[index].children.length === 1 && blockList[index].children[0].content === '') {
+        focusCurrentBlock(index + 1, blockRef, blockList);
+      } else {
+        setTimeout(() => {
+          if (range) {
+            const { offsetNode, offset } = caret;
 
-          const newRange = document.createRange();
-          const selection = window.getSelection();
+            const newRange = document.createRange();
+            const selection = window.getSelection();
 
-          newRange.setStart(offsetNode, offset);
-          selection?.removeAllRanges();
-          selection?.addRange(newRange);
-        }
-      }, 0);
+            newRange.setStart(offsetNode, offset);
+            selection?.removeAllRanges();
+            selection?.addRange(newRange);
+          }
+        }, 0);
+      }
     }
 
     // 블록의 맨 끝에서 오른쪽 방향키 클릭하면 다음 블록으로 커서 이동
     if (
       event.key === keyName.arrowRight &&
-      startOffset === (lastChild?.textContent?.length as number) &&
-      startContainer === lastChild &&
+      ((startOffset === (lastChild?.textContent?.length as number) && startContainer === lastChild) ||
+        (blockList[index].children.length === 1 && blockList[index].children[0].content === '')) &&
       index < blockList.length - 1
     ) {
       event.preventDefault();
@@ -812,7 +830,12 @@ const handleKeyDown = (
     }
 
     // 블록의 맨 앞에서 왼쪽 방향키 클릭하면 이전 블록으로 커서 이동
-    if (event.key === keyName.arrowLeft && startOffset === 0 && startContainer === firstChild && index > 0) {
+    if (
+      event.key === keyName.arrowLeft &&
+      ((startOffset === 0 && startContainer === firstChild) ||
+        (blockList[index].children.length === 1 && blockList[index].children[0].content === '')) &&
+      index > 0
+    ) {
       const prevBlockLastChild =
         blockRef.current[index - 1]?.childNodes[(blockRef.current[index]?.childNodes.length as number) - 1];
       setTimeout(() => {
