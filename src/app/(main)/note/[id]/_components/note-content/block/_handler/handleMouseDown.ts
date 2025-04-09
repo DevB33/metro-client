@@ -33,7 +33,6 @@ const handleMouseDown = (
 
   setTimeout(() => {
     if (range) {
-      console.log('setTIMEOUT----range');
       (blockRef.current[index]?.parentNode as HTMLElement)?.focus();
       const selection = window.getSelection();
       if (currentChildNodeIndex === -1) return;

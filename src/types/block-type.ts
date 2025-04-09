@@ -13,8 +13,10 @@ export interface ITextBlockChild {
 export interface IBlockStyle {
   fontStyle: 'normal' | 'italic' | string;
   fontWeight: 'regular' | 'bold' | string;
+  textDecoration: 'none' | 'underline' | 'line-through' | string;
   color: 'black' | string;
-  backgroundColor: 'white' | string;
+  backgroundColor: 'white' | 'grey' | string;
   width: number | string;
   height: number | string;
+  borderRadius: number | string;
 }

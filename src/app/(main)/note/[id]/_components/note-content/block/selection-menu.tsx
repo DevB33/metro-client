@@ -71,14 +71,10 @@ const selectionMenu = ({
   const menuHeight = 3;
 
   const changeBlock = (type: string) => {
-    console.log('change block');
     selectionChange(type, selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
     setKey(Math.random());
     setIsSelectionMenuOpen(false);
   };
-
-  // console.log('selection ON');
-  // console.log('selection position', position);
 
   return (
     <div style={{ top: `calc(${position.y}px - ${menuHeight}rem)`, left: position.x }} className={menu}>

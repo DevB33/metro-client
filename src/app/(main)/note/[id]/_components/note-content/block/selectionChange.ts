@@ -6,6 +6,7 @@ const createNewStyle = (type: string, beforeStyle: IBlockStyle) => {
     return {
       fontWeight: beforeStyle.fontWeight === 'bold' ? 'normal' : 'bold',
       fontStyle: beforeStyle.fontStyle,
+      textDecoration: beforeStyle.textDecoration,
       color: beforeStyle.color,
       backgroundColor: beforeStyle.backgroundColor,
       width: beforeStyle.width,
@@ -16,8 +17,42 @@ const createNewStyle = (type: string, beforeStyle: IBlockStyle) => {
     return {
       fontWeight: beforeStyle.fontWeight,
       fontStyle: beforeStyle.fontStyle === 'italic' ? 'normal' : 'italic',
+      textDecoration: beforeStyle.textDecoration,
       color: beforeStyle.color,
       backgroundColor: beforeStyle.backgroundColor,
+      width: beforeStyle.width,
+      height: beforeStyle.height,
+    };
+  }
+  if (type === 'underline') {
+    return {
+      fontWeight: beforeStyle.fontWeight,
+      fontStyle: beforeStyle.fontStyle,
+      textDecoration: beforeStyle.textDecoration === 'underline' ? 'none' : 'underline',
+      color: beforeStyle.color,
+      backgroundColor: beforeStyle.backgroundColor,
+      width: beforeStyle.width,
+      height: beforeStyle.height,
+    };
+  }
+  if (type === 'strikethrough') {
+    return {
+      fontWeight: beforeStyle.fontWeight,
+      fontStyle: beforeStyle.fontStyle,
+      textDecoration: beforeStyle.textDecoration === 'line-through' ? 'none' : 'line-through',
+      color: beforeStyle.color,
+      backgroundColor: beforeStyle.backgroundColor,
+      width: beforeStyle.width,
+      height: beforeStyle.height,
+    };
+  }
+  if (type === 'codeblock') {
+    return {
+      fontWeight: beforeStyle.fontWeight,
+      fontStyle: beforeStyle.fontStyle,
+      textDecoration: beforeStyle.textDecoration,
+      color: beforeStyle.color === 'red' ? 'white' : 'red',
+      backgroundColor: beforeStyle.backgroundColor === 'lightgrey' ? 'white' : 'lightgrey',
       width: beforeStyle.width,
       height: beforeStyle.height,
     };
@@ -27,6 +62,7 @@ const createNewStyle = (type: string, beforeStyle: IBlockStyle) => {
 const defaultStyle = {
   fontWeight: 'normal',
   fontStyle: 'normal',
+  textDecoration: 'none',
   color: '#000000',
   backgroundColor: 'transparent',
   width: 'auto',
@@ -43,9 +79,6 @@ const selectionChange = (
 ) => {
   if (!blockRef.current) return;
 
-  console.log('selectionStartPosition', selectionStartPosition);
-  console.log('selectionEndPosition', selectionEndPosition);
-
   // 역 드레그시 설정
   const {
     blockIndex: startBlockIndex,
@@ -56,9 +89,6 @@ const selectionChange = (
     selectionStartPosition.childNodeIndex <= selectionEndPosition.childNodeIndex)
     ? selectionStartPosition
     : selectionEndPosition;
-  console.log('startBlockIndex', startBlockIndex);
-  console.log('startNodeIndex', startNodeIndex);
-  console.log('startOffset', startOffset);
   const {
     blockIndex: endBlockIndex,
     childNodeIndex: endNodeIndex,
@@ -68,28 +98,19 @@ const selectionChange = (
     selectionStartPosition.childNodeIndex <= selectionEndPosition.childNodeIndex)
     ? selectionEndPosition
     : selectionStartPosition;
-  console.log('endBlockIndex', endBlockIndex);
-  console.log('endNodeIndex', endNodeIndex);
-  console.log('endOffset', endOffset);
 
   const newBlockList = [...blockList];
 
   // 블록 인덱스 범위
   for (let index = startBlockIndex; index <= endBlockIndex; index += 1) {
-    console.log('blockNo.', index);
     const block = blockList[index];
-    console.log('block', block);
     const parent = blockRef.current[index];
     const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
 
     // 한 블록만 선택한 경우
     if (startBlockIndex === endBlockIndex) {
-      console.log('one block selected');
       // 한 노드 안에서만 선택된 경우
       if (startNodeIndex === endNodeIndex) {
-        console.log('one node selected');
-        console.log('startOffset', startOffset);
-        console.log('endOffset', endOffset);
         const startNode = childNodes[startNodeIndex];
         const beforeText = startNode.textContent?.slice(0, startOffset <= endOffset ? startOffset : endOffset) || '';
         const selectedText =
@@ -98,9 +119,6 @@ const selectionChange = (
             startOffset <= endOffset ? endOffset : startOffset,
           ) || '';
         const afterText = startNode.textContent?.slice(startOffset <= endOffset ? endOffset : startOffset) || '';
-        console.log('beforeText', beforeText);
-        console.log('selectedText', selectedText);
-        console.log('afterText', afterText);
         const beforeNode = {
           type: block.children[startNodeIndex].type,
           style: block.children[startNodeIndex].style,
@@ -130,11 +148,9 @@ const selectionChange = (
         };
 
         newBlockList[index] = updatedBlock;
-        console.log('newBlockList', newBlockList);
       }
       // 한 블록에서 여러 노드 선택된 경우
       else {
-        console.log('multiple node selected');
         // 선택 시작 노드 분리
         const startNode = childNodes[startNodeIndex];
         const startNodeBeforeText = startNode.textContent?.slice(0, startOffset) || '';
@@ -183,7 +199,6 @@ const selectionChange = (
           ] as ITextBlock['children'],
         };
         newBlockList[index] = updatedBlock;
-        console.log('newBlockList', newBlockList);
       }
     }
 
@@ -224,7 +239,6 @@ const selectionChange = (
         };
 
         newBlockList[index] = updatedBlock;
-        console.log('newBlockList', newBlockList);
       }
 
       // 중간 블록인 경우
@@ -242,7 +256,6 @@ const selectionChange = (
         };
 
         newBlockList[index] = updatedBlock;
-        console.log('newBlockList', newBlockList);
       }
 
       // 끝 블록인 경우
@@ -280,12 +293,9 @@ const selectionChange = (
         };
 
         newBlockList[index] = updatedBlock;
-        console.log('newBlockList', newBlockList);
       }
     }
   }
-
-  console.log('FINAL BLOCK LIST: ', newBlockList);
   setBlockList(newBlockList);
 };
 
