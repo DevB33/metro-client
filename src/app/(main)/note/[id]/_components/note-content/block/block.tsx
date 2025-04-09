@@ -1,7 +1,7 @@
 import { memo, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 
-import ITextBlock from '@/types/block-type';
+import { ITextBlock } from '@/types/block-type';
 import ISelectionPosition from '@/types/selection-position';
 import handleInput from './_handler/handleInput';
 import handleKeyDown from './_handler/handleKeyDown';

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
-import ITextBlock from '@/types/block-type';
+import { ITextBlock } from '@/types/block-type';
 import Block from './block/block';
 import BlockButton from './block-button';
 import SelectionMenu from './block/selection-menu';
@@ -156,6 +156,7 @@ const NoteContent = () => {
           blockList={blockList}
           setBlockList={setBlockList}
           blockRef={blockRef}
+          setIsSelectionMenuOpen={setIsSelectionMenuOpen}
         />
       )}
     </div>

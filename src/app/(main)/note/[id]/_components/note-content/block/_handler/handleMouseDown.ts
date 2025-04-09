@@ -1,5 +1,4 @@
 import ISelectionPosition from '@/types/selection-position';
-import { text } from 'stream/consumers';
 
 const handleMouseDown = (
   event: React.MouseEvent<HTMLDivElement>,
@@ -34,10 +33,24 @@ const handleMouseDown = (
 
   setTimeout(() => {
     if (range) {
+      console.log('setTIMEOUT----range');
       (blockRef.current[index]?.parentNode as HTMLElement)?.focus();
       const selection = window.getSelection();
       if (currentChildNodeIndex === -1) return;
-      range?.setStart(blockRef.current[index]?.childNodes[currentChildNodeIndex] as Node, charIdx);
+
+      // range?.setStart(blockRef.current[index]?.childNodes[currentChildNodeIndex] as Node, charIdx);
+
+      const targetNode = blockRef.current[index]?.childNodes[currentChildNodeIndex];
+      if (!targetNode) return;
+      if (targetNode.nodeType === Node.TEXT_NODE) {
+        // 텍스트 노드일 때
+        range.setStart(targetNode, Math.min(charIdx, targetNode.textContent?.length ?? 0));
+      } else if (targetNode.firstChild && targetNode.firstChild.nodeType === Node.TEXT_NODE) {
+        // span 같은 엘리먼트 노드에 텍스트가 있을 경우
+        range.setStart(targetNode.firstChild, Math.min(charIdx, targetNode.firstChild.textContent?.length ?? 0));
+      } else {
+        range.setStart(targetNode, 0);
+      }
 
       selection?.removeAllRanges();
       selection?.addRange(range);
