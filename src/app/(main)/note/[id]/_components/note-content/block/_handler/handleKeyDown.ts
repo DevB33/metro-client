@@ -2,6 +2,22 @@ import ITextBlock from '@/types/block-type';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import keyName from '@/constants/key-name';
 
+const focusCurrentBlock = (
+  index: number,
+  blockRef: React.RefObject<(HTMLDivElement | null)[]>,
+  blockList: ITextBlock[],
+) => {
+  setTimeout(() => {
+    if (blockList[index].type === 'ul' || blockList[index].type === 'ol') {
+      (blockRef.current[index]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
+    } else if (blockList[index].type === 'quote') {
+      (blockRef.current[index]?.parentNode?.parentNode as HTMLElement)?.focus();
+    } else {
+      (blockRef.current[index]?.parentNode as HTMLElement)?.focus();
+    }
+  }, 0);
+};
+
 const splitBlock = (
   index: number,
   blockList: ITextBlock[],
@@ -159,11 +175,13 @@ const splitBlock = (
     children: newAfterBlock,
   });
 
+  if (updatedBlockList[index + 1].children.length === 2 && updatedBlockList[index + 1].children[0].type === 'br') {
+    updatedBlockList[index + 1].children.shift();
+  }
+
   setBlockList(updatedBlockList);
 
-  setTimeout(() => {
-    blockRef.current[index + 1]?.focus();
-  }, 0);
+  focusCurrentBlock(index + 1, blockRef, updatedBlockList);
 };
 
 const splitLine = (
@@ -250,9 +268,25 @@ const splitLine = (
       ...updatedBlockList[index],
       children: updatedChildren as ITextBlock['children'],
     };
+
+    setBlockList(updatedBlockList);
+  } else if ((startContainer as HTMLElement).tagName === 'BR') {
+    // 현재 커서 위치 한 곳이 빈 문자열일 때 → 중복 줄바꿈 로직
+    // 직접 focus를 줄 때는 startContainer가 <br>로 잡힘
+    const updatedBlockList = [...blockList];
+    if (updatedBlockList[index].children.length === 1 && updatedBlockList[index].children[0].content === '') {
+      updatedBlockList[index].children[0] = {
+        type: 'br',
+      };
+    }
+    updatedBlockList[index].children.splice(currentChildNodeIndex, 0, {
+      type: 'br',
+    });
+
     setBlockList(updatedBlockList);
   } else {
     // 현재 커서 위치 한 곳이 빈 문자열일 때 → 중복 줄바꿈 로직
+    // 직접 focus를 주지 않을 때는 startContainer가 부모로 잡혀 text node와 br이 아님
     const updatedBlockList = [...blockList];
     if (updatedBlockList[index].children.length === 1 && updatedBlockList[index].children[0].content === '') {
       updatedBlockList[index].children[0] = {
@@ -265,9 +299,36 @@ const splitLine = (
 
     setBlockList(updatedBlockList);
   }
+
+  setTimeout(() => {
+    const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
+    const range = document.createRange();
+
+    if (
+      (currentChildNodeIndex === 0 && startOffset === 0) ||
+      (childNodes[currentChildNodeIndex - 1]?.nodeName === 'BR' && startOffset === 0)
+    ) {
+      // 줄의 맨 앞에 커서를 두고 줄바꿈 했을 때
+      range.setStart(newChildNodes[currentChildNodeIndex + 1], 0);
+    } else if (currentChildNodeIndex === -1) {
+      // 직접 focus를 주지 않은 상태에서 빈 줄에서 줄바꿈 했을 때
+      range.setStart(newChildNodes[startOffset + 1], 0);
+    } else {
+      range.setStart(newChildNodes[startOffset === 0 ? currentChildNodeIndex + 1 : currentChildNodeIndex + 2], 0);
+    }
+
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  }, 0);
 };
 
-const mergeBlock = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
+const mergeBlock = (
+  index: number,
+  blockList: ITextBlock[],
+  setBlockList: (blockList: ITextBlock[]) => void,
+  blockRef: React.RefObject<(HTMLDivElement | null)[]>,
+) => {
   const updatedBlockList = [...blockList];
 
   const previousBlock = updatedBlockList[index - 1];
@@ -277,6 +338,7 @@ const mergeBlock = (index: number, blockList: ITextBlock[], setBlockList: (block
   if (previousBlock.children[previousBlock.children.length - 1].type === 'br') {
     previousBlock.children.pop();
   }
+
   const updatedChildren = [...previousBlock.children, ...currentBlock.children];
 
   updatedBlockList[index - 1].children = updatedChildren;
@@ -292,12 +354,38 @@ const mergeBlock = (index: number, blockList: ITextBlock[], setBlockList: (block
   }
 
   setBlockList(updatedBlockList);
+
+  const range = document.createRange();
+  setTimeout(() => {
+    if (range) {
+      const prevBlock = blockRef.current[index - 1];
+      const prevBlockLength = prevBlock?.childNodes.length as number;
+      const selection = window.getSelection();
+
+      if (
+        prevBlock?.childNodes[0]?.nodeName !== 'BR' &&
+        currentBlock.children.length === 1 &&
+        currentBlock.children[0].type === 'text' &&
+        currentBlock.children[0].content === ''
+      ) {
+        range?.setStart(
+          prevBlock?.childNodes[prevBlockLength - 1] as Node,
+          prevBlock?.childNodes[prevBlockLength - 1].textContent?.length as number,
+        );
+      } else {
+        range?.setStart(prevBlock?.childNodes[prevBlockLength - 1] as Node, 0);
+      }
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    }
+  }, 0);
 };
 
 const mergeLine = (
   index: number,
   currentChildNodeIndex: number,
   blockList: ITextBlock[],
+  blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   setBlockList: (blockList: ITextBlock[]) => void,
 ) => {
   const updatedBlockList = [...blockList];
@@ -306,6 +394,25 @@ const mergeLine = (
   updatedBlockList[index] = { ...updatedBlockList[index], children: newChildren };
 
   setBlockList(updatedBlockList);
+
+  setTimeout(() => {
+    const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
+    const range = document.createRange();
+
+    if (newChildNodes[currentChildNodeIndex - 2]?.nodeName === 'BR' || currentChildNodeIndex === 1) {
+      range.setStart(newChildNodes[currentChildNodeIndex - 1], 0);
+    } else {
+      range.setStart(
+        newChildNodes[currentChildNodeIndex - 2],
+        newChildNodes[currentChildNodeIndex - 2].textContent?.length as number,
+      );
+    }
+
+    const selection = window.getSelection();
+
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  }, 0);
 };
 
 const openSlashMenu = (
@@ -405,6 +512,7 @@ const handleKeyDown = (
   setIsSlashMenuOpen: (isSlashMenuOpen: boolean[]) => void,
   setSlashMenuPosition: (position: { x: number; y: number }) => void,
 ) => {
+  // enter 클릭
   if (event.key === keyName.enter && !event.shiftKey) {
     event.preventDefault();
     if (event.nativeEvent.isComposing) {
@@ -415,6 +523,7 @@ const handleKeyDown = (
     splitBlock(index, blockList, setBlockList, blockRef);
   }
 
+  // shift + enter 클릭
   if (event.key === keyName.enter && event.shiftKey) {
     event.preventDefault();
     setIsTyping(false);
@@ -422,6 +531,7 @@ const handleKeyDown = (
     splitLine(index, blockList, setBlockList, blockRef);
   }
 
+  // backspace 클릭
   if (event.key === keyName.backspace) {
     const { startOffset, startContainer } = getSelectionInfo(0) || {};
     if (startOffset === undefined || startOffset === null || !startContainer) return;
@@ -436,14 +546,16 @@ const handleKeyDown = (
     // 첫 블록 첫 커서일 때
     if (index === 0 && (currentChildNodeIndex === -1 || currentChildNodeIndex === 0) && startOffset === 0) {
       event.preventDefault();
-      setIsTyping(false);
-      setKey(Math.random());
 
       // default 블록이 아닐 때는 default로 변경
       if (blockList[index].type !== 'default') {
+        setIsTyping(false);
+        setKey(Math.random());
+
         const updatedBlockList = [...blockList];
         updatedBlockList[index].type = 'default';
         setBlockList(updatedBlockList);
+        focusCurrentBlock(index, blockRef, blockList);
       }
       return;
     }
@@ -461,8 +573,9 @@ const handleKeyDown = (
           const updatedBlockList = [...blockList];
           updatedBlockList[index].type = 'default';
           setBlockList(updatedBlockList);
+          focusCurrentBlock(index, blockRef, blockList);
         } else {
-          mergeBlock(index, blockList, setBlockList);
+          mergeBlock(index, blockList, setBlockList, blockRef);
         }
       } else {
         // 줄 합치기 로직
@@ -480,6 +593,27 @@ const handleKeyDown = (
         }
 
         setBlockList(updatedBlockList);
+
+        setTimeout(() => {
+          const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
+          const range = document.createRange();
+
+          if (blockRef.current[index]?.childNodes[startOffset - 1]) {
+            range.setStart(
+              newChildNodes[startOffset - 1],
+              newChildNodes[startOffset - 1].textContent?.length as number,
+            );
+          } else {
+            range.setStart(
+              newChildNodes[startOffset - 2],
+              newChildNodes[startOffset - 2].textContent?.length as number,
+            );
+          }
+          const selection = window.getSelection();
+
+          selection?.removeAllRanges();
+          selection?.addRange(range);
+        }, 0);
       }
 
       return;
@@ -487,23 +621,32 @@ const handleKeyDown = (
 
     // 줄 또는 블록 합치기 로직
     if (startOffset === 0) {
-      event.preventDefault();
-      setIsTyping(false);
-      setKey(Math.random());
       if (currentChildNodeIndex <= 0) {
+        event.preventDefault();
+        setIsTyping(false);
+        setKey(Math.random());
+
         if (blockList[index].type !== 'default') {
           const updatedBlockList = [...blockList];
           updatedBlockList[index].type = 'default';
           setBlockList(updatedBlockList);
+          focusCurrentBlock(index, blockRef, blockList);
         } else {
-          mergeBlock(index, blockList, setBlockList);
+          mergeBlock(index, blockList, setBlockList, blockRef);
         }
       } else if (currentChildNodeIndex > 0) {
-        mergeLine(index, currentChildNodeIndex, blockList, setBlockList);
+        if (blockList[index].children[currentChildNodeIndex - 1].type === 'br') {
+          event.preventDefault();
+          setIsTyping(false);
+          setKey(Math.random());
+
+          mergeLine(index, currentChildNodeIndex, blockList, blockRef, setBlockList);
+        }
       }
     }
   }
 
+  // space 클릭
   if (event.key === keyName.space) {
     const { startOffset, startContainer } = getSelectionInfo(0) || {};
     if (startOffset === undefined || startOffset === null || !startContainer) return;
@@ -527,6 +670,7 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       turnIntoH1(index, blockList, setBlockList);
+      focusCurrentBlock(index, blockRef, blockList);
     }
 
     // h2로 전환
@@ -542,6 +686,7 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       turnIntoH2(index, blockList, setBlockList);
+      focusCurrentBlock(index, blockRef, blockList);
     }
 
     // h3으로 전환
@@ -558,6 +703,7 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       turnIntoH3(index, blockList, setBlockList);
+      focusCurrentBlock(index, blockRef, blockList);
     }
 
     // ul로 전환
@@ -572,6 +718,7 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       turnIntoUl(index, blockList, setBlockList);
+      focusCurrentBlock(index, blockRef, blockList);
     }
 
     // ol로 전환
@@ -586,6 +733,7 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       turnIntoOl(index, blockList, setBlockList, startOffset);
+      focusCurrentBlock(index, blockRef, blockList);
     }
 
     // 인용문으로 전환
@@ -600,14 +748,115 @@ const handleKeyDown = (
       setIsTyping(false);
       setKey(Math.random());
       turnIntoQuote(index, blockList, setBlockList);
+      focusCurrentBlock(index, blockRef, blockList);
     }
   }
 
-  if (event.key === '/') {
+  // slash 클릭
+  if (event.key === keyName.slash) {
     event.preventDefault();
     setIsTyping(false);
     setKey(Math.random());
     openSlashMenu(index, isSlashMenuOpen, blockRef, setIsSlashMenuOpen, setSlashMenuPosition);
+  }
+
+  // 방향키 클릭
+  if (
+    event.key === keyName.arrowUp ||
+    event.key === keyName.arrowDown ||
+    event.key === keyName.arrowLeft ||
+    event.key === keyName.arrowRight
+  ) {
+    const { range, startOffset, startContainer } = getSelectionInfo(0) || {};
+    const rect = range?.getBoundingClientRect() as DOMRect;
+    const cursorX = rect?.left;
+    const firstChild = blockRef.current[index]?.childNodes[0];
+    const lastChild = blockRef.current[index]?.childNodes[(blockRef.current[index]?.childNodes.length as number) - 1];
+
+    // 이전 블록으로 커서 이동
+    if (event.key === keyName.arrowUp && index > 0) {
+      event.preventDefault();
+      const caret = document.caretPositionFromPoint(cursorX, rect.top - 10) as CaretPosition;
+      if (blockList[index].children.length === 1 && blockList[index].children[0].content === '') {
+        focusCurrentBlock(index - 1, blockRef, blockList);
+      } else {
+        setTimeout(() => {
+          if (range) {
+            const { offsetNode, offset } = caret;
+
+            const newRange = document.createRange();
+            const selection = window.getSelection();
+
+            newRange.setStart(offsetNode, offset);
+
+            selection?.removeAllRanges();
+            selection?.addRange(newRange);
+          }
+        }, 0);
+      }
+    }
+
+    // 다음 블록으로 커서 이동
+    if (event.key === keyName.arrowDown && index < blockList.length - 1) {
+      event.preventDefault();
+      const caret = document.caretPositionFromPoint(cursorX, rect.bottom + 10) as CaretPosition;
+      if (blockList[index].children.length === 1 && blockList[index].children[0].content === '') {
+        focusCurrentBlock(index + 1, blockRef, blockList);
+      } else {
+        setTimeout(() => {
+          if (range) {
+            const { offsetNode, offset } = caret;
+
+            const newRange = document.createRange();
+            const selection = window.getSelection();
+
+            newRange.setStart(offsetNode, offset);
+            selection?.removeAllRanges();
+            selection?.addRange(newRange);
+          }
+        }, 0);
+      }
+    }
+
+    // 블록의 맨 끝에서 오른쪽 방향키 클릭하면 다음 블록으로 커서 이동
+    if (
+      event.key === keyName.arrowRight &&
+      ((startOffset === (lastChild?.textContent?.length as number) && startContainer === lastChild) ||
+        (blockList[index].children.length === 1 && blockList[index].children[0].content === '')) &&
+      index < blockList.length - 1
+    ) {
+      event.preventDefault();
+      focusCurrentBlock(index + 1, blockRef, blockList);
+    }
+
+    // 블록의 맨 앞에서 왼쪽 방향키 클릭하면 이전 블록으로 커서 이동
+    if (
+      event.key === keyName.arrowLeft &&
+      ((startOffset === 0 && startContainer === firstChild) ||
+        (blockList[index].children.length === 1 && blockList[index].children[0].content === '')) &&
+      index > 0
+    ) {
+      const prevBlockLastChild =
+        blockRef.current[index - 1]?.childNodes[(blockRef.current[index]?.childNodes.length as number) - 1];
+      setTimeout(() => {
+        if (range) {
+          if (blockList[index - 1].type === 'ul' || blockList[index - 1].type === 'ol') {
+            (blockRef.current[index - 1]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
+          } else if (blockList[index - 1].type === 'quote') {
+            (blockRef.current[index - 1]?.parentNode?.parentNode as HTMLElement)?.focus();
+          } else {
+            (blockRef.current[index - 1]?.parentNode as HTMLElement)?.focus();
+          }
+
+          const selection = window.getSelection();
+          range?.setStart(prevBlockLastChild as Node, prevBlockLastChild?.textContent?.length as number);
+          range.collapse(true);
+
+          selection?.removeAllRanges();
+          selection?.addRange(range);
+        }
+      }, 0);
+    }
   }
 };
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 
-import { ITextBlock } from '@/types/block-type';
+import ITextBlock from '@/types/block-type';
 import HeadingOneIcon from '@/icons/heading-one-icon';
 import HeadingTwoIcon from '@/icons/heading-two-icon';
 import HeadingThreeIcon from '@/icons/heading-three-icon';
@@ -102,7 +102,7 @@ const SlashMenu = ({
     const newBlockList = [...blockList];
     const newBlock: ITextBlock = {
       id: Date.now(),
-      type: type,
+      type,
       children: [{ type: 'text', content: '' }],
     };
     newBlockList.splice(index + 1, 0, newBlock);
@@ -111,6 +111,16 @@ const SlashMenu = ({
     const newIsSlashMenuOpen = [...isSlashMenuOpen];
     newIsSlashMenuOpen[index] = false;
     setIsSlashMenuOpen(newIsSlashMenuOpen);
+
+    setTimeout(() => {
+      if (newBlockList[index + 1].type === 'ul' || newBlockList[index + 1].type === 'ol') {
+        (blockRef.current[index + 1]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
+      } else if (newBlockList[index + 1].type === 'quote') {
+        (blockRef.current[index + 1]?.parentNode?.parentNode as HTMLElement)?.focus();
+      } else {
+        (blockRef.current[index + 1]?.parentNode as HTMLElement)?.focus();
+      }
+    }, 0);
   };
 
   const changeBlock = (type: 'default' | 'h1' | 'h2' | 'h3' | 'ul' | 'ol' | 'quote') => {
@@ -121,6 +131,15 @@ const SlashMenu = ({
     const newIsSlashMenuOpen = [...isSlashMenuOpen];
     newIsSlashMenuOpen[index] = false;
     setIsSlashMenuOpen(newIsSlashMenuOpen);
+    setTimeout(() => {
+      if (blockList[index].type === 'ul' || blockList[index].type === 'ol') {
+        (blockRef.current[index]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
+      } else if (blockList[index].type === 'quote') {
+        (blockRef.current[index]?.parentNode?.parentNode as HTMLElement)?.focus();
+      } else {
+        (blockRef.current[index]?.parentNode as HTMLElement)?.focus();
+      }
+    }, 0);
   };
 
   useEffect(() => {

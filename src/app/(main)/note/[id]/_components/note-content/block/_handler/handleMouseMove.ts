@@ -1,5 +1,6 @@
 import ISelectionPosition from '@/types/selection-position';
 import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundImage';
+import getSelectionInfo from '@/utils/getSelectionInfo';
 
 const getNodeBounds = (node: Node, startOffset: number, endOffset: number) => {
   const range = document.createRange();
@@ -20,8 +21,6 @@ const handleMouseMove = (
   prevClientY: React.RefObject<number>,
 ) => {
   if (!isDragging) return;
-  const selection = window.getSelection();
-  if (selection) selection.removeAllRanges();
 
   if (index !== selectionEndPosition.blockIndex) {
     setSelectionEndPosition((prev: ISelectionPosition) => ({
@@ -47,7 +46,13 @@ const handleMouseMove = (
     }));
   }
 
+  const { startOffset } = getSelectionInfo(0) || {};
   const charIdx = document.caretPositionFromPoint(event.clientX, event.clientY)?.offset as number;
+
+  if (startOffset !== undefined && charIdx !== startOffset) {
+    const selection = window.getSelection();
+    if (selection) selection.removeAllRanges();
+  }
 
   setSelectionEndPosition((prev: ISelectionPosition) => ({
     ...prev,
