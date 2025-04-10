@@ -9,7 +9,6 @@ interface Props {
   stepPercent: number;
   setLayout: (layout: string) => void;
   setOrientation: (orientation: string) => void;
-  setLinkType: (linkType: string) => void;
   setStepPercent: (percent: number) => void;
 }
 
@@ -20,7 +19,6 @@ const LinkControls = ({
   stepPercent,
   setLayout,
   setOrientation,
-  setLinkType,
   setStepPercent,
 }: Props) => {
   return (
@@ -42,13 +40,6 @@ const LinkControls = ({
         <option value="horizontal">horizontal</option>
       </select>
       &nbsp;&nbsp;
-      <label>link:</label>&nbsp;
-      <select onClick={e => e.stopPropagation()} onChange={e => setLinkType(e.target.value)} value={linkType}>
-        <option value="diagonal">diagonal</option>
-        <option value="step">step</option>
-        <option value="curve">curve</option>
-        <option value="line">line</option>
-      </select>
       {linkType === 'step' && layout !== 'polar' && (
         <>
           &nbsp;&nbsp;
