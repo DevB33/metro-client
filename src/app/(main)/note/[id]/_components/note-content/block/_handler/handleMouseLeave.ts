@@ -9,15 +9,13 @@ const getNodeBounds = (node: Node, startOffset: number, endOffset: number) => {
   if (node.nodeType !== Node.TEXT_NODE) {
     const firstTextNode = node.childNodes[0];
     if (!firstTextNode || firstTextNode.nodeType !== Node.TEXT_NODE) {
-      return new DOMRect(); // 빈 사각형 리턴
+      return new DOMRect();
     }
     targetNode = firstTextNode;
   }
 
   range.setStart(targetNode as Node, startOffset);
   range.setEnd(targetNode as Node, endOffset);
-  // range.setStart(node as Node, startOffset);
-  // range.setEnd(node as Node, endOffset);
   return range.getBoundingClientRect();
 };
 

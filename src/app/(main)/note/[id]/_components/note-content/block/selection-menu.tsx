@@ -5,7 +5,7 @@ import { ITextBlock } from '@/types/block-type';
 import BoldIcon from '@/icons/bold-icon';
 import ItalicIcon from '@/icons/italic-icon';
 import UnderlineIcon from '@/icons/underline-icon';
-import StrikethroughIcon from '@/icons/strikethrough-icon';
+import LineThroughIcon from '@/icons/line-through-icon';
 import CodeblockIcon from '@/icons/codeblock-icon';
 import selectionChange from './selectionChange';
 
@@ -54,7 +54,7 @@ const MENU_ITEMS: {
   { label: 'bold', icon: <BoldIcon color="black" /> },
   { label: 'italic', icon: <ItalicIcon color="black" /> },
   { label: 'underline', icon: <UnderlineIcon color="black" /> },
-  { label: 'strikethrough', icon: <StrikethroughIcon color="black" /> },
+  { label: 'line-through', icon: <LineThroughIcon color="black" /> },
   { label: 'codeblock', icon: <CodeblockIcon color="black" /> },
 ];
 

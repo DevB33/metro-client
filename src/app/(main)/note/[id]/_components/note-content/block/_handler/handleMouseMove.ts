@@ -8,7 +8,7 @@ const getNodeBounds = (node: Node, startOffset: number, endOffset: number) => {
   if (node.nodeType !== Node.TEXT_NODE) {
     const firstTextNode = node.childNodes[0];
     if (!firstTextNode || firstTextNode.nodeType !== Node.TEXT_NODE) {
-      return new DOMRect(); // 빈 사각형 리턴
+      return new DOMRect();
     }
     targetNode = firstTextNode;
   }

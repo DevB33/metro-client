@@ -38,7 +38,7 @@ const createNewStyle = (type: string, beforeStyle: IBlockStyle) => {
       borderRadius: beforeStyle.borderRadius,
     };
   }
-  if (type === 'strikethrough') {
+  if (type === 'line-through') {
     return {
       fontWeight: beforeStyle.fontWeight,
       fontStyle: beforeStyle.fontStyle,

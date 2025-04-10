@@ -1,4 +1,4 @@
-const StrikethroughIcon = ({ color }: { color: string }) => {
+const LineThroughIcon = ({ color }: { color: string }) => {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="-2 -2 20 20">
       <g stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
@@ -11,4 +11,4 @@ const StrikethroughIcon = ({ color }: { color: string }) => {
   );
 };
 
-export default StrikethroughIcon;
+export default LineThroughIcon;
