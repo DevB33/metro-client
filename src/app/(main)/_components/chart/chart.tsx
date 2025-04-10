@@ -41,6 +41,7 @@ const data: ITreeNode = {
                 },
                 {
                   name: 'D3',
+                  children: [{ name: 'E1' }],
                 },
               ],
             },
@@ -67,7 +68,7 @@ export interface ILinkTypesProps {
 const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargin }: ILinkTypesProps) => {
   const [layout, setLayout] = useState<string>('cartesian');
   const [orientation, setOrientation] = useState<string>('horizontal');
-  const [linkType, setLinkType] = useState<string>('diagonal');
+  const linkType = 'step';
   const [stepPercent, setStepPercent] = useState<number>(0.5);
   const forceUpdate = useForceUpdate();
 
@@ -83,8 +84,8 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
       x: innerWidth / 2,
       y: innerHeight / 2,
     };
-    sizeWidth = 2 * Math.PI;
-    sizeHeight = Math.min(innerWidth, innerHeight) / 2;
+    sizeWidth = 2 * Math.PI * 2; // <--- 더 넓은 각도
+    sizeHeight = Math.min(innerWidth, innerHeight) / 1.5; // <--- 더 큰 반지름
   } else {
     origin = { x: 0, y: 0 };
     if (orientation === 'vertical') {
@@ -107,17 +108,21 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
         stepPercent={stepPercent}
         setLayout={setLayout}
         setOrientation={setOrientation}
-        setLinkType={setLinkType}
         setStepPercent={setStepPercent}
       />
       <svg width={totalWidth} height={totalHeight}>
         <LinearGradient id="links-gradient" from="#fd9b93" to="#fe6e9e" />
-        <rect width={totalWidth} height={totalHeight} rx={14} fill="#272b4d" />
+        <rect width={totalWidth} height={totalHeight} rx={14} fill="lightgrey" />
         <Group top={margin.top} left={margin.left}>
           <Tree
-            root={hierarchy(data, d => (d.isExpanded ? null : d.children))}
+            root={hierarchy(data, d => d.children)}
             size={[sizeWidth, sizeHeight]}
-            separation={(a, b) => (a.parent === b.parent ? 1 : 0.5) / a.depth}
+            separation={(a, b) => {
+              if (layout === 'polar') {
+                return a.parent === b.parent ? 2.5 : 2.5; // polar는 더 넓게
+              }
+              return a.parent === b.parent ? 2.5 : 2; // cartesian 기본값
+            }}
           >
             {tree => (
               <Group top={origin.y} left={origin.x}>
@@ -152,36 +157,14 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
 
                   return (
                     <Group top={top} left={left} key={key}>
-                      {node.depth === 0 && (
-                        <circle
-                          r={12}
-                          fill="url('#links-gradient')"
-                          onClick={() => {
-                            node.data.isExpanded = !node.data.isExpanded;
-                            console.log(node);
-                            forceUpdate();
-                          }}
-                        />
-                      )}
-                      {node.depth !== 0 && (
-                        <rect
-                          height={height}
-                          width={width}
-                          y={-height / 2}
-                          x={-width / 2}
-                          fill="#272b4d"
-                          stroke={node.data.children ? '#03c0dc' : '#26deb0'}
-                          strokeWidth={1}
-                          strokeDasharray={node.data.children ? '0' : '2,2'}
-                          strokeOpacity={node.data.children ? 1 : 0.6}
-                          rx={node.data.children ? 0 : 10}
-                          onClick={() => {
-                            node.data.isExpanded = !node.data.isExpanded;
-                            console.log(node);
-                            forceUpdate();
-                          }}
-                        />
-                      )}
+                      <circle
+                        r={10}
+                        fill="none"
+                        stroke={node.data.children ? '#03c0dc' : '#26deb0'}
+                        strokeWidth={2}
+                        strokeDasharray={node.data.children ? '0' : '2,2'}
+                        strokeOpacity={node.data.children ? 1 : 0.6}
+                      />
                       <text
                         dy=".33em"
                         fontSize={9}
