@@ -60,7 +60,7 @@ const createNewStyle = (type: string, beforeStyle: IBlockStyle) => {
         beforeStyle.backgroundColor === 'rgba(161, 161, 161, 0.5)' ? 'transparent' : 'rgba(161, 161, 161, 0.5)',
       width: beforeStyle.width,
       height: beforeStyle.height,
-      borderRadius: beforeStyle.borderRadius === 3 ? 0 : 3,
+      borderRadius: beforeStyle.borderRadius,
     };
   }
 };
