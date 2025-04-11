@@ -1,4 +1,4 @@
-import ITextBlock from '@/types/block-type';
+import { ITextBlock } from '@/types/block-type';
 import ISelectionPosition from '@/types/selection-position';
 
 const handleMouseDown = (

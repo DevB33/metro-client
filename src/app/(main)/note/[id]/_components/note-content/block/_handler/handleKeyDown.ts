@@ -103,10 +103,12 @@ const splitBlock = (
         style: {
           fontStyle: node instanceof HTMLElement ? node.style.fontStyle : 'normal',
           fontWeight: node instanceof HTMLElement ? node.style.fontWeight : 'regular',
+          textDecoration: 'none',
           color: node instanceof HTMLElement ? node.style.color : 'black',
           backgroundColor: node instanceof HTMLElement ? node.style.backgroundColor : 'white',
           width: 'auto',
           height: 'auto',
+          borderRadius: '0',
         },
         content: node.textContent || '',
       };
@@ -131,10 +133,12 @@ const splitBlock = (
         style: {
           fontStyle: node instanceof HTMLElement ? node.style.fontStyle : 'normal',
           fontWeight: node instanceof HTMLElement ? node.style.fontWeight : 'regular',
+          textDecoration: 'none',
           color: node instanceof HTMLElement ? node.style.color : 'black',
           backgroundColor: node instanceof HTMLElement ? node.style.backgroundColor : 'white',
           width: 'auto',
           height: 'auto',
+          borderRadius: '0',
         },
         content: node.textContent || '',
       };

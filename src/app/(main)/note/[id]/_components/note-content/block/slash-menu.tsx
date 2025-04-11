@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 
-import ITextBlock from '@/types/block-type';
+import { ITextBlock } from '@/types/block-type';
 import HeadingOneIcon from '@/icons/heading-one-icon';
 import HeadingTwoIcon from '@/icons/heading-two-icon';
 import HeadingThreeIcon from '@/icons/heading-three-icon';
@@ -160,13 +160,24 @@ const SlashMenu = ({
     // TODO: 이벤트 리스너를 document말고 다른곳에 달기
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIndex]);
+  }, [selectedIndex, index, blockList, isSlashMenuOpen]);
 
   return (
     <div style={{ top: `calc(${position.y}px - ${menuHeight}rem)`, left: position.x }} className={menu}>
       <div className={menuTitle}>blocks</div>
       {MENU_ITEMS.map((item, i) => (
         <div
+          tabIndex={0}
+          role="button"
+          onKeyDown={event => {
+            if (event.key === 'Enter') {
+              if (blockList[index].children[0].content === '') {
+                changeBlock(item.type);
+              } else {
+                makeBlock(item.type);
+              }
+            }
+          }}
           key={item.label}
           className={`${slashButton} ${selectedIndex === i ? selectedButton : ''}`}
           onClick={() => makeBlock(item.type)}

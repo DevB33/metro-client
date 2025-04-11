@@ -1,6 +1,6 @@
 import { cva } from '@/../styled-system/css';
 
-import ITextBlock from '@/types/block-type';
+import { ITextBlock } from '@/types/block-type';
 import placeholder from '@/constants/placeholder';
 
 interface IBlockTag {
