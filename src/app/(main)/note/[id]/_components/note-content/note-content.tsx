@@ -36,6 +36,7 @@ const NoteContent = () => {
   const blockButtonRef = useRef<(HTMLDivElement | null)[]>([]);
   const blockRef = useRef<(HTMLDivElement | null)[]>([]);
   const noteRef = useRef<HTMLDivElement | null>(null);
+  const selectionMenuRef = useRef<HTMLDivElement | null>(null);
 
   const [blockList, setBlockList] = useState<ITextBlock[]>([
     {
@@ -123,7 +124,7 @@ const NoteContent = () => {
   const prevClientY = useRef(0);
 
   useEffect(() => {
-    const handleMouseUp = (event: MouseEvent) => {
+    const handleOutsideMouseUp = (event: MouseEvent) => {
       if (blockRef.current.some(block => block?.contains(event.target as Node))) {
         return;
       }
@@ -138,13 +139,15 @@ const NoteContent = () => {
 
       if (blockRef.current && !blockRef.current.some(block => block?.contains(event.target as Node))) {
         isDraggingRef.current = true;
-        resetSelection();
+        if (selectionMenuRef.current && !selectionMenuRef.current.contains(event.target as Node)) {
+          resetSelection();
+        }
+
         setKey(Math.random());
       }
     };
 
     const handleOutsideDrag = (event: MouseEvent) => {
-      console.log(isDraggingRef.current);
       if (prevClientY.current < event.clientY) {
         setIsUp(false);
         prevClientY.current = event.clientY;
@@ -157,12 +160,12 @@ const NoteContent = () => {
       if (selection) selection.removeAllRanges();
     };
 
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('mouseup', handleOutsideMouseUp);
     document.addEventListener('mousedown', handleOutsideClick, true);
     document.addEventListener('mousemove', handleOutsideDrag);
 
     return () => {
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('mouseup', handleOutsideMouseUp);
       document.addEventListener('mousedown', handleOutsideClick);
       document.addEventListener('mousemove', handleOutsideDrag);
     };
@@ -279,6 +282,8 @@ const NoteContent = () => {
   return (
     <div>
       <div
+        role="button"
+        tabIndex={0}
         style={{ pointerEvents: 'none' }}
         key={key}
         ref={noteRef}
@@ -288,7 +293,7 @@ const NoteContent = () => {
             selectionStartPosition,
             selectionEndPosition,
             setIsSelectionMenuOpen,
-            setSelectionMenuPosition
+            setSelectionMenuPosition,
           )
         }
         onMouseDown={() => setIsSelectionMenuOpen(false)}
@@ -307,7 +312,7 @@ const NoteContent = () => {
           >
             <div
               className={fakeBox}
-              ref={(element) => {
+              ref={element => {
                 fakeBoxRef.current[index] = element;
               }}
               onMouseEnter={() => handleFakeBoxMouseEnter(index)}
@@ -315,49 +320,52 @@ const NoteContent = () => {
             >
               <div
                 className={css({ display: 'none' })}
-                ref={(element) => {
+                ref={element => {
                   blockButtonRef.current[index] = element;
                 }}
               >
                 <BlockButton />
               </div>
-              <Block
-                index={index}
-                block={block}
-                blockRef={blockRef}
-                blockList={blockList}
-                setBlockList={setBlockList}
-                isTyping={isTyping}
-                setIsTyping={setIsTyping}
-                setKey={setKey}
-                isDragging={isDragging}
-                setIsDragging={setIsDragging}
-                isUp={isUp}
-                setIsUp={setIsUp}
-                selectionStartPosition={selectionStartPosition}
-                setSelectionStartPosition={setSelectionStartPosition}
-                selectionEndPosition={selectionEndPosition}
-                setSelectionEndPosition={setSelectionEndPosition}
-                isSlashMenuOpen={isSlashMenuOpen}
-                setIsSlashMenuOpen={setIsSlashMenuOpen}
-                slashMenuPosition={slashMenuPosition}
-                setSlashMenuPosition={setSlashMenuPosition}
-              />
             </div>
+            <Block
+              index={index}
+              block={block}
+              blockRef={blockRef}
+              blockList={blockList}
+              setBlockList={setBlockList}
+              isTyping={isTyping}
+              setIsTyping={setIsTyping}
+              setKey={setKey}
+              isDragging={isDragging}
+              setIsDragging={setIsDragging}
+              isUp={isUp}
+              setIsUp={setIsUp}
+              selectionStartPosition={selectionStartPosition}
+              setSelectionStartPosition={setSelectionStartPosition}
+              selectionEndPosition={selectionEndPosition}
+              setSelectionEndPosition={setSelectionEndPosition}
+              isSlashMenuOpen={isSlashMenuOpen}
+              setIsSlashMenuOpen={setIsSlashMenuOpen}
+              slashMenuPosition={slashMenuPosition}
+              setSlashMenuPosition={setSlashMenuPosition}
+            />
           </div>
         ))}
       </div>
       {isSelectionMenuOpen && (
-        <SelectionMenu
-          position={selectionMenuPosition}
-          setKey={setKey}
-          selectionStartPosition={selectionStartPosition}
-          selectionEndPosition={selectionEndPosition}
-          blockList={blockList}
-          setBlockList={setBlockList}
-          blockRef={blockRef}
-          setIsSelectionMenuOpen={setIsSelectionMenuOpen}
-        />
+        <div ref={selectionMenuRef}>
+          <SelectionMenu
+            position={selectionMenuPosition}
+            setKey={setKey}
+            selectionStartPosition={selectionStartPosition}
+            selectionEndPosition={selectionEndPosition}
+            blockList={blockList}
+            setBlockList={setBlockList}
+            blockRef={blockRef}
+            setIsSelectionMenuOpen={setIsSelectionMenuOpen}
+            resetSelection={resetSelection}
+          />
+        </div>
       )}
     </div>
   );

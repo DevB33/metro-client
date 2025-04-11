@@ -18,6 +18,7 @@ interface ISelectionMenuProps {
   setBlockList: (blockList: ITextBlock[]) => void;
   blockRef: React.RefObject<(HTMLDivElement | null)[]>;
   setIsSelectionMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  resetSelection: () => void;
 }
 
 const menu = css({
@@ -67,19 +68,30 @@ const selectionMenu = ({
   setBlockList,
   blockRef,
   setIsSelectionMenuOpen,
+  resetSelection,
 }: ISelectionMenuProps) => {
   const menuHeight = 3;
 
   const changeBlock = (type: string) => {
     selectionChange(type, selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
-    setKey(Math.random());
     setIsSelectionMenuOpen(false);
+    resetSelection();
+    setKey(Math.random());
   };
 
   return (
     <div style={{ top: `calc(${position.y}px - ${menuHeight}rem)`, left: position.x }} className={menu}>
       {MENU_ITEMS.map(item => (
-        <div key={item.label} className={slashButton} onClick={() => changeBlock(item.label)}>
+        <div
+          role="button"
+          tabIndex={0}
+          key={item.label}
+          className={slashButton}
+          onClick={() => changeBlock(item.label)}
+          onKeyDown={event => {
+            if (event.key === 'Enter') changeBlock(item.label);
+          }}
+        >
           {item.icon}
         </div>
       ))}
