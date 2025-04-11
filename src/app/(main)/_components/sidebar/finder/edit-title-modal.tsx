@@ -3,7 +3,7 @@ import { editIcon, editTitle, getNoteInfo } from '@/apis/note-header';
 import { getPageList } from '@/apis/side-bar';
 import IconSelector from '@/app/(main)/note/[id]/_components/note-header/icon-selector';
 import keyName from '@/constants/key-name';
-import useClickOutside from '@/hooks/useClickOutside';
+import { useClickOutside } from '@/hooks/useClickOutside';
 import PageIcon from '@/icons/page-icon';
 import IPageType from '@/types/page-type';
 import { useEffect, useRef, useState } from 'react';

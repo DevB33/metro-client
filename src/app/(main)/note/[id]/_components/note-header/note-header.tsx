@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { css } from '@/../styled-system/css';
-import useClickOutside from '@/hooks/useClickOutside';
+import { useClickOutside } from '@/hooks/useClickOutside';
 import useSWR, { mutate } from 'swr';
 import { useParams } from 'next/navigation';
 import { editCover, editIcon, getNoteInfo } from '@/apis/note-header';

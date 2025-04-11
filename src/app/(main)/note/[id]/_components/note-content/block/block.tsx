@@ -35,6 +35,7 @@ interface IBlockComponent {
 }
 
 const blockDiv = css({
+  pointerEvents: 'auto',
   boxSizing: 'border-box',
   width: 'full',
   minHeight: '1.5rem',
@@ -43,6 +44,7 @@ const blockDiv = css({
   overflowY: 'hidden',
   flexShrink: 0,
   userSelect: 'none',
+  '--block-height': 'auto',
 });
 
 const Block = memo(
@@ -104,7 +106,16 @@ const Block = memo(
           setIsDragging(false);
         }}
         onMouseDown={event =>
-          handleMouseDown(event, blockRef, index, setIsDragging, setIsTyping, setKey, setSelectionStartPosition)
+          handleMouseDown(
+            event,
+            blockRef,
+            index,
+            blockList,
+            setIsDragging,
+            setIsTyping,
+            setKey,
+            setSelectionStartPosition,
+          )
         }
         onMouseMove={event =>
           handleMouseMove(

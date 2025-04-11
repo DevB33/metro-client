@@ -28,6 +28,8 @@ const handleMouseLeave = (
   selectionEndPosition: ISelectionPosition,
 ) => {
   if (!isDragging) return;
+  const selection = window.getSelection();
+  if (selection) selection.removeAllRanges();
 
   const parent = blockRef.current[index];
   const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
