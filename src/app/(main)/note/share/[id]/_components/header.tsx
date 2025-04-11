@@ -15,16 +15,18 @@ interface IHeader {
 }
 
 const container = css({
+  position: 'relative',
   display: 'flex',
   flexDirection: 'column',
   width: '44.5rem',
+  pt: '6rem',
 });
 
 const cover = css({
-  position: 'fixed',
+  position: 'absolute',
   left: '0',
   top: '0',
-  width: '100%',
+  width: '100vw',
   height: '15.5rem',
   zIndex: -1,
 });
@@ -37,13 +39,12 @@ const icon = cva({
     width: '4rem',
     height: '5.5rem',
     fontSize: 'xl',
-    mt: 'large',
   },
   variants: {
     hasCover: {
-      true: { mt: '12rem' },
+      true: { mt: '6rem' },
       false: {
-        mt: 'large',
+        mt: '0',
       },
     },
   },
@@ -128,23 +129,38 @@ const tagBox = cva({
 
 const Header = ({ noteData }: IHeader) => {
   return (
-    <div className={container}>
+    <>
       {noteData.cover && <div className={cover} style={{ backgroundColor: noteData.cover }} />}
-      <div className={icon({ hasCover: !!noteData.cover })}>{noteData.icon && noteData.icon}</div>
-      <div className={title}>{noteData.title}</div>
-      <div className={tagContainer}>
-        <div className={typeContainer}>
-          <TagIcon />
-          태그
-        </div>
-        <div className={tagBoxContainer}>
-          {noteData.tags.map(tag => (
-            <div className={tagBox({ color: tag.color as keyof typeof LineColor })}>{tag.name}</div>
-          ))}
+      <div className={container}>
+        {(noteData.cover || noteData.icon) && (
+          <div className={icon({ hasCover: !!noteData.cover })}>{noteData.icon && noteData.icon}</div>
+        )}
+        <div className={title}>{noteData.title}</div>
+        <div className={tagContainer}>
+          <div className={typeContainer}>
+            <TagIcon />
+            태그
+          </div>
+          <div className={tagBoxContainer}>
+            {noteData.tags.length !== 0 ? (
+              noteData.tags.map(tag => (
+                <div key={tag.name} className={tagBox({ color: tag.color as keyof typeof LineColor })}>
+                  {tag.name}
+                </div>
+              ))
+            ) : (
+              <div>비어있음</div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
 export default Header;
+
+// cover 있고 아이콘 있으면 아이콘 있음
+// cover 없고 아이콘 있으면 아이콘 있음
+// cover 있고 아이콘 없으면 아이콘 있음
+// cover 없고 아이콘 없으면 아이콘 없음

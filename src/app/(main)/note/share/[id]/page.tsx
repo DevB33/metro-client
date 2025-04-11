@@ -4,6 +4,7 @@ import axios from 'axios';
 import { cookies } from 'next/headers';
 
 import Header from './_components/header';
+import Content from './_components/content';
 
 const container = css({
   display: 'flex',
@@ -12,6 +13,7 @@ const container = css({
   justifyContent: 'center',
   width: '100%',
   height: '100%',
+  pb: '13rem',
 });
 
 const SharedNote = async ({ params }: { params: Promise<{ id: string }> }) => {
@@ -31,7 +33,7 @@ const SharedNote = async ({ params }: { params: Promise<{ id: string }> }) => {
   return (
     <div className={container}>
       <Header noteData={noteData} />
-      <div>contents</div>
+      <Content />
     </div>
   );
 };
