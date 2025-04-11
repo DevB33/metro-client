@@ -66,6 +66,7 @@ const tagContainer = css({
   justifyContent: 'start',
   gap: 'small',
   userSelect: 'none',
+  mt: 'base',
 });
 
 const typeContainer = css({
@@ -77,7 +78,6 @@ const typeContainer = css({
   width: '10rem',
   height: 'auto',
   borderRadius: '0.2rem',
-  px: 'tiny',
   gap: 'tiny',
   color: 'grey',
   cursor: 'pointer',
@@ -130,7 +130,7 @@ const Header = ({ noteData }: IHeader) => {
   return (
     <div className={container}>
       {noteData.cover && <div className={cover} style={{ backgroundColor: noteData.cover }} />}
-      {noteData.icon && <div className={icon({ hasCover: !!noteData.cover })}>{noteData.icon}</div>}
+      <div className={icon({ hasCover: !!noteData.cover })}>{noteData.icon && noteData.icon}</div>
       <div className={title}>{noteData.title}</div>
       <div className={tagContainer}>
         <div className={typeContainer}>
