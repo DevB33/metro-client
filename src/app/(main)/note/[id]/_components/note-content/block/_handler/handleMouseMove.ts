@@ -4,8 +4,18 @@ import getSelectionInfo from '@/utils/getSelectionInfo';
 
 const getNodeBounds = (node: Node, startOffset: number, endOffset: number) => {
   const range = document.createRange();
-  range.setStart(node as Node, startOffset);
-  range.setEnd(node as Node, endOffset);
+  let targetNode = node;
+  // span 같은 element면 그 안에 있는 텍스트 노드로 변경
+  if (node.nodeType !== Node.TEXT_NODE) {
+    const firstTextNode = node.childNodes[0];
+    if (!firstTextNode || firstTextNode.nodeType !== Node.TEXT_NODE) {
+      return new DOMRect();
+    }
+    targetNode = firstTextNode;
+  }
+
+  range.setStart(targetNode as Node, startOffset);
+  range.setEnd(targetNode as Node, endOffset);
   return range.getBoundingClientRect();
 };
 
