@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { css } from '@/../styled-system/css';
 
 import ProfileCard from './profile/profile-card';
@@ -36,6 +37,11 @@ const Sidebar = () => {
   const sidebarWidth = savedWidth ? parseFloat(savedWidth) : startWidth;
   const sideBarRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(true);
+  const pathname = usePathname();
+
+  if (pathname.startsWith('/note/share')) {
+    return null;
+  }
 
   return (
     <div className={sideBarContainer}>
