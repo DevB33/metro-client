@@ -26,48 +26,6 @@ const colorMap: Record<keyof typeof LineColor, string> = {
   LINE_SIX: '#7C4A32',
 };
 
-const data: ITreeNode = {
-  name: 'T',
-  children: [
-    {
-      name: 'A',
-      children: [
-        { name: 'A1' },
-        { name: 'A2' },
-        { name: 'A3' },
-        {
-          name: 'C',
-          children: [
-            {
-              name: 'C1',
-            },
-            {
-              name: 'D',
-              children: [
-                {
-                  name: 'D1',
-                },
-                {
-                  name: 'D2',
-                },
-                {
-                  name: 'D3',
-                  children: [{ name: 'E1' }],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    { name: 'Z' },
-    {
-      name: 'B',
-      children: [{ name: 'B1' }, { name: 'B2' }, { name: 'B3' }],
-    },
-  ],
-};
-
 const defaultMargin = { top: 30, left: 30, right: 30, bottom: 70 };
 
 export interface ILinkTypesProps {
@@ -94,7 +52,7 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
   console.log(convertPageListToTree(pageList.node));
 
   const treeData: ITreeNode = {
-    name: 'Root',
+    name: 'WorkSpace',
     children: convertPageListToTree(pageList.node),
   };
 
