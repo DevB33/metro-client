@@ -38,7 +38,7 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
   const [layout, setLayout] = useState<string>('cartesian');
   const orientation = 'horizontal';
   const linkType = 'step';
-  const [stepPercent, setStepPercent] = useState<number>(0.5);
+  const stepPercent = 0.7;
 
   const { data: pageList } = useSWR('pageList');
 
@@ -141,21 +141,7 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
 
   return totalWidth < 10 ? null : (
     <div>
-      <button
-        onClick={resetStoredColors}
-        className="mb-2 px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
-      >
-        색상 리셋
-      </button>
-
-      <LinkControls
-        layout={layout}
-        linkType={linkType}
-        stepPercent={stepPercent}
-        setLayout={setLayout}
-        setStepPercent={setStepPercent}
-        resetColor={resetStoredColors}
-      />
+      <LinkControls layout={layout} setLayout={setLayout} resetColor={resetStoredColors} />
       <svg width={totalWidth} height={totalHeight}>
         <LinearGradient id="links-gradient" from="#fd9b93" to="#fe6e9e" />
         <rect width={totalWidth} height={totalHeight} fill="white" strokeWidth={1.5} stroke="black" />
