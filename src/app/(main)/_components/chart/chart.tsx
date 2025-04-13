@@ -7,6 +7,7 @@ import { LinearGradient } from '@visx/gradient';
 import { pointRadial } from 'd3-shape';
 import LineColor from '@/constants/line-color';
 import useSWR from 'swr';
+import { Zoom } from '@visx/zoom';
 import useForceUpdate from './useForceUpdate';
 import LinkControls from './LinkControls';
 import getLinkComponent from './getLinkComponent';
@@ -142,80 +143,90 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
   return totalWidth < 10 ? null : (
     <div>
       <LinkControls layout={layout} setLayout={setLayout} resetColor={resetStoredColors} />
-      <svg width={totalWidth} height={totalHeight}>
-        <LinearGradient id="links-gradient" from="#fd9b93" to="#fe6e9e" />
-        <rect width={totalWidth} height={totalHeight} fill="white" strokeWidth={1.5} stroke="black" />
-        <Group top={margin.top} left={margin.left}>
-          <Tree
-            root={hierarchy(treeData, d => d.children)}
-            size={[sizeWidth, sizeHeight]}
-            separation={(a, b) => {
-              if (layout === 'polar') {
-                return a.parent === b.parent ? 2.5 : 2.5; // polar는 더 넓게
-              }
-              return a.parent === b.parent ? 2.5 : 2; // cartesian 기본값
+      <Zoom width={totalWidth} height={totalHeight} scaleXMin={0.1} scaleXMax={4} scaleYMin={0.1} scaleYMax={4}>
+        {zoom => (
+          <svg
+            width={totalWidth}
+            height={totalHeight}
+            style={{ cursor: zoom.isDragging ? 'grabbing' : 'grab' }}
+            onMouseDown={zoom.dragStart}
+            onMouseMove={zoom.dragMove}
+            onMouseUp={zoom.dragEnd}
+            onMouseLeave={() => zoom.dragEnd()}
+            onWheel={event => {
+              event.preventDefault();
+              const scaleAmount = 1 - event.deltaY * 0.001;
+              zoom.scale({ scaleX: scaleAmount, scaleY: scaleAmount });
             }}
           >
-            {tree => (
-              <Group top={origin.y} left={origin.x}>
-                {tree.links().map((link, i) => {
-                  const colorKey = link.source.data.colorKey as keyof typeof colorMap;
-                  const strokeColor = colorMap[colorKey];
-
-                  return (
-                    <LinkComponent
-                      key={i}
-                      data={link}
-                      percent={stepPercent}
-                      stroke={strokeColor}
-                      strokeWidth={3}
-                      fill="none"
-                    />
-                  );
-                })}
-
-                {tree.descendants().map((node, key) => {
-                  const width = 40;
-                  const height = 20;
-
-                  let top: number;
-                  let left: number;
+            <LinearGradient id="links-gradient" from="#fd9b93" to="#fe6e9e" />
+            <rect width={totalWidth} height={totalHeight} fill="white" strokeWidth={1.5} stroke="black" />
+            <Group top={margin.top} left={margin.left} transform={zoom.toString()}>
+              <Tree
+                root={hierarchy(treeData, d => d.children)}
+                size={[sizeWidth, sizeHeight]}
+                separation={(a, b) => {
                   if (layout === 'polar') {
-                    const [radialX, radialY] = pointRadial(node.x, node.y);
-                    top = radialY;
-                    left = radialX;
-                  } else {
-                    top = node.x;
-                    left = node.y;
+                    return a.parent === b.parent ? 2.5 : 2.5; // polar는 더 넓게
                   }
+                  return a.parent === b.parent ? 2.5 : 2; // cartesian 기본값
+                }}
+              >
+                {tree => (
+                  <Group top={origin.y} left={origin.x}>
+                    {tree.links().map((link, i) => {
+                      const colorKey = link.source.data.colorKey as keyof typeof colorMap;
+                      const strokeColor = colorMap[colorKey];
 
-                  return (
-                    <Group top={top} left={left} key={key}>
-                      <circle r={12} fill="none" stroke="#000" strokeWidth={2} />
+                      return (
+                        <LinkComponent
+                          key={i}
+                          data={link}
+                          percent={stepPercent}
+                          stroke={strokeColor}
+                          strokeWidth={3}
+                          fill="none"
+                        />
+                      );
+                    })}
 
-                      {/* 중간 흰색 테두리 */}
-                      <circle r={10} fill="#fff" stroke="none" />
+                    {tree.descendants().map((node, key) => {
+                      let top: number;
+                      let left: number;
+                      if (layout === 'polar') {
+                        const [radialX, radialY] = pointRadial(node.x, node.y);
+                        top = radialY;
+                        left = radialX;
+                      } else {
+                        top = node.x;
+                        left = node.y;
+                      }
 
-                      {/* 안쪽 실제 색상 (LineColor) */}
-                      <circle r={9} fill={colorMap[node.data.colorKey as keyof typeof colorMap]} stroke="none" />
-                      <text
-                        y={-20} // ✅ 원 위로 올림 (r=12보다 살짝 위)
-                        fontSize={12}
-                        fontFamily="Arial"
-                        textAnchor="middle"
-                        style={{ pointerEvents: 'none' }}
-                        fill="#000"
-                      >
-                        {isUUID(node.data.name) ? '새 페이지' : node.data.name}
-                      </text>
-                    </Group>
-                  );
-                })}
-              </Group>
-            )}
-          </Tree>
-        </Group>
-      </svg>
+                      return (
+                        <Group top={top} left={left} key={key}>
+                          <circle r={12} fill="none" stroke="#000" strokeWidth={2} />
+                          <circle r={10} fill="#fff" stroke="none" />
+                          <circle r={9} fill={colorMap[node.data.colorKey as keyof typeof colorMap]} stroke="none" />
+                          <text
+                            y={-20}
+                            fontSize={12}
+                            fontFamily="Arial"
+                            textAnchor="middle"
+                            style={{ pointerEvents: 'none' }}
+                            fill="#000"
+                          >
+                            {isUUID(node.data.name) ? '새 페이지' : node.data.name}
+                          </text>
+                        </Group>
+                      );
+                    })}
+                  </Group>
+                )}
+              </Tree>
+            </Group>
+          </svg>
+        )}
+      </Zoom>
     </div>
   );
 };
