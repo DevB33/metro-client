@@ -5,7 +5,6 @@ import GripVerticalIcon from '@/icons/grip-vertical-icon';
 
 const blockBtnContainer = css({
   position: 'absolute',
-  left: '15rem',
   top: '50%',
   transform: 'translateY(-50%)',
   display: 'flex',

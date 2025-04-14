@@ -22,11 +22,11 @@ const blockContainer = css({
 });
 
 const fakeBox = css({
-  position: 'fixed',
-  left: '0',
-  right: '0',
+  position: 'absolute',
   width: '100vw',
+  left: '50%',
   height: 'var(--block-height)',
+  transform: 'translateX(-50%)',
   zIndex: '-1',
 
   pointerEvents: 'auto',
@@ -35,6 +35,7 @@ const fakeBox = css({
 const NoteContent = () => {
   const blockButtonRef = useRef<(HTMLDivElement | null)[]>([]);
   const blockRef = useRef<(HTMLDivElement | null)[]>([]);
+  const fakeBoxRef = useRef<(HTMLDivElement | null)[]>([]);
   const noteRef = useRef<HTMLDivElement | null>(null);
   const selectionMenuRef = useRef<HTMLDivElement | null>(null);
 
@@ -76,13 +77,18 @@ const NoteContent = () => {
   const updateBlockButtonPosition = (index: number) => {
     const blockEl = blockRef.current[index];
     const buttonEl = blockButtonRef.current[index];
+    const fakeBoxEl = fakeBoxRef.current[index];
 
-    if (blockEl && buttonEl) {
-      const rect = blockEl.getBoundingClientRect();
-      buttonEl.style.position = 'absolute';
+    if (blockEl && buttonEl && fakeBoxEl) {
+      const blockRect = blockEl.getBoundingClientRect();
+      const containerRect = fakeBoxEl.getBoundingClientRect(); // relative 기준 부모
+
+      const offsetLeft = blockRect.left - containerRect.left;
+      buttonEl.style.position = 'fixed';
       buttonEl.style.top = '12px';
-      buttonEl.style.right = `${rect.right + 24}px`;
+      buttonEl.style.left = `${offsetLeft - 50}px`;
       buttonEl.style.display = 'flex';
+      buttonEl.style.backgroundColor = 'red';
     }
   };
 
@@ -170,8 +176,6 @@ const NoteContent = () => {
       document.addEventListener('mousemove', handleOutsideDrag);
     };
   }, []);
-
-  const fakeBoxRef = useRef<(HTMLDivElement | null)[]>([]);
 
   const getNodeBounds = (node: Node, startOffset: number, endOffset: number) => {
     const range = document.createRange();
@@ -280,7 +284,7 @@ const NoteContent = () => {
   }, [key, blockList]);
 
   return (
-    <div>
+    <div style={{ pointerEvents: 'none' }}>
       <div
         role="button"
         tabIndex={0}
