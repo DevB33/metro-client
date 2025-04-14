@@ -6,7 +6,7 @@ import ISelectionPosition from '@/types/selection-position';
 import handleInput from './_handler/handleInput';
 import handleKeyDown from './_handler/handleKeyDown';
 import handleMouseLeave from './_handler/handleMouseLeave';
-import BlockTag from './block-tag';
+import BlockHTMLTag from './block-html-tag';
 import handleMouseDown from './_handler/handleMouseDown';
 import handleMouseMove from './_handler/handleMouseMove';
 import SlashMenu from './slash-menu';
@@ -134,7 +134,7 @@ const Block = memo(
           handleMouseLeave(index, isDragging, isUp, blockRef, selectionStartPosition, selectionEndPosition)
         }
       >
-        <BlockTag block={block} blockList={blockList} index={index} blockRef={blockRef}>
+        <BlockHTMLTag block={block} blockList={blockList} index={index} blockRef={blockRef}>
           {block.children.length === 1 && block.children[0].content === '' && <br />}
           {block.children.map(child => {
             if (child.type === 'br') {
@@ -151,7 +151,7 @@ const Block = memo(
               </span>
             );
           })}
-        </BlockTag>
+        </BlockHTMLTag>
         {isSlashMenuOpen[index] && (
           <SlashMenu
             position={slashMenuPosition}

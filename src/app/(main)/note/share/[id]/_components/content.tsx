@@ -1,7 +1,7 @@
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
-import BlockTag from './block-tag';
+import BlockHTMLTag from './block-html-tag';
 
 const container = css({
   display: 'flex',
@@ -211,7 +211,7 @@ const Content = () => {
     <div className={container}>
       {blocks.map((block, index) => (
         <div key={block.id} className={blockDiv}>
-          <BlockTag block={block} blocks={blocks} index={index}>
+          <BlockHTMLTag block={block} blocks={blocks} index={index}>
             {block.children.map((child, idx) => {
               if (child.type === 'br') {
                 return <br key={idx} />;
@@ -227,7 +227,7 @@ const Content = () => {
                 </span>
               );
             })}
-          </BlockTag>
+          </BlockHTMLTag>
         </div>
       ))}
     </div>

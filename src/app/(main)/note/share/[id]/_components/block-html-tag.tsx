@@ -7,7 +7,7 @@ interface IBlockTag {
   children: React.ReactNode[];
 }
 
-const BlockTag = ({ block, blocks, index, children }: IBlockTag) => {
+const BlockHTMLTag = ({ block, blocks, index, children }: IBlockTag) => {
   if (block.type === 'default') {
     return <p>{children}</p>;
   }
@@ -67,4 +67,4 @@ const BlockTag = ({ block, blocks, index, children }: IBlockTag) => {
   return null;
 };
 
-export default BlockTag;
+export default BlockHTMLTag;
