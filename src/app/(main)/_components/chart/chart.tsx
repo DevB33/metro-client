@@ -9,10 +9,8 @@ import LineColor from '@/constants/line-color';
 import useSWR from 'swr';
 import { Zoom } from '@visx/zoom';
 import { useRouter } from 'next/navigation';
-import useForceUpdate from './useForceUpdate';
 import LinkControls from './LinkControls';
 import getLinkComponent from './getLinkComponent';
-import { css } from '../../../../../styled-system/css';
 
 const colorMap: Record<keyof typeof LineColor, string> = {
   LINE_ONE: '#034983',
@@ -40,7 +38,7 @@ export interface ILinkTypesProps {
 
 const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargin }: ILinkTypesProps) => {
   const [layout, setLayout] = useState<string>('cartesian');
-  const [isMouseOverChart, setIsMouseOverChart] = useState(false); // 마우스가 차트 위에 있는지 확인하는 상태
+  const [isMouseOverChart, setIsMouseOverChart] = useState(false);
   const orientation = 'horizontal';
   const linkType = 'step';
   const stepPercent = 0.7;
@@ -92,7 +90,7 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
     colorMapFromStorage?: Record<string, keyof typeof LineColor>,
     colorMapToStore?: Record<string, keyof typeof LineColor>,
   ) => {
-    const nodeId = node.data.name; // 고유 ID 기준 – 필요 시 data.id 등으로 변경
+    const nodeId = node.data.name;
 
     if (colorMapFromStorage && colorMapFromStorage[nodeId]) {
       node.data.colorKey = colorMapFromStorage[nodeId];
