@@ -1,6 +1,8 @@
 import { ITextBlock } from '@/types/block-type';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import keyName from '@/constants/key-name';
+import ISelectionPosition from '@/types/selection-position';
+import selectionDelete from '../selectionDelete';
 
 const focusCurrentBlock = (
   index: number,
@@ -515,6 +517,9 @@ const handleKeyDown = (
   isSlashMenuOpen: boolean[],
   setIsSlashMenuOpen: (isSlashMenuOpen: boolean[]) => void,
   setSlashMenuPosition: (position: { x: number; y: number }) => void,
+  isSelectionMenuOpen: boolean,
+  selectionStartPosition: ISelectionPosition,
+  selectionEndPosition: ISelectionPosition,
 ) => {
   // enter 클릭
   if (event.key === keyName.enter && !event.shiftKey) {
@@ -535,8 +540,8 @@ const handleKeyDown = (
     splitLine(index, blockList, setBlockList, blockRef);
   }
 
-  // backspace 클릭
-  if (event.key === keyName.backspace) {
+  // 일반 backspace 클릭
+  if (event.key === keyName.backspace && !isSelectionMenuOpen) {
     const { startOffset, startContainer } = getSelectionInfo(0) || {};
     if (startOffset === undefined || startOffset === null || !startContainer) return;
 
@@ -648,6 +653,14 @@ const handleKeyDown = (
         }
       }
     }
+  }
+
+  // selection + backspace 클릭
+  if (event.key === keyName.backspace && isSelectionMenuOpen) {
+    event.preventDefault();
+    selectionDelete(selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
+    setIsTyping(false);
+    setKey(Math.random());
   }
 
   // space 클릭
