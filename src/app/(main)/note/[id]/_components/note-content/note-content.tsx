@@ -74,6 +74,16 @@ const NoteContent = () => {
   const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(true);
   const [selectionMenuPosition, setSelectionMenuPosition] = useState({ x: 0, y: 0 });
 
+  const [isBlockMenuOpen, setIsBlockMenuOpen] = useState(false);
+
+  const OpenBlockMenu = () => {
+    setIsBlockMenuOpen(true);
+  };
+
+  const CloseBlockMenu = () => {
+    setIsBlockMenuOpen(false);
+  };
+
   const updateBlockButtonPosition = (index: number) => {
     const blockEl = blockRef.current[index];
     const buttonEl = blockButtonRef.current[index];
@@ -102,6 +112,7 @@ const NoteContent = () => {
   };
 
   const handleMouseLeave = (index: number) => {
+    if (isBlockMenuOpen) return;
     blockButtonRef.current[index]?.style.setProperty('display', 'none');
   };
 
@@ -328,7 +339,7 @@ const NoteContent = () => {
                   blockButtonRef.current[index] = element;
                 }}
               >
-                <BlockButton />
+                <BlockButton OpenBlockMenu={OpenBlockMenu} CloseBlockMenu={CloseBlockMenu} />
               </div>
             </div>
             <Block
