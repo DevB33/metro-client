@@ -8,6 +8,7 @@ import { pointRadial } from 'd3-shape';
 import LineColor from '@/constants/line-color';
 import useSWR from 'swr';
 import { Zoom } from '@visx/zoom';
+import { useRouter } from 'next/navigation';
 import useForceUpdate from './useForceUpdate';
 import LinkControls from './LinkControls';
 import getLinkComponent from './getLinkComponent';
@@ -15,6 +16,7 @@ import { css } from '../../../../../styled-system/css';
 
 interface ITreeNode {
   name: string;
+  id: string;
   children?: ITreeNode[];
 }
 
@@ -37,15 +39,19 @@ export interface ILinkTypesProps {
 
 const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargin }: ILinkTypesProps) => {
   const [layout, setLayout] = useState<string>('cartesian');
+  const [isMouseOverChart, setIsMouseOverChart] = useState(false); // 마우스가 차트 위에 있는지 확인하는 상태
   const orientation = 'horizontal';
   const linkType = 'step';
   const stepPercent = 0.7;
+
+  const router = useRouter();
 
   const { data: pageList } = useSWR('pageList');
 
   function convertPageListToTree(pages: any[]): ITreeNode[] {
     return pages.map(page => ({
-      name: page.title ?? page.id, // title이 있으면 사용, 없으면 id fallback
+      name: page.title ?? page.id,
+      id: page.id,
       children: convertPageListToTree(page.children || []),
     }));
   }
@@ -54,6 +60,7 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
 
   const treeData: ITreeNode = {
     name: 'WorkSpace',
+    id: '',
     children: convertPageListToTree(pageList.node),
   };
 
@@ -140,6 +147,26 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
   const isUUID = (value: string) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
+  const openPage = (pageId: string) => {
+    router.push(`/note/${pageId}`);
+  };
+
+  // 마우스가 차트 위에 있을 때 wheel 이벤트를 막는 함수
+  useEffect(() => {
+    const handleWheel = (event: WheelEvent) => {
+      if (isMouseOverChart) {
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+
+    // cleanup
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+    };
+  }, [isMouseOverChart]);
+
   return totalWidth < 10 ? null : (
     <div>
       <LinkControls layout={layout} setLayout={setLayout} resetColor={resetStoredColors} />
@@ -154,10 +181,11 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
             onMouseUp={zoom.dragEnd}
             onMouseLeave={() => zoom.dragEnd()}
             onWheel={event => {
-              event.preventDefault();
               const scaleAmount = 1 - event.deltaY * 0.001;
               zoom.scale({ scaleX: scaleAmount, scaleY: scaleAmount });
             }}
+            onMouseEnter={() => setIsMouseOverChart(true)} // 마우스가 차트 위에 들어왔을 때
+            onMouseLeave={() => setIsMouseOverChart(false)} // 마우스가 차트 밖으로 나갔을 때
           >
             <LinearGradient id="links-gradient" from="#fd9b93" to="#fe6e9e" />
             <rect width={totalWidth} height={totalHeight} fill="white" strokeWidth={1.5} stroke="black" />
@@ -203,7 +231,16 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
                       }
 
                       return (
-                        <Group top={top} left={left} key={key}>
+                        <Group
+                          top={top}
+                          left={left}
+                          key={key}
+                          onClick={e => {
+                            e.stopPropagation();
+                            if (node.depth === 0) return;
+                            setTimeout(() => openPage(node.data.id), 0);
+                          }}
+                        >
                           <circle r={12} fill="none" stroke="#000" strokeWidth={2} />
                           <circle r={10} fill="#fff" stroke="none" />
                           <circle r={9} fill={colorMap[node.data.colorKey as keyof typeof colorMap]} stroke="none" />

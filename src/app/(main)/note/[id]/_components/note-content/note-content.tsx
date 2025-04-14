@@ -140,7 +140,6 @@ const NoteContent = () => {
     };
 
     const handleOutsideDrag = (event: MouseEvent) => {
-      console.log(isDraggingRef.current);
       if (prevClientY.current < event.clientY) {
         setIsUp(false);
         prevClientY.current = event.clientY;
