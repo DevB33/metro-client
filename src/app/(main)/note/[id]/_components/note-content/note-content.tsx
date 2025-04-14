@@ -324,7 +324,7 @@ const NoteContent = () => {
                   blockButtonRef.current[index] = element;
                 }}
               >
-                <BlockButton />
+                <BlockButton index={index} block={block} blockList={blockList} />
               </div>
             </div>
             <Block
