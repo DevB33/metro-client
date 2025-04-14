@@ -14,12 +14,6 @@ import LinkControls from './LinkControls';
 import getLinkComponent from './getLinkComponent';
 import { css } from '../../../../../styled-system/css';
 
-interface ITreeNode {
-  name: string;
-  id: string;
-  children?: ITreeNode[];
-}
-
 const colorMap: Record<keyof typeof LineColor, string> = {
   LINE_ONE: '#034983',
   LINE_TWO: '#01A140',
@@ -28,6 +22,13 @@ const colorMap: Record<keyof typeof LineColor, string> = {
   LINE_FIVE: '#794597',
   LINE_SIX: '#7C4A32',
 };
+
+interface ITreeNode {
+  name: string;
+  id: string;
+  colorKey: keyof typeof LineColor;
+  children?: ITreeNode[];
+}
 
 const defaultMargin = { top: 30, left: 30, right: 30, bottom: 70 };
 
@@ -48,25 +49,25 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
 
   const { data: pageList } = useSWR('pageList');
 
-  function convertPageListToTree(pages: any[]): ITreeNode[] {
+  const convertPageListToTree = (pages: any[]): ITreeNode[] => {
     return pages.map(page => ({
       name: page.title ?? page.id,
       id: page.id,
+      colorKey: 'LINE_ONE',
       children: convertPageListToTree(page.children || []),
     }));
-  }
-
-  console.log(convertPageListToTree(pageList.node));
+  };
 
   const treeData: ITreeNode = {
     name: 'WorkSpace',
     id: '',
+    colorKey: 'LINE_ONE',
     children: convertPageListToTree(pageList.node),
   };
 
   const STORAGE_KEY = 'tree-node-colors';
 
-  function getStoredColors(): Record<string, keyof typeof LineColor> {
+  const getStoredColors = (): Record<string, keyof typeof LineColor> => {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return {};
     try {
@@ -74,18 +75,23 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
     } catch {
       return {};
     }
-  }
+  };
 
-  function saveColorsToStorage(colors: Record<string, keyof typeof LineColor>) {
+  const saveColorsToStorage = (colors: Record<string, keyof typeof LineColor>) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(colors));
-  }
+  };
 
-  function assignColorRecursively(
+  const resetStoredColors = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    window.location.reload();
+  };
+
+  const assignColorRecursively = (
     node: any,
     parentColorKey?: keyof typeof LineColor,
     colorMapFromStorage?: Record<string, keyof typeof LineColor>,
     colorMapToStore?: Record<string, keyof typeof LineColor>,
-  ) {
+  ) => {
     const nodeId = node.data.name; // 고유 ID 기준 – 필요 시 data.id 등으로 변경
 
     if (colorMapFromStorage && colorMapFromStorage[nodeId]) {
@@ -104,14 +110,7 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
     node.children?.forEach((child: any) =>
       assignColorRecursively(child, node.data.colorKey, colorMapFromStorage, colorMapToStore),
     );
-  }
-
-  function resetStoredColors() {
-    localStorage.removeItem(STORAGE_KEY);
-    // 페이지 리로드로 트리 다시 초기화
-    window.location.reload();
-  }
-
+  };
   const innerWidth = totalWidth - margin.left - margin.right;
   const innerHeight = totalHeight - margin.top - margin.bottom;
 
@@ -124,8 +123,8 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
       x: innerWidth / 2,
       y: innerHeight / 2,
     };
-    sizeWidth = Math.PI * 2; // <--- 더 넓은 각도
-    sizeHeight = Math.min(innerWidth, innerHeight) / 1.5; // <--- 더 큰 반지름
+    sizeWidth = Math.PI * 2;
+    sizeHeight = Math.min(innerWidth, innerHeight) / 1.5;
   } else {
     origin = { x: 0, y: 0 };
     sizeWidth = innerHeight;
@@ -151,7 +150,6 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
     router.push(`/note/${pageId}`);
   };
 
-  // 마우스가 차트 위에 있을 때 wheel 이벤트를 막는 함수
   useEffect(() => {
     const handleWheel = (event: WheelEvent) => {
       if (isMouseOverChart) {
@@ -161,7 +159,6 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
 
     window.addEventListener('wheel', handleWheel, { passive: false });
 
-    // cleanup
     return () => {
       window.removeEventListener('wheel', handleWheel);
     };
@@ -179,13 +176,15 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
             onMouseDown={zoom.dragStart}
             onMouseMove={zoom.dragMove}
             onMouseUp={zoom.dragEnd}
-            onMouseLeave={() => zoom.dragEnd()}
             onWheel={event => {
               const scaleAmount = 1 - event.deltaY * 0.001;
               zoom.scale({ scaleX: scaleAmount, scaleY: scaleAmount });
             }}
-            onMouseEnter={() => setIsMouseOverChart(true)} // 마우스가 차트 위에 들어왔을 때
-            onMouseLeave={() => setIsMouseOverChart(false)} // 마우스가 차트 밖으로 나갔을 때
+            onMouseEnter={() => setIsMouseOverChart(true)}
+            onMouseLeave={() => {
+              zoom.dragEnd();
+              setIsMouseOverChart(false);
+            }}
           >
             <LinearGradient id="links-gradient" from="#fd9b93" to="#fe6e9e" />
             <rect width={totalWidth} height={totalHeight} fill="white" strokeWidth={1.5} stroke="black" />
@@ -195,20 +194,20 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
                 size={[sizeWidth, sizeHeight]}
                 separation={(a, b) => {
                   if (layout === 'polar') {
-                    return a.parent === b.parent ? 2.5 : 2.5; // polar는 더 넓게
+                    return a.parent === b.parent ? 2.5 : 2.5;
                   }
-                  return a.parent === b.parent ? 2.5 : 2; // cartesian 기본값
+                  return a.parent === b.parent ? 2.5 : 2;
                 }}
               >
                 {tree => (
                   <Group top={origin.y} left={origin.x}>
-                    {tree.links().map((link, i) => {
+                    {tree.links().map(link => {
                       const colorKey = link.source.data.colorKey as keyof typeof colorMap;
                       const strokeColor = colorMap[colorKey];
 
                       return (
                         <LinkComponent
-                          key={i}
+                          key={`${link.source.data.id}-${link.target.data.id}`}
                           data={link}
                           percent={stepPercent}
                           stroke={strokeColor}
@@ -218,7 +217,7 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
                       );
                     })}
 
-                    {tree.descendants().map((node, key) => {
+                    {tree.descendants().map(node => {
                       let top: number;
                       let left: number;
                       if (layout === 'polar') {
@@ -234,7 +233,7 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
                         <Group
                           top={top}
                           left={left}
-                          key={key}
+                          key={node.data.id}
                           onClick={e => {
                             e.stopPropagation();
                             if (node.depth === 0) return;
