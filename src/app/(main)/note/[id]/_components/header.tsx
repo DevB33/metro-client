@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { css } from '@/../styled-system/css';
 
 import LeftArrowIcon from '@/icons/left-arrow-icon';
@@ -7,7 +9,6 @@ import RightArrowIcon from '@/icons/right-arrow-icon';
 import HorizonDotIcon from '@/icons/horizon-dot-icon';
 import DropDown from '@/components/dropdown/dropdown';
 import TrashIcon from '@/icons/trash-icon';
-import { useState } from 'react';
 
 const headerConatiner = css({
   boxSizing: 'border-box',
@@ -30,11 +31,18 @@ const rightItemsConatiner = css({
   gap: 'small',
 });
 
+const shareButton = css({
+  cursor: 'pointer',
+});
+
 const dropDownButton = css({
   cursor: 'pointer',
 });
 
 const Header = () => {
+  const router = useRouter();
+  const params = useParams();
+  const noteId = params.id as string;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const openSettingDropdown = () => {
@@ -45,6 +53,10 @@ const Header = () => {
     setIsDropdownOpen(false);
   };
 
+  const sharePage = () => {
+    router.push(`/note/share/${noteId}`);
+  };
+
   return (
     <div className={headerConatiner}>
       <div className={leftItemsConatiner}>
@@ -52,8 +64,10 @@ const Header = () => {
         <RightArrowIcon />
       </div>
       <div className={rightItemsConatiner}>
-        <div>공유</div>
-        <div className={dropDownButton} onClick={openSettingDropdown}>
+        <button type="button" className={shareButton} onClick={sharePage}>
+          공유
+        </button>
+        <button type="button" className={dropDownButton} onClick={openSettingDropdown}>
           <HorizonDotIcon />
           <DropDown handleClose={closeSettingDropdown}>
             <DropDown.Menu isOpen={isDropdownOpen} top="0.5rem" right="0">
@@ -63,7 +77,7 @@ const Header = () => {
               </DropDown.Item>
             </DropDown.Menu>
           </DropDown>
-        </div>
+        </button>
       </div>
     </div>
   );
