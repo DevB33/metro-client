@@ -37,7 +37,20 @@ export interface ILinkTypesProps {
 }
 
 const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargin }: ILinkTypesProps) => {
-  const [layout, setLayout] = useState<string>('cartesian');
+  const STORAGE_KEY_LAYOUT = 'tree-layout';
+
+  const [layout, setLayoutState] = useState<string>(() => {
+    if (typeof window === 'undefined') return 'cartesian';
+    return localStorage.getItem(STORAGE_KEY_LAYOUT) ?? 'cartesian';
+  });
+
+  const setLayout = (layoutState: string) => {
+    setLayoutState(layoutState);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY_LAYOUT, layoutState);
+    }
+  };
+
   const [isMouseOverChart, setIsMouseOverChart] = useState(false);
   const orientation = 'horizontal';
   const linkType = 'step';
@@ -185,7 +198,7 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
             }}
           >
             <LinearGradient id="links-gradient" from="#fd9b93" to="#fe6e9e" />
-            <rect width={totalWidth} height={totalHeight} fill="white" strokeWidth={1.5} stroke="black" />
+            <rect width={totalWidth} height={totalHeight} fill="white" strokeWidth={1.5} stroke="grey" />
             <Group top={margin.top} left={margin.left} transform={zoom.toString()}>
               <Tree
                 root={hierarchy(treeData, d => d.children)}
