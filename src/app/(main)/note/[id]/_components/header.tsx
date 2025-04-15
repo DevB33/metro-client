@@ -48,7 +48,6 @@ const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const pathname = usePathname();
   const pageId = pathname.split('note/')[1];
-  console.log(pageId);
 
   const { data: pageList } = useSWR('pageList');
 
@@ -68,6 +67,7 @@ const Header = () => {
     try {
       await deletePage(pageId);
       await mutate('pageList', getPageList, false);
+      router.push(`/`);
     } catch (error) {
       console.log(error);
     }
