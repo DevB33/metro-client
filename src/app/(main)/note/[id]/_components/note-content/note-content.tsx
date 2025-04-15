@@ -158,9 +158,8 @@ const NoteContent = () => {
         isDraggingRef.current = true;
         if (selectionMenuRef.current && !selectionMenuRef.current.contains(event.target as Node)) {
           resetSelection();
+          setKey(Math.random());
         }
-
-        setKey(Math.random());
       }
     };
 
@@ -316,9 +315,7 @@ const NoteContent = () => {
             setSelectionMenuPosition,
           )
         }
-        onMouseDown={() => {
-          setTimeout(() => setIsSelectionMenuOpen(false), 0);
-        }}
+        onMouseDown={() => setIsSelectionMenuOpen(false)}
         onKeyDown={() => setIsSelectionMenuOpen(false)}
       >
         {blockList.map((block, index) => (

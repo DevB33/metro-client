@@ -4,6 +4,7 @@ import { css } from '@/../styled-system/css';
 interface IDropDownItemProps {
   children: ReactNode;
   onClick?: () => void;
+  onMouseMove?: () => void;
 }
 
 const dropdownItemContainer = css({
@@ -34,9 +35,9 @@ const hoverContainer = css({
   },
 });
 
-const DropDownItem = ({ children, onClick }: IDropDownItemProps) => {
+const DropDownItem = ({ children, onClick, onMouseMove }: IDropDownItemProps) => {
   return (
-    <div className={dropdownItemContainer} onClick={onClick}>
+    <div className={dropdownItemContainer} onClick={onClick} onMouseMove={onMouseMove}>
       <div className={hoverContainer}>{children}</div>
     </div>
   );

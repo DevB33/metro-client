@@ -35,6 +35,7 @@ const menu = css({
   fontSize: 'md',
   padding: '.3rem',
   zIndex: 1000,
+  pointerEvents: 'auto',
 });
 
 const slashButton = css({

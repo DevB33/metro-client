@@ -67,8 +67,7 @@ const BlockButton = ({ OpenBlockMenu, CloseBlockMenu, deleteBlockByIndex, index 
     <div className={blockBtnContainer}>
       <div
         className={blockBtn}
-        onClickCapture={e => {
-          e.stopPropagation();
+        onMouseUp={e => {
           console.log('수정');
         }}
       >
