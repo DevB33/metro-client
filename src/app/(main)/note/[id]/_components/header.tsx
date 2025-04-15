@@ -68,17 +68,6 @@ const Header = () => {
     router.push(`/note/share/${noteId}`);
   };
 
-  const handleDeleteButtonClick = async () => {
-    try {
-      await deletePage(pageId);
-      await mutate('pageList', getPageList, false);
-      router.push(`/`);
-    } catch (error) {
-      console.log(error);
-    }
-    closeSettingDropdown();
-  };
-
   const findParentId = (nodeList: IPageType[], targetId: string, parentId: string | null = null): string | null => {
     const match = nodeList.find(node => {
       if (node.id === targetId) return true;
@@ -95,6 +84,22 @@ const Header = () => {
     });
 
     return match ? parentId : null;
+  };
+
+  const handleDeleteButtonClick = async () => {
+    try {
+      await deletePage(pageId);
+      await mutate('pageList', getPageList, false);
+      const parentId = findParentId(pageList.node, pageId);
+      if (parentId) {
+        router.push(`/note/${parentId}`);
+      } else {
+        router.push('/');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    closeSettingDropdown();
   };
 
   const handleBackButton = () => {

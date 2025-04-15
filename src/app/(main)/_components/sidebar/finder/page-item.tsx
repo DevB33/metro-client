@@ -100,7 +100,6 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
   const [isHover, setIsHover] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const pathname = usePathname();
-  const pageId = pathname.split('note/')[1];
 
   const togglePage = () => {
     setIsOpen(!isOpen);
@@ -126,8 +125,6 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
   };
 
   const handleDeleteButtonClick = async () => {
-    console.log(page.id);
-    console.log(pageId);
     try {
       await deletePage(page.id);
       await mutate('pageList', getPageList, false);
