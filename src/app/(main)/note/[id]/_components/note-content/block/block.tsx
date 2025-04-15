@@ -1,4 +1,4 @@
-import { memo, useRef, useEffect } from 'react';
+import { memo, useState, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
@@ -73,6 +73,8 @@ const Block = memo(
     const prevChildNodesLength = useRef(0);
     const prevClientY = useRef(0);
 
+    const [isDragOver, setIsDragOver] = useState(false);
+
     useEffect(() => {
       prevChildNodesLength.current = blockList[index].children.length;
     }, [blockList, index]);
@@ -84,6 +86,9 @@ const Block = memo(
         contentEditable
         suppressContentEditableWarning
         className={`parent ${blockDiv}`}
+        style={{
+          borderBottom: isDragOver ? '4px solid lightblue' : 'none',
+        }}
         onInput={event => {
           setIsTyping(true);
           handleInput(event, index, blockList, setBlockList, blockRef, prevChildNodesLength);
@@ -133,6 +138,27 @@ const Block = memo(
         onMouseLeave={() =>
           handleMouseLeave(index, isDragging, isUp, blockRef, selectionStartPosition, selectionEndPosition)
         }
+        onDragEnter={event => {
+          event.preventDefault();
+          setIsDragOver(true);
+        }}
+        onDragLeave={event => {
+          event.preventDefault();
+          const currentTarget = event.currentTarget as HTMLElement;
+          const related = event.relatedTarget as HTMLElement | null;
+
+          if (related && currentTarget.contains(related)) {
+            return;
+          }
+          setIsDragOver(false);
+        }}
+        onDragOver={event => {
+          event.preventDefault();
+        }}
+        onDrop={() => {
+          // TODO: 블록 순서 변경 로직
+          setIsDragOver(false);
+        }}
       >
         <BlockHTMLTag block={block} blockList={blockList} index={index} blockRef={blockRef}>
           {block.children.length === 1 && block.children[0].content === '' && <br />}

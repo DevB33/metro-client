@@ -1,9 +1,16 @@
+import { useRef } from 'react';
 import { css } from '@/../styled-system/css';
 
 import PlusIcon from '@/icons/plus-icon';
 import GripVerticalIcon from '@/icons/grip-vertical-icon';
-import { useRef } from 'react';
+import { ITextBlock } from '@/types/block-type';
 import GhostBlock from './block/ghost-block';
+
+interface IBlockButton {
+  index: number;
+  block: ITextBlock;
+  blockList: ITextBlock[];
+}
 
 const blockBtnContainer = css({
   position: 'absolute',
@@ -30,12 +37,13 @@ const blockBtn = css({
   },
 });
 
-const BlockButton = ({ index, block, blockList }: any) => {
+const BlockButton = ({ index, block, blockList }: IBlockButton) => {
   const ghostRef = useRef<HTMLDivElement>(null);
 
-  const handleDragStart = async (event: React.DragEvent<HTMLDivElement>) => {
+  const handleDragStart = async (event: React.DragEvent<HTMLButtonElement>) => {
     if (ghostRef.current) {
       const ghost = ghostRef.current;
+
       event.dataTransfer.setDragImage(ghost, 10, 10);
     }
   };
@@ -46,9 +54,9 @@ const BlockButton = ({ index, block, blockList }: any) => {
       <div className={blockBtn}>
         <PlusIcon />
       </div>
-      <div className={blockBtn} draggable onDragStart={handleDragStart}>
+      <button type="button" className={blockBtn} draggable onDragStart={handleDragStart}>
         <GripVerticalIcon />
-      </div>
+      </button>
     </div>
   );
 };

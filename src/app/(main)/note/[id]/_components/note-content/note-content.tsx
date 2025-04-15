@@ -305,21 +305,21 @@ const NoteContent = () => {
             tabIndex={0}
             key={block.id}
             className={blockContainer}
-            onMouseEnter={() => handleMouseEnter(index)}
-            onMouseLeave={() => handleMouseLeave(index)}
-            onKeyDown={() => handleMouseLeave(index)}
-            onMouseMove={() => handleMouseEnter(index)}
+            // onMouseEnter={() => handleMouseEnter(index)}
+            // onMouseLeave={() => handleMouseLeave(index)}
+            // onKeyDown={() => handleMouseLeave(index)}
+            // onMouseMove={() => handleMouseEnter(index)}
           >
             <div
               className={fakeBox}
               ref={element => {
                 fakeBoxRef.current[index] = element;
               }}
-              onMouseEnter={() => handleFakeBoxMouseEnter(index)}
-              onMouseLeave={() => handleFakeBoxMouseLeave(index)}
+              // onMouseEnter={() => handleFakeBoxMouseEnter(index)}
+              // onMouseLeave={() => handleFakeBoxMouseLeave(index)}
             >
               <div
-                className={css({ display: 'none' })}
+                // className={css({ display: 'none' })}
                 ref={element => {
                   blockButtonRef.current[index] = element;
                 }}
