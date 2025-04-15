@@ -46,10 +46,6 @@ const backButton = css({
   cursor: 'pointer',
 });
 
-const forwardButton = css({
-  cursor: 'pointer',
-});
-
 const Header = () => {
   const router = useRouter();
   const params = useParams();
