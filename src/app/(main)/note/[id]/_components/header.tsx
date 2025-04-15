@@ -11,6 +11,7 @@ import DropDown from '@/components/dropdown/dropdown';
 import TrashIcon from '@/icons/trash-icon';
 import useSWR, { mutate } from 'swr';
 import { deletePage, getPageList } from '@/apis/side-bar';
+import IPageType from '@/types/page-type';
 
 const headerConatiner = css({
   boxSizing: 'border-box',
@@ -38,6 +39,14 @@ const shareButton = css({
 });
 
 const dropDownButton = css({
+  cursor: 'pointer',
+});
+
+const backButton = css({
+  cursor: 'pointer',
+});
+
+const forwardButton = css({
   cursor: 'pointer',
 });
 
@@ -74,11 +83,39 @@ const Header = () => {
     closeSettingDropdown();
   };
 
+  const findParentId = (nodeList: IPageType[], targetId: string, parentId: string | null = null): string | null => {
+    const match = nodeList.find(node => {
+      if (node.id === targetId) return true;
+
+      if (node.children?.length) {
+        const found = findParentId(node.children, targetId, node.id);
+        if (found) {
+          parentId = found;
+          return true;
+        }
+      }
+
+      return false;
+    });
+
+    return match ? parentId : null;
+  };
+
+  const handleBackButton = () => {
+    const parentId = findParentId(pageList.node, pageId);
+    if (parentId) {
+      router.push(`/note/${parentId}`);
+    } else {
+      router.push('/');
+    }
+  };
+
   return (
     <div className={headerConatiner}>
       <div className={leftItemsConatiner}>
-        <LeftArrowIcon />
-        <RightArrowIcon />
+        <button className={backButton} onClick={handleBackButton}>
+          <LeftArrowIcon />
+        </button>
       </div>
       <div className={rightItemsConatiner}>
         <button type="button" className={shareButton} onClick={sharePage}>
