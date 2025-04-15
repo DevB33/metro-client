@@ -32,6 +32,7 @@ interface IBlockComponent {
   setIsSlashMenuOpen: React.Dispatch<React.SetStateAction<boolean[]>>;
   slashMenuPosition: { x: number; y: number };
   setSlashMenuPosition: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
+  dragBlockIndex: number | null;
 }
 
 const blockDiv = css({
@@ -69,6 +70,7 @@ const Block = memo(
     setIsSlashMenuOpen,
     slashMenuPosition,
     setSlashMenuPosition,
+    dragBlockIndex,
   }: IBlockComponent) => {
     const prevChildNodesLength = useRef(0);
     const prevClientY = useRef(0);
@@ -139,10 +141,16 @@ const Block = memo(
           handleMouseLeave(index, isDragging, isUp, blockRef, selectionStartPosition, selectionEndPosition)
         }
         onDragEnter={event => {
+          if (dragBlockIndex === index) {
+            return;
+          }
           event.preventDefault();
           setIsDragOver(true);
         }}
         onDragLeave={event => {
+          if (dragBlockIndex === index) {
+            return;
+          }
           event.preventDefault();
           const currentTarget = event.currentTarget as HTMLElement;
           const related = event.relatedTarget as HTMLElement | null;

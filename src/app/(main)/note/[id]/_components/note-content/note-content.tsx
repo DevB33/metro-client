@@ -37,6 +37,7 @@ const NoteContent = () => {
   const blockRef = useRef<(HTMLDivElement | null)[]>([]);
   const noteRef = useRef<HTMLDivElement | null>(null);
   const selectionMenuRef = useRef<HTMLDivElement | null>(null);
+  const [dragBlockIndex, setDragBlockIndex] = useState<number | null>(null);
 
   const [blockList, setBlockList] = useState<ITextBlock[]>([
     {
@@ -305,26 +306,32 @@ const NoteContent = () => {
             tabIndex={0}
             key={block.id}
             className={blockContainer}
-            // onMouseEnter={() => handleMouseEnter(index)}
-            // onMouseLeave={() => handleMouseLeave(index)}
-            // onKeyDown={() => handleMouseLeave(index)}
-            // onMouseMove={() => handleMouseEnter(index)}
+            onMouseEnter={() => handleMouseEnter(index)}
+            onMouseLeave={() => handleMouseLeave(index)}
+            onKeyDown={() => handleMouseLeave(index)}
+            onMouseMove={() => handleMouseEnter(index)}
           >
             <div
               className={fakeBox}
               ref={element => {
                 fakeBoxRef.current[index] = element;
               }}
-              // onMouseEnter={() => handleFakeBoxMouseEnter(index)}
-              // onMouseLeave={() => handleFakeBoxMouseLeave(index)}
+              onMouseEnter={() => handleFakeBoxMouseEnter(index)}
+              onMouseLeave={() => handleFakeBoxMouseLeave(index)}
             >
               <div
-                // className={css({ display: 'none' })}
+                className={css({ display: 'none' })}
                 ref={element => {
                   blockButtonRef.current[index] = element;
                 }}
               >
-                <BlockButton index={index} block={block} blockList={blockList} />
+                <BlockButton
+                  index={index}
+                  block={block}
+                  blockList={blockList}
+                  setDragBlockIndex={setDragBlockIndex}
+                  setIsTyping={setIsTyping}
+                />
               </div>
             </div>
             <Block
@@ -348,6 +355,7 @@ const NoteContent = () => {
               setIsSlashMenuOpen={setIsSlashMenuOpen}
               slashMenuPosition={slashMenuPosition}
               setSlashMenuPosition={setSlashMenuPosition}
+              dragBlockIndex={dragBlockIndex}
             />
           </div>
         ))}

@@ -10,6 +10,8 @@ interface IBlockButton {
   index: number;
   block: ITextBlock;
   blockList: ITextBlock[];
+  setDragBlockIndex: React.Dispatch<React.SetStateAction<number | null>>;
+  setIsTyping: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const blockBtnContainer = css({
@@ -37,11 +39,13 @@ const blockBtn = css({
   },
 });
 
-const BlockButton = ({ index, block, blockList }: IBlockButton) => {
+const BlockButton = ({ index, block, blockList, setDragBlockIndex, setIsTyping }: IBlockButton) => {
   const ghostRef = useRef<HTMLDivElement>(null);
 
   const handleDragStart = async (event: React.DragEvent<HTMLButtonElement>) => {
     if (ghostRef.current) {
+      setIsTyping(false);
+      setDragBlockIndex(index);
       const ghost = ghostRef.current;
 
       event.dataTransfer.setDragImage(ghost, 10, 10);
