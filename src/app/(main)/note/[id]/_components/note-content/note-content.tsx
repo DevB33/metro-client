@@ -282,6 +282,12 @@ const NoteContent = () => {
     }
   };
 
+  const deleteBlockByIndex = (indexToDelete: number) => {
+    setBlockList(prev => prev.filter((_, index) => index !== indexToDelete));
+    console.log(1);
+    setKey(Math.random());
+  };
+
   useEffect(() => {
     // 각 블록에 대해 반복하여 해당하는 fakeBox 높이 설정
     blockRef.current.forEach((block, index) => {
@@ -299,7 +305,6 @@ const NoteContent = () => {
       <div
         role="button"
         tabIndex={0}
-        style={{ pointerEvents: 'none' }}
         key={key}
         ref={noteRef}
         onMouseUp={() =>
@@ -311,7 +316,9 @@ const NoteContent = () => {
             setSelectionMenuPosition,
           )
         }
-        onMouseDown={() => setIsSelectionMenuOpen(false)}
+        onMouseDown={() => {
+          setTimeout(() => setIsSelectionMenuOpen(false), 0);
+        }}
         onKeyDown={() => setIsSelectionMenuOpen(false)}
       >
         {blockList.map((block, index) => (
@@ -339,7 +346,12 @@ const NoteContent = () => {
                   blockButtonRef.current[index] = element;
                 }}
               >
-                <BlockButton OpenBlockMenu={OpenBlockMenu} CloseBlockMenu={CloseBlockMenu} />
+                <BlockButton
+                  OpenBlockMenu={OpenBlockMenu}
+                  CloseBlockMenu={CloseBlockMenu}
+                  deleteBlockByIndex={deleteBlockByIndex}
+                  index={index}
+                />
               </div>
             </div>
             <Block

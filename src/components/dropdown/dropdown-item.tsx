@@ -14,6 +14,7 @@ const dropdownItemContainer = css({
   justifyContent: 'start',
   height: '2rem',
   fontSize: '0.8rem',
+  userSelect: 'none',
 });
 
 const hoverContainer = css({

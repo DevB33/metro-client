@@ -10,6 +10,8 @@ import { useState } from 'react';
 interface IBlockButton {
   OpenBlockMenu: () => void;
   CloseBlockMenu: () => void;
+  deleteBlockByIndex: (indexToDelete: number) => void;
+  index: number;
 }
 
 const blockBtnContainer = css({
@@ -29,28 +31,47 @@ const blockBtn = css({
   justifyContent: 'center',
   borderRadius: '0.5rem',
   cursor: 'pointer',
-  pointerEvents: 'auto',
 
   _hover: {
     backgroundColor: '#F1F1F0',
   },
 });
 
-const BlockButton = ({ OpenBlockMenu, CloseBlockMenu }: IBlockButton) => {
+const deleteBtn = css({
+  display: 'flex',
+  flexDirection: 'row',
+  color: 'red',
+  gap: '0.25rem',
+});
+
+const BlockButton = ({ OpenBlockMenu, CloseBlockMenu, deleteBlockByIndex, index }: IBlockButton) => {
   const [isblockButtonModalOpen, setIsblockButtonModalOpen] = useState(false);
 
   const handleClose = () => {
     setIsblockButtonModalOpen(false);
     CloseBlockMenu();
   };
+
   const handleOpen = () => {
     setIsblockButtonModalOpen(true);
     OpenBlockMenu();
   };
 
+  const handleDelete = () => {
+    console.log('123123');
+    deleteBlockByIndex(index);
+    handleClose();
+  };
+
   return (
     <div className={blockBtnContainer}>
-      <div className={blockBtn}>
+      <div
+        className={blockBtn}
+        onClickCapture={e => {
+          e.stopPropagation();
+          console.log('수정');
+        }}
+      >
         <PlusIcon />
       </div>
       <div className={blockBtn} onMouseUp={handleOpen}>
@@ -58,13 +79,23 @@ const BlockButton = ({ OpenBlockMenu, CloseBlockMenu }: IBlockButton) => {
       </div>
       <DropDown handleClose={handleClose}>
         <DropDown.Menu isOpen={isblockButtonModalOpen} top="0.2rem" left="-11.5rem">
-          <DropDown.Item>
+          <DropDown.Item
+            onClick={() => {
+              console.log('수정');
+            }}
+          >
             <ArrowReapeatIcon width="16px" height="16px" />
             제목 수정하기
           </DropDown.Item>
-          <DropDown.Item>
-            <TrashIcon />
-            삭제하기
+          <DropDown.Item
+            onClick={() => {
+              console.log('삭제');
+            }}
+          >
+            <div className={deleteBtn} onMouseUp={handleDelete}>
+              <TrashIcon />
+              삭제하기
+            </div>
           </DropDown.Item>
         </DropDown.Menu>
       </DropDown>
