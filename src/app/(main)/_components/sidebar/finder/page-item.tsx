@@ -99,6 +99,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isHover, setIsHover] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
   const togglePage = () => {
     setIsOpen(!isOpen);
@@ -116,6 +117,13 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
   };
 
   const openSettingDropdown = () => {
+    if (settingButtonRef.current) {
+      const rect = settingButtonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.top, // 버튼 아래에 위치
+        left: rect.left + 30, // 적절히 조정
+      });
+    }
     setIsDropdownOpen(true);
   };
 
@@ -181,7 +189,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
         )}
       </div>
       <DropDown handleClose={closeSettingDropdown}>
-        <DropDown.Menu isOpen={isDropdownOpen} top="0.2rem" left="10.7rem">
+        <DropDown.Menu isOpen={isDropdownOpen} top={dropdownPosition.top} left={dropdownPosition.left}>
           <DropDown.Item onClick={openEditModal}>
             <PencilSquareIcon />
             제목 수정하기

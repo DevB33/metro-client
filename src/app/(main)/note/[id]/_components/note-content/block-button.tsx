@@ -5,7 +5,7 @@ import GripVerticalIcon from '@/icons/grip-vertical-icon';
 import DropDown from '@/components/dropdown/dropdown';
 import TrashIcon from '@/icons/trash-icon';
 import ArrowReapeatIcon from '@/icons/arrow-repeat-icon';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 interface IBlockButton {
   OpenBlockMenu: () => void;
@@ -47,51 +47,52 @@ const deleteBtn = css({
 const BlockButton = ({ OpenBlockMenu, CloseBlockMenu, deleteBlockByIndex, index }: IBlockButton) => {
   const [isblockButtonModalOpen, setIsblockButtonModalOpen] = useState(false);
 
+  const buttonRef = useRef<HTMLDivElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+
   const handleClose = () => {
     setIsblockButtonModalOpen(false);
     CloseBlockMenu();
   };
 
+  // const handleOpen = () => {
+  //   setIsblockButtonModalOpen(true);
+  //   OpenBlockMenu();
+  // };
+
   const handleOpen = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.top,
+        left: rect.left - 140,
+      });
+    }
     setIsblockButtonModalOpen(true);
     OpenBlockMenu();
   };
 
   const handleDelete = () => {
-    console.log('123123');
     deleteBlockByIndex(index);
     handleClose();
   };
 
   return (
-    <div className={blockBtnContainer}>
-      <div
-        className={blockBtn}
-        onMouseUp={e => {
-          console.log('수정');
-        }}
-      >
+    <div className={blockBtnContainer} ref={buttonRef}>
+      <div>
         <PlusIcon />
       </div>
       <div className={blockBtn} onMouseUp={handleOpen}>
         <GripVerticalIcon />
       </div>
       <DropDown handleClose={handleClose}>
-        <DropDown.Menu isOpen={isblockButtonModalOpen} top="0.2rem" left="-11.5rem">
-          <DropDown.Item
-            onClick={() => {
-              console.log('수정');
-            }}
-          >
+        <DropDown.Menu isOpen={isblockButtonModalOpen} top={dropdownPosition.top} left={dropdownPosition.left}>
+          <DropDown.Item>
             <ArrowReapeatIcon width="16px" height="16px" />
-            제목 수정하기
+            전환
           </DropDown.Item>
-          <DropDown.Item
-            onClick={() => {
-              console.log('삭제');
-            }}
-          >
-            <div className={deleteBtn} onMouseUp={handleDelete}>
+          <DropDown.Item onClick={handleDelete}>
+            <div className={deleteBtn}>
               <TrashIcon />
               삭제하기
             </div>

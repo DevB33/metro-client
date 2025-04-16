@@ -27,7 +27,7 @@ const fakeBox = css({
   left: '50%',
   height: 'var(--block-height)',
   transform: 'translateX(-50%)',
-  zIndex: '-1',
+  zIndex: '1',
 
   pointerEvents: 'auto',
 });

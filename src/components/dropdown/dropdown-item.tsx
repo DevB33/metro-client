@@ -4,7 +4,6 @@ import { css } from '@/../styled-system/css';
 interface IDropDownItemProps {
   children: ReactNode;
   onClick?: () => void;
-  onMouseMove?: () => void;
 }
 
 const dropdownItemContainer = css({
@@ -35,9 +34,17 @@ const hoverContainer = css({
   },
 });
 
-const DropDownItem = ({ children, onClick, onMouseMove }: IDropDownItemProps) => {
+const DropDownItem = ({ children, onClick }: IDropDownItemProps) => {
+  const handleClick = (e: React.MouseEvent) => {
+    console.log('123');
+    e.stopPropagation(); // 이벤트 버블링 중지 제거
+    if (onClick) {
+      onClick();
+    }
+  };
+
   return (
-    <div className={dropdownItemContainer} onClick={onClick} onMouseMove={onMouseMove}>
+    <div className={dropdownItemContainer} onClick={handleClick}>
       <div className={hoverContainer}>{children}</div>
     </div>
   );

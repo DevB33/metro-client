@@ -45,6 +45,7 @@ const blockDiv = css({
   flexShrink: 0,
   userSelect: 'none',
   '--block-height': 'auto',
+  zIndex: '1000',
 });
 
 const Block = memo(
