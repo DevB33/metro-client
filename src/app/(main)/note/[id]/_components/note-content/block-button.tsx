@@ -5,7 +5,7 @@ import GripVerticalIcon from '@/icons/grip-vertical-icon';
 import DropDown from '@/components/dropdown/dropdown';
 import TrashIcon from '@/icons/trash-icon';
 import ArrowReapeatIcon from '@/icons/arrow-repeat-icon';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { ITextBlock } from '@/types/block-type';
 import SlashMenu from './block/slash-menu';
 

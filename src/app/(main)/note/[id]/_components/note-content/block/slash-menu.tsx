@@ -10,6 +10,7 @@ import NumberedListIcon from '@/icons/numbered-list-icon';
 import QuoteIcon from '@/icons/quote-icon';
 import TextIcon from '@/icons/text-icon';
 import ReactDOM from 'react-dom';
+import { useClickOutside } from '@/hooks/useClickOutside';
 
 interface ISlashMenuProps {
   position: { x: number; y: number };
@@ -97,6 +98,7 @@ const SlashMenu = ({
   setIsSlashMenuOpen,
 }: ISlashMenuProps) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const slashMenuRef = useClickOutside(() => setIsSlashMenuOpen(false));
 
   const makeBlock = (type: 'default' | 'h1' | 'h2' | 'h3' | 'ul' | 'ol' | 'quote') => {
     const newBlockList = [...blockList];
@@ -160,7 +162,7 @@ const SlashMenu = ({
 
   return isSlashMenuOpen
     ? ReactDOM.createPortal(
-        <div style={{ top: position.y, left: position.x }} className={menu}>
+        <div style={{ top: position.y, left: position.x }} className={menu} ref={slashMenuRef}>
           <div className={menuTitle}>blocks</div>
           {MENU_ITEMS.map((item, i) => (
             <div
