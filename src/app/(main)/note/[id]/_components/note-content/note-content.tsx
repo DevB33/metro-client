@@ -282,8 +282,8 @@ const NoteContent = () => {
   };
 
   const deleteBlockByIndex = (indexToDelete: number) => {
+    if (blockList.length === 1) return;
     setBlockList(prev => prev.filter((_, index) => index !== indexToDelete));
-    console.log(1);
     setKey(Math.random());
   };
 
