@@ -16,8 +16,8 @@ interface ISlashMenuProps {
   blockList: ITextBlock[];
   blockRef: React.RefObject<(HTMLDivElement | null)[]>;
   setBlockList: (blockList: ITextBlock[]) => void;
-  isSlashMenuOpen: boolean[];
-  setIsSlashMenuOpen: (isSlashMenu: boolean[]) => void;
+  isSlashMenuOpen: boolean;
+  setIsSlashMenuOpen: (isSlashMenu: boolean) => void;
 }
 
 const menu = css({
@@ -33,7 +33,7 @@ const menu = css({
   boxShadow: 'dropDown',
   fontSize: 'md',
   padding: 'tiny',
-  zIndex: 1000,
+  zIndex: '1000',
 });
 
 const menuTitle = css({
@@ -108,9 +108,7 @@ const SlashMenu = ({
     newBlockList.splice(index + 1, 0, newBlock);
     setBlockList(newBlockList);
 
-    const newIsSlashMenuOpen = [...isSlashMenuOpen];
-    newIsSlashMenuOpen[index] = false;
-    setIsSlashMenuOpen(newIsSlashMenuOpen);
+    setIsSlashMenuOpen(false);
 
     setTimeout(() => {
       if (newBlockList[index + 1].type === 'ul' || newBlockList[index + 1].type === 'ol') {
@@ -128,9 +126,7 @@ const SlashMenu = ({
     newBlockList[index].type = type;
     setBlockList(newBlockList);
 
-    const newIsSlashMenuOpen = [...isSlashMenuOpen];
-    newIsSlashMenuOpen[index] = false;
-    setIsSlashMenuOpen(newIsSlashMenuOpen);
+    setIsSlashMenuOpen(false);
     setTimeout(() => {
       if (blockList[index].type === 'ul' || blockList[index].type === 'ol') {
         (blockRef.current[index]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();

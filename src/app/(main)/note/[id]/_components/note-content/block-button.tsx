@@ -5,13 +5,18 @@ import GripVerticalIcon from '@/icons/grip-vertical-icon';
 import DropDown from '@/components/dropdown/dropdown';
 import TrashIcon from '@/icons/trash-icon';
 import ArrowReapeatIcon from '@/icons/arrow-repeat-icon';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { ITextBlock } from '@/types/block-type';
+import SlashMenu from './block/slash-menu';
 
 interface IBlockButton {
   OpenBlockMenu: () => void;
   CloseBlockMenu: () => void;
   deleteBlockByIndex: (indexToDelete: number) => void;
   index: number;
+  blockList: ITextBlock[];
+  setBlockList: (blockList: ITextBlock[]) => void;
+  blockRef: React.RefObject<(HTMLDivElement | null)[]>;
 }
 
 const blockBtnContainer = css({
@@ -44,8 +49,18 @@ const deleteBtn = css({
   gap: '0.25rem',
 });
 
-const BlockButton = ({ OpenBlockMenu, CloseBlockMenu, deleteBlockByIndex, index }: IBlockButton) => {
+const BlockButton = ({
+  OpenBlockMenu,
+  CloseBlockMenu,
+  deleteBlockByIndex,
+  index,
+  blockList,
+  setBlockList,
+  blockRef,
+}: IBlockButton) => {
   const [isblockButtonModalOpen, setIsblockButtonModalOpen] = useState(false);
+  const [isSlashMenuOpen, setIsSlashMenuOpen] = useState(false);
+  const [slashMenuPosition, setSlashMenuPosition] = useState({ x: 0, y: 0 });
 
   const buttonRef = useRef<HTMLDivElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
@@ -54,11 +69,6 @@ const BlockButton = ({ OpenBlockMenu, CloseBlockMenu, deleteBlockByIndex, index 
     setIsblockButtonModalOpen(false);
     CloseBlockMenu();
   };
-
-  // const handleOpen = () => {
-  //   setIsblockButtonModalOpen(true);
-  //   OpenBlockMenu();
-  // };
 
   const handleOpen = () => {
     if (buttonRef.current) {
@@ -77,6 +87,22 @@ const BlockButton = ({ OpenBlockMenu, CloseBlockMenu, deleteBlockByIndex, index 
     handleClose();
   };
 
+  const handleChange = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setSlashMenuPosition({
+        x: rect.left - 320, // 약간 여유를 둬도 좋아
+        y: rect.top - 350,
+      });
+    }
+
+    setIsSlashMenuOpen(true);
+  };
+
+  useEffect(() => {
+    console.log(isSlashMenuOpen);
+  }, [isSlashMenuOpen]);
+
   return (
     <div className={blockBtnContainer} ref={buttonRef}>
       <div>
@@ -87,7 +113,7 @@ const BlockButton = ({ OpenBlockMenu, CloseBlockMenu, deleteBlockByIndex, index 
       </div>
       <DropDown handleClose={handleClose}>
         <DropDown.Menu isOpen={isblockButtonModalOpen} top={dropdownPosition.top} left={dropdownPosition.left}>
-          <DropDown.Item>
+          <DropDown.Item onClick={handleChange}>
             <ArrowReapeatIcon width="16px" height="16px" />
             전환
           </DropDown.Item>
@@ -99,6 +125,17 @@ const BlockButton = ({ OpenBlockMenu, CloseBlockMenu, deleteBlockByIndex, index 
           </DropDown.Item>
         </DropDown.Menu>
       </DropDown>
+      {isSlashMenuOpen && (
+        <SlashMenu
+          position={slashMenuPosition}
+          index={index}
+          blockList={blockList}
+          blockRef={blockRef}
+          setBlockList={setBlockList}
+          isSlashMenuOpen={isSlashMenuOpen}
+          setIsSlashMenuOpen={setIsSlashMenuOpen}
+        />
+      )}
     </div>
   );
 };

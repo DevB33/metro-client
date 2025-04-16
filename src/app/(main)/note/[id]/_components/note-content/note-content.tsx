@@ -68,7 +68,7 @@ const NoteContent = () => {
     offset: 0,
   });
 
-  const [isSlashMenuOpen, setIsSlashMenuOpen] = useState<boolean[]>([]);
+  const [isSlashMenuOpen, setIsSlashMenuOpen] = useState<boolean>(false);
   const [slashMenuPosition, setSlashMenuPosition] = useState({ x: 0, y: 0 });
 
   const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(true);
@@ -117,14 +117,14 @@ const NoteContent = () => {
   };
 
   useEffect(() => {
-    setIsSlashMenuOpen(Array(blockList.length).fill(false));
-  }, [blockList.length]);
+    setIsSlashMenuOpen(false);
+  }, []);
 
   // isSlashMenuOpen 상태에 따라 스크롤 막기
   useEffect(() => {
     const grandParent = noteRef.current?.parentElement?.parentElement;
     if (!grandParent) return;
-    const isAnyMenuOpen = isSlashMenuOpen.some(state => state === true);
+    const isAnyMenuOpen = isSlashMenuOpen;
     if (isAnyMenuOpen) {
       grandParent.style.overflowY = 'hidden';
     } else {
@@ -348,6 +348,9 @@ const NoteContent = () => {
                   CloseBlockMenu={CloseBlockMenu}
                   deleteBlockByIndex={deleteBlockByIndex}
                   index={index}
+                  blockList={blockList}
+                  setBlockList={setBlockList}
+                  blockRef={blockRef}
                 />
               </div>
             </div>

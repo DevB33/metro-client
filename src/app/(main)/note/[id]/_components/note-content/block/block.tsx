@@ -28,8 +28,8 @@ interface IBlockComponent {
   setSelectionStartPosition: React.Dispatch<React.SetStateAction<ISelectionPosition>>;
   selectionEndPosition: ISelectionPosition;
   setSelectionEndPosition: React.Dispatch<React.SetStateAction<ISelectionPosition>>;
-  isSlashMenuOpen: boolean[];
-  setIsSlashMenuOpen: React.Dispatch<React.SetStateAction<boolean[]>>;
+  isSlashMenuOpen: boolean;
+  setIsSlashMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
   slashMenuPosition: { x: number; y: number };
   setSlashMenuPosition: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
 }
@@ -153,7 +153,7 @@ const Block = memo(
             );
           })}
         </BlockHTMLTag>
-        {isSlashMenuOpen[index] && (
+        {isSlashMenuOpen && (
           <SlashMenu
             position={slashMenuPosition}
             index={index}

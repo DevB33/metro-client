@@ -35,16 +35,8 @@ const hoverContainer = css({
 });
 
 const DropDownItem = ({ children, onClick }: IDropDownItemProps) => {
-  const handleClick = (e: React.MouseEvent) => {
-    console.log('123');
-    e.stopPropagation(); // 이벤트 버블링 중지 제거
-    if (onClick) {
-      onClick();
-    }
-  };
-
   return (
-    <div className={dropdownItemContainer} onClick={handleClick}>
+    <div className={dropdownItemContainer} onClick={onClick}>
       <div className={hoverContainer}>{children}</div>
     </div>
   );
