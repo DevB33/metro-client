@@ -161,6 +161,7 @@ const Block = memo(
             setBlockList={setBlockList}
             isSlashMenuOpen={isSlashMenuOpen}
             setIsSlashMenuOpen={setIsSlashMenuOpen}
+            openedBySlashKey
           />
         )}
       </div>

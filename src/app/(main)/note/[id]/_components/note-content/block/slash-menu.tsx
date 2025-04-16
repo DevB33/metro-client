@@ -20,6 +20,7 @@ interface ISlashMenuProps {
   setBlockList: (blockList: ITextBlock[]) => void;
   isSlashMenuOpen: boolean;
   setIsSlashMenuOpen: (isSlashMenu: boolean) => void;
+  openedBySlashKey: boolean;
 }
 
 const menu = css({
@@ -96,6 +97,7 @@ const SlashMenu = ({
   setBlockList,
   isSlashMenuOpen,
   setIsSlashMenuOpen,
+  openedBySlashKey,
 }: ISlashMenuProps) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const slashMenuRef = useClickOutside(() => setIsSlashMenuOpen(false));
@@ -170,16 +172,26 @@ const SlashMenu = ({
               role="button"
               key={item.label}
               className={`${slashButton} ${selectedIndex === i ? selectedButton : ''}`}
-              onClick={() => makeBlock(item.type)}
-              onMouseEnter={() => setSelectedIndex(i)}
-              onKeyDown={event => {
-                if (event.key === 'Enter') {
+              onClick={() => {
+                if (openedBySlashKey) {
                   if (blockList[index].children[0].content === '') {
                     changeBlock(item.type);
                   } else {
                     makeBlock(item.type);
                   }
-                }
+                } else changeBlock(item.type);
+              }}
+              onMouseEnter={() => setSelectedIndex(i)}
+              onKeyDown={event => {
+                if (openedBySlashKey) {
+                  if (event.key === 'Enter') {
+                    if (blockList[index].children[0].content === '') {
+                      changeBlock(item.type);
+                    } else {
+                      makeBlock(item.type);
+                    }
+                  }
+                } else changeBlock(item.type);
               }}
             >
               <div className={buttonName}>

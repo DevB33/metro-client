@@ -130,6 +130,7 @@ const BlockButton = ({
           setBlockList={setBlockList}
           isSlashMenuOpen={isSlashMenuOpen}
           setIsSlashMenuOpen={setIsSlashMenuOpen}
+          openedBySlashKey={false}
         />
       )}
     </div>
