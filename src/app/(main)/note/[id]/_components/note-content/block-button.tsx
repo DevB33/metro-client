@@ -104,7 +104,7 @@ const BlockButton = ({
       <div>
         <PlusIcon />
       </div>
-      <div className={blockBtn} onMouseUp={handleOpen}>
+      <div className={blockBtn} onClick={handleOpen}>
         <GripVerticalIcon />
       </div>
       <DropDown handleClose={handleClose}>

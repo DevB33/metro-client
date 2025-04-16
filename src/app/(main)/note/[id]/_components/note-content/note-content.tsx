@@ -94,9 +94,41 @@ const NoteContent = () => {
       const containerRect = fakeBoxEl.getBoundingClientRect(); // relative 기준 부모
 
       const offsetLeft = blockRect.left - containerRect.left;
+      const blockType = blockEl.getAttribute('data-placeholder');
+
+      let left = offsetLeft - 50;
+      let top = 12;
+
+      switch (blockType) {
+        case '리스트':
+          left = offsetLeft - 70;
+          top = 10;
+          break;
+        case '비어 있는 인용':
+          left = offsetLeft - 70;
+          top = 40;
+          break;
+        case '제목1':
+          top = 24;
+          break;
+        case '제목2':
+          top = 16;
+          break;
+        case '제목3':
+          top = 14;
+          break;
+        case '본문':
+          top = 12;
+          break;
+        default:
+          left = offsetLeft - 50;
+          top = 12;
+          break;
+      }
+
       buttonEl.style.position = 'fixed';
-      buttonEl.style.top = '12px';
-      buttonEl.style.left = `${offsetLeft - 50}px`;
+      buttonEl.style.top = `${top}px`;
+      buttonEl.style.left = `${left}px`;
       buttonEl.style.display = 'flex';
       buttonEl.style.backgroundColor = 'red';
     }
