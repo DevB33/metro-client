@@ -91,17 +91,13 @@ const BlockButton = ({
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       setSlashMenuPosition({
-        x: rect.left - 320, // 약간 여유를 둬도 좋아
-        y: rect.top - 350,
+        x: rect.left + 20,
+        y: rect.top,
       });
     }
 
     setIsSlashMenuOpen(true);
   };
-
-  useEffect(() => {
-    console.log(isSlashMenuOpen);
-  }, [isSlashMenuOpen]);
 
   return (
     <div className={blockBtnContainer} ref={buttonRef}>

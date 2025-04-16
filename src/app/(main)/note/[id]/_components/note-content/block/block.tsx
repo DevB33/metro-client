@@ -98,7 +98,6 @@ const Block = memo(
             blockRef,
             setIsTyping,
             setKey,
-            isSlashMenuOpen,
             setIsSlashMenuOpen,
             setSlashMenuPosition,
           )

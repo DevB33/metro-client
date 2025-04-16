@@ -422,7 +422,7 @@ const mergeLine = (
 const openSlashMenu = (
   index: number,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
-  setIsSlashMenuOpen: (isSlashMenuOpen: boolean[]) => void,
+  setIsSlashMenuOpen: (isSlashMenuOpen: boolean) => void,
   setSlashMenuPosition: (position: { x: number; y: number }) => void,
 ) => {
   setIsSlashMenuOpen(true);
@@ -441,7 +441,7 @@ const openSlashMenu = (
   if (rect) {
     setSlashMenuPosition({
       x: rect.left,
-      y: rect.top + rect.height,
+      y: rect.top - 282,
     });
   }
 };
@@ -509,7 +509,7 @@ const handleKeyDown = (
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   setIsTyping: (isTyping: boolean) => void,
   setKey: (key: number) => void,
-  setIsSlashMenuOpen: (isSlashMenuOpen: boolean[]) => void,
+  setIsSlashMenuOpen: (isSlashMenuOpen: boolean) => void,
   setSlashMenuPosition: (position: { x: number; y: number }) => void,
 ) => {
   // enter 클릭

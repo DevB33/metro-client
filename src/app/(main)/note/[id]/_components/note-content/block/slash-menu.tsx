@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, JSX } from 'react';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
@@ -9,6 +9,7 @@ import BulletedListIcon from '@/icons/bulleted-list-icon';
 import NumberedListIcon from '@/icons/numbered-list-icon';
 import QuoteIcon from '@/icons/quote-icon';
 import TextIcon from '@/icons/text-icon';
+import ReactDOM from 'react-dom';
 
 interface ISlashMenuProps {
   position: { x: number; y: number };
@@ -96,7 +97,6 @@ const SlashMenu = ({
   setIsSlashMenuOpen,
 }: ISlashMenuProps) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const menuHeight = 19;
 
   const makeBlock = (type: 'default' | 'h1' | 'h2' | 'h3' | 'ul' | 'ol' | 'quote') => {
     const newBlockList = [...blockList];
@@ -158,36 +158,39 @@ const SlashMenu = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [selectedIndex, index, blockList, isSlashMenuOpen]);
 
-  return (
-    <div style={{ top: `calc(${position.y}px - ${menuHeight}rem)`, left: position.x }} className={menu}>
-      <div className={menuTitle}>blocks</div>
-      {MENU_ITEMS.map((item, i) => (
-        <div
-          tabIndex={0}
-          role="button"
-          onKeyDown={event => {
-            if (event.key === 'Enter') {
-              if (blockList[index].children[0].content === '') {
-                changeBlock(item.type);
-              } else {
-                makeBlock(item.type);
-              }
-            }
-          }}
-          key={item.label}
-          className={`${slashButton} ${selectedIndex === i ? selectedButton : ''}`}
-          onClick={() => makeBlock(item.type)}
-          onMouseEnter={() => setSelectedIndex(i)}
-        >
-          <div className={buttonName}>
-            {item.icon}
-            {item.label}
-          </div>
-          <div className={markdown}>{item.markdown}</div>
-        </div>
-      ))}
-    </div>
-  );
+  return isSlashMenuOpen
+    ? ReactDOM.createPortal(
+        <div style={{ top: position.y, left: position.x }} className={menu}>
+          <div className={menuTitle}>blocks</div>
+          {MENU_ITEMS.map((item, i) => (
+            <div
+              tabIndex={0}
+              role="button"
+              key={item.label}
+              className={`${slashButton} ${selectedIndex === i ? selectedButton : ''}`}
+              onClick={() => makeBlock(item.type)}
+              onMouseEnter={() => setSelectedIndex(i)}
+              onKeyDown={event => {
+                if (event.key === 'Enter') {
+                  if (blockList[index].children[0].content === '') {
+                    changeBlock(item.type);
+                  } else {
+                    makeBlock(item.type);
+                  }
+                }
+              }}
+            >
+              <div className={buttonName}>
+                {item.icon}
+                {item.label}
+              </div>
+              <div className={markdown}>{item.markdown}</div>
+            </div>
+          ))}
+        </div>,
+        document.body,
+      )
+    : null;
 };
 
 export default SlashMenu;

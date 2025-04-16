@@ -7,6 +7,7 @@ import ItalicIcon from '@/icons/italic-icon';
 import UnderlineIcon from '@/icons/underline-icon';
 import LineThroughIcon from '@/icons/line-through-icon';
 import CodeblockIcon from '@/icons/codeblock-icon';
+import { JSX } from 'react';
 import selectionChange from './selectionChange';
 
 interface ISelectionMenuProps {
