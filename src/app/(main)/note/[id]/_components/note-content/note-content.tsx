@@ -102,7 +102,7 @@ const NoteContent = () => {
       switch (blockType) {
         case '리스트':
           left = offsetLeft - 70;
-          top = 10;
+          top = 12;
           break;
         case '비어 있는 인용':
           left = offsetLeft - 70;
@@ -116,9 +116,6 @@ const NoteContent = () => {
           break;
         case '제목3':
           top = 14;
-          break;
-        case '본문':
-          top = 12;
           break;
         default:
           left = offsetLeft - 50;
@@ -319,6 +316,29 @@ const NoteContent = () => {
     setKey(Math.random());
   };
 
+  const createBlock = (index: number) => {
+    const newBlock: ITextBlock = {
+      id: Date.now(), // 고유 ID
+      type: 'default',
+      children: [
+        {
+          type: 'text',
+          content: '',
+        },
+      ],
+    };
+
+    setBlockList(prev => {
+      const newList = [...prev];
+      newList.splice(index + 1, 0, newBlock);
+      return newList;
+    });
+
+    setTimeout(() => {
+      (blockRef.current[index + 1]?.parentNode as HTMLElement)?.focus();
+    }, 0);
+  };
+
   useEffect(() => {
     // 각 블록에 대해 반복하여 해당하는 fakeBox 높이 설정
     blockRef.current.forEach((block, index) => {
@@ -379,6 +399,7 @@ const NoteContent = () => {
                   OpenBlockMenu={OpenBlockMenu}
                   CloseBlockMenu={CloseBlockMenu}
                   deleteBlockByIndex={deleteBlockByIndex}
+                  createBlock={createBlock}
                   index={index}
                   blockList={blockList}
                   setBlockList={setBlockList}

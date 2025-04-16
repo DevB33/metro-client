@@ -13,6 +13,7 @@ interface IBlockButton {
   OpenBlockMenu: () => void;
   CloseBlockMenu: () => void;
   deleteBlockByIndex: (indexToDelete: number) => void;
+  createBlock: (index: number) => void;
   index: number;
   blockList: ITextBlock[];
   setBlockList: (blockList: ITextBlock[]) => void;
@@ -53,6 +54,7 @@ const BlockButton = ({
   OpenBlockMenu,
   CloseBlockMenu,
   deleteBlockByIndex,
+  createBlock,
   index,
   blockList,
   setBlockList,
@@ -101,7 +103,7 @@ const BlockButton = ({
 
   return (
     <div className={blockBtnContainer} ref={buttonRef}>
-      <div>
+      <div className={blockBtn} onClick={() => createBlock(index)}>
         <PlusIcon />
       </div>
       <div className={blockBtn} onClick={handleOpen}>
