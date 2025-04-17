@@ -421,14 +421,11 @@ const mergeLine = (
 
 const openSlashMenu = (
   index: number,
-  isSlashMenuOpen: boolean[],
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
-  setIsSlashMenuOpen: (isSlashMenuOpen: boolean[]) => void,
+  setIsSlashMenuOpen: (isSlashMenuOpen: boolean) => void,
   setSlashMenuPosition: (position: { x: number; y: number }) => void,
 ) => {
-  const newIsSlashMenuOpen = [...isSlashMenuOpen];
-  newIsSlashMenuOpen[index] = true;
-  setIsSlashMenuOpen(newIsSlashMenuOpen);
+  setIsSlashMenuOpen(true);
 
   // 메뉴 띄울 슬래시 위치 받아오기
   const { range } = getSelectionInfo(0) || {};
@@ -444,7 +441,7 @@ const openSlashMenu = (
   if (rect) {
     setSlashMenuPosition({
       x: rect.left,
-      y: rect.top + rect.height,
+      y: rect.top - 282,
     });
   }
 };
@@ -512,8 +509,7 @@ const handleKeyDown = (
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   setIsTyping: (isTyping: boolean) => void,
   setKey: (key: number) => void,
-  isSlashMenuOpen: boolean[],
-  setIsSlashMenuOpen: (isSlashMenuOpen: boolean[]) => void,
+  setIsSlashMenuOpen: (isSlashMenuOpen: boolean) => void,
   setSlashMenuPosition: (position: { x: number; y: number }) => void,
 ) => {
   // enter 클릭
@@ -761,7 +757,7 @@ const handleKeyDown = (
     event.preventDefault();
     setIsTyping(false);
     setKey(Math.random());
-    openSlashMenu(index, isSlashMenuOpen, blockRef, setIsSlashMenuOpen, setSlashMenuPosition);
+    openSlashMenu(index, blockRef, setIsSlashMenuOpen, setSlashMenuPosition);
   }
 
   // 방향키 클릭

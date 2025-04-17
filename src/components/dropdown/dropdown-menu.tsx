@@ -1,13 +1,14 @@
 import { ReactNode } from 'react';
 import { css } from '@/../styled-system/css';
+import ReactDOM from 'react-dom';
 
 interface IDropDownMenuProps {
   children: ReactNode;
   isOpen: boolean;
-  top?: string;
-  left?: string;
-  right?: string;
-  bottom?: string;
+  top?: number;
+  left?: number;
+  right?: number;
+  bottom?: number;
 }
 
 const dropdownMenuContainer = css({
@@ -21,16 +22,17 @@ const dropdownMenuContainer = css({
   px: '0.2rem',
   py: '0.2rem',
   gap: '0.1rem',
+  zIndex: '10000',
 });
 
 const DropDownMenu = ({ children, isOpen, top, left, right, bottom }: IDropDownMenuProps) => {
-  return (
-    isOpen && (
-      <div className={dropdownMenuContainer} style={{ top, left, right, bottom }}>
-        {children}
-      </div>
-    )
-  );
+  return isOpen
+    ? ReactDOM.createPortal(
+        <div className={dropdownMenuContainer} style={{ top, left, right, bottom }}>
+          {children}
+        </div>,
+        document.body,
+      )
+    : null;
 };
-
 export default DropDownMenu;
