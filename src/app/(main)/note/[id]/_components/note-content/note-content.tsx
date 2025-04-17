@@ -348,6 +348,7 @@ const NoteContent = () => {
               setIsSlashMenuOpen={setIsSlashMenuOpen}
               slashMenuPosition={slashMenuPosition}
               setSlashMenuPosition={setSlashMenuPosition}
+              isSelectionMenuOpen={isSelectionMenuOpen}
             />
           </div>
         ))}
