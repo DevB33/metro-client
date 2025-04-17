@@ -92,6 +92,9 @@ const selectionWrite = (
           ...(afterText ? [afterNode] : []),
           ...block.children.slice(startNodeIndex + 1),
         ];
+        if (rawChildren.length === 1 && rawChildren[0].content === ' ') {
+          rawChildren[0].content = '\u00A0';
+        }
 
         const finalChildren =
           rawChildren.length > 0
@@ -139,6 +142,9 @@ const selectionWrite = (
           ...(endNodeAfterText ? [endNodeAfterNode] : []),
           ...block.children.slice(endNodeIndex + 1),
         ];
+        if (rawChildren.length === 1 && rawChildren[0].content === ' ') {
+          rawChildren[0].content = '&nbsp;';
+        }
 
         const finalChildren =
           rawChildren.length > 0
@@ -175,6 +181,9 @@ const selectionWrite = (
         };
 
         const rawChildren = [...block.children.slice(0, startNodeIndex), ...(beforeText ? [beforeNode] : []), newNode];
+        if (rawChildren.length === 1 && rawChildren[0].content === ' ') {
+          rawChildren[0].content = '&nbsp;';
+        }
 
         const finalChildren =
           rawChildren.length > 0
@@ -222,6 +231,9 @@ const selectionWrite = (
           ...(afterText ? [afterNode] : []),
           ...block.children.slice(endNodeIndex + 1),
         ];
+        if (rawChildren.length === 1 && rawChildren[0].content === ' ') {
+          rawChildren[0].content = '&nbsp;';
+        }
 
         const finalChildren =
           rawChildren.length > 0

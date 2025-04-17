@@ -507,6 +507,16 @@ const turnIntoQuote = (index: number, blockList: ITextBlock[], setBlockList: (bl
   setBlockList(updatedBlockList);
 };
 
+const isInputtableKey = (e: KeyboardEvent) => {
+  // return e.key.length === 1 && /^[a-zA-Z가-힣0-9!@#\$%\^\&*\)\(+=._-]+$/.test(e.key);
+
+  // 조합 중인 한글은 무시
+  if (e.isComposing) return false;
+
+  // 단일 글자 or 스페이스바만 허용
+  return e.key.length === 1 || e.key === ' ';
+};
+
 const handleKeyDown = (
   event: React.KeyboardEvent<HTMLDivElement>,
   index: number,
@@ -522,6 +532,7 @@ const handleKeyDown = (
   selectionStartPosition: ISelectionPosition,
   selectionEndPosition: ISelectionPosition,
 ) => {
+  // selection 없을때
   if (!isSelectionMenuOpen) {
     // enter 클릭
     if (event.key === keyName.enter && !event.shiftKey) {
@@ -879,7 +890,7 @@ const handleKeyDown = (
       selectionDelete(selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
     }
     // 다른 키 입력
-    else {
+    else if (isInputtableKey(event.nativeEvent)) {
       selectionWrite(event.key, selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
       // writeText(event.key, selectionStartPosition, blockList, setBlockList, blockRef);
     }
