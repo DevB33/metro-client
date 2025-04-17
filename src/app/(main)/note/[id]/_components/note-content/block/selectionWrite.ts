@@ -1,7 +1,8 @@
 import ISelectionPosition from '@/types/selection-position';
 import { ITextBlock } from '@/types/block-type';
 
-const selectionDelete = (
+const selectionWrite = (
+  key: string,
   selectionStartPosition: ISelectionPosition,
   selectionEndPosition: ISelectionPosition,
   blockList: ITextBlock[],
@@ -43,6 +44,21 @@ const selectionDelete = (
 
   const newBlockList = [...blockList];
 
+  const newNode = {
+    type: 'text' as 'text',
+    style: {
+      fontStyle: 'normal',
+      fontWeight: 'regular',
+      textDecoration: 'none',
+      color: 'black',
+      backgroundColor: 'white',
+      width: 'auto',
+      height: 'auto',
+      borderRadius: '0',
+    },
+    content: key,
+  };
+
   const deleteIndex = [];
 
   // 블록 인덱스 범위
@@ -72,6 +88,7 @@ const selectionDelete = (
         const rawChildren = [
           ...block.children.slice(0, startNodeIndex),
           ...(beforeText ? [beforeNode] : []),
+          newNode,
           ...(afterText ? [afterNode] : []),
           ...block.children.slice(startNodeIndex + 1),
         ];
@@ -118,6 +135,7 @@ const selectionDelete = (
         const rawChildren = [
           ...block.children.slice(0, startNodeIndex),
           ...(startNodeBeforeText ? [startNodeBeforeNode] : []),
+          newNode,
           ...(endNodeAfterText ? [endNodeAfterNode] : []),
           ...block.children.slice(endNodeIndex + 1),
         ];
@@ -156,7 +174,7 @@ const selectionDelete = (
           content: beforeText,
         };
 
-        const rawChildren = [...block.children.slice(0, startNodeIndex), ...(beforeText ? [beforeNode] : [])];
+        const rawChildren = [...block.children.slice(0, startNodeIndex), ...(beforeText ? [beforeNode] : []), newNode];
 
         const finalChildren =
           rawChildren.length > 0
@@ -238,4 +256,4 @@ const selectionDelete = (
   setBlockList(newBlockList);
 };
 
-export default selectionDelete;
+export default selectionWrite;
