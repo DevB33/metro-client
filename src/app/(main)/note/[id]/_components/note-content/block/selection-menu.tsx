@@ -8,6 +8,7 @@ import UnderlineIcon from '@/icons/underline-icon';
 import LineThroughIcon from '@/icons/line-through-icon';
 import CodeblockIcon from '@/icons/codeblock-icon';
 import { JSX } from 'react';
+import { useClickOutside } from '@/hooks/useClickOutside';
 import selectionChange from './selectionChange';
 
 interface ISelectionMenuProps {
@@ -61,7 +62,7 @@ const MENU_ITEMS: {
   { label: 'codeblock', icon: <CodeblockIcon color="black" /> },
 ];
 
-const selectionMenu = ({
+const SelectionMenu = ({
   position,
   setKey,
   selectionStartPosition,
@@ -72,6 +73,7 @@ const selectionMenu = ({
   setIsSelectionMenuOpen,
   resetSelection,
 }: ISelectionMenuProps) => {
+  const selectionMenuRef = useClickOutside(() => setIsSelectionMenuOpen(false));
   const menuHeight = 3;
 
   const changeBlock = (type: string) => {
@@ -82,7 +84,11 @@ const selectionMenu = ({
   };
 
   return (
-    <div style={{ top: `calc(${position.y}px - ${menuHeight}rem)`, left: position.x }} className={menu}>
+    <div
+      ref={selectionMenuRef}
+      style={{ top: `calc(${position.y}px - ${menuHeight}rem)`, left: position.x }}
+      className={menu}
+    >
       {MENU_ITEMS.map(item => (
         <div
           role="button"
@@ -101,4 +107,4 @@ const selectionMenu = ({
   );
 };
 
-export default selectionMenu;
+export default SelectionMenu;

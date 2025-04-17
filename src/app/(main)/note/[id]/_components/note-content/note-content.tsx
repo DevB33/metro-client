@@ -33,6 +33,7 @@ const fakeBox = css({
 });
 
 const NoteContent = () => {
+  const blockContainerRef = useRef<(HTMLDivElement | null)[]>([]);
   const blockButtonRef = useRef<(HTMLDivElement | null)[]>([]);
   const blockRef = useRef<(HTMLDivElement | null)[]>([]);
   const fakeBoxRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -183,12 +184,10 @@ const NoteContent = () => {
         return;
       }
 
-      if (blockRef.current && !blockRef.current.some(block => block?.contains(event.target as Node))) {
-        isDraggingRef.current = true;
-        if (selectionMenuRef.current && !selectionMenuRef.current.contains(event.target as Node)) {
-          resetSelection();
-          setKey(Math.random());
-        }
+      isDraggingRef.current = true;
+      if (selectionMenuRef.current) {
+        if (!selectionMenuRef.current.contains(event.target as Node)) resetSelection();
+        setKey(Math.random());
       }
     };
 
@@ -341,7 +340,7 @@ const NoteContent = () => {
 
   useEffect(() => {
     // 각 블록에 대해 반복하여 해당하는 fakeBox 높이 설정
-    blockRef.current.forEach((block, index) => {
+    blockContainerRef.current.forEach((block, index) => {
       if (block && fakeBoxRef.current[index]) {
         const blockHeight = block.offsetHeight;
         if (blockHeight) {
@@ -376,6 +375,9 @@ const NoteContent = () => {
             tabIndex={0}
             key={block.id}
             className={blockContainer}
+            ref={element => {
+              blockContainerRef.current[index] = element;
+            }}
             onMouseEnter={() => handleMouseEnter(index)}
             onMouseLeave={() => handleMouseLeave(index)}
             onKeyDown={() => handleMouseLeave(index)}
