@@ -21,9 +21,6 @@ const handleMouseUp = (
   const endX = endRect.left;
   const endY = endRect.top;
 
-  console.log('start', selectionStartPosition);
-  console.log('end', selectionEndPosition);
-
   // selection이 없을 때, 다른 곳 클릭시 메뉴 닫기
   if (
     (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex &&
