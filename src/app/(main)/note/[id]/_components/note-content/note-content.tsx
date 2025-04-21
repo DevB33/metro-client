@@ -357,15 +357,15 @@ const NoteContent = () => {
         tabIndex={0}
         key={key}
         ref={noteRef}
-        onMouseUp={() =>
-          handleMouseUp(
-            blockRef,
-            selectionStartPosition,
-            selectionEndPosition,
-            setIsSelectionMenuOpen,
-            setSelectionMenuPosition,
-          )
-        }
+        // onMouseUp={() =>
+        //   handleMouseUp(
+        //     blockRef,
+        //     selectionStartPosition,
+        //     selectionEndPosition,
+        //     setIsSelectionMenuOpen,
+        //     setSelectionMenuPosition,
+        //   )
+        // }
         onMouseDown={() => setIsSelectionMenuOpen(false)}
         onKeyDown={() => setIsSelectionMenuOpen(false)}
       >
@@ -382,6 +382,17 @@ const NoteContent = () => {
             onMouseLeave={() => handleMouseLeave(index)}
             onKeyDown={() => handleMouseLeave(index)}
             onMouseMove={() => handleMouseEnter(index)}
+            onMouseUp={e =>
+              handleMouseUp(
+                e,
+                index,
+                blockRef,
+                selectionStartPosition,
+                selectionEndPosition,
+                setIsSelectionMenuOpen,
+                setSelectionMenuPosition,
+              )
+            }
           >
             <div
               className={fakeBox}
