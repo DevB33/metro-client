@@ -1,6 +1,9 @@
 import { ITextBlock } from '@/types/block-type';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import keyName from '@/constants/key-name';
+import ISelectionPosition from '@/types/selection-position';
+import selectionDelete from '../selectionDelete';
+import selectionWrite from '../selectionWrite';
 
 const focusCurrentBlock = (
   index: number,
@@ -501,6 +504,16 @@ const turnIntoQuote = (index: number, blockList: ITextBlock[], setBlockList: (bl
   setBlockList(updatedBlockList);
 };
 
+const isInputtableKey = (e: KeyboardEvent) => {
+  // return e.key.length === 1 && /^[a-zA-Z가-힣0-9!@#\$%\^\&*\)\(+=._-]+$/.test(e.key);
+
+  // 조합 중인 한글은 무시
+  if (e.isComposing) return false;
+
+  // 단일 글자 or 스페이스바만 허용
+  return e.key.length === 1 || e.key === ' ';
+};
+
 const handleKeyDown = (
   event: React.KeyboardEvent<HTMLDivElement>,
   index: number,
@@ -511,352 +524,373 @@ const handleKeyDown = (
   setKey: (key: number) => void,
   setIsSlashMenuOpen: (isSlashMenuOpen: boolean) => void,
   setSlashMenuPosition: (position: { x: number; y: number }) => void,
+  isSelectionMenuOpen: boolean,
+  selectionStartPosition: ISelectionPosition,
+  selectionEndPosition: ISelectionPosition,
 ) => {
-  // enter 클릭
-  if (event.key === keyName.enter && !event.shiftKey) {
-    event.preventDefault();
-    if (event.nativeEvent.isComposing) {
-      return;
-    }
-    setIsTyping(false);
-    setKey(Math.random());
-    splitBlock(index, blockList, setBlockList, blockRef);
-  }
-
-  // shift + enter 클릭
-  if (event.key === keyName.enter && event.shiftKey) {
-    event.preventDefault();
-    setIsTyping(false);
-    setKey(Math.random());
-    splitLine(index, blockList, setBlockList, blockRef);
-  }
-
-  // backspace 클릭
-  if (event.key === keyName.backspace) {
-    const { startOffset, startContainer } = getSelectionInfo(0) || {};
-    if (startOffset === undefined || startOffset === null || !startContainer) return;
-
-    const parent = blockRef.current[index];
-    const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
-    const currentChildNodeIndex =
-      childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
-        ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
-        : childNodes.indexOf(startContainer as HTMLElement);
-
-    // 첫 블록 첫 커서일 때
-    if (index === 0 && (currentChildNodeIndex === -1 || currentChildNodeIndex === 0) && startOffset === 0) {
+  // selection 없을때
+  if (!isSelectionMenuOpen) {
+    // enter 클릭
+    if (event.key === keyName.enter && !event.shiftKey) {
       event.preventDefault();
-
-      // default 블록이 아닐 때는 default로 변경
-      if (blockList[index].type !== 'default') {
-        setIsTyping(false);
-        setKey(Math.random());
-
-        const updatedBlockList = [...blockList];
-        updatedBlockList[index].type = 'default';
-        setBlockList(updatedBlockList);
-        focusCurrentBlock(index, blockRef, blockList);
+      if (event.nativeEvent.isComposing) {
+        return;
       }
-      return;
+      setIsTyping(false);
+      setKey(Math.random());
+      splitBlock(index, blockList, setBlockList, blockRef);
     }
 
-    // 한 줄이 다 지워졌을 때
-    if (currentChildNodeIndex === -1) {
+    // shift + enter 클릭
+    if (event.key === keyName.enter && event.shiftKey) {
       event.preventDefault();
       setIsTyping(false);
       setKey(Math.random());
+      splitLine(index, blockList, setBlockList, blockRef);
+    }
 
-      if (startOffset === 0) {
-        // 블록 합치기 로직
+    // 일반 backspace 클릭
+    if (event.key === keyName.backspace && !isSelectionMenuOpen) {
+      const { startOffset, startContainer } = getSelectionInfo(0) || {};
+      if (startOffset === undefined || startOffset === null || !startContainer) return;
+
+      const parent = blockRef.current[index];
+      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+      const currentChildNodeIndex =
+        childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
+          ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
+          : childNodes.indexOf(startContainer as HTMLElement);
+
+      // 첫 블록 첫 커서일 때
+      if (index === 0 && (currentChildNodeIndex === -1 || currentChildNodeIndex === 0) && startOffset === 0) {
+        event.preventDefault();
+
+        // default 블록이 아닐 때는 default로 변경
         if (blockList[index].type !== 'default') {
-          // default 블록이 아닐 때는 블록을 합치는 대신 블록을 default로 변경
+          setIsTyping(false);
+          setKey(Math.random());
+
           const updatedBlockList = [...blockList];
           updatedBlockList[index].type = 'default';
           setBlockList(updatedBlockList);
           focusCurrentBlock(index, blockRef, blockList);
-        } else {
-          mergeBlock(index, blockList, setBlockList, blockRef);
         }
-      } else {
-        // 줄 합치기 로직
-        const updatedBlockList = [...blockList];
-
-        if (
-          updatedBlockList[index].children[startOffset - 1].type === 'br' &&
-          (!updatedBlockList[index].children[startOffset - 2] ||
-            updatedBlockList[index].children[startOffset - 2].type !== 'br') &&
-          !updatedBlockList[index].children[startOffset + 1]
-        ) {
-          updatedBlockList[index].children.splice(startOffset - 1, 2);
-        } else {
-          updatedBlockList[index].children.splice(startOffset, 1);
-        }
-
-        setBlockList(updatedBlockList);
-
-        setTimeout(() => {
-          const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
-          const range = document.createRange();
-
-          if (blockRef.current[index]?.childNodes[startOffset - 1]) {
-            range.setStart(
-              newChildNodes[startOffset - 1],
-              newChildNodes[startOffset - 1].textContent?.length as number,
-            );
-          } else {
-            range.setStart(
-              newChildNodes[startOffset - 2],
-              newChildNodes[startOffset - 2].textContent?.length as number,
-            );
-          }
-          const selection = window.getSelection();
-
-          selection?.removeAllRanges();
-          selection?.addRange(range);
-        }, 0);
+        return;
       }
 
-      return;
-    }
-
-    // 줄 또는 블록 합치기 로직
-    if (startOffset === 0) {
-      if (currentChildNodeIndex <= 0) {
+      // 한 줄이 다 지워졌을 때
+      if (currentChildNodeIndex === -1) {
         event.preventDefault();
         setIsTyping(false);
         setKey(Math.random());
 
-        if (blockList[index].type !== 'default') {
-          const updatedBlockList = [...blockList];
-          updatedBlockList[index].type = 'default';
-          setBlockList(updatedBlockList);
-          focusCurrentBlock(index, blockRef, blockList);
+        if (startOffset === 0) {
+          // 블록 합치기 로직
+          if (blockList[index].type !== 'default') {
+            // default 블록이 아닐 때는 블록을 합치는 대신 블록을 default로 변경
+            const updatedBlockList = [...blockList];
+            updatedBlockList[index].type = 'default';
+            setBlockList(updatedBlockList);
+            focusCurrentBlock(index, blockRef, blockList);
+          } else {
+            mergeBlock(index, blockList, setBlockList, blockRef);
+          }
         } else {
-          mergeBlock(index, blockList, setBlockList, blockRef);
+          // 줄 합치기 로직
+          const updatedBlockList = [...blockList];
+
+          if (
+            updatedBlockList[index].children[startOffset - 1].type === 'br' &&
+            (!updatedBlockList[index].children[startOffset - 2] ||
+              updatedBlockList[index].children[startOffset - 2].type !== 'br') &&
+            !updatedBlockList[index].children[startOffset + 1]
+          ) {
+            updatedBlockList[index].children.splice(startOffset - 1, 2);
+          } else {
+            updatedBlockList[index].children.splice(startOffset, 1);
+          }
+
+          setBlockList(updatedBlockList);
+
+          setTimeout(() => {
+            const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
+            const range = document.createRange();
+
+            if (blockRef.current[index]?.childNodes[startOffset - 1]) {
+              range.setStart(
+                newChildNodes[startOffset - 1],
+                newChildNodes[startOffset - 1].textContent?.length as number,
+              );
+            } else {
+              range.setStart(
+                newChildNodes[startOffset - 2],
+                newChildNodes[startOffset - 2].textContent?.length as number,
+              );
+            }
+            const selection = window.getSelection();
+
+            selection?.removeAllRanges();
+            selection?.addRange(range);
+          }, 0);
         }
-      } else if (currentChildNodeIndex > 0) {
-        if (blockList[index].children[currentChildNodeIndex - 1].type === 'br') {
+
+        return;
+      }
+
+      // 줄 또는 블록 합치기 로직
+      if (startOffset === 0) {
+        if (currentChildNodeIndex <= 0) {
           event.preventDefault();
           setIsTyping(false);
           setKey(Math.random());
 
-          mergeLine(index, currentChildNodeIndex, blockList, blockRef, setBlockList);
+          if (blockList[index].type !== 'default') {
+            const updatedBlockList = [...blockList];
+            updatedBlockList[index].type = 'default';
+            setBlockList(updatedBlockList);
+            focusCurrentBlock(index, blockRef, blockList);
+          } else {
+            mergeBlock(index, blockList, setBlockList, blockRef);
+          }
+        } else if (currentChildNodeIndex > 0) {
+          if (blockList[index].children[currentChildNodeIndex - 1].type === 'br') {
+            event.preventDefault();
+            setIsTyping(false);
+            setKey(Math.random());
+
+            mergeLine(index, currentChildNodeIndex, blockList, blockRef, setBlockList);
+          }
         }
+      }
+    }
+
+    // space 클릭
+    if (event.key === keyName.space) {
+      const { startOffset, startContainer } = getSelectionInfo(0) || {};
+      if (startOffset === undefined || startOffset === null || !startContainer) return;
+
+      const parent = blockRef.current[index];
+      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+      const currentChildNodeIndex =
+        childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
+          ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
+          : childNodes.indexOf(startContainer as HTMLElement);
+
+      // h1으로 전환
+      if (
+        currentChildNodeIndex === 0 &&
+        startOffset === 1 &&
+        startContainer.textContent &&
+        startContainer.textContent[0] === '#' &&
+        blockList[index].type !== 'h1'
+      ) {
+        event.preventDefault();
+        setIsTyping(false);
+        setKey(Math.random());
+        turnIntoH1(index, blockList, setBlockList);
+        focusCurrentBlock(index, blockRef, blockList);
+      }
+
+      // h2로 전환
+      if (
+        currentChildNodeIndex === 0 &&
+        startOffset === 2 &&
+        startContainer.textContent &&
+        startContainer.textContent[0] === '#' &&
+        startContainer.textContent[1] === '#' &&
+        blockList[index].type !== 'h2'
+      ) {
+        event.preventDefault();
+        setIsTyping(false);
+        setKey(Math.random());
+        turnIntoH2(index, blockList, setBlockList);
+        focusCurrentBlock(index, blockRef, blockList);
+      }
+
+      // h3으로 전환
+      if (
+        currentChildNodeIndex === 0 &&
+        startOffset === 3 &&
+        startContainer.textContent &&
+        startContainer.textContent[0] === '#' &&
+        startContainer.textContent[1] === '#' &&
+        startContainer.textContent[2] === '#' &&
+        blockList[index].type !== 'h3'
+      ) {
+        event.preventDefault();
+        setIsTyping(false);
+        setKey(Math.random());
+        turnIntoH3(index, blockList, setBlockList);
+        focusCurrentBlock(index, blockRef, blockList);
+      }
+
+      // ul로 전환
+      if (
+        currentChildNodeIndex === 0 &&
+        startOffset === 1 &&
+        startContainer.textContent &&
+        startContainer.textContent[0] === '-' &&
+        blockList[index].type !== 'ul'
+      ) {
+        event.preventDefault();
+        setIsTyping(false);
+        setKey(Math.random());
+        turnIntoUl(index, blockList, setBlockList);
+        focusCurrentBlock(index, blockRef, blockList);
+      }
+
+      // ol로 전환
+      if (
+        currentChildNodeIndex === 0 &&
+        startContainer.textContent &&
+        startContainer.textContent[startOffset - 1] === '.' &&
+        /^\d+$/.test(startContainer.textContent.slice(0, startOffset - 1)) &&
+        blockList[index].type !== 'ol'
+      ) {
+        event.preventDefault();
+        setIsTyping(false);
+        setKey(Math.random());
+        turnIntoOl(index, blockList, setBlockList, startOffset);
+        focusCurrentBlock(index, blockRef, blockList);
+      }
+
+      // 인용문으로 전환
+      if (
+        currentChildNodeIndex === 0 &&
+        startOffset === 1 &&
+        startContainer.textContent &&
+        startContainer.textContent[0] === '|' &&
+        blockList[index].type !== 'quote'
+      ) {
+        event.preventDefault();
+        setIsTyping(false);
+        setKey(Math.random());
+        turnIntoQuote(index, blockList, setBlockList);
+        focusCurrentBlock(index, blockRef, blockList);
+      }
+    }
+
+    // slash 클릭
+    if (event.key === keyName.slash) {
+      event.preventDefault();
+      setIsTyping(false);
+      setKey(Math.random());
+      openSlashMenu(index, isSlashMenuOpen, blockRef, setIsSlashMenuOpen, setSlashMenuPosition);
+    }
+
+    // 방향키 클릭
+    if (
+      event.key === keyName.arrowUp ||
+      event.key === keyName.arrowDown ||
+      event.key === keyName.arrowLeft ||
+      event.key === keyName.arrowRight
+    ) {
+
+      const { range, startOffset, startContainer } = getSelectionInfo(0) || {};
+      const rect = range?.getBoundingClientRect() as DOMRect;
+      const cursorX = rect?.left;
+      const firstChild = blockRef.current[index]?.childNodes[0];
+      const lastChild = blockRef.current[index]?.childNodes[(blockRef.current[index]?.childNodes.length as number) - 1];
+
+      // 이전 블록으로 커서 이동
+      if (event.key === keyName.arrowUp && index > 0) {
+        event.preventDefault();
+        const caret = document.caretPositionFromPoint(cursorX, rect.top - 10) as CaretPosition;
+        if (blockList[index].children.length === 1 && blockList[index].children[0].content === '') {
+          focusCurrentBlock(index - 1, blockRef, blockList);
+        } else {
+          setTimeout(() => {
+            if (range) {
+              const { offsetNode, offset } = caret;
+              const newRange = document.createRange();
+              const selection = window.getSelection();
+
+              newRange.setStart(offsetNode, offset);
+
+              selection?.removeAllRanges();
+              selection?.addRange(newRange);
+            }
+          }, 0);
+        }
+      }
+
+      // 다음 블록으로 커서 이동
+      if (event.key === keyName.arrowDown && index < blockList.length - 1) {
+        event.preventDefault();
+        const caret = document.caretPositionFromPoint(cursorX, rect.bottom + 10) as CaretPosition;
+        if (blockList[index].children.length === 1 && blockList[index].children[0].content === '') {
+          focusCurrentBlock(index + 1, blockRef, blockList);
+        } else {
+          setTimeout(() => {
+            if (range) {
+              const { offsetNode, offset } = caret;
+              const newRange = document.createRange();
+              const selection = window.getSelection();
+
+              newRange.setStart(offsetNode, offset);
+              selection?.removeAllRanges();
+              selection?.addRange(newRange);
+            }
+          }, 0);
+        }
+      }
+
+      // 블록의 맨 끝에서 오른쪽 방향키 클릭하면 다음 블록으로 커서 이동
+      if (
+        event.key === keyName.arrowRight &&
+        ((startOffset === (lastChild?.textContent?.length as number) && startContainer === lastChild) ||
+          (blockList[index].children.length === 1 && blockList[index].children[0].content === '')) &&
+        index < blockList.length - 1
+      ) {
+        event.preventDefault();
+        focusCurrentBlock(index + 1, blockRef, blockList);
+      }
+
+      // 블록의 맨 앞에서 왼쪽 방향키 클릭하면 이전 블록으로 커서 이동
+      if (
+        event.key === keyName.arrowLeft &&
+        ((startOffset === 0 && startContainer === firstChild) ||
+          (blockList[index].children.length === 1 && blockList[index].children[0].content === '')) &&
+        index > 0
+      ) {
+        const prevBlockLastChild =
+          blockRef.current[index - 1]?.childNodes[(blockRef.current[index]?.childNodes.length as number) - 1];
+        setTimeout(() => {
+          if (range) {
+            if (blockList[index - 1].type === 'ul' || blockList[index - 1].type === 'ol') {
+              (blockRef.current[index - 1]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
+            } else if (blockList[index - 1].type === 'quote') {
+              (blockRef.current[index - 1]?.parentNode?.parentNode as HTMLElement)?.focus();
+            } else {
+              (blockRef.current[index - 1]?.parentNode as HTMLElement)?.focus();
+            }
+
+            const selection = window.getSelection();
+            range?.setStart(prevBlockLastChild as Node, prevBlockLastChild?.textContent?.length as number);
+            range.collapse(true);
+
+            selection?.removeAllRanges();
+            selection?.addRange(range);
+          }
+        }, 0);
       }
     }
   }
 
-  // space 클릭
-  if (event.key === keyName.space) {
-    const { startOffset, startContainer } = getSelectionInfo(0) || {};
-    if (startOffset === undefined || startOffset === null || !startContainer) return;
-
-    const parent = blockRef.current[index];
-    const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
-    const currentChildNodeIndex =
-      childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
-        ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
-        : childNodes.indexOf(startContainer as HTMLElement);
-
-    // h1으로 전환
-    if (
-      currentChildNodeIndex === 0 &&
-      startOffset === 1 &&
-      startContainer.textContent &&
-      startContainer.textContent[0] === '#' &&
-      blockList[index].type !== 'h1'
-    ) {
-      event.preventDefault();
-      setIsTyping(false);
-      setKey(Math.random());
-      turnIntoH1(index, blockList, setBlockList);
-      focusCurrentBlock(index, blockRef, blockList);
-    }
-
-    // h2로 전환
-    if (
-      currentChildNodeIndex === 0 &&
-      startOffset === 2 &&
-      startContainer.textContent &&
-      startContainer.textContent[0] === '#' &&
-      startContainer.textContent[1] === '#' &&
-      blockList[index].type !== 'h2'
-    ) {
-      event.preventDefault();
-      setIsTyping(false);
-      setKey(Math.random());
-      turnIntoH2(index, blockList, setBlockList);
-      focusCurrentBlock(index, blockRef, blockList);
-    }
-
-    // h3으로 전환
-    if (
-      currentChildNodeIndex === 0 &&
-      startOffset === 3 &&
-      startContainer.textContent &&
-      startContainer.textContent[0] === '#' &&
-      startContainer.textContent[1] === '#' &&
-      startContainer.textContent[2] === '#' &&
-      blockList[index].type !== 'h3'
-    ) {
-      event.preventDefault();
-      setIsTyping(false);
-      setKey(Math.random());
-      turnIntoH3(index, blockList, setBlockList);
-      focusCurrentBlock(index, blockRef, blockList);
-    }
-
-    // ul로 전환
-    if (
-      currentChildNodeIndex === 0 &&
-      startOffset === 1 &&
-      startContainer.textContent &&
-      startContainer.textContent[0] === '-' &&
-      blockList[index].type !== 'ul'
-    ) {
-      event.preventDefault();
-      setIsTyping(false);
-      setKey(Math.random());
-      turnIntoUl(index, blockList, setBlockList);
-      focusCurrentBlock(index, blockRef, blockList);
-    }
-
-    // ol로 전환
-    if (
-      currentChildNodeIndex === 0 &&
-      startContainer.textContent &&
-      startContainer.textContent[startOffset - 1] === '.' &&
-      /^\d+$/.test(startContainer.textContent.slice(0, startOffset - 1)) &&
-      blockList[index].type !== 'ol'
-    ) {
-      event.preventDefault();
-      setIsTyping(false);
-      setKey(Math.random());
-      turnIntoOl(index, blockList, setBlockList, startOffset);
-      focusCurrentBlock(index, blockRef, blockList);
-    }
-
-    // 인용문으로 전환
-    if (
-      currentChildNodeIndex === 0 &&
-      startOffset === 1 &&
-      startContainer.textContent &&
-      startContainer.textContent[0] === '|' &&
-      blockList[index].type !== 'quote'
-    ) {
-      event.preventDefault();
-      setIsTyping(false);
-      setKey(Math.random());
-      turnIntoQuote(index, blockList, setBlockList);
-      focusCurrentBlock(index, blockRef, blockList);
-    }
-  }
-
-  // slash 클릭
-  if (event.key === keyName.slash) {
+  // selection 있을때
+  if (isSelectionMenuOpen) {
     event.preventDefault();
+    // backspace 클릭
+    if (event.key === keyName.backspace) {
+      selectionDelete(selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
+    }
+    // 다른 키 입력
+    else if (isInputtableKey(event.nativeEvent)) {
+      selectionWrite(event.key, selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
+      // writeText(event.key, selectionStartPosition, blockList, setBlockList, blockRef);
+    }
     setIsTyping(false);
     setKey(Math.random());
-    openSlashMenu(index, blockRef, setIsSlashMenuOpen, setSlashMenuPosition);
-  }
-
-  // 방향키 클릭
-  if (
-    event.key === keyName.arrowUp ||
-    event.key === keyName.arrowDown ||
-    event.key === keyName.arrowLeft ||
-    event.key === keyName.arrowRight
-  ) {
-    const { range, startOffset, startContainer } = getSelectionInfo(0) || {};
-    const rect = range?.getBoundingClientRect() as DOMRect;
-    const cursorX = rect?.left;
-    const firstChild = blockRef.current[index]?.childNodes[0];
-    const lastChild = blockRef.current[index]?.childNodes[(blockRef.current[index]?.childNodes.length as number) - 1];
-
-    // 이전 블록으로 커서 이동
-    if (event.key === keyName.arrowUp && index > 0) {
-      event.preventDefault();
-      const caret = document.caretPositionFromPoint(cursorX, rect.top - 10) as CaretPosition;
-      if (blockList[index].children.length === 1 && blockList[index].children[0].content === '') {
-        focusCurrentBlock(index - 1, blockRef, blockList);
-      } else {
-        setTimeout(() => {
-          if (range) {
-            const { offsetNode, offset } = caret;
-
-            const newRange = document.createRange();
-            const selection = window.getSelection();
-
-            newRange.setStart(offsetNode, offset);
-
-            selection?.removeAllRanges();
-            selection?.addRange(newRange);
-          }
-        }, 0);
-      }
-    }
-
-    // 다음 블록으로 커서 이동
-    if (event.key === keyName.arrowDown && index < blockList.length - 1) {
-      event.preventDefault();
-      const caret = document.caretPositionFromPoint(cursorX, rect.bottom + 10) as CaretPosition;
-      if (blockList[index].children.length === 1 && blockList[index].children[0].content === '') {
-        focusCurrentBlock(index + 1, blockRef, blockList);
-      } else {
-        setTimeout(() => {
-          if (range) {
-            const { offsetNode, offset } = caret;
-
-            const newRange = document.createRange();
-            const selection = window.getSelection();
-
-            newRange.setStart(offsetNode, offset);
-            selection?.removeAllRanges();
-            selection?.addRange(newRange);
-          }
-        }, 0);
-      }
-    }
-
-    // 블록의 맨 끝에서 오른쪽 방향키 클릭하면 다음 블록으로 커서 이동
-    if (
-      event.key === keyName.arrowRight &&
-      ((startOffset === (lastChild?.textContent?.length as number) && startContainer === lastChild) ||
-        (blockList[index].children.length === 1 && blockList[index].children[0].content === '')) &&
-      index < blockList.length - 1
-    ) {
-      event.preventDefault();
-      focusCurrentBlock(index + 1, blockRef, blockList);
-    }
-
-    // 블록의 맨 앞에서 왼쪽 방향키 클릭하면 이전 블록으로 커서 이동
-    if (
-      event.key === keyName.arrowLeft &&
-      ((startOffset === 0 && startContainer === firstChild) ||
-        (blockList[index].children.length === 1 && blockList[index].children[0].content === '')) &&
-      index > 0
-    ) {
-      const prevBlockLastChild =
-        blockRef.current[index - 1]?.childNodes[(blockRef.current[index]?.childNodes.length as number) - 1];
-      setTimeout(() => {
-        if (range) {
-          if (blockList[index - 1].type === 'ul' || blockList[index - 1].type === 'ol') {
-            (blockRef.current[index - 1]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
-          } else if (blockList[index - 1].type === 'quote') {
-            (blockRef.current[index - 1]?.parentNode?.parentNode as HTMLElement)?.focus();
-          } else {
-            (blockRef.current[index - 1]?.parentNode as HTMLElement)?.focus();
-          }
-
-          const selection = window.getSelection();
-          range?.setStart(prevBlockLastChild as Node, prevBlockLastChild?.textContent?.length as number);
-          range.collapse(true);
-
-          selection?.removeAllRanges();
-          selection?.addRange(range);
-        }
-      }, 0);
-    }
   }
 };
 
