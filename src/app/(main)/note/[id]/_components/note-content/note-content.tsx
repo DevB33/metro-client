@@ -22,19 +22,21 @@ const blockContainer = css({
 });
 
 const fakeBox = css({
-  position: 'fixed',
-  left: '0',
-  right: '0',
+  position: 'absolute',
   width: '100vw',
+  left: '50%',
   height: 'var(--block-height)',
-  zIndex: '-1',
+  transform: 'translateX(-50%)',
+  zIndex: '1',
 
   pointerEvents: 'auto',
 });
 
 const NoteContent = () => {
+  const blockContainerRef = useRef<(HTMLDivElement | null)[]>([]);
   const blockButtonRef = useRef<(HTMLDivElement | null)[]>([]);
   const blockRef = useRef<(HTMLDivElement | null)[]>([]);
+  const fakeBoxRef = useRef<(HTMLDivElement | null)[]>([]);
   const noteRef = useRef<HTMLDivElement | null>(null);
   const selectionMenuRef = useRef<HTMLDivElement | null>(null);
 
@@ -67,22 +69,66 @@ const NoteContent = () => {
     offset: 0,
   });
 
-  const [isSlashMenuOpen, setIsSlashMenuOpen] = useState<boolean[]>([]);
+  const [isSlashMenuOpen, setIsSlashMenuOpen] = useState<boolean>(false);
   const [slashMenuPosition, setSlashMenuPosition] = useState({ x: 0, y: 0 });
 
   const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(true);
   const [selectionMenuPosition, setSelectionMenuPosition] = useState({ x: 0, y: 0 });
 
+  const [isBlockMenuOpen, setIsBlockMenuOpen] = useState(false);
+
+  const OpenBlockMenu = () => {
+    setIsBlockMenuOpen(true);
+  };
+
+  const CloseBlockMenu = () => {
+    setIsBlockMenuOpen(false);
+  };
+
   const updateBlockButtonPosition = (index: number) => {
     const blockEl = blockRef.current[index];
     const buttonEl = blockButtonRef.current[index];
+    const fakeBoxEl = fakeBoxRef.current[index];
 
-    if (blockEl && buttonEl) {
-      const rect = blockEl.getBoundingClientRect();
-      buttonEl.style.position = 'absolute';
-      buttonEl.style.top = '12px';
-      buttonEl.style.right = `${rect.right + 24}px`;
+    if (blockEl && buttonEl && fakeBoxEl) {
+      const blockRect = blockEl.getBoundingClientRect();
+      const containerRect = fakeBoxEl.getBoundingClientRect(); // relative 기준 부모
+
+      const offsetLeft = blockRect.left - containerRect.left;
+      const blockType = blockEl.getAttribute('data-placeholder');
+
+      let left = offsetLeft - 50;
+      let top = 12;
+
+      switch (blockType) {
+        case '리스트':
+          left = offsetLeft - 70;
+          top = 12;
+          break;
+        case '비어 있는 인용':
+          left = offsetLeft - 70;
+          top = 40;
+          break;
+        case '제목1':
+          top = 24;
+          break;
+        case '제목2':
+          top = 16;
+          break;
+        case '제목3':
+          top = 14;
+          break;
+        default:
+          left = offsetLeft - 50;
+          top = 12;
+          break;
+      }
+
+      buttonEl.style.position = 'fixed';
+      buttonEl.style.top = `${top}px`;
+      buttonEl.style.left = `${left}px`;
       buttonEl.style.display = 'flex';
+      buttonEl.style.backgroundColor = 'red';
     }
   };
 
@@ -96,18 +142,19 @@ const NoteContent = () => {
   };
 
   const handleMouseLeave = (index: number) => {
+    if (isBlockMenuOpen) return;
     blockButtonRef.current[index]?.style.setProperty('display', 'none');
   };
 
   useEffect(() => {
-    setIsSlashMenuOpen(Array(blockList.length).fill(false));
-  }, [blockList.length]);
+    setIsSlashMenuOpen(false);
+  }, []);
 
   // isSlashMenuOpen 상태에 따라 스크롤 막기
   useEffect(() => {
     const grandParent = noteRef.current?.parentElement?.parentElement;
     if (!grandParent) return;
-    const isAnyMenuOpen = isSlashMenuOpen.some(state => state === true);
+    const isAnyMenuOpen = isSlashMenuOpen;
     if (isAnyMenuOpen) {
       grandParent.style.overflowY = 'hidden';
     } else {
@@ -137,12 +184,9 @@ const NoteContent = () => {
         return;
       }
 
-      if (blockRef.current && !blockRef.current.some(block => block?.contains(event.target as Node))) {
-        isDraggingRef.current = true;
-        if (selectionMenuRef.current && !selectionMenuRef.current.contains(event.target as Node)) {
-          resetSelection();
-        }
-
+      isDraggingRef.current = true;
+      if (selectionMenuRef.current) {
+        if (!selectionMenuRef.current.contains(event.target as Node)) resetSelection();
         setKey(Math.random());
       }
     };
@@ -170,8 +214,6 @@ const NoteContent = () => {
       document.addEventListener('mousemove', handleOutsideDrag);
     };
   }, []);
-
-  const fakeBoxRef = useRef<(HTMLDivElement | null)[]>([]);
 
   const getNodeBounds = (node: Node, startOffset: number, endOffset: number) => {
     const range = document.createRange();
@@ -267,9 +309,38 @@ const NoteContent = () => {
     }
   };
 
+  const deleteBlockByIndex = (indexToDelete: number) => {
+    if (blockList.length === 1) return;
+    setBlockList(prev => prev.filter((_, index) => index !== indexToDelete));
+    setKey(Math.random());
+  };
+
+  const createBlock = (index: number) => {
+    const newBlock: ITextBlock = {
+      id: Date.now(), // 고유 ID
+      type: 'default',
+      children: [
+        {
+          type: 'text',
+          content: '',
+        },
+      ],
+    };
+
+    setBlockList(prev => {
+      const newList = [...prev];
+      newList.splice(index + 1, 0, newBlock);
+      return newList;
+    });
+
+    setTimeout(() => {
+      (blockRef.current[index + 1]?.parentNode as HTMLElement)?.focus();
+    }, 0);
+  };
+
   useEffect(() => {
     // 각 블록에 대해 반복하여 해당하는 fakeBox 높이 설정
-    blockRef.current.forEach((block, index) => {
+    blockContainerRef.current.forEach((block, index) => {
       if (block && fakeBoxRef.current[index]) {
         const blockHeight = block.offsetHeight;
         if (blockHeight) {
@@ -280,11 +351,10 @@ const NoteContent = () => {
   }, [key, blockList]);
 
   return (
-    <div>
+    <div style={{ pointerEvents: 'none' }}>
       <div
         role="button"
         tabIndex={0}
-        style={{ pointerEvents: 'none' }}
         key={key}
         ref={noteRef}
         onMouseUp={() =>
@@ -305,6 +375,9 @@ const NoteContent = () => {
             tabIndex={0}
             key={block.id}
             className={blockContainer}
+            ref={element => {
+              blockContainerRef.current[index] = element;
+            }}
             onMouseEnter={() => handleMouseEnter(index)}
             onMouseLeave={() => handleMouseLeave(index)}
             onKeyDown={() => handleMouseLeave(index)}
@@ -324,7 +397,16 @@ const NoteContent = () => {
                   blockButtonRef.current[index] = element;
                 }}
               >
-                <BlockButton />
+                <BlockButton
+                  OpenBlockMenu={OpenBlockMenu}
+                  CloseBlockMenu={CloseBlockMenu}
+                  deleteBlockByIndex={deleteBlockByIndex}
+                  createBlock={createBlock}
+                  index={index}
+                  blockList={blockList}
+                  setBlockList={setBlockList}
+                  blockRef={blockRef}
+                />
               </div>
             </div>
             <Block

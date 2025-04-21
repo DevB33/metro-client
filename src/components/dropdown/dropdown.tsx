@@ -11,7 +11,6 @@ interface IDropDownProps {
 
 const dropdownContainer = css({
   position: 'relative',
-  zIndex: '1000',
 });
 
 const DropDown = ({ children, handleClose }: IDropDownProps) => {

@@ -61,7 +61,7 @@ const placeholderStyles = cva({
   },
 });
 
-const BlockTag = ({ block, blockList, index, blockRef, children }: IBlockTag) => {
+const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag) => {
   if (block.type === 'default') {
     return (
       <p
@@ -192,4 +192,4 @@ const BlockTag = ({ block, blockList, index, blockRef, children }: IBlockTag) =>
   return null;
 };
 
-export default BlockTag;
+export default BlockHTMLTag;

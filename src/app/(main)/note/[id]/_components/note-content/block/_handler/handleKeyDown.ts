@@ -424,14 +424,11 @@ const mergeLine = (
 
 const openSlashMenu = (
   index: number,
-  isSlashMenuOpen: boolean[],
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
-  setIsSlashMenuOpen: (isSlashMenuOpen: boolean[]) => void,
+  setIsSlashMenuOpen: (isSlashMenuOpen: boolean) => void,
   setSlashMenuPosition: (position: { x: number; y: number }) => void,
 ) => {
-  const newIsSlashMenuOpen = [...isSlashMenuOpen];
-  newIsSlashMenuOpen[index] = true;
-  setIsSlashMenuOpen(newIsSlashMenuOpen);
+  setIsSlashMenuOpen(true);
 
   // 메뉴 띄울 슬래시 위치 받아오기
   const { range } = getSelectionInfo(0) || {};
@@ -447,7 +444,7 @@ const openSlashMenu = (
   if (rect) {
     setSlashMenuPosition({
       x: rect.left,
-      y: rect.top + rect.height,
+      y: rect.top - 282,
     });
   }
 };
@@ -525,8 +522,7 @@ const handleKeyDown = (
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   setIsTyping: (isTyping: boolean) => void,
   setKey: (key: number) => void,
-  isSlashMenuOpen: boolean[],
-  setIsSlashMenuOpen: (isSlashMenuOpen: boolean[]) => void,
+  setIsSlashMenuOpen: (isSlashMenuOpen: boolean) => void,
   setSlashMenuPosition: (position: { x: number; y: number }) => void,
   isSelectionMenuOpen: boolean,
   selectionStartPosition: ISelectionPosition,
@@ -789,6 +785,7 @@ const handleKeyDown = (
       event.key === keyName.arrowLeft ||
       event.key === keyName.arrowRight
     ) {
+
       const { range, startOffset, startContainer } = getSelectionInfo(0) || {};
       const rect = range?.getBoundingClientRect() as DOMRect;
       const cursorX = rect?.left;
@@ -805,7 +802,6 @@ const handleKeyDown = (
           setTimeout(() => {
             if (range) {
               const { offsetNode, offset } = caret;
-
               const newRange = document.createRange();
               const selection = window.getSelection();
 
@@ -828,7 +824,6 @@ const handleKeyDown = (
           setTimeout(() => {
             if (range) {
               const { offsetNode, offset } = caret;
-
               const newRange = document.createRange();
               const selection = window.getSelection();
 
