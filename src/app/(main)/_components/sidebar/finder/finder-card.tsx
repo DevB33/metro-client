@@ -58,6 +58,12 @@ const emptyPageContainer = css({
   px: 'tiny',
 });
 
+const pageContainer = css({
+  width: '100%',
+  height: '100%',
+  overflowY: 'auto',
+});
+
 const FinderCard = () => {
   const [isHover, setIsHover] = useState(false);
 
@@ -84,11 +90,13 @@ const FinderCard = () => {
           </div>
         )}
       </div>
-      {pageList?.node.length ? (
-        pageList.node.map((page: IDocuments) => <PageItem key={page.id} page={page} depth={1} />)
-      ) : (
-        <p className={emptyPageContainer}>문서가 없습니다.</p>
-      )}
+      <div className={pageContainer}>
+        {pageList?.node.length ? (
+          pageList.node.map((page: IDocuments) => <PageItem key={page.id} page={page} depth={1} />)
+        ) : (
+          <p className={emptyPageContainer}>문서가 없습니다.</p>
+        )}
+      </div>
     </div>
   );
 };
