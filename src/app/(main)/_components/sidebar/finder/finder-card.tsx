@@ -67,7 +67,7 @@ const pageContainer = css({
 const FinderCard = () => {
   const [isHover, setIsHover] = useState(false);
 
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [openedDropdownPageId, setOpenedDropdownPageId] = useState<string | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
   const { data: pageList } = useSWR('pageList');
@@ -79,17 +79,6 @@ const FinderCard = () => {
     } catch (error) {
       console.log(error);
     }
-  };
-
-  const contextOpenSettingDropdown = (event: React.MouseEvent<HTMLDivElement>) => {
-    console.log('우클릭');
-    event.preventDefault();
-    console.log(event.clientX, event.clientY);
-    setDropdownPosition({
-      top: event.clientY, // 버튼 아래에 위치
-      left: event.clientX, // 적절히 조정
-    });
-    setIsDropdownOpen(true);
   };
 
   return (
@@ -111,11 +100,10 @@ const FinderCard = () => {
               key={page.id}
               page={page}
               depth={1}
-              isDropdownOpen={isDropdownOpen}
+              openedDropdownPageId={openedDropdownPageId}
+              setOpenedDropdownPageId={setOpenedDropdownPageId}
               dropdownPosition={dropdownPosition}
-              setIsDropdownOpen={setIsDropdownOpen}
               setDropdownPosition={setDropdownPosition}
-              contextOpenSettingDropdown={contextOpenSettingDropdown}
             />
           ))
         ) : (

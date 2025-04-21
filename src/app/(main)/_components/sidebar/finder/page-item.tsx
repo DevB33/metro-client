@@ -20,11 +20,10 @@ import EditTitleModal from './edit-title-modal';
 interface IPageItem {
   page: IDocuments;
   depth: number;
-  isDropdownOpen: boolean;
+  openedDropdownPageId: string | null;
+  setOpenedDropdownPageId: React.Dispatch<React.SetStateAction<string | null>>;
   dropdownPosition: { top: number; left: number };
-  setIsDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setDropdownPosition: React.Dispatch<React.SetStateAction<{ top: number; left: number }>>;
-  contextOpenSettingDropdown: (event: React.MouseEvent<HTMLDivElement>) => void;
 }
 
 const pageItemContainer = css({
@@ -103,11 +102,10 @@ const noChildren = css({
 const PageItem = ({
   page,
   depth,
-  isDropdownOpen,
+  openedDropdownPageId,
+  setOpenedDropdownPageId,
   dropdownPosition,
-  setIsDropdownOpen,
   setDropdownPosition,
-  contextOpenSettingDropdown,
 }: IPageItem) => {
   const router = useRouter();
   const toggleButtoonRef = useRef<HTMLButtonElement>(null);
@@ -137,15 +135,15 @@ const PageItem = ({
     if (settingButtonRef.current) {
       const rect = settingButtonRef.current.getBoundingClientRect();
       setDropdownPosition({
-        top: rect.top, // 버튼 아래에 위치
-        left: rect.left + 30, // 적절히 조정
+        top: rect.top,
+        left: rect.left + 30,
       });
     }
-    setIsDropdownOpen(true);
+    setOpenedDropdownPageId(page.id);
   };
 
   const closeSettingDropdown = () => {
-    setIsDropdownOpen(false);
+    setOpenedDropdownPageId(null);
   };
 
   const handleDeleteButtonClick = async () => {
@@ -181,6 +179,16 @@ const PageItem = ({
     setIsEditModalOpen(false);
   };
 
+  const contextOpenSettingDropdown = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+
+    setDropdownPosition({
+      top: event.clientY, // 버튼 아래에 위치
+      left: event.clientX, // 적절히 조정
+    });
+    setOpenedDropdownPageId(page.id);
+  };
+
   return (
     <div className={pageItemContainer}>
       <div
@@ -210,20 +218,22 @@ const PageItem = ({
           </div>
         )}
       </div>
-      {isDropdownOpen && (
-        <DropDown handleClose={closeSettingDropdown}>
-          <DropDown.Menu isOpen={isDropdownOpen} top={dropdownPosition.top} left={dropdownPosition.left}>
-            <DropDown.Item onClick={openEditModal}>
-              <PencilSquareIcon />
-              제목 수정하기
-            </DropDown.Item>
-            <DropDown.Item onClick={handleDeleteButtonClick}>
-              <TrashIcon />
-              삭제하기
-            </DropDown.Item>
-          </DropDown.Menu>
-        </DropDown>
-      )}
+      <DropDown handleClose={closeSettingDropdown}>
+        <DropDown.Menu
+          isOpen={openedDropdownPageId === page.id}
+          top={dropdownPosition.top}
+          left={dropdownPosition.left}
+        >
+          <DropDown.Item onClick={openEditModal}>
+            <PencilSquareIcon />
+            제목 수정하기
+          </DropDown.Item>
+          <DropDown.Item onClick={handleDeleteButtonClick}>
+            <TrashIcon />
+            삭제하기
+          </DropDown.Item>
+        </DropDown.Menu>
+      </DropDown>
       {isEditModalOpen && <EditTitleModal noteId={page.id} closeEditModal={closeEditModal} />}
       {isOpen &&
         (page.children.length ? (
@@ -233,11 +243,10 @@ const PageItem = ({
                 key={child.id}
                 page={child}
                 depth={depth + 1}
-                isDropdownOpen={isDropdownOpen}
+                openedDropdownPageId={openedDropdownPageId}
+                setOpenedDropdownPageId={setOpenedDropdownPageId}
                 dropdownPosition={dropdownPosition}
-                setIsDropdownOpen={setIsDropdownOpen}
                 setDropdownPosition={setDropdownPosition}
-                contextOpenSettingDropdown={contextOpenSettingDropdown}
               />
             ))}
           </div>
