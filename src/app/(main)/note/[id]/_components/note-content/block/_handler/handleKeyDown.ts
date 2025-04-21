@@ -530,6 +530,12 @@ const handleKeyDown = (
 ) => {
   // selection 없을때
   if (!isSelectionMenuOpen) {
+    if (
+      event.shiftKey &&
+      (event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowRight')
+    ) {
+      event.preventDefault();
+    }
     // enter 클릭
     if (event.key === keyName.enter && !event.shiftKey) {
       event.preventDefault();
