@@ -123,9 +123,9 @@ const BlockButton = ({
   return (
     <div className={blockBtnContainer} ref={buttonRef}>
       <GhostBlock ghostRef={ghostRef} block={block} blockList={blockList} index={index} />
-      <div className={blockBtn} onClick={() => createBlock(index)}>
+      <button type="button" className={blockBtn} onClick={() => createBlock(index)}>
         <PlusIcon />
-      </div>
+      </button>
       <button type="button" className={blockBtn} onClick={handleOpen} draggable onDragStart={handleDragStart}>
         <GripVerticalIcon />
       </button>

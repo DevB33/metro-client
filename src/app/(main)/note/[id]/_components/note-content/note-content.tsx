@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 
+import getSelectionInfo from '@/utils/getSelectionInfo';
 import { ITextBlock } from '@/types/block-type';
 import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundImage';
 import ISelectionPosition from '@/types/selection-position';
@@ -53,6 +54,7 @@ const NoteContent = () => {
       ],
     },
   ]);
+
   const [key, setKey] = useState(Date.now());
   const [isTyping, setIsTyping] = useState(false);
 
@@ -224,6 +226,29 @@ const NoteContent = () => {
   };
 
   const handleFakeBoxMouseEnter = (index: number) => {
+    if (isTyping) {
+      const { startOffset, startContainer } = getSelectionInfo(0) || {};
+      const parent = blockRef.current[index];
+      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+      const currentChildNodeIndex =
+        childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
+          ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
+          : childNodes.indexOf(startContainer as HTMLElement);
+
+      setIsTyping(false);
+      setKey(Math.random());
+
+      setTimeout(() => {
+        const range = document.createRange();
+        const targetNode = blockRef.current[index]?.childNodes[currentChildNodeIndex];
+        range.setStart(targetNode as Node, startOffset || 0);
+
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      }, 0);
+    }
+
     if (!isDragging) return;
     const parent = blockRef.current[index];
     const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
