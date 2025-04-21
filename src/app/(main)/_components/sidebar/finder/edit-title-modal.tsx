@@ -122,7 +122,7 @@ const EditTitleModal = ({ noteId, closeEditModal }: IEditTitleModal) => {
     debounceTimer.current = setTimeout(async () => {
       await editTitle(noteId, value);
       await mutate('pageList', getPageList, false);
-      await mutate(`noteHeaderData-${noteId}`, getNoteInfo(noteId), false);
+      await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
     }, 100);
 
     return () => {
@@ -137,7 +137,7 @@ const EditTitleModal = ({ noteId, closeEditModal }: IEditTitleModal) => {
   const handleSelectIcon = async (selectedIcon: string | null) => {
     await editIcon(noteId, selectedIcon);
     await mutate('pageList', getPageList, false);
-    await mutate(`noteHeaderData-${noteId}`, getNoteInfo(noteId));
+    await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId));
   };
 
   const handleSelectorOpen = () => {
