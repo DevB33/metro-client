@@ -68,7 +68,6 @@ const FinderCard = () => {
   const [isHover, setIsHover] = useState(false);
 
   const [openedDropdownPageId, setOpenedDropdownPageId] = useState<string | null>(null);
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
   const { data: pageList } = useSWR('pageList');
 
@@ -102,8 +101,6 @@ const FinderCard = () => {
               depth={1}
               openedDropdownPageId={openedDropdownPageId}
               setOpenedDropdownPageId={setOpenedDropdownPageId}
-              dropdownPosition={dropdownPosition}
-              setDropdownPosition={setDropdownPosition}
             />
           ))
         ) : (
