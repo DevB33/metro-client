@@ -7,15 +7,20 @@ import { useClickOutside } from '@/hooks/useClickOutside';
 import PageIcon from '@/icons/page-icon';
 import IPageType from '@/types/page-type';
 import { useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import useSWR, { mutate } from 'swr';
 
 interface IEditTitleModal {
   noteId: string;
   closeEditModal: () => void;
+  top?: number;
+  left?: number;
+  right?: number;
+  bottom?: number;
 }
 
 const container = css({
-  position: 'relative',
+  position: 'absolute',
   display: 'flex',
   flexDirection: 'column',
 });
@@ -65,7 +70,7 @@ const IconSelectorContainer = css({
   zIndex: '10001',
 });
 
-const EditTitleModal = ({ noteId, closeEditModal }: IEditTitleModal) => {
+const EditTitleModal = ({ noteId, closeEditModal, top, left, right, bottom }: IEditTitleModal) => {
   const { data } = useSWR(`pageList`);
 
   const [value, setValue] = useState('');
@@ -157,8 +162,8 @@ const EditTitleModal = ({ noteId, closeEditModal }: IEditTitleModal) => {
 
   if (!data) return;
 
-  return (
-    <div ref={editModalRef} className={container}>
+  return ReactDOM.createPortal(
+    <div ref={editModalRef} className={container} style={{ top, left, right, bottom }}>
       <div className={modalContainer}>
         <div className={iconContainer} onClick={handleSelectorOpen}>
           {pageNode?.icon ?? <PageIcon />}
@@ -178,7 +183,8 @@ const EditTitleModal = ({ noteId, closeEditModal }: IEditTitleModal) => {
           isSelectorOpen={isSelectorOpen}
         />
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

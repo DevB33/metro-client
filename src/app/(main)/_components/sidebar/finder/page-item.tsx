@@ -22,8 +22,6 @@ interface IPageItem {
   depth: number;
   openedDropdownPageId: string | null;
   setOpenedDropdownPageId: React.Dispatch<React.SetStateAction<string | null>>;
-  dropdownPosition: { top: number; left: number };
-  setDropdownPosition: React.Dispatch<React.SetStateAction<{ top: number; left: number }>>;
 }
 
 const pageItemContainer = css({
@@ -99,15 +97,9 @@ const noChildren = css({
   overflow: 'hidden',
 });
 
-const PageItem = ({
-  page,
-  depth,
-  openedDropdownPageId,
-  setOpenedDropdownPageId,
-  dropdownPosition,
-  setDropdownPosition,
-}: IPageItem) => {
+const PageItem = ({ page, depth, openedDropdownPageId, setOpenedDropdownPageId }: IPageItem) => {
   const router = useRouter();
+  const pageItemRef = useRef<HTMLDivElement>(null);
   const toggleButtoonRef = useRef<HTMLButtonElement>(null);
   const settingButtonRef = useRef<HTMLButtonElement>(null);
   const plusButtonRef = useRef<HTMLButtonElement>(null);
@@ -115,6 +107,8 @@ const PageItem = ({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isHover, setIsHover] = useState(false);
   const pathname = usePathname();
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [editTitleModalPosition, seteditTitleModalPosition] = useState({ top: 0, left: 0 });
 
   const togglePage = () => {
     setIsOpen(!isOpen);
@@ -171,8 +165,15 @@ const PageItem = ({
   };
 
   const openEditModal = () => {
+    if (pageItemRef.current) {
+      const rect = pageItemRef.current.getBoundingClientRect();
+      seteditTitleModalPosition({
+        left: rect.left,
+        top: rect.top + 30,
+      });
+    }
+
     setIsEditModalOpen(true);
-    closeSettingDropdown();
   };
 
   const closeEditModal = () => {
@@ -183,8 +184,8 @@ const PageItem = ({
     event.preventDefault();
 
     setDropdownPosition({
-      top: event.clientY, // 버튼 아래에 위치
-      left: event.clientX, // 적절히 조정
+      top: event.clientY,
+      left: event.clientX,
     });
     setOpenedDropdownPageId(page.id);
   };
@@ -193,6 +194,7 @@ const PageItem = ({
     <div className={pageItemContainer}>
       <div
         className={pageItem}
+        ref={pageItemRef}
         style={{ paddingLeft: `${depth * 0.5}rem` }}
         onClick={openPage}
         onMouseEnter={() => setIsHover(true)}
@@ -234,7 +236,14 @@ const PageItem = ({
           </DropDown.Item>
         </DropDown.Menu>
       </DropDown>
-      {isEditModalOpen && <EditTitleModal noteId={page.id} closeEditModal={closeEditModal} />}
+      {isEditModalOpen && (
+        <EditTitleModal
+          noteId={page.id}
+          closeEditModal={closeEditModal}
+          left={editTitleModalPosition.left}
+          top={editTitleModalPosition.top}
+        />
+      )}
       {isOpen &&
         (page.children.length ? (
           <div className={pageChildren}>
@@ -245,8 +254,6 @@ const PageItem = ({
                 depth={depth + 1}
                 openedDropdownPageId={openedDropdownPageId}
                 setOpenedDropdownPageId={setOpenedDropdownPageId}
-                dropdownPosition={dropdownPosition}
-                setDropdownPosition={setDropdownPosition}
               />
             ))}
           </div>
