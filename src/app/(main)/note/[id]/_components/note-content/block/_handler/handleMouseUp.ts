@@ -12,6 +12,7 @@ const handleMouseUp = (
 ) => {
   if (!blockRef.current || blockRef.current.length === 0) return;
 
+  // selectionEndPosition 재설정
   const finalSelectionEndPosition = {
     blockIndex: selectionEndPosition.blockIndex,
     childNodeIndex: selectionEndPosition.childNodeIndex,
