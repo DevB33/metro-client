@@ -775,7 +775,7 @@ const handleKeyDown = (
       event.preventDefault();
       setIsTyping(false);
       setKey(Math.random());
-      openSlashMenu(index, isSlashMenuOpen, blockRef, setIsSlashMenuOpen, setSlashMenuPosition);
+      openSlashMenu(index, blockRef, setIsSlashMenuOpen, setSlashMenuPosition);
     }
 
     // 방향키 클릭
@@ -785,7 +785,6 @@ const handleKeyDown = (
       event.key === keyName.arrowLeft ||
       event.key === keyName.arrowRight
     ) {
-
       const { range, startOffset, startContainer } = getSelectionInfo(0) || {};
       const rect = range?.getBoundingClientRect() as DOMRect;
       const cursorX = rect?.left;

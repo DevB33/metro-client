@@ -232,19 +232,38 @@ const NoteContent = () => {
       blockIndex: index,
     }));
 
+    // 로컬 변수를 활용해 비동기적 함수 처리
+    const selectionEnd = {
+      ...selectionEndPosition,
+      blockIndex: index,
+    };
+
     let left = 99999;
     let right = 0;
 
-    childNodes.forEach(childNode => {
-      const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
-      left = Math.min(left, rect.left);
-      right = Math.max(right, rect.right);
-      const blockElement = blockRef.current[index];
-      const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+    if (selectionStartPosition.blockIndex === selectionEnd.blockIndex) {
+      childNodes.forEach(childNode => {
+        const rect = getNodeBounds(childNode as Node, 0, selectionStartPosition.offset as number);
+        left = Math.min(left, rect.left);
+        right = Math.max(right, rect.right);
+        const blockElement = blockRef.current[index];
+        const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
 
-      if (!blockElement) return;
-      fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
-    });
+        if (!blockElement) return;
+        fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+      });
+    } else {
+      childNodes.forEach(childNode => {
+        const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
+        left = Math.min(left, rect.left);
+        right = Math.max(right, rect.right);
+        const blockElement = blockRef.current[index];
+        const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+
+        if (!blockElement) return;
+        fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+      });
+    }
   };
 
   const handleFakeBoxMouseLeave = (index: number) => {
