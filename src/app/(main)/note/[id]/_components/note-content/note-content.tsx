@@ -228,7 +228,8 @@ const NoteContent = () => {
   const handleFakeBoxMouseEnter = (index: number) => {
     if (isTyping) {
       const { startOffset, startContainer } = getSelectionInfo(0) || {};
-      const parent = blockRef.current[index];
+      const blockIndex = blockRef.current.findIndex(blockEl => blockEl && blockEl.contains(startContainer as Node));
+      const parent = blockRef.current[blockIndex];
       const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
       const currentChildNodeIndex =
         childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
@@ -240,13 +241,12 @@ const NoteContent = () => {
 
       setTimeout(() => {
         const range = document.createRange();
-        const targetNode = blockRef.current[index]?.childNodes[currentChildNodeIndex];
+        const targetNode = blockRef.current[blockIndex]?.childNodes[currentChildNodeIndex];
         range.setStart(targetNode as Node, startOffset || 0);
-
         const selection = window.getSelection();
         selection?.removeAllRanges();
         selection?.addRange(range);
-      }, 0);
+      }, 100);
     }
 
     if (!isDragging) return;
