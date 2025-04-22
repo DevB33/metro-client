@@ -227,24 +227,63 @@ const NoteContent = () => {
     const parent = blockRef.current[index];
     const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
 
+    const textLength = parent?.textContent?.length || 0;
+
     setSelectionEndPosition((prev: ISelectionPosition) => ({
       ...prev,
       blockIndex: index,
     }));
 
+    // 로컬 변수를 활용해 비동기적 함수 처리
+    const selectionEnd = {
+      ...selectionEndPosition,
+      blockIndex: index,
+    };
+
     let left = 99999;
     let right = 0;
 
-    childNodes.forEach(childNode => {
-      const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
-      left = Math.min(left, rect.left);
-      right = Math.max(right, rect.right);
-      const blockElement = blockRef.current[index];
-      const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+    if (selectionStartPosition.blockIndex === selectionEnd.blockIndex) {
+      childNodes.forEach(childNode => {
+        const rect = getNodeBounds(childNode as Node, 0, selectionStartPosition.offset as number);
+        left = Math.min(left, rect.left);
+        right = Math.max(right, rect.right);
+        const blockElement = blockRef.current[index];
+        const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
 
-      if (!blockElement) return;
-      fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
-    });
+        if (!blockElement) return;
+        fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+      });
+    }
+
+    if (selectionStartPosition.blockIndex > selectionEnd.blockIndex) {
+      childNodes.forEach(childNode => {
+        const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
+        left = Math.min(left, rect.left);
+        right = Math.max(right, rect.right);
+        const blockElement = blockRef.current[index];
+        const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+
+        if (!blockElement) return;
+        fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+      });
+    }
+    if (selectionStartPosition.blockIndex < selectionEnd.blockIndex) {
+      setSelectionEndPosition((prev: ISelectionPosition) => ({
+        ...prev,
+        offset: textLength,
+      }));
+      childNodes.forEach(childNode => {
+        const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
+        left = Math.min(left, rect.left);
+        right = Math.max(right, rect.right);
+        const blockElement = blockRef.current[index];
+        const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+
+        if (!blockElement) return;
+        fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+      });
+    }
   };
 
   const handleFakeBoxMouseLeave = (index: number) => {
@@ -258,6 +297,25 @@ const NoteContent = () => {
         const el = blockRef.current[index];
         if (!el) return;
         el.style.backgroundImage = `none`;
+      }
+      if (!isUp) {
+        let left = 99999;
+        let right = 0;
+
+        childNodes.forEach(childNode => {
+          const rect = getNodeBounds(
+            childNode as Node,
+            selectionStartPosition.offset,
+            childNode.textContent?.length as number,
+          );
+          left = Math.min(left, rect.left);
+          right = Math.max(right, rect.right);
+          const blockElement = blockRef.current[index];
+          const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+
+          if (!blockElement) return;
+          fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+        });
       }
     }
 

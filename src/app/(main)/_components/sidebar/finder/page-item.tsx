@@ -17,6 +17,13 @@ import PencilSquareIcon from '@/icons/pencil-square';
 import DropDown from '../../../../../components/dropdown/dropdown';
 import EditTitleModal from './edit-title-modal';
 
+interface IPageItem {
+  page: IDocuments;
+  depth: number;
+  openedDropdownPageId: string | null;
+  setOpenedDropdownPageId: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
 const pageItemContainer = css({
   display: 'flex',
   flexDirection: 'column',
@@ -90,17 +97,18 @@ const noChildren = css({
   overflow: 'hidden',
 });
 
-const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
+const PageItem = ({ page, depth, openedDropdownPageId, setOpenedDropdownPageId }: IPageItem) => {
   const router = useRouter();
+  const pageItemRef = useRef<HTMLDivElement>(null);
   const toggleButtoonRef = useRef<HTMLButtonElement>(null);
   const settingButtonRef = useRef<HTMLButtonElement>(null);
   const plusButtonRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isHover, setIsHover] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const pathname = usePathname();
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [editTitleModalPosition, seteditTitleModalPosition] = useState({ top: 0, left: 0 });
 
   const togglePage = () => {
     setIsOpen(!isOpen);
@@ -121,15 +129,15 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
     if (settingButtonRef.current) {
       const rect = settingButtonRef.current.getBoundingClientRect();
       setDropdownPosition({
-        top: rect.top, // 버튼 아래에 위치
-        left: rect.left + 30, // 적절히 조정
+        top: rect.top,
+        left: rect.left + 30,
       });
     }
-    setIsDropdownOpen(true);
+    setOpenedDropdownPageId(page.id);
   };
 
   const closeSettingDropdown = () => {
-    setIsDropdownOpen(false);
+    setOpenedDropdownPageId(null);
   };
 
   const handleDeleteButtonClick = async () => {
@@ -157,18 +165,36 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
   };
 
   const openEditModal = () => {
+    if (pageItemRef.current) {
+      const rect = pageItemRef.current.getBoundingClientRect();
+      seteditTitleModalPosition({
+        left: rect.left,
+        top: rect.top + 30,
+      });
+    }
+
     setIsEditModalOpen(true);
-    closeSettingDropdown();
   };
 
   const closeEditModal = () => {
     setIsEditModalOpen(false);
   };
 
+  const contextOpenSettingDropdown = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+
+    setDropdownPosition({
+      top: event.clientY,
+      left: event.clientX,
+    });
+    setOpenedDropdownPageId(page.id);
+  };
+
   return (
     <div className={pageItemContainer}>
       <div
         className={pageItem}
+        ref={pageItemRef}
         style={{ paddingLeft: `${depth * 0.5}rem` }}
         onClick={openPage}
         onMouseEnter={() => setIsHover(true)}
@@ -176,6 +202,7 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
         onKeyDown={openPage}
         role="button"
         tabIndex={0}
+        onContextMenu={contextOpenSettingDropdown}
       >
         <button type="button" ref={toggleButtoonRef} className={pageButton} onClick={togglePage}>
           {isOpen ? <PageOpenIcon color="black" /> : <PageCloseIcon color="black" />}
@@ -194,7 +221,11 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
         )}
       </div>
       <DropDown handleClose={closeSettingDropdown}>
-        <DropDown.Menu isOpen={isDropdownOpen} top={dropdownPosition.top} left={dropdownPosition.left}>
+        <DropDown.Menu
+          isOpen={openedDropdownPageId === page.id}
+          top={dropdownPosition.top}
+          left={dropdownPosition.left}
+        >
           <DropDown.Item onClick={openEditModal}>
             <PencilSquareIcon />
             제목 수정하기
@@ -205,12 +236,25 @@ const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
           </DropDown.Item>
         </DropDown.Menu>
       </DropDown>
-      {isEditModalOpen && <EditTitleModal noteId={page.id} closeEditModal={closeEditModal} />}
+      {isEditModalOpen && (
+        <EditTitleModal
+          noteId={page.id}
+          closeEditModal={closeEditModal}
+          left={editTitleModalPosition.left}
+          top={editTitleModalPosition.top}
+        />
+      )}
       {isOpen &&
         (page.children.length ? (
           <div className={pageChildren}>
             {page.children.map(child => (
-              <PageItem key={child.id} page={child} depth={depth + 1} />
+              <PageItem
+                key={child.id}
+                page={child}
+                depth={depth + 1}
+                openedDropdownPageId={openedDropdownPageId}
+                setOpenedDropdownPageId={setOpenedDropdownPageId}
+              />
             ))}
           </div>
         ) : (

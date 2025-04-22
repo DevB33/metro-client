@@ -61,10 +61,10 @@ const NoteHeader = () => {
   const params = useParams();
   const noteId = params.id as string;
 
-  const { data } = useSWR(`noteHeaderData-${noteId}`);
+  const { data } = useSWR(`noteMetadata-${noteId}`);
 
   useEffect(() => {
-    mutate(`noteHeaderData-${noteId}`, getNoteInfo(noteId));
+    mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId));
   }, []);
 
   const handleMouseEnter = () => {
@@ -78,7 +78,7 @@ const NoteHeader = () => {
   const handleSelectIcon = async (selectedIcon: string | null) => {
     await editIcon(noteId, selectedIcon);
     await mutate('pageList', getPageList, false);
-    await mutate(`noteHeaderData-${noteId}`, getNoteInfo(noteId));
+    await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId));
   };
 
   const handleSelectorOpen = () => {
@@ -100,13 +100,13 @@ const NoteHeader = () => {
   const handleSelectCover = async (selectedColor: string) => {
     await editCover(noteId, selectedColor);
     await mutate('pageList', getPageList, false);
-    await mutate(`noteHeaderData-${noteId}`, getNoteInfo(noteId), false);
+    await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
   };
 
   const deleteCover = async () => {
     await editCover(noteId, null);
     await mutate('pageList', getPageList, false);
-    await mutate(`noteHeaderData-${noteId}`, getNoteInfo(noteId), false);
+    await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
   };
 
   const iconSelectorRef = useClickOutside(handleSelectorClose);

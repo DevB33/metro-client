@@ -1,5 +1,5 @@
 import { css } from '@/../styled-system/css';
-import Example from './_components/chart/chart';
+import ResponseWrapper from './_components/chart/responsiveWrapper';
 
 const homePage = css({
   display: 'flex',
@@ -25,7 +25,7 @@ const Home = () => {
     <div className={homePage}>
       <div className={welcomeBanner}>김기원 님, 안녕하세요.</div>
       <div className={visualContainer}>
-        <Example width={1300} height={600} />
+        <ResponseWrapper />
       </div>
     </div>
   );
