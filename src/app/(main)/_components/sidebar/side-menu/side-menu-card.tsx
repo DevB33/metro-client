@@ -6,6 +6,7 @@ import HomeButton from './home-button';
 const menuCard = css({
   width: '100%',
   height: 'auto',
+  minHeight: '6.5rem',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
