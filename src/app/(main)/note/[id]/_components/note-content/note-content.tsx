@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 
+import getSelectionInfo from '@/utils/getSelectionInfo';
 import { ITextBlock } from '@/types/block-type';
 import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundImage';
 import ISelectionPosition from '@/types/selection-position';
@@ -39,6 +40,7 @@ const NoteContent = () => {
   const fakeBoxRef = useRef<(HTMLDivElement | null)[]>([]);
   const noteRef = useRef<HTMLDivElement | null>(null);
   const selectionMenuRef = useRef<HTMLDivElement | null>(null);
+  const [dragBlockIndex, setDragBlockIndex] = useState<number | null>(null);
 
   const [blockList, setBlockList] = useState<ITextBlock[]>([
     {
@@ -52,6 +54,7 @@ const NoteContent = () => {
       ],
     },
   ]);
+
   const [key, setKey] = useState(Date.now());
   const [isTyping, setIsTyping] = useState(false);
 
@@ -223,6 +226,29 @@ const NoteContent = () => {
   };
 
   const handleFakeBoxMouseEnter = (index: number) => {
+    if (isTyping) {
+      const { startOffset, startContainer } = getSelectionInfo(0) || {};
+      const blockIndex = blockRef.current.findIndex(blockEl => blockEl && blockEl.contains(startContainer as Node));
+      const parent = blockRef.current[blockIndex];
+      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+      const currentChildNodeIndex =
+        childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
+          ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
+          : childNodes.indexOf(startContainer as HTMLElement);
+
+      setIsTyping(false);
+      setKey(Math.random());
+
+      setTimeout(() => {
+        const range = document.createRange();
+        const targetNode = blockRef.current[blockIndex]?.childNodes[currentChildNodeIndex];
+        range.setStart(targetNode as Node, startOffset || 0);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      }, 100);
+    }
+
     if (!isDragging) return;
     const parent = blockRef.current[index];
     const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
@@ -463,9 +489,12 @@ const NoteContent = () => {
                   deleteBlockByIndex={deleteBlockByIndex}
                   createBlock={createBlock}
                   index={index}
+                  block={block}
                   blockList={blockList}
                   setBlockList={setBlockList}
                   blockRef={blockRef}
+                  setDragBlockIndex={setDragBlockIndex}
+                  setIsTyping={setIsTyping}
                 />
               </div>
             </div>
@@ -490,6 +519,7 @@ const NoteContent = () => {
               setIsSlashMenuOpen={setIsSlashMenuOpen}
               slashMenuPosition={slashMenuPosition}
               setSlashMenuPosition={setSlashMenuPosition}
+              dragBlockIndex={dragBlockIndex}
               isSelectionMenuOpen={isSelectionMenuOpen}
             />
           </div>
