@@ -9,7 +9,6 @@ const wrapperContainer = css({
   height: '100%',
 });
 
-// 부모의 너비의 80%와 높이의 80%를 계산하여 전달하는 컴포넌트
 const ResponseWrapper = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [parentWidth, setParentWidth] = useState<number>(0);
@@ -25,14 +24,11 @@ const ResponseWrapper = () => {
       }
     };
 
-    // 부모의 크기 변화 감지
     const resizeObserver = new ResizeObserver(updateDimensions);
     if (containerRef.current) resizeObserver.observe(containerRef.current);
 
-    // 초기 크기 업데이트
     updateDimensions();
 
-    // cleanup
     return () => resizeObserver.disconnect();
   }, []);
 
