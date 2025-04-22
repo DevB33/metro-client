@@ -20,8 +20,8 @@ const ResponseWrapper = () => {
       if (containerRef.current) {
         const width = containerRef.current.offsetWidth;
         const height = containerRef.current.offsetHeight;
-        setParentWidth(width); // 80%로 계산
-        setParentHeight(height); // 80%로 계산
+        setParentWidth(width);
+        setParentHeight(height);
       }
     };
 
