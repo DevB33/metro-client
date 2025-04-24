@@ -9,7 +9,7 @@ import PageOpenIcon from '@/icons/page-open-icon';
 import PageIcon from '@/icons/page-icon';
 import HorizonDotIcon from '@/icons/horizon-dot-icon';
 import PlusIcon from '@/icons/plus-icon';
-import IDocuments from '@/types/document-type';
+import INotes from '@/types/note-type';
 import { createPage, deletePage, getPageList } from '@/apis/side-bar';
 import { mutate } from 'swr';
 import TrashIcon from '@/icons/trash-icon';
@@ -90,7 +90,7 @@ const noChildren = css({
   overflow: 'hidden',
 });
 
-const PageItem = ({ page, depth }: { page: IDocuments; depth: number }) => {
+const PageItem = ({ page, depth }: { page: INotes; depth: number }) => {
   const router = useRouter();
   const toggleButtoonRef = useRef<HTMLButtonElement>(null);
   const settingButtonRef = useRef<HTMLButtonElement>(null);

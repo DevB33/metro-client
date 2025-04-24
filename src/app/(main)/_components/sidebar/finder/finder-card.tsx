@@ -2,7 +2,7 @@ import { css } from '@/../styled-system/css';
 
 import { useState } from 'react';
 import PlusIcon from '@/icons/plus-icon';
-import IDocuments from '@/types/document-type';
+import INotes from '@/types/note-type';
 import { createPage, getPageList } from '@/apis/side-bar';
 import useSWR, { mutate } from 'swr';
 import PageItem from './page-item';
@@ -85,7 +85,7 @@ const FinderCard = () => {
         )}
       </div>
       {pageList?.node.length ? (
-        pageList.node.map((page: IDocuments) => <PageItem key={page.id} page={page} depth={1} />)
+        pageList.node.map((page: INotes) => <PageItem key={page.id} page={page} depth={1} />)
       ) : (
         <p className={emptyPageContainer}>문서가 없습니다.</p>
       )}

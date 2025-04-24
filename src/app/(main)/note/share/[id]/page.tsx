@@ -21,7 +21,7 @@ const SharedNote = async ({ params }: { params: Promise<{ id: string }> }) => {
   const accessToken = cookie?.get('accessToken')?.value;
   const { id } = await params;
 
-  const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/documents/${id}`, {
+  const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/notes/${id}`, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
