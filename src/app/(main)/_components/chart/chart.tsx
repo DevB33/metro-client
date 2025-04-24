@@ -103,7 +103,7 @@ const LineChart = ({ width: totalWidth, height: totalHeight, margin = defaultMar
     colorMapFromStorage?: Record<string, keyof typeof LineColor>,
     colorMapToStore?: Record<string, keyof typeof LineColor>,
   ) => {
-    const nodeId = node.data.name;
+    const nodeId = node.data.id;
 
     if (colorMapFromStorage && colorMapFromStorage[nodeId]) {
       node.data.colorKey = colorMapFromStorage[nodeId];
@@ -175,6 +175,13 @@ const LineChart = ({ width: totalWidth, height: totalHeight, margin = defaultMar
     };
   }, [isMouseOverChart]);
 
+  useEffect(() => {
+    if (!pageList) return;
+
+    const merged = { ...getStoredColors(), ...newColors };
+    saveColorsToStorage(merged);
+  }, [pageList]);
+
   return totalWidth < 10 ? null : (
     <div>
       <LinkControls layout={layout} setLayout={setLayout} resetColor={resetStoredColors} />
@@ -207,7 +214,7 @@ const LineChart = ({ width: totalWidth, height: totalHeight, margin = defaultMar
                   if (layout === 'polar') {
                     return a.parent === b.parent ? 2.5 : 2.5;
                   }
-                  return a.parent === b.parent ? 2.5 : 2;
+                  return a.parent === b.parent ? 4 : 2;
                 }}
               >
                 {tree => (
