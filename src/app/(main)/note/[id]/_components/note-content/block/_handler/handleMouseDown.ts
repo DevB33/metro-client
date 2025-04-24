@@ -34,7 +34,7 @@ const handleMouseDown = (
   });
 
   setTimeout(() => {
-    // 블 블록일 때 클릭 한 블록에 focus
+    // 빈 블록일 때 클릭 한 블록에 focus
     if (blockList[index].children.length === 1 && blockList[index].children[0].content === '') {
       if (blockList[index].type === 'ul' || blockList[index].type === 'ol') {
         (blockRef.current[index]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
@@ -50,6 +50,7 @@ const handleMouseDown = (
       if (currentChildNodeIndex === -1) return;
 
       const targetNode = blockRef.current[index]?.childNodes[currentChildNodeIndex];
+
       if (!targetNode) return;
       if (targetNode.nodeType === Node.TEXT_NODE) {
         // 텍스트 노드일 때
@@ -60,6 +61,8 @@ const handleMouseDown = (
       } else {
         range.setStart(targetNode, 0);
       }
+
+      console.log(range);
 
       selection?.removeAllRanges();
       selection?.addRange(range);
