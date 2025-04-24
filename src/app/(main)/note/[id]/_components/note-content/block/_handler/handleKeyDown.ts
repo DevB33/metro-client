@@ -22,6 +22,44 @@ const focusCurrentBlock = (
   }, 0);
 };
 
+const focusAfterSelection = (
+  selectionStartPosition: ISelectionPosition,
+  selectionEndPosition: ISelectionPosition,
+  key: string,
+  blockRef: React.RefObject<(HTMLDivElement | null)[]>,
+) => {
+  const isBackward =
+    selectionStartPosition.blockIndex > selectionEndPosition.blockIndex ||
+    (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex &&
+      selectionStartPosition.childNodeIndex > selectionEndPosition.childNodeIndex) ||
+    (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex &&
+      selectionStartPosition.childNodeIndex === selectionEndPosition.childNodeIndex &&
+      selectionStartPosition.offset > selectionEndPosition.offset);
+
+  let target = isBackward ? selectionStartPosition : selectionEndPosition;
+
+  if (key === keyName.arrowLeft) {
+    target = isBackward ? selectionEndPosition : selectionStartPosition;
+  }
+
+  const { blockIndex, childNodeIndex, offset } = target;
+  const targetBlockNode = blockRef.current[blockIndex];
+  const targetNode = targetBlockNode?.childNodes[childNodeIndex];
+
+  setTimeout(() => {
+    if (targetNode) {
+      const newRange = document.createRange();
+      const selection = window.getSelection();
+
+      newRange.setStart(targetNode, Math.min(offset, targetNode.textContent?.length ?? 0));
+      newRange.collapse(true);
+
+      selection?.removeAllRanges();
+      selection?.addRange(newRange);
+    }
+  }, 0);
+};
+
 const splitBlock = (
   index: number,
   blockList: ITextBlock[],
@@ -889,7 +927,6 @@ const handleKeyDown = (
     }
     // 엔터 입력
     if (event.key === keyName.enter && !event.shiftKey) {
-      console.log('엔터');
       selectionEnter(selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
     }
     // 다른 키 입력
@@ -899,6 +936,9 @@ const handleKeyDown = (
     }
     setIsTyping(false);
     setKey(Math.random());
+    setTimeout(() => {
+      focusAfterSelection(selectionStartPosition, selectionEndPosition, event.key, blockRef);
+    }, 0);
   }
 };
 
