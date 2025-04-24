@@ -47,17 +47,38 @@ const handleMouseUp = (
 
   finalSelectionEndPosition.offset = charIdx;
 
-  const startParent = blockRef.current[selectionStartPosition.blockIndex];
-  const endParent = blockRef.current[finalSelectionEndPosition.blockIndex];
-  if (!startParent || !endParent) return;
+  const getNodeBounds = (node: Node, nodeStartOffset: number, endOffset: number) => {
+    const range = document.createRange();
+    range.setStart(node as Node, nodeStartOffset);
+    range.setEnd(node as Node, endOffset);
+    return range.getBoundingClientRect();
+  };
 
-  const startRect = startParent.getBoundingClientRect();
-  const startX = startRect.left;
-  const startY = startRect.top;
+  let left = 99999;
+  let top = 0;
 
-  const endRect = endParent.getBoundingClientRect();
-  const endX = endRect.left;
-  const endY = endRect.top;
+  const selectionParent =
+    selectionStartPosition.blockIndex < selectionEndPosition.blockIndex
+      ? blockRef.current[selectionStartPosition.blockIndex]
+      : blockRef.current[selectionEndPosition.blockIndex];
+  const selectionChildNodes = Array.from(selectionParent?.childNodes as NodeListOf<HTMLElement>);
+
+  selectionChildNodes.forEach(childNode => {
+    const rect = getNodeBounds(
+      childNode as Node,
+      selectionStartPosition.blockIndex < selectionEndPosition.blockIndex
+        ? selectionStartPosition.offset
+        : selectionEndPosition.offset,
+      parent?.textContent?.length || (0 as number),
+    );
+    left = Math.min(left, rect.left);
+    top = Math.max(top, rect.top);
+  });
+
+  setSelectionMenuPosition({
+    x: left,
+    y: top,
+  });
 
   // selection이 없을 때, 다른 곳 클릭시 메뉴 닫기
   if (
@@ -68,16 +89,6 @@ const handleMouseUp = (
   ) {
     setIsSelectionMenuOpen(false);
     return;
-  }
-
-  // 위에서 아래로 드래그시 메뉴 위치 설정
-  if (startY <= endY) {
-    setSelectionMenuPosition({ x: startX, y: startY });
-  }
-
-  // 아래에서 위로 드래그시 메뉴 위치 설정
-  if (startY > endY) {
-    setSelectionMenuPosition({ x: endX, y: endY });
   }
 
   setIsSelectionMenuOpen(true);

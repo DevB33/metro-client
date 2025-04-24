@@ -157,16 +157,40 @@ const NoteContent = () => {
     else isSelection.current = false;
   };
 
+  const getNodeBounds = (node: Node, startOffset: number, endOffset: number) => {
+    const range = document.createRange();
+    range.setStart(node as Node, startOffset);
+    range.setEnd(node as Node, endOffset);
+    return range.getBoundingClientRect();
+  };
+
   useEffect(() => {
     hasSelection();
-    let rect;
-    if (selectionStartPosition.blockIndex < selectionEndPosition.blockIndex)
-      rect = blockRef.current[selectionStartPosition.blockIndex]?.getBoundingClientRect();
-    else rect = blockRef.current[selectionEndPosition.blockIndex]?.getBoundingClientRect();
-    if (!rect) return;
+
+    let left = 99999;
+    let top = 0;
+
+    const parent =
+      selectionStartPosition.blockIndex < selectionEndPosition.blockIndex
+        ? blockRef.current[selectionStartPosition.blockIndex]
+        : blockRef.current[selectionEndPosition.blockIndex];
+    const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+
+    childNodes.forEach(childNode => {
+      const rect = getNodeBounds(
+        childNode as Node,
+        selectionStartPosition.blockIndex < selectionEndPosition.blockIndex
+          ? selectionStartPosition.offset
+          : selectionEndPosition.offset,
+        parent?.textContent?.length || (0 as number),
+      );
+      left = Math.min(left, rect.left);
+      top = Math.max(top, rect.top);
+    });
+
     setSelectionMenuPosition({
-      x: rect.left,
-      y: rect.top,
+      x: left,
+      y: top,
     });
   }, [selectionStartPosition, selectionEndPosition]);
 
@@ -239,13 +263,6 @@ const NoteContent = () => {
       document.addEventListener('mousemove', handleOutsideDrag);
     };
   }, []);
-
-  const getNodeBounds = (node: Node, startOffset: number, endOffset: number) => {
-    const range = document.createRange();
-    range.setStart(node as Node, startOffset);
-    range.setEnd(node as Node, endOffset);
-    return range.getBoundingClientRect();
-  };
 
   const handleFakeBoxMouseEnter = (index: number) => {
     if (isTyping) {
