@@ -3,6 +3,7 @@ import getSelectionInfo from '@/utils/getSelectionInfo';
 import keyName from '@/constants/key-name';
 import ISelectionPosition from '@/types/selection-position';
 import selectionDelete from '../selectionDelete';
+import selectionEnter from '../selectionEnter';
 import selectionWrite from '../selectionWrite';
 
 const focusCurrentBlock = (
@@ -29,6 +30,9 @@ const splitBlock = (
 ) => {
   const { startOffset, startContainer } = getSelectionInfo(0) || {};
   if (startOffset === undefined || startOffset === null || !startContainer) return;
+
+  console.log('startOffset', startOffset);
+  console.log('startContainer', startContainer);
 
   const parent = blockRef.current[index];
   const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
@@ -785,7 +789,6 @@ const handleKeyDown = (
       event.key === keyName.arrowLeft ||
       event.key === keyName.arrowRight
     ) {
-
       const { range, startOffset, startContainer } = getSelectionInfo(0) || {};
       const rect = range?.getBoundingClientRect() as DOMRect;
       const cursorX = rect?.left;
@@ -883,6 +886,11 @@ const handleKeyDown = (
     // backspace 클릭
     if (event.key === keyName.backspace) {
       selectionDelete(selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
+    }
+    // 엔터 입력
+    if (event.key === keyName.enter && !event.shiftKey) {
+      console.log('엔터');
+      selectionEnter(selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
     }
     // 다른 키 입력
     else if (isInputtableKey(event.nativeEvent)) {

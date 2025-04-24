@@ -84,8 +84,8 @@ const FinderCard = () => {
           </div>
         )}
       </div>
-      {pageList?.node.length ? (
-        pageList.node.map((page: INotes) => <PageItem key={page.id} page={page} depth={1} />)
+      {pageList?.notes.length ? (
+        pageList.notes.map((page: INotes) => <PageItem key={page.id} page={page} depth={1} />)
       ) : (
         <p className={emptyPageContainer}>문서가 없습니다.</p>
       )}

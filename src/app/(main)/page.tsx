@@ -24,9 +24,9 @@ const Home = () => {
   return (
     <div className={homePage}>
       <div className={welcomeBanner}>김기원 님, 안녕하세요.</div>
-      <div className={visualContainer}>
+      {/* <div className={visualContainer}>
         <Example width={1300} height={600} />
-      </div>
+      </div> */}
     </div>
   );
 };
