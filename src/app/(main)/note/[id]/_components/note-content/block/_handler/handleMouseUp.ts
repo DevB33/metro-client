@@ -55,8 +55,6 @@ const handleMouseUp = (
       range.setEnd(node as Node, nodeStartOffset);
     } else if (node.firstChild && node.firstChild.nodeType === Node.TEXT_NODE) {
       // span 같은 엘리먼트 노드에 텍스트가 있을 경우
-      console.log('여기');
-      console.log(node.firstChild, nodeStartOffset);
       range.setStart(node.firstChild, nodeStartOffset);
       range.setEnd(node.firstChild, nodeStartOffset);
     } else {
@@ -68,13 +66,15 @@ const handleMouseUp = (
 
   let left = 99999;
   let top = 0;
+  let rectOffset = 0;
 
   if (selectionStartPosition.blockIndex < selectionEndPosition.blockIndex) {
     const selectionParent = blockRef.current[selectionStartPosition.blockIndex];
     const selectionChildNodes = Array.from(selectionParent?.childNodes as NodeListOf<HTMLElement>);
+    rectOffset = selectionStartPosition.offset;
     selectionChildNodes.forEach((childNode, idx) => {
       if (idx !== selectionStartPosition.childNodeIndex) return;
-      const rect = getNodeStartBounds(childNode as Node, selectionStartPosition.offset);
+      const rect = getNodeStartBounds(childNode as Node, rectOffset);
       left = Math.min(left, rect.left);
       top = Math.max(top, rect.top);
     });
@@ -83,9 +83,10 @@ const handleMouseUp = (
   if (selectionStartPosition.blockIndex > selectionEndPosition.blockIndex) {
     const selectionParent = blockRef.current[selectionEndPosition.blockIndex];
     const selectionChildNodes = Array.from(selectionParent?.childNodes as NodeListOf<HTMLElement>);
+    rectOffset = selectionEndPosition.offset;
     selectionChildNodes.forEach((childNode, idx) => {
       if (idx !== selectionEndPosition.childNodeIndex) return;
-      const rect = getNodeStartBounds(childNode as Node, selectionEndPosition.offset);
+      const rect = getNodeStartBounds(childNode as Node, rectOffset);
       left = Math.min(left, rect.left);
       top = Math.max(top, rect.top);
     });
@@ -94,18 +95,33 @@ const handleMouseUp = (
   if (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex) {
     const selectionParent = blockRef.current[selectionStartPosition.blockIndex];
     const selectionChildNodes = Array.from(selectionParent?.childNodes as NodeListOf<HTMLElement>);
-    selectionChildNodes.forEach((childNode, idx) => {
-      console.log(idx, selectionStartPosition.childNodeIndex);
-      if (idx !== selectionStartPosition.childNodeIndex) return;
-      const rect = getNodeStartBounds(
-        childNode as Node,
-        selectionStartPosition.childNodeIndex < selectionEndPosition.childNodeIndex
-          ? selectionStartPosition.offset
-          : selectionEndPosition.offset,
-      );
-      left = Math.min(left, rect.left);
-      top = Math.max(top, rect.top);
-    });
+    if (selectionStartPosition.childNodeIndex < selectionEndPosition.childNodeIndex) {
+      rectOffset = selectionStartPosition.offset;
+      selectionChildNodes.forEach((childNode, idx) => {
+        if (idx !== selectionStartPosition.childNodeIndex) return;
+        const rect = getNodeStartBounds(childNode as Node, rectOffset);
+        left = Math.min(left, rect.left);
+        top = Math.max(top, rect.top);
+      });
+    }
+    if (selectionStartPosition.childNodeIndex > selectionEndPosition.childNodeIndex) {
+      rectOffset = selectionEndPosition.offset;
+      selectionChildNodes.forEach((childNode, idx) => {
+        if (idx !== selectionEndPosition.childNodeIndex) return;
+        const rect = getNodeStartBounds(childNode as Node, rectOffset);
+        left = Math.min(left, rect.left);
+        top = Math.max(top, rect.top);
+      });
+    }
+    if (selectionStartPosition.childNodeIndex === selectionEndPosition.childNodeIndex) {
+      rectOffset = Math.min(selectionStartPosition.offset, selectionEndPosition.offset);
+      selectionChildNodes.forEach((childNode, idx) => {
+        if (idx !== selectionStartPosition.childNodeIndex) return;
+        const rect = getNodeStartBounds(childNode as Node, rectOffset);
+        left = Math.min(left, rect.left);
+        top = Math.max(top, rect.top);
+      });
+    }
   }
 
   setSelectionMenuPosition({

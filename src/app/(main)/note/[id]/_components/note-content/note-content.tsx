@@ -184,14 +184,38 @@ const NoteContent = () => {
   useEffect(() => {
     hasSelection();
 
-    if (isSelection) {
-      let left = 99999;
-      let top = 0;
-      let rectOffset = 0;
+    let left = 99999;
+    let top = 0;
+    let rectOffset = 0;
 
-      if (selectionStartPosition.blockIndex < selectionEndPosition.blockIndex) {
-        const parent = blockRef.current[selectionStartPosition.blockIndex];
-        const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+    if (selectionStartPosition.blockIndex < selectionEndPosition.blockIndex) {
+      const parent = blockRef.current[selectionStartPosition.blockIndex];
+      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+      rectOffset = selectionStartPosition.offset;
+      childNodes.forEach((childNode, index) => {
+        if (index !== selectionStartPosition.childNodeIndex) return;
+        const rect = getNodeStartBounds(childNode as Node, rectOffset);
+        left = Math.min(left, rect.left);
+        top = Math.max(top, rect.top);
+      });
+    }
+
+    if (selectionStartPosition.blockIndex > selectionEndPosition.blockIndex) {
+      const parent = blockRef.current[selectionEndPosition.blockIndex];
+      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+      rectOffset = selectionEndPosition.offset;
+      childNodes.forEach((childNode, index) => {
+        if (index !== selectionEndPosition.childNodeIndex) return;
+        const rect = getNodeStartBounds(childNode as Node, rectOffset);
+        left = Math.min(left, rect.left);
+        top = Math.max(top, rect.top);
+      });
+    }
+
+    if (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex) {
+      const parent = blockRef.current[selectionStartPosition.blockIndex];
+      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+      if (selectionStartPosition.childNodeIndex < selectionEndPosition.childNodeIndex) {
         rectOffset = selectionStartPosition.offset;
         childNodes.forEach((childNode, index) => {
           if (index !== selectionStartPosition.childNodeIndex) return;
@@ -200,10 +224,7 @@ const NoteContent = () => {
           top = Math.max(top, rect.top);
         });
       }
-
-      if (selectionStartPosition.blockIndex > selectionEndPosition.blockIndex) {
-        const parent = blockRef.current[selectionEndPosition.blockIndex];
-        const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+      if (selectionStartPosition.childNodeIndex > selectionEndPosition.childNodeIndex) {
         rectOffset = selectionEndPosition.offset;
         childNodes.forEach((childNode, index) => {
           if (index !== selectionEndPosition.childNodeIndex) return;
@@ -212,16 +233,8 @@ const NoteContent = () => {
           top = Math.max(top, rect.top);
         });
       }
-
-      if (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex) {
-        const parent = blockRef.current[selectionStartPosition.blockIndex];
-        const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
-        if (selectionStartPosition.childNodeIndex < selectionEndPosition.childNodeIndex)
-          rectOffset = selectionStartPosition.offset;
-        if (selectionStartPosition.childNodeIndex > selectionEndPosition.childNodeIndex)
-          rectOffset = selectionEndPosition.offset;
-        if (selectionStartPosition.childNodeIndex === selectionEndPosition.childNodeIndex)
-          rectOffset = selectionStartPosition.offset;
+      if (selectionStartPosition.childNodeIndex === selectionEndPosition.childNodeIndex) {
+        rectOffset = Math.min(selectionStartPosition.offset, selectionEndPosition.offset);
         childNodes.forEach((childNode, index) => {
           if (index !== selectionStartPosition.childNodeIndex) return;
           const rect = getNodeStartBounds(childNode as Node, rectOffset);
@@ -229,13 +242,12 @@ const NoteContent = () => {
           top = Math.max(top, rect.top);
         });
       }
-
-      setSelectionMenuPosition({
-        x: left,
-        y: top,
-      });
     }
-    console.log(selectionStartPosition, selectionEndPosition);
+
+    setSelectionMenuPosition({
+      x: left,
+      y: top,
+    });
   }, [selectionStartPosition, selectionEndPosition]);
 
   useEffect(() => {
