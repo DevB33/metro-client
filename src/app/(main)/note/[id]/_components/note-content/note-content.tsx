@@ -164,34 +164,78 @@ const NoteContent = () => {
     return range.getBoundingClientRect();
   };
 
+  const getNodeStartBounds = (node: Node, nodeStartOffset: number) => {
+    const range = document.createRange();
+    if (node.nodeType === Node.TEXT_NODE) {
+      // 텍스트 노드일 때
+      range.setStart(node as Node, nodeStartOffset);
+      range.setEnd(node as Node, nodeStartOffset);
+    } else if (node.firstChild && node.firstChild.nodeType === Node.TEXT_NODE) {
+      // span 같은 엘리먼트 노드에 텍스트가 있을 경우
+      range.setStart(node.firstChild, nodeStartOffset);
+      range.setEnd(node.firstChild, nodeStartOffset);
+    } else {
+      range.setStart(node as Node, nodeStartOffset);
+      range.setEnd(node as Node, nodeStartOffset);
+    }
+    return range.getBoundingClientRect();
+  };
+
   useEffect(() => {
     hasSelection();
 
-    let left = 99999;
-    let top = 0;
+    if (isSelection) {
+      let left = 99999;
+      let top = 0;
+      let rectOffset = 0;
 
-    const parent =
-      selectionStartPosition.blockIndex < selectionEndPosition.blockIndex
-        ? blockRef.current[selectionStartPosition.blockIndex]
-        : blockRef.current[selectionEndPosition.blockIndex];
-    const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+      if (selectionStartPosition.blockIndex < selectionEndPosition.blockIndex) {
+        const parent = blockRef.current[selectionStartPosition.blockIndex];
+        const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+        rectOffset = selectionStartPosition.offset;
+        childNodes.forEach((childNode, index) => {
+          if (index !== selectionStartPosition.childNodeIndex) return;
+          const rect = getNodeStartBounds(childNode as Node, rectOffset);
+          left = Math.min(left, rect.left);
+          top = Math.max(top, rect.top);
+        });
+      }
 
-    childNodes.forEach(childNode => {
-      const rect = getNodeBounds(
-        childNode as Node,
-        selectionStartPosition.blockIndex < selectionEndPosition.blockIndex
-          ? selectionStartPosition.offset
-          : selectionEndPosition.offset,
-        parent?.textContent?.length || (0 as number),
-      );
-      left = Math.min(left, rect.left);
-      top = Math.max(top, rect.top);
-    });
+      if (selectionStartPosition.blockIndex > selectionEndPosition.blockIndex) {
+        const parent = blockRef.current[selectionEndPosition.blockIndex];
+        const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+        rectOffset = selectionEndPosition.offset;
+        childNodes.forEach((childNode, index) => {
+          if (index !== selectionEndPosition.childNodeIndex) return;
+          const rect = getNodeStartBounds(childNode as Node, rectOffset);
+          left = Math.min(left, rect.left);
+          top = Math.max(top, rect.top);
+        });
+      }
 
-    setSelectionMenuPosition({
-      x: left,
-      y: top,
-    });
+      if (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex) {
+        const parent = blockRef.current[selectionStartPosition.blockIndex];
+        const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+        if (selectionStartPosition.childNodeIndex < selectionEndPosition.childNodeIndex)
+          rectOffset = selectionStartPosition.offset;
+        if (selectionStartPosition.childNodeIndex > selectionEndPosition.childNodeIndex)
+          rectOffset = selectionEndPosition.offset;
+        if (selectionStartPosition.childNodeIndex === selectionEndPosition.childNodeIndex)
+          rectOffset = selectionStartPosition.offset;
+        childNodes.forEach((childNode, index) => {
+          if (index !== selectionStartPosition.childNodeIndex) return;
+          const rect = getNodeStartBounds(childNode as Node, rectOffset);
+          left = Math.min(left, rect.left);
+          top = Math.max(top, rect.top);
+        });
+      }
+
+      setSelectionMenuPosition({
+        x: left,
+        y: top,
+      });
+    }
+    console.log(selectionStartPosition, selectionEndPosition);
   }, [selectionStartPosition, selectionEndPosition]);
 
   useEffect(() => {
