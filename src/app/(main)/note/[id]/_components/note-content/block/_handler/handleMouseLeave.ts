@@ -26,6 +26,8 @@ const handleMouseLeave = (
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   selectionStartPosition: ISelectionPosition,
   selectionEndPosition: ISelectionPosition,
+  setSelectionStartPosition: React.Dispatch<React.SetStateAction<ISelectionPosition>>,
+  setSelectionEndPosition: React.Dispatch<React.SetStateAction<ISelectionPosition>>,
 ) => {
   if (!isDragging) return;
   const selection = window.getSelection();
@@ -33,6 +35,7 @@ const handleMouseLeave = (
 
   const parent = blockRef.current[index];
   const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+  const textLength = parent?.textContent?.length || 0;
 
   // 시작 블록에서 떠날 때
   if (index === selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex) {
@@ -59,6 +62,10 @@ const handleMouseLeave = (
           right = Math.max(right, rect.right);
         }
       });
+      setSelectionEndPosition((prev: ISelectionPosition) => ({
+        ...prev,
+        offset: textLength,
+      }));
     }
 
     // 위로 떠날 때
@@ -78,6 +85,10 @@ const handleMouseLeave = (
           right = Math.max(right, rect.right);
         }
       });
+      setSelectionStartPosition((prev: ISelectionPosition) => ({
+        ...prev,
+        offset: 0,
+      }));
     }
 
     const blockElement = blockRef.current[index];
@@ -109,6 +120,10 @@ const handleMouseLeave = (
       const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
       if (!blockElement) return;
       fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+      setSelectionEndPosition((prev: ISelectionPosition) => ({
+        ...prev,
+        offset: textLength,
+      }));
     }
   }
 
@@ -134,6 +149,10 @@ const handleMouseLeave = (
       const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
       if (!blockElement) return;
       fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+      setSelectionStartPosition((prev: ISelectionPosition) => ({
+        ...prev,
+        offset: 0,
+      }));
     }
   }
 };

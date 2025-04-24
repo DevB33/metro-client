@@ -143,7 +143,16 @@ const Block = memo(
           )
         }
         onMouseLeave={() =>
-          handleMouseLeave(index, isDragging, isUp, blockRef, selectionStartPosition, selectionEndPosition)
+          handleMouseLeave(
+            index,
+            isDragging,
+            isUp,
+            blockRef,
+            selectionStartPosition,
+            selectionEndPosition,
+            setSelectionStartPosition,
+            setSelectionEndPosition,
+          )
         }
         onDragEnter={event => {
           if (dragBlockIndex === index) {
