@@ -26,7 +26,6 @@ const handleMouseLeave = (
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   selectionStartPosition: ISelectionPosition,
   selectionEndPosition: ISelectionPosition,
-  setSelectionStartPosition: React.Dispatch<React.SetStateAction<ISelectionPosition>>,
   setSelectionEndPosition: React.Dispatch<React.SetStateAction<ISelectionPosition>>,
 ) => {
   if (!isDragging) return;
@@ -85,7 +84,7 @@ const handleMouseLeave = (
           right = Math.max(right, rect.right);
         }
       });
-      setSelectionStartPosition((prev: ISelectionPosition) => ({
+      setSelectionEndPosition((prev: ISelectionPosition) => ({
         ...prev,
         offset: 0,
       }));
@@ -149,7 +148,7 @@ const handleMouseLeave = (
       const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
       if (!blockElement) return;
       fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
-      setSelectionStartPosition((prev: ISelectionPosition) => ({
+      setSelectionEndPosition((prev: ISelectionPosition) => ({
         ...prev,
         offset: 0,
       }));

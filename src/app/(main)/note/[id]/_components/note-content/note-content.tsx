@@ -79,6 +79,7 @@ const NoteContent = () => {
   const [selectionMenuPosition, setSelectionMenuPosition] = useState({ x: 0, y: 0 });
 
   const [isBlockMenuOpen, setIsBlockMenuOpen] = useState(false);
+  const isSelection = useRef(false);
 
   const OpenBlockMenu = () => {
     setIsBlockMenuOpen(true);
@@ -149,6 +150,26 @@ const NoteContent = () => {
     blockButtonRef.current[index]?.style.setProperty('display', 'none');
   };
 
+  const hasSelection = () => {
+    const { blockIndex: startBlock, childNodeIndex: startChild, offset: startOffset } = selectionStartPosition;
+    const { blockIndex: endBlock, childNodeIndex: endChild, offset: endOffset } = selectionEndPosition;
+    if (startBlock !== endBlock || startChild !== endChild || startOffset !== endOffset) isSelection.current = true;
+    else isSelection.current = false;
+  };
+
+  useEffect(() => {
+    hasSelection();
+    let rect;
+    if (selectionStartPosition.blockIndex < selectionEndPosition.blockIndex)
+      rect = blockRef.current[selectionStartPosition.blockIndex]?.getBoundingClientRect();
+    else rect = blockRef.current[selectionEndPosition.blockIndex]?.getBoundingClientRect();
+    if (!rect) return;
+    setSelectionMenuPosition({
+      x: rect.left,
+      y: rect.top,
+    });
+  }, [selectionStartPosition, selectionEndPosition]);
+
   useEffect(() => {
     setIsSlashMenuOpen(false);
   }, []);
@@ -180,6 +201,7 @@ const NoteContent = () => {
       }
       setIsDragging(false);
       isDraggingRef.current = false;
+      if (isSelection.current) setIsSelectionMenuOpen(true);
     };
 
     const handleOutsideClick = (event: MouseEvent) => {
@@ -317,6 +339,7 @@ const NoteContent = () => {
 
     const parent = blockRef.current[index];
     const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+    const textLength = parent?.textContent?.length || 0;
 
     if (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex) {
       if (isUp && selectionStartPosition.blockIndex === 0) {
@@ -365,6 +388,10 @@ const NoteContent = () => {
           if (!blockElement) return;
           fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
         });
+        setSelectionEndPosition((prev: ISelectionPosition) => ({
+          ...prev,
+          offset: textLength,
+        }));
       }
     }
     // 위로 드래그한 상태에서 블록을 떠날 때

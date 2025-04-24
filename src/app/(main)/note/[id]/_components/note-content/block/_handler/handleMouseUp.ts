@@ -44,6 +44,7 @@ const handleMouseUp = (
     const selection = window.getSelection();
     if (selection) selection.removeAllRanges();
   }
+
   finalSelectionEndPosition.offset = charIdx;
 
   const startParent = blockRef.current[selectionStartPosition.blockIndex];

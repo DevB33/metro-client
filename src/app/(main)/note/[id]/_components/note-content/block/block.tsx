@@ -127,6 +127,7 @@ const Block = memo(
             setIsTyping,
             setKey,
             setSelectionStartPosition,
+            setSelectionEndPosition,
           )
         }
         onMouseMove={event =>
@@ -150,7 +151,6 @@ const Block = memo(
             blockRef,
             selectionStartPosition,
             selectionEndPosition,
-            setSelectionStartPosition,
             setSelectionEndPosition,
           )
         }
