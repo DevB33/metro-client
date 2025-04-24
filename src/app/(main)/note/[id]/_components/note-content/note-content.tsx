@@ -310,7 +310,6 @@ const NoteContent = () => {
         setIsUp(true);
         prevClientY.current = event.clientY;
       }
-      console.log(isDraggingRef.current);
       if (!isDraggingRef.current) return;
       const selection = window.getSelection();
       if (selection) selection.removeAllRanges();
