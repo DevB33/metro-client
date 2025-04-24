@@ -284,12 +284,18 @@ const NoteContent = () => {
       if (isSelection.current) setIsSelectionMenuOpen(true);
     };
 
+    const handleOutsideMouseDown = (event: MouseEvent) => {
+      if (blockRef.current.some(block => block?.contains(event.target as Node))) {
+        isDraggingRef.current = false;
+        return;
+      }
+      isDraggingRef.current = true;
+    };
     const handleOutsideClick = (event: MouseEvent) => {
       if (blockRef.current.some(block => block?.contains(event.target as Node))) {
         return;
       }
 
-      isDraggingRef.current = true;
       if (selectionMenuRef.current) {
         if (!selectionMenuRef.current.contains(event.target as Node)) resetSelection();
         setKey(Math.random());
@@ -304,18 +310,21 @@ const NoteContent = () => {
         setIsUp(true);
         prevClientY.current = event.clientY;
       }
+      console.log(isDraggingRef.current);
       if (!isDraggingRef.current) return;
       const selection = window.getSelection();
       if (selection) selection.removeAllRanges();
     };
 
     document.addEventListener('mouseup', handleOutsideMouseUp);
-    document.addEventListener('mousedown', handleOutsideClick, true);
+    document.addEventListener('mousedown', handleOutsideMouseDown, true);
+    document.addEventListener('click', handleOutsideClick, true);
     document.addEventListener('mousemove', handleOutsideDrag);
 
     return () => {
-      document.removeEventListener('mouseup', handleOutsideMouseUp);
-      document.addEventListener('mousedown', handleOutsideClick);
+      document.addEventListener('mouseup', handleOutsideMouseUp);
+      document.addEventListener('mousedown', handleOutsideMouseDown, true);
+      document.addEventListener('click', handleOutsideClick, true);
       document.addEventListener('mousemove', handleOutsideDrag);
     };
   }, []);
