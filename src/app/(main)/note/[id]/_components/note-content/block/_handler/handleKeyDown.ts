@@ -339,6 +339,7 @@ const mergeBlock = (
   const updatedBlockList = [...blockList];
 
   const previousBlock = updatedBlockList[index - 1];
+  const previousBlockLength = previousBlock.children.length as number;
   const currentBlock = updatedBlockList[index];
 
   // 이전 블록의 마지막이 <br>인 상태에서 블록을 합치면 이전 블록의 <br> 제거
@@ -365,22 +366,29 @@ const mergeBlock = (
   const range = document.createRange();
   setTimeout(() => {
     if (range) {
-      const prevBlock = blockRef.current[index - 1];
-      const prevBlockLength = prevBlock?.childNodes.length as number;
+      const afterBlock = blockRef.current[index - 1];
       const selection = window.getSelection();
 
       if (
-        prevBlock?.childNodes[0]?.nodeName !== 'BR' &&
+        afterBlock?.childNodes[0]?.nodeName !== 'BR' &&
         currentBlock.children.length === 1 &&
-        currentBlock.children[0].type === 'text' &&
+        (currentBlock.children[0].type === 'text' || 'span') &&
         currentBlock.children[0].content === ''
       ) {
-        range?.setStart(
-          prevBlock?.childNodes[prevBlockLength - 1] as Node,
-          prevBlock?.childNodes[prevBlockLength - 1].textContent?.length as number,
-        );
+        // 빈 블록에서 빈븍록이 아닌 블록으로 합쳐질 때
+        if (afterBlock?.childNodes[previousBlockLength - 1].nodeName === 'SPAN') {
+          range?.setStart(
+            afterBlock?.childNodes[previousBlockLength - 1].firstChild as Node,
+            afterBlock?.childNodes[previousBlockLength - 1].textContent?.length as number,
+          );
+        } else {
+          range?.setStart(
+            afterBlock?.childNodes[previousBlockLength - 1] as Node,
+            afterBlock?.childNodes[previousBlockLength - 1].textContent?.length as number,
+          );
+        }
       } else {
-        range?.setStart(prevBlock?.childNodes[prevBlockLength - 1] as Node, 0);
+        range?.setStart(afterBlock?.childNodes[previousBlockLength] as Node, 0);
       }
       selection?.removeAllRanges();
       selection?.addRange(range);
@@ -408,6 +416,13 @@ const mergeLine = (
 
     if (newChildNodes[currentChildNodeIndex - 2]?.nodeName === 'BR' || currentChildNodeIndex === 1) {
       range.setStart(newChildNodes[currentChildNodeIndex - 1], 0);
+    }
+
+    if (newChildNodes[currentChildNodeIndex - 2].nodeName === 'SPAN') {
+      range.setStart(
+        newChildNodes[currentChildNodeIndex - 2].firstChild as Node,
+        newChildNodes[currentChildNodeIndex - 2].textContent?.length as number,
+      );
     } else {
       range.setStart(
         newChildNodes[currentChildNodeIndex - 2],

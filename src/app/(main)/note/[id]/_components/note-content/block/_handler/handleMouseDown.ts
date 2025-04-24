@@ -62,8 +62,6 @@ const handleMouseDown = (
         range.setStart(targetNode, 0);
       }
 
-      console.log(range);
-
       selection?.removeAllRanges();
       selection?.addRange(range);
     }
