@@ -34,7 +34,6 @@ const handleMouseLeave = (
 
   const parent = blockRef.current[index];
   const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
-  const textLength = parent?.textContent?.length || 0;
 
   // 시작 블록에서 떠날 때
   if (index === selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex) {
