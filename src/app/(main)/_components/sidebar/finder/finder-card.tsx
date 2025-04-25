@@ -3,7 +3,7 @@ import { css } from '@/../styled-system/css';
 import { useState } from 'react';
 import PlusIcon from '@/icons/plus-icon';
 import IDocuments from '@/types/document-type';
-import { createPage, getPageList } from '@/apis/side-bar';
+import { createPage, getPageList } from '@/apis/pagelist';
 import useSWR, { mutate } from 'swr';
 import PageItem from './page-item';
 

@@ -10,7 +10,7 @@ import PageIcon from '@/icons/page-icon';
 import HorizonDotIcon from '@/icons/horizon-dot-icon';
 import PlusIcon from '@/icons/plus-icon';
 import IDocuments from '@/types/document-type';
-import { createPage, deletePage, getPageList } from '@/apis/side-bar';
+import { createPage, deletePage, getPageList } from '@/apis/pagelist';
 import { mutate } from 'swr';
 import TrashIcon from '@/icons/trash-icon';
 import PencilSquareIcon from '@/icons/pencil-square';

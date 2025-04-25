@@ -1,6 +1,6 @@
 import { css } from '@/../styled-system/css';
 import { editIcon, editTitle, getNoteInfo } from '@/apis/note-header';
-import { getPageList } from '@/apis/side-bar';
+import { getPageList } from '@/apis/pagelist';
 import IconSelector from '@/app/(main)/note/[id]/_components/note-header/icon-selector';
 import keyName from '@/constants/key-name';
 import { useClickOutside } from '@/hooks/useClickOutside';
