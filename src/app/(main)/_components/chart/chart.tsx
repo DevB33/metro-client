@@ -73,7 +73,7 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
     name: 'WorkSpace',
     id: '',
     colorKey: 'LINE_ONE',
-    children: convertPageListToTree(pageList.node),
+    children: convertPageListToTree(pageList.notes),
   };
 
   const STORAGE_KEY = 'tree-node-colors';
