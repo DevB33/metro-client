@@ -20,6 +20,7 @@ const getNodeBounds = (node: Node, startOffset: number, endOffset: number) => {
 };
 
 const handleMouseLeave = (
+  event: React.MouseEvent<HTMLDivElement>,
   index: number,
   isDragging: boolean,
   isUp: boolean,
@@ -32,6 +33,8 @@ const handleMouseLeave = (
   const selection = window.getSelection();
   if (selection) selection.removeAllRanges();
 
+  const fakeBox = document.getElementById('fakeBox');
+
   const parent = blockRef.current[index];
   const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
 
@@ -39,6 +42,12 @@ const handleMouseLeave = (
   if (index === selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex) {
     let left = 99999;
     let right = 0;
+
+    // fakeBox로 떠날 때, position 변화 x
+    if (event.relatedTarget instanceof HTMLElement && fakeBox?.contains(event.relatedTarget)) {
+      return;
+    }
+
     // 아래로 떠날 때
     if (!isUp) {
       childNodes.forEach((childNode, idx) => {

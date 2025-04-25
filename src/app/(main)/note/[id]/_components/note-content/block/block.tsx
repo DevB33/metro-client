@@ -143,8 +143,9 @@ const Block = memo(
             prevClientY,
           )
         }
-        onMouseLeave={() =>
+        onMouseLeave={event =>
           handleMouseLeave(
+            event,
             index,
             isDragging,
             isUp,

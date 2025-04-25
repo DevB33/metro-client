@@ -607,6 +607,7 @@ const NoteContent = () => {
           >
             <div
               className={fakeBox}
+              id="fakeBox"
               ref={element => {
                 fakeBoxRef.current[index] = element;
               }}
