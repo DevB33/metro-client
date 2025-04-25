@@ -7,7 +7,7 @@ import keyName from '@/constants/key-name';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import useSWR, { mutate } from 'swr';
 import { editTags, getNoteInfo } from '@/apis/note-header';
-import { getPageList } from '@/apis/side-bar';
+import { getPageList } from '@/apis/pagelist';
 import TagBox from './tag-box';
 
 interface ITag {

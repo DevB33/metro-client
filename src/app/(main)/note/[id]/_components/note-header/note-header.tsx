@@ -6,7 +6,7 @@ import { useClickOutside } from '@/hooks/useClickOutside';
 import useSWR, { mutate } from 'swr';
 import { useParams } from 'next/navigation';
 import { editCover, editIcon, getNoteInfo } from '@/apis/note-header';
-import { getPageList } from '@/apis/side-bar';
+import { getPageList } from '@/apis/pagelist';
 import IconSelector from './icon-selector';
 import Tag from './tag';
 import Title from './title';

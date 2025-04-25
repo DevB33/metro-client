@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 import useSWR, { mutate } from 'swr';
 import { editTitle, getNoteInfo } from '@/apis/note-header';
-import { getPageList } from '@/apis/side-bar';
+import { getPageList } from '@/apis/pagelist';
 
 interface ITitle {
   noteId: string;
