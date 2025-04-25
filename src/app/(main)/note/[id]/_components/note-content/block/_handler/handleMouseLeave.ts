@@ -60,11 +60,14 @@ const handleMouseLeave = (
           left = Math.min(left, rect.left);
           right = Math.max(right, rect.right);
         }
+        if (idx === childNodes.length - 1) {
+          setSelectionEndPosition((prev: ISelectionPosition) => ({
+            ...prev,
+            childNodeIndex: idx,
+            offset: childNode.textContent?.length || 0,
+          }));
+        }
       });
-      setSelectionEndPosition((prev: ISelectionPosition) => ({
-        ...prev,
-        offset: textLength,
-      }));
     }
 
     // 위로 떠날 때
@@ -86,6 +89,7 @@ const handleMouseLeave = (
       });
       setSelectionEndPosition((prev: ISelectionPosition) => ({
         ...prev,
+        childNodeIndex: 0,
         offset: 0,
       }));
     }
@@ -110,19 +114,22 @@ const handleMouseLeave = (
 
     // 아래로 드래그 할 때
     if (index !== selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex && !isUp) {
-      childNodes.forEach(childNode => {
+      childNodes.forEach((childNode, idx) => {
         const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
         left = Math.min(left, rect.left);
         right = Math.max(right, rect.right);
+        if (idx === childNodes.length - 1) {
+          setSelectionEndPosition((prev: ISelectionPosition) => ({
+            ...prev,
+            childNodeIndex: idx,
+            offset: childNode.textContent?.length || 0,
+          }));
+        }
       });
       const blockElement = blockRef.current[index];
       const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
       if (!blockElement) return;
       fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
-      setSelectionEndPosition((prev: ISelectionPosition) => ({
-        ...prev,
-        offset: textLength,
-      }));
     }
   }
 
@@ -150,6 +157,7 @@ const handleMouseLeave = (
       fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
       setSelectionEndPosition((prev: ISelectionPosition) => ({
         ...prev,
+        childNodeIndex: 0,
         offset: 0,
       }));
     }
