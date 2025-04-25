@@ -22,7 +22,6 @@ const MainLayout = async ({ children, modal }: Readonly<{ children: React.ReactN
     },
   });
 
-  const noteHeaderData = null;
   const pageList = pageResponse.data;
 
   return (
@@ -30,7 +29,6 @@ const MainLayout = async ({ children, modal }: Readonly<{ children: React.ReactN
       value={{
         fallback: {
           [`pageList`]: pageList,
-          [`noteHeaderData`]: noteHeaderData,
         },
       }}
     >

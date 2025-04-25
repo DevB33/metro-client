@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react';
 import { css } from '@/../styled-system/css';
 
 import PlusIcon from '@/icons/plus-icon';
@@ -5,9 +6,9 @@ import GripVerticalIcon from '@/icons/grip-vertical-icon';
 import DropDown from '@/components/dropdown/dropdown';
 import TrashIcon from '@/icons/trash-icon';
 import ArrowReapeatIcon from '@/icons/arrow-repeat-icon';
-import { useRef, useState } from 'react';
 import { ITextBlock } from '@/types/block-type';
 import SlashMenu from './block/slash-menu';
+import GhostBlock from './block/ghost-block';
 
 interface IBlockButton {
   OpenBlockMenu: () => void;
@@ -15,6 +16,9 @@ interface IBlockButton {
   deleteBlockByIndex: (indexToDelete: number) => void;
   createBlock: (index: number) => void;
   index: number;
+  block: ITextBlock;
+  setDragBlockIndex: React.Dispatch<React.SetStateAction<number | null>>;
+  setIsTyping: React.Dispatch<React.SetStateAction<boolean>>;
   blockList: ITextBlock[];
   setBlockList: (blockList: ITextBlock[]) => void;
   blockRef: React.RefObject<(HTMLDivElement | null)[]>;
@@ -56,9 +60,12 @@ const BlockButton = ({
   deleteBlockByIndex,
   createBlock,
   index,
+  block,
   blockList,
   setBlockList,
   blockRef,
+  setDragBlockIndex,
+  setIsTyping,
 }: IBlockButton) => {
   const [isblockButtonModalOpen, setIsblockButtonModalOpen] = useState(false);
   const [isSlashMenuOpen, setIsSlashMenuOpen] = useState(false);
@@ -66,6 +73,18 @@ const BlockButton = ({
 
   const buttonRef = useRef<HTMLDivElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+
+  const ghostRef = useRef<HTMLDivElement>(null);
+
+  const handleDragStart = async (event: React.DragEvent<HTMLButtonElement>) => {
+    if (ghostRef.current) {
+      setIsTyping(false);
+      setDragBlockIndex(index);
+      const ghost = ghostRef.current;
+
+      event.dataTransfer.setDragImage(ghost, 10, 10);
+    }
+  };
 
   const handleClose = () => {
     setIsblockButtonModalOpen(false);
@@ -103,12 +122,13 @@ const BlockButton = ({
 
   return (
     <div className={blockBtnContainer} ref={buttonRef}>
-      <div className={blockBtn} onClick={() => createBlock(index)}>
+      <GhostBlock ghostRef={ghostRef} block={block} blockList={blockList} index={index} />
+      <button type="button" className={blockBtn} onClick={() => createBlock(index)}>
         <PlusIcon />
-      </div>
-      <div className={blockBtn} onClick={handleOpen}>
+      </button>
+      <button type="button" className={blockBtn} onClick={handleOpen} draggable onDragStart={handleDragStart}>
         <GripVerticalIcon />
-      </div>
+      </button>
       <DropDown handleClose={handleClose}>
         <DropDown.Menu isOpen={isblockButtonModalOpen} top={dropdownPosition.top} left={dropdownPosition.left}>
           <DropDown.Item onClick={handleChange}>

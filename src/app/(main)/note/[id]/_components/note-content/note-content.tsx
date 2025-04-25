@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 
+import getSelectionInfo from '@/utils/getSelectionInfo';
 import { ITextBlock } from '@/types/block-type';
 import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundImage';
 import ISelectionPosition from '@/types/selection-position';
@@ -39,6 +40,7 @@ const NoteContent = () => {
   const fakeBoxRef = useRef<(HTMLDivElement | null)[]>([]);
   const noteRef = useRef<HTMLDivElement | null>(null);
   const selectionMenuRef = useRef<HTMLDivElement | null>(null);
+  const [dragBlockIndex, setDragBlockIndex] = useState<number | null>(null);
 
   const [blockList, setBlockList] = useState<ITextBlock[]>([
     {
@@ -52,6 +54,7 @@ const NoteContent = () => {
       ],
     },
   ]);
+
   const [key, setKey] = useState(Date.now());
   const [isTyping, setIsTyping] = useState(false);
 
@@ -223,28 +226,90 @@ const NoteContent = () => {
   };
 
   const handleFakeBoxMouseEnter = (index: number) => {
+    if (isTyping) {
+      const { startOffset, startContainer } = getSelectionInfo(0) || {};
+      const blockIndex = blockRef.current.findIndex(blockEl => blockEl && blockEl.contains(startContainer as Node));
+      const parent = blockRef.current[blockIndex];
+      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+      const currentChildNodeIndex =
+        childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
+          ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
+          : childNodes.indexOf(startContainer as HTMLElement);
+
+      setIsTyping(false);
+      setKey(Math.random());
+
+      setTimeout(() => {
+        const range = document.createRange();
+        const targetNode = blockRef.current[blockIndex]?.childNodes[currentChildNodeIndex];
+        range.setStart(targetNode as Node, startOffset || 0);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      }, 100);
+    }
+
     if (!isDragging) return;
     const parent = blockRef.current[index];
     const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+
+    const textLength = parent?.textContent?.length || 0;
 
     setSelectionEndPosition((prev: ISelectionPosition) => ({
       ...prev,
       blockIndex: index,
     }));
 
+    // 로컬 변수를 활용해 비동기적 함수 처리
+    const selectionEnd = {
+      ...selectionEndPosition,
+      blockIndex: index,
+    };
+
     let left = 99999;
     let right = 0;
 
-    childNodes.forEach(childNode => {
-      const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
-      left = Math.min(left, rect.left);
-      right = Math.max(right, rect.right);
-      const blockElement = blockRef.current[index];
-      const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+    if (selectionStartPosition.blockIndex === selectionEnd.blockIndex) {
+      childNodes.forEach(childNode => {
+        const rect = getNodeBounds(childNode as Node, 0, selectionStartPosition.offset as number);
+        left = Math.min(left, rect.left);
+        right = Math.max(right, rect.right);
+        const blockElement = blockRef.current[index];
+        const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
 
-      if (!blockElement) return;
-      fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
-    });
+        if (!blockElement) return;
+        fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+      });
+    }
+
+    if (selectionStartPosition.blockIndex > selectionEnd.blockIndex) {
+      childNodes.forEach(childNode => {
+        const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
+        left = Math.min(left, rect.left);
+        right = Math.max(right, rect.right);
+        const blockElement = blockRef.current[index];
+        const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+
+        if (!blockElement) return;
+        fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+      });
+    }
+    if (selectionStartPosition.blockIndex < selectionEnd.blockIndex) {
+      setSelectionEndPosition((prev: ISelectionPosition) => ({
+        ...prev,
+        offset: textLength,
+      }));
+      childNodes.forEach(childNode => {
+        const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
+        left = Math.min(left, rect.left);
+        right = Math.max(right, rect.right);
+        const blockElement = blockRef.current[index];
+        const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+
+        if (!blockElement) return;
+        fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+      });
+    }
   };
 
   const handleFakeBoxMouseLeave = (index: number) => {
@@ -258,6 +323,25 @@ const NoteContent = () => {
         const el = blockRef.current[index];
         if (!el) return;
         el.style.backgroundImage = `none`;
+      }
+      if (!isUp) {
+        let left = 99999;
+        let right = 0;
+
+        childNodes.forEach(childNode => {
+          const rect = getNodeBounds(
+            childNode as Node,
+            selectionStartPosition.offset,
+            childNode.textContent?.length as number,
+          );
+          left = Math.min(left, rect.left);
+          right = Math.max(right, rect.right);
+          const blockElement = blockRef.current[index];
+          const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+
+          if (!blockElement) return;
+          fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+        });
       }
     }
 
@@ -357,15 +441,6 @@ const NoteContent = () => {
         tabIndex={0}
         key={key}
         ref={noteRef}
-        onMouseUp={() =>
-          handleMouseUp(
-            blockRef,
-            selectionStartPosition,
-            selectionEndPosition,
-            setIsSelectionMenuOpen,
-            setSelectionMenuPosition,
-          )
-        }
         onMouseDown={() => setIsSelectionMenuOpen(false)}
         onKeyDown={() => setIsSelectionMenuOpen(false)}
       >
@@ -382,6 +457,17 @@ const NoteContent = () => {
             onMouseLeave={() => handleMouseLeave(index)}
             onKeyDown={() => handleMouseLeave(index)}
             onMouseMove={() => handleMouseEnter(index)}
+            onMouseUp={event =>
+              handleMouseUp(
+                event,
+                index,
+                blockRef,
+                selectionStartPosition,
+                selectionEndPosition,
+                setIsSelectionMenuOpen,
+                setSelectionMenuPosition,
+              )
+            }
           >
             <div
               className={fakeBox}
@@ -403,9 +489,12 @@ const NoteContent = () => {
                   deleteBlockByIndex={deleteBlockByIndex}
                   createBlock={createBlock}
                   index={index}
+                  block={block}
                   blockList={blockList}
                   setBlockList={setBlockList}
                   blockRef={blockRef}
+                  setDragBlockIndex={setDragBlockIndex}
+                  setIsTyping={setIsTyping}
                 />
               </div>
             </div>
@@ -430,6 +519,7 @@ const NoteContent = () => {
               setIsSlashMenuOpen={setIsSlashMenuOpen}
               slashMenuPosition={slashMenuPosition}
               setSlashMenuPosition={setSlashMenuPosition}
+              dragBlockIndex={dragBlockIndex}
               isSelectionMenuOpen={isSelectionMenuOpen}
             />
           </div>

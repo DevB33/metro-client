@@ -58,8 +58,16 @@ const emptyPageContainer = css({
   px: 'tiny',
 });
 
+const pageContainer = css({
+  width: '100%',
+  height: '100%',
+  overflowY: 'auto',
+});
+
 const FinderCard = () => {
   const [isHover, setIsHover] = useState(false);
+
+  const [openedDropdownPageId, setOpenedDropdownPageId] = useState<string | null>(null);
 
   const { data: pageList } = useSWR('pageList');
 
@@ -84,11 +92,21 @@ const FinderCard = () => {
           </div>
         )}
       </div>
-      {pageList?.notes.length ? (
-        pageList.notes.map((page: INotes) => <PageItem key={page.id} page={page} depth={1} />)
-      ) : (
-        <p className={emptyPageContainer}>문서가 없습니다.</p>
-      )}
+      <div className={pageContainer}>
+        {pageList?.notes.length ? (
+          pageList.notes.map((page: INotes) => (
+            <PageItem
+              key={page.id}
+              page={page}
+              depth={1}
+              openedDropdownPageId={openedDropdownPageId}
+              setOpenedDropdownPageId={setOpenedDropdownPageId}
+            />
+          ))
+        ) : (
+          <p className={emptyPageContainer}>문서가 없습니다.</p>
+        )}
+      </div>
     </div>
   );
 };

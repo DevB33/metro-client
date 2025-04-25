@@ -58,13 +58,13 @@ const Note = async ({ params }: { params: Promise<{ id: string }> }) => {
     },
   });
 
-  const noteHeaderData = response.data;
+  const noteMetadata = response.data;
 
   return (
     <SWRConfig
       value={{
         fallback: {
-          [`noteHeaderData-${id}`]: noteHeaderData,
+          [`noteMetadata-${id}`]: noteMetadata,
         },
       }}
     >

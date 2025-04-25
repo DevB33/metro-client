@@ -5,6 +5,7 @@ import SettingButton from './setting-button';
 const profileCard = css({
   width: '100%',
   height: '4rem',
+  minHeight: '4rem',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',

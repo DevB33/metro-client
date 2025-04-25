@@ -572,6 +572,12 @@ const handleKeyDown = (
 ) => {
   // selection 없을때
   if (!isSelectionMenuOpen) {
+    if (
+      event.shiftKey &&
+      (event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowRight')
+    ) {
+      event.preventDefault();
+    }
     // enter 클릭
     if (event.key === keyName.enter && !event.shiftKey) {
       event.preventDefault();
@@ -817,7 +823,7 @@ const handleKeyDown = (
       event.preventDefault();
       setIsTyping(false);
       setKey(Math.random());
-      openSlashMenu(index, isSlashMenuOpen, blockRef, setIsSlashMenuOpen, setSlashMenuPosition);
+      openSlashMenu(index, blockRef, setIsSlashMenuOpen, setSlashMenuPosition);
     }
 
     // 방향키 클릭

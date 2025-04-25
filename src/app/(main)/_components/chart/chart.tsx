@@ -36,7 +36,7 @@ export interface ILinkTypesProps {
   margin?: { top: number; right: number; bottom: number; left: number };
 }
 
-const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargin }: ILinkTypesProps) => {
+const LineChart = ({ width: totalWidth, height: totalHeight, margin = defaultMargin }: ILinkTypesProps) => {
   const STORAGE_KEY_LAYOUT = 'tree-layout';
 
   const [layout, setLayoutState] = useState<string>(() => {
@@ -278,4 +278,4 @@ const Example = ({ width: totalWidth, height: totalHeight, margin = defaultMargi
   );
 };
 
-export default Example;
+export default LineChart;
