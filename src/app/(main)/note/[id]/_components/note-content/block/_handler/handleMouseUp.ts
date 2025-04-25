@@ -44,19 +44,90 @@ const handleMouseUp = (
     const selection = window.getSelection();
     if (selection) selection.removeAllRanges();
   }
+
   finalSelectionEndPosition.offset = charIdx;
 
-  const startParent = blockRef.current[selectionStartPosition.blockIndex];
-  const endParent = blockRef.current[finalSelectionEndPosition.blockIndex];
-  if (!startParent || !endParent) return;
+  const getNodeStartBounds = (node: Node, nodeStartOffset: number) => {
+    const range = document.createRange();
+    if (node.nodeType === Node.TEXT_NODE) {
+      // 텍스트 노드일 때
+      range.setStart(node as Node, nodeStartOffset);
+      range.setEnd(node as Node, nodeStartOffset);
+    } else if (node.firstChild && node.firstChild.nodeType === Node.TEXT_NODE) {
+      // span 같은 엘리먼트 노드에 텍스트가 있을 경우
+      range.setStart(node.firstChild, nodeStartOffset);
+      range.setEnd(node.firstChild, nodeStartOffset);
+    } else {
+      range.setStart(node as Node, nodeStartOffset);
+      range.setEnd(node as Node, nodeStartOffset);
+    }
+    return range.getBoundingClientRect();
+  };
 
-  const startRect = startParent.getBoundingClientRect();
-  const startX = startRect.left;
-  const startY = startRect.top;
+  let left = 99999;
+  let top = 0;
+  let rectOffset = 0;
 
-  const endRect = endParent.getBoundingClientRect();
-  const endX = endRect.left;
-  const endY = endRect.top;
+  if (selectionStartPosition.blockIndex < selectionEndPosition.blockIndex) {
+    const selectionParent = blockRef.current[selectionStartPosition.blockIndex];
+    const selectionChildNodes = Array.from(selectionParent?.childNodes as NodeListOf<HTMLElement>);
+    rectOffset = selectionStartPosition.offset;
+    selectionChildNodes.forEach((childNode, idx) => {
+      if (idx !== selectionStartPosition.childNodeIndex) return;
+      const rect = getNodeStartBounds(childNode as Node, rectOffset);
+      left = Math.min(left, rect.left);
+      top = Math.max(top, rect.top);
+    });
+  }
+
+  if (selectionStartPosition.blockIndex > selectionEndPosition.blockIndex) {
+    const selectionParent = blockRef.current[selectionEndPosition.blockIndex];
+    const selectionChildNodes = Array.from(selectionParent?.childNodes as NodeListOf<HTMLElement>);
+    rectOffset = selectionEndPosition.offset;
+    selectionChildNodes.forEach((childNode, idx) => {
+      if (idx !== selectionEndPosition.childNodeIndex) return;
+      const rect = getNodeStartBounds(childNode as Node, rectOffset);
+      left = Math.min(left, rect.left);
+      top = Math.max(top, rect.top);
+    });
+  }
+
+  if (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex) {
+    const selectionParent = blockRef.current[selectionStartPosition.blockIndex];
+    const selectionChildNodes = Array.from(selectionParent?.childNodes as NodeListOf<HTMLElement>);
+    if (selectionStartPosition.childNodeIndex < selectionEndPosition.childNodeIndex) {
+      rectOffset = selectionStartPosition.offset;
+      selectionChildNodes.forEach((childNode, idx) => {
+        if (idx !== selectionStartPosition.childNodeIndex) return;
+        const rect = getNodeStartBounds(childNode as Node, rectOffset);
+        left = Math.min(left, rect.left);
+        top = Math.max(top, rect.top);
+      });
+    }
+    if (selectionStartPosition.childNodeIndex > selectionEndPosition.childNodeIndex) {
+      rectOffset = selectionEndPosition.offset;
+      selectionChildNodes.forEach((childNode, idx) => {
+        if (idx !== selectionEndPosition.childNodeIndex) return;
+        const rect = getNodeStartBounds(childNode as Node, rectOffset);
+        left = Math.min(left, rect.left);
+        top = Math.max(top, rect.top);
+      });
+    }
+    if (selectionStartPosition.childNodeIndex === selectionEndPosition.childNodeIndex) {
+      rectOffset = Math.min(selectionStartPosition.offset, selectionEndPosition.offset);
+      selectionChildNodes.forEach((childNode, idx) => {
+        if (idx !== selectionStartPosition.childNodeIndex) return;
+        const rect = getNodeStartBounds(childNode as Node, rectOffset);
+        left = Math.min(left, rect.left);
+        top = Math.max(top, rect.top);
+      });
+    }
+  }
+
+  setSelectionMenuPosition({
+    x: left,
+    y: top,
+  });
 
   // selection이 없을 때, 다른 곳 클릭시 메뉴 닫기
   if (
@@ -67,16 +138,6 @@ const handleMouseUp = (
   ) {
     setIsSelectionMenuOpen(false);
     return;
-  }
-
-  // 위에서 아래로 드래그시 메뉴 위치 설정
-  if (startY <= endY) {
-    setSelectionMenuPosition({ x: startX, y: startY });
-  }
-
-  // 아래에서 위로 드래그시 메뉴 위치 설정
-  if (startY > endY) {
-    setSelectionMenuPosition({ x: endX, y: endY });
   }
 
   setIsSelectionMenuOpen(true);

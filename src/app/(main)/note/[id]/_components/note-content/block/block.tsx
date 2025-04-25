@@ -127,6 +127,7 @@ const Block = memo(
             setIsTyping,
             setKey,
             setSelectionStartPosition,
+            setSelectionEndPosition,
           )
         }
         onMouseMove={event =>
@@ -143,7 +144,15 @@ const Block = memo(
           )
         }
         onMouseLeave={() =>
-          handleMouseLeave(index, isDragging, isUp, blockRef, selectionStartPosition, selectionEndPosition)
+          handleMouseLeave(
+            index,
+            isDragging,
+            isUp,
+            blockRef,
+            selectionStartPosition,
+            selectionEndPosition,
+            setSelectionEndPosition,
+          )
         }
         onDragEnter={event => {
           if (dragBlockIndex === index) {
