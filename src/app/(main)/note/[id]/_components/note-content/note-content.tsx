@@ -7,6 +7,7 @@ import getSelectionInfo from '@/utils/getSelectionInfo';
 import { ITextBlock } from '@/types/block-type';
 import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundImage';
 import ISelectionPosition from '@/types/selection-position';
+import BUTTON_OFFSET from '@/constants/button-offset';
 import Block from './block/block';
 import BlockButton from './block-button';
 import SelectionMenu from './block/selection-menu';
@@ -101,30 +102,30 @@ const NoteContent = () => {
       const offsetLeft = blockRect.left - containerRect.left;
       const blockType = blockEl.getAttribute('data-placeholder');
 
-      let left = offsetLeft - 50;
-      let top = 12;
+      let left = offsetLeft + BUTTON_OFFSET.default.left;
+      let { top } = BUTTON_OFFSET.default;
 
       switch (blockType) {
         case '리스트':
-          left = offsetLeft - 70;
-          top = 12;
+          left = offsetLeft + BUTTON_OFFSET.list.left;
+          top = BUTTON_OFFSET.list.top;
           break;
         case '비어 있는 인용':
-          left = offsetLeft - 70;
-          top = 40;
+          left = offsetLeft + BUTTON_OFFSET.quote.left;
+          top = BUTTON_OFFSET.quote.top;
           break;
         case '제목1':
-          top = 24;
+          top = BUTTON_OFFSET.h1.top;
           break;
         case '제목2':
-          top = 16;
+          top = BUTTON_OFFSET.h2.top;
           break;
         case '제목3':
-          top = 14;
+          top = BUTTON_OFFSET.h3.top;
           break;
         default:
-          left = offsetLeft - 50;
-          top = 12;
+          left = offsetLeft + BUTTON_OFFSET.default.left;
+          top = BUTTON_OFFSET.default.top;
           break;
       }
 
