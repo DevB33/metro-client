@@ -2,8 +2,7 @@ import ISelectionPosition from '@/types/selection-position';
 import { ITextBlock } from '@/types/block-type';
 
 const selectionDelete = (
-  selectionStartPosition: ISelectionPosition,
-  selectionEndPosition: ISelectionPosition,
+  selection: ISelectionPosition,
   blockList: ITextBlock[],
   setBlockList: (blockList: ITextBlock[]) => void,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
@@ -21,8 +20,8 @@ const selectionDelete = (
     borderRadius: '0',
   };
 
-  const { blockIndex: startBlockIndex, childNodeIndex: startNodeIndex, offset: startOffset } = selectionStartPosition;
-  const { blockIndex: endBlockIndex, childNodeIndex: endNodeIndex, offset: endOffset } = selectionEndPosition;
+  const { blockIndex: startBlockIndex, childNodeIndex: startNodeIndex, offset: startOffset } = selection.start;
+  const { blockIndex: endBlockIndex, childNodeIndex: endNodeIndex, offset: endOffset } = selection.end;
 
   const newBlockList = [...blockList];
 

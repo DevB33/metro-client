@@ -14,8 +14,7 @@ import selectionChange from './selectionChange';
 interface ISelectionMenuProps {
   position: { x: number; y: number };
   setKey: (key: number) => void;
-  selectionStartPosition: ISelectionPosition;
-  selectionEndPosition: ISelectionPosition;
+  selection: ISelectionPosition;
   blockList: ITextBlock[];
   setBlockList: (blockList: ITextBlock[]) => void;
   blockRef: React.RefObject<(HTMLDivElement | null)[]>;
@@ -65,8 +64,7 @@ const MENU_ITEMS: {
 const SelectionMenu = ({
   position,
   setKey,
-  selectionStartPosition,
-  selectionEndPosition,
+  selection,
   blockList,
   setBlockList,
   blockRef,
@@ -77,7 +75,7 @@ const SelectionMenu = ({
   const menuHeight = 3;
 
   const changeBlock = (type: string) => {
-    selectionChange(type, selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
+    selectionChange(type, selection, blockList, setBlockList, blockRef);
     setIsSelectionMenuOpen(false);
     resetSelection();
     setKey(Math.random());

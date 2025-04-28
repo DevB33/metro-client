@@ -62,15 +62,9 @@ const NoteContent = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isUp, setIsUp] = useState(false);
 
-  const [selectionStartPosition, setSelectionStartPosition] = useState({
-    blockIndex: 0,
-    childNodeIndex: 0,
-    offset: 0,
-  });
-  const [selectionEndPosition, setSelectionEndPosition] = useState({
-    blockIndex: 0,
-    childNodeIndex: 0,
-    offset: 0,
+  const [selection, setSelection] = useState<ISelectionPosition>({
+    start: { blockIndex: 0, childNodeIndex: 0, offset: 0 },
+    end: { blockIndex: 0, childNodeIndex: 0, offset: 0 },
   });
 
   const [isSlashMenuOpen, setIsSlashMenuOpen] = useState<boolean>(false);
@@ -138,8 +132,14 @@ const NoteContent = () => {
   };
 
   const resetSelection = () => {
-    setSelectionStartPosition({ blockIndex: 0, childNodeIndex: 0, offset: 0 });
-    setSelectionEndPosition({ blockIndex: 0, childNodeIndex: 0, offset: 0 });
+    setSelection(prev => ({
+      ...prev,
+      start: { blockIndex: 0, childNodeIndex: 0, offset: 0 },
+    }));
+    setSelection(prev => ({
+      ...prev,
+      end: { blockIndex: 0, childNodeIndex: 0, offset: 0 },
+    }));
   };
 
   const handleMouseEnter = (index: number) => {
@@ -152,8 +152,8 @@ const NoteContent = () => {
   };
 
   const hasSelection = () => {
-    const { blockIndex: startBlock, childNodeIndex: startChild, offset: startOffset } = selectionStartPosition;
-    const { blockIndex: endBlock, childNodeIndex: endChild, offset: endOffset } = selectionEndPosition;
+    const { blockIndex: startBlock, childNodeIndex: startChild, offset: startOffset } = selection.start;
+    const { blockIndex: endBlock, childNodeIndex: endChild, offset: endOffset } = selection.end;
     if (startBlock !== endBlock || startChild !== endChild || startOffset !== endOffset) isSelection.current = true;
     else isSelection.current = false;
   };
@@ -183,55 +183,55 @@ const NoteContent = () => {
     let top = 0;
     let rectOffset = 0;
 
-    if (selectionStartPosition.blockIndex < selectionEndPosition.blockIndex) {
-      const parent = blockRef.current[selectionStartPosition.blockIndex];
+    if (selection.start.blockIndex < selection.end.blockIndex) {
+      const parent = blockRef.current[selection.start.blockIndex];
       const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
-      rectOffset = selectionStartPosition.offset;
+      rectOffset = selection.start.offset;
       childNodes.forEach((childNode, index) => {
-        if (index !== selectionStartPosition.childNodeIndex) return;
+        if (index !== selection.start.childNodeIndex) return;
         const rect = getNodeBounds(childNode as Node, rectOffset, rectOffset);
         left = Math.min(left, rect.left);
         top = Math.max(top, rect.top);
       });
     }
 
-    if (selectionStartPosition.blockIndex > selectionEndPosition.blockIndex) {
-      const parent = blockRef.current[selectionEndPosition.blockIndex];
+    if (selection.start.blockIndex > selection.end.blockIndex) {
+      const parent = blockRef.current[selection.end.blockIndex];
       const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
-      rectOffset = selectionEndPosition.offset;
+      rectOffset = selection.end.offset;
       childNodes.forEach((childNode, index) => {
-        if (index !== selectionEndPosition.childNodeIndex) return;
+        if (index !== selection.end.childNodeIndex) return;
         const rect = getNodeBounds(childNode as Node, rectOffset, rectOffset);
         left = Math.min(left, rect.left);
         top = Math.max(top, rect.top);
       });
     }
 
-    if (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex) {
-      const parent = blockRef.current[selectionStartPosition.blockIndex];
+    if (selection.start.blockIndex === selection.end.blockIndex) {
+      const parent = blockRef.current[selection.start.blockIndex];
       const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
-      if (selectionStartPosition.childNodeIndex < selectionEndPosition.childNodeIndex) {
-        rectOffset = selectionStartPosition.offset;
+      if (selection.start.childNodeIndex < selection.end.childNodeIndex) {
+        rectOffset = selection.start.offset;
         childNodes.forEach((childNode, index) => {
-          if (index !== selectionStartPosition.childNodeIndex) return;
+          if (index !== selection.start.childNodeIndex) return;
           const rect = getNodeBounds(childNode as Node, rectOffset, rectOffset);
           left = Math.min(left, rect.left);
           top = Math.max(top, rect.top);
         });
       }
-      if (selectionStartPosition.childNodeIndex > selectionEndPosition.childNodeIndex) {
-        rectOffset = selectionEndPosition.offset;
+      if (selection.start.childNodeIndex > selection.end.childNodeIndex) {
+        rectOffset = selection.end.offset;
         childNodes.forEach((childNode, index) => {
-          if (index !== selectionEndPosition.childNodeIndex) return;
+          if (index !== selection.end.childNodeIndex) return;
           const rect = getNodeBounds(childNode as Node, rectOffset, rectOffset);
           left = Math.min(left, rect.left);
           top = Math.max(top, rect.top);
         });
       }
-      if (selectionStartPosition.childNodeIndex === selectionEndPosition.childNodeIndex) {
-        rectOffset = Math.min(selectionStartPosition.offset, selectionEndPosition.offset);
+      if (selection.start.childNodeIndex === selection.end.childNodeIndex) {
+        rectOffset = Math.min(selection.start.offset, selection.end.offset);
         childNodes.forEach((childNode, index) => {
-          if (index !== selectionStartPosition.childNodeIndex) return;
+          if (index !== selection.start.childNodeIndex) return;
           const rect = getNodeBounds(childNode as Node, rectOffset, rectOffset);
           left = Math.min(left, rect.left);
           top = Math.max(top, rect.top);
@@ -243,7 +243,7 @@ const NoteContent = () => {
       x: left,
       y: top,
     });
-  }, [selectionStartPosition, selectionEndPosition]);
+  }, [selection.start, selection.end]);
 
   useEffect(() => {
     setIsSlashMenuOpen(false);
@@ -306,8 +306,8 @@ const NoteContent = () => {
         prevClientY.current = event.clientY;
       }
       if (!isDraggingRef.current) return;
-      const selection = window.getSelection();
-      if (selection) selection.removeAllRanges();
+      const windowSelection = window.getSelection();
+      if (windowSelection) windowSelection.removeAllRanges();
     };
 
     document.addEventListener('mouseup', handleOutsideMouseUp);
@@ -341,9 +341,9 @@ const NoteContent = () => {
         const range = document.createRange();
         const targetNode = blockRef.current[blockIndex]?.childNodes[currentChildNodeIndex];
         range.setStart(targetNode as Node, startOffset || 0);
-        const selection = window.getSelection();
-        selection?.removeAllRanges();
-        selection?.addRange(range);
+        const windowSelection = window.getSelection();
+        windowSelection?.removeAllRanges();
+        windowSelection?.addRange(range);
       }, 100);
     }
 
@@ -351,26 +351,26 @@ const NoteContent = () => {
     const parent = blockRef.current[index];
     const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
 
-    setSelectionEndPosition((prev: ISelectionPosition) => ({
+    setSelection(prev => ({
       ...prev,
-      blockIndex: index,
+      end: { ...prev.end, blockIndex: index },
     }));
 
     // 로컬 변수를 활용해 비동기적 함수 처리
     const selectionEnd = {
-      ...selectionEndPosition,
+      ...selection.end,
       blockIndex: index,
     };
 
     let left = 99999;
     let right = 0;
 
-    if (selectionStartPosition.blockIndex === selectionEnd.blockIndex) {
+    if (selection.start.blockIndex === selectionEnd.blockIndex) {
       childNodes.forEach((childNode, idx) => {
-        if (idx > selectionStartPosition.childNodeIndex) {
+        if (idx > selection.start.childNodeIndex) {
           return;
         }
-        if (idx < selectionStartPosition.childNodeIndex) {
+        if (idx < selection.start.childNodeIndex) {
           const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
           left = Math.min(left, rect.left);
           right = Math.max(right, rect.right);
@@ -380,8 +380,8 @@ const NoteContent = () => {
           if (!blockElement) return;
           fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
         }
-        if (idx === selectionStartPosition.childNodeIndex) {
-          const rect = getNodeBounds(childNode as Node, 0, selectionStartPosition.offset as number);
+        if (idx === selection.start.childNodeIndex) {
+          const rect = getNodeBounds(childNode as Node, 0, selection.start.offset as number);
           left = Math.min(left, rect.left);
           right = Math.max(right, rect.right);
           const blockElement = blockRef.current[index];
@@ -393,7 +393,7 @@ const NoteContent = () => {
       });
     }
 
-    if (selectionStartPosition.blockIndex > selectionEnd.blockIndex) {
+    if (selection.start.blockIndex > selectionEnd.blockIndex) {
       childNodes.forEach(childNode => {
         const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
         left = Math.min(left, rect.left);
@@ -405,7 +405,7 @@ const NoteContent = () => {
         fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
       });
     }
-    if (selectionStartPosition.blockIndex < selectionEnd.blockIndex) {
+    if (selection.start.blockIndex < selectionEnd.blockIndex) {
       childNodes.forEach((childNode, idx) => {
         const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
         left = Math.min(left, rect.left);
@@ -417,10 +417,9 @@ const NoteContent = () => {
         fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
 
         if (idx === childNodes.length - 1) {
-          setSelectionEndPosition((prev: ISelectionPosition) => ({
+          setSelection(prev => ({
             ...prev,
-            childNodeIndex: idx,
-            offset: childNode.textContent?.length || 0,
+            end: { ...prev.end, childNodeIndex: idx, offset: childNode.textContent?.length || 0 },
           }));
         }
       });
@@ -434,8 +433,8 @@ const NoteContent = () => {
     const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
     const textLength = parent?.textContent?.length || 0;
 
-    if (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex) {
-      if (isUp && selectionStartPosition.blockIndex === 0) {
+    if (selection.start.blockIndex === selection.end.blockIndex) {
+      if (isUp && selection.start.blockIndex === 0) {
         const el = blockRef.current[index];
         if (!el) return;
         el.style.backgroundImage = `none`;
@@ -447,7 +446,7 @@ const NoteContent = () => {
         childNodes.forEach(childNode => {
           const rect = getNodeBounds(
             childNode as Node,
-            selectionStartPosition.offset,
+            selection.start.offset,
             childNode.textContent?.length as number,
           );
           left = Math.min(left, rect.left);
@@ -462,14 +461,14 @@ const NoteContent = () => {
     }
 
     // 아래로 드래그한 상태에서 블록을 떠날 때
-    if (selectionStartPosition.blockIndex < selectionEndPosition.blockIndex) {
-      if (index === selectionEndPosition.blockIndex && isUp) {
+    if (selection.start.blockIndex < selection.end.blockIndex) {
+      if (index === selection.end.blockIndex && isUp) {
         const el = blockRef.current[index];
         if (!el) return;
         el.style.backgroundImage = `none`;
       }
       // 아래로 드래그 할 때
-      if (index !== selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex && !isUp) {
+      if (index !== selection.start.blockIndex && index === selection.end.blockIndex && !isUp) {
         let left = 99999;
         let right = 0;
         childNodes.forEach(childNode => {
@@ -481,23 +480,23 @@ const NoteContent = () => {
           if (!blockElement) return;
           fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
         });
-        setSelectionEndPosition((prev: ISelectionPosition) => ({
+        setSelection(prev => ({
           ...prev,
-          offset: textLength,
+          end: { ...prev.end, offset: textLength },
         }));
       }
     }
     // 위로 드래그한 상태에서 블록을 떠날 때
-    if (selectionStartPosition.blockIndex > selectionEndPosition.blockIndex) {
+    if (selection.start.blockIndex > selection.end.blockIndex) {
       // 아래로 드래그 할 때
-      if (index !== selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex && !isUp) {
+      if (index !== selection.start.blockIndex && index === selection.end.blockIndex && !isUp) {
         const el = blockRef.current[index];
         if (!el) return;
         el.style.backgroundImage = `none`;
       }
 
       // 위로 드래그 할 때
-      if (index !== selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex && isUp) {
+      if (index !== selection.start.blockIndex && index === selection.end.blockIndex && isUp) {
         let left = 99999;
         let right = 0;
         childNodes.forEach(childNode => {
@@ -578,15 +577,7 @@ const NoteContent = () => {
             onKeyDown={() => handleMouseLeave(index)}
             onMouseMove={() => handleMouseEnter(index)}
             onMouseUp={event =>
-              handleMouseUp(
-                event,
-                index,
-                blockRef,
-                selectionStartPosition,
-                selectionEndPosition,
-                setIsSelectionMenuOpen,
-                setSelectionMenuPosition,
-              )
+              handleMouseUp(event, index, blockRef, selection, setIsSelectionMenuOpen, setSelectionMenuPosition)
             }
           >
             <div
@@ -632,10 +623,8 @@ const NoteContent = () => {
               setIsDragging={setIsDragging}
               isUp={isUp}
               setIsUp={setIsUp}
-              selectionStartPosition={selectionStartPosition}
-              setSelectionStartPosition={setSelectionStartPosition}
-              selectionEndPosition={selectionEndPosition}
-              setSelectionEndPosition={setSelectionEndPosition}
+              selection={selection}
+              setSelection={setSelection}
               isSlashMenuOpen={isSlashMenuOpen}
               setIsSlashMenuOpen={setIsSlashMenuOpen}
               slashMenuPosition={slashMenuPosition}
@@ -651,8 +640,7 @@ const NoteContent = () => {
           <SelectionMenu
             position={selectionMenuPosition}
             setKey={setKey}
-            selectionStartPosition={selectionStartPosition}
-            selectionEndPosition={selectionEndPosition}
+            selection={selection}
             blockList={blockList}
             setBlockList={setBlockList}
             blockRef={blockRef}
