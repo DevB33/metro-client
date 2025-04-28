@@ -25,21 +25,14 @@ const focusCurrentBlock = (
 const focusAfterSelection = (
   selectionStartPosition: ISelectionPosition,
   selectionEndPosition: ISelectionPosition,
+  isBackward: boolean,
   key: string,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
 ) => {
-  const isBackward =
-    selectionStartPosition.blockIndex > selectionEndPosition.blockIndex ||
-    (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex &&
-      selectionStartPosition.childNodeIndex > selectionEndPosition.childNodeIndex) ||
-    (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex &&
-      selectionStartPosition.childNodeIndex === selectionEndPosition.childNodeIndex &&
-      selectionStartPosition.offset > selectionEndPosition.offset);
+  let target = isBackward ? selectionEndPosition : selectionStartPosition;
 
-  let target = isBackward ? selectionStartPosition : selectionEndPosition;
-
-  if (key === keyName.arrowLeft) {
-    target = isBackward ? selectionEndPosition : selectionStartPosition;
+  if (key === keyName.arrowRight) {
+    target = isBackward ? selectionStartPosition : selectionEndPosition;
   }
 
   const { blockIndex, childNodeIndex, offset } = target;
@@ -927,23 +920,67 @@ const handleKeyDown = (
   // selection 있을때
   if (isSelectionMenuOpen) {
     event.preventDefault();
+    setIsTyping(false);
+    setKey(Math.random());
+
+    const isBackward =
+      selectionStartPosition.blockIndex > selectionEndPosition.blockIndex ||
+      (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex &&
+        selectionStartPosition.childNodeIndex > selectionEndPosition.childNodeIndex) ||
+      (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex &&
+        selectionStartPosition.childNodeIndex === selectionEndPosition.childNodeIndex &&
+        selectionStartPosition.offset > selectionEndPosition.offset);
+
     // backspace 클릭
     if (event.key === keyName.backspace) {
-      selectionDelete(selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
+      if (!isBackward) {
+        selectionDelete(selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
+        if (selectionStartPosition.childNodeIndex > 0) {
+          selectionStartPosition.childNodeIndex -= 1;
+          selectionStartPosition.offset = 0;
+        }
+      } else {
+        selectionDelete(selectionEndPosition, selectionStartPosition, blockList, setBlockList, blockRef);
+        if (selectionEndPosition.childNodeIndex > 0) {
+          selectionEndPosition.childNodeIndex -= 1;
+          selectionEndPosition.offset = 0;
+        }
+      }
     }
     // 엔터 입력
     if (event.key === keyName.enter && !event.shiftKey) {
-      selectionEnter(selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
+      if (!isBackward) {
+        selectionEnter(selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
+        selectionStartPosition.blockIndex += 1;
+        selectionStartPosition.childNodeIndex = 0;
+        selectionStartPosition.offset = 0;
+      } else {
+        selectionEnter(selectionEndPosition, selectionStartPosition, blockList, setBlockList, blockRef);
+        selectionEndPosition.blockIndex += 1;
+        selectionEndPosition.childNodeIndex = 0;
+        selectionEndPosition.offset = 0;
+      }
     }
     // 다른 키 입력
     else if (isInputtableKey(event.nativeEvent)) {
-      selectionWrite(event.key, selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
-      // writeText(event.key, selectionStartPosition, blockList, setBlockList, blockRef);
+      if (!isBackward) {
+        selectionWrite(event.key, selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
+        selectionStartPosition.offset = 1;
+        // selection 시작점의 offset이 0이라 시작노드가 다 지워질떄가 아니면 새로 생성된 노드에 focus
+        if (selectionStartPosition.offset !== 0) {
+          selectionStartPosition.childNodeIndex += 1;
+        }
+      } else {
+        selectionWrite(event.key, selectionEndPosition, selectionStartPosition, blockList, setBlockList, blockRef);
+        selectionEndPosition.offset = 1;
+        if (selectionEndPosition.offset !== 0) {
+          selectionEndPosition.childNodeIndex += 1;
+        }
+      }
     }
-    setIsTyping(false);
-    setKey(Math.random());
+
     setTimeout(() => {
-      focusAfterSelection(selectionStartPosition, selectionEndPosition, event.key, blockRef);
+      focusAfterSelection(selectionStartPosition, selectionEndPosition, isBackward, event.key, blockRef);
     }, 0);
   }
 };

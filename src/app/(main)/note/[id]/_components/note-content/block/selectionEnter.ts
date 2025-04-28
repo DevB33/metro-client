@@ -66,7 +66,7 @@ const splitChildren = (
   return splitedBlockList;
 };
 
-const selectionDelete = (
+const selectionEnter = (
   selectionStartPosition: ISelectionPosition,
   selectionEndPosition: ISelectionPosition,
   blockList: ITextBlock[],
@@ -75,25 +75,8 @@ const selectionDelete = (
 ) => {
   if (!blockRef.current) return;
 
-  // 역 드레그시 설정
-  const {
-    blockIndex: startBlockIndex,
-    childNodeIndex: startNodeIndex,
-    offset: startOffset,
-  } = selectionStartPosition.blockIndex < selectionEndPosition.blockIndex ||
-  (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex &&
-    selectionStartPosition.childNodeIndex <= selectionEndPosition.childNodeIndex)
-    ? selectionStartPosition
-    : selectionEndPosition;
-  const {
-    blockIndex: endBlockIndex,
-    childNodeIndex: endNodeIndex,
-    offset: endOffset,
-  } = selectionStartPosition.blockIndex < selectionEndPosition.blockIndex ||
-  (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex &&
-    selectionStartPosition.childNodeIndex <= selectionEndPosition.childNodeIndex)
-    ? selectionEndPosition
-    : selectionStartPosition;
+  const { blockIndex: startBlockIndex, childNodeIndex: startNodeIndex, offset: startOffset } = selectionStartPosition;
+  const { blockIndex: endBlockIndex, childNodeIndex: endNodeIndex, offset: endOffset } = selectionEndPosition;
 
   let newBlockList = [...blockList];
 
@@ -218,4 +201,4 @@ const selectionDelete = (
   return newBlockList;
 };
 
-export default selectionDelete;
+export default selectionEnter;
