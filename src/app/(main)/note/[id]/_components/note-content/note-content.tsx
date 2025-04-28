@@ -175,23 +175,6 @@ const NoteContent = () => {
     return range.getBoundingClientRect();
   };
 
-  const getNodeStartBounds = (node: Node, nodeStartOffset: number) => {
-    const range = document.createRange();
-    if (node.nodeType === Node.TEXT_NODE) {
-      // 텍스트 노드일 때
-      range.setStart(node as Node, nodeStartOffset);
-      range.setEnd(node as Node, nodeStartOffset);
-    } else if (node.firstChild && node.firstChild.nodeType === Node.TEXT_NODE) {
-      // span 같은 엘리먼트 노드에 텍스트가 있을 경우
-      range.setStart(node.firstChild, nodeStartOffset);
-      range.setEnd(node.firstChild, nodeStartOffset);
-    } else {
-      range.setStart(node as Node, nodeStartOffset);
-      range.setEnd(node as Node, nodeStartOffset);
-    }
-    return range.getBoundingClientRect();
-  };
-
   useEffect(() => {
     hasSelection();
 
@@ -205,7 +188,7 @@ const NoteContent = () => {
       rectOffset = selectionStartPosition.offset;
       childNodes.forEach((childNode, index) => {
         if (index !== selectionStartPosition.childNodeIndex) return;
-        const rect = getNodeStartBounds(childNode as Node, rectOffset);
+        const rect = getNodeBounds(childNode as Node, rectOffset, rectOffset);
         left = Math.min(left, rect.left);
         top = Math.max(top, rect.top);
       });
@@ -217,7 +200,7 @@ const NoteContent = () => {
       rectOffset = selectionEndPosition.offset;
       childNodes.forEach((childNode, index) => {
         if (index !== selectionEndPosition.childNodeIndex) return;
-        const rect = getNodeStartBounds(childNode as Node, rectOffset);
+        const rect = getNodeBounds(childNode as Node, rectOffset, rectOffset);
         left = Math.min(left, rect.left);
         top = Math.max(top, rect.top);
       });
@@ -230,7 +213,7 @@ const NoteContent = () => {
         rectOffset = selectionStartPosition.offset;
         childNodes.forEach((childNode, index) => {
           if (index !== selectionStartPosition.childNodeIndex) return;
-          const rect = getNodeStartBounds(childNode as Node, rectOffset);
+          const rect = getNodeBounds(childNode as Node, rectOffset, rectOffset);
           left = Math.min(left, rect.left);
           top = Math.max(top, rect.top);
         });
@@ -239,7 +222,7 @@ const NoteContent = () => {
         rectOffset = selectionEndPosition.offset;
         childNodes.forEach((childNode, index) => {
           if (index !== selectionEndPosition.childNodeIndex) return;
-          const rect = getNodeStartBounds(childNode as Node, rectOffset);
+          const rect = getNodeBounds(childNode as Node, rectOffset, rectOffset);
           left = Math.min(left, rect.left);
           top = Math.max(top, rect.top);
         });
@@ -248,7 +231,7 @@ const NoteContent = () => {
         rectOffset = Math.min(selectionStartPosition.offset, selectionEndPosition.offset);
         childNodes.forEach((childNode, index) => {
           if (index !== selectionStartPosition.childNodeIndex) return;
-          const rect = getNodeStartBounds(childNode as Node, rectOffset);
+          const rect = getNodeBounds(childNode as Node, rectOffset, rectOffset);
           left = Math.min(left, rect.left);
           top = Math.max(top, rect.top);
         });
@@ -332,10 +315,10 @@ const NoteContent = () => {
     document.addEventListener('mousemove', handleOutsideDrag);
 
     return () => {
-      document.addEventListener('mouseup', handleOutsideMouseUp);
-      document.addEventListener('mousedown', handleOutsideMouseDown, true);
-      document.addEventListener('click', handleOutsideClick, true);
-      document.addEventListener('mousemove', handleOutsideDrag);
+      document.removeEventListener('mouseup', handleOutsideMouseUp);
+      document.removeEventListener('mousedown', handleOutsideMouseDown, true);
+      document.removeEventListener('click', handleOutsideClick, true);
+      document.removeEventListener('mousemove', handleOutsideDrag);
     };
   }, []);
 
