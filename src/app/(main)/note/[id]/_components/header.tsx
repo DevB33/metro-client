@@ -10,7 +10,7 @@ import HorizonDotIcon from '@/icons/horizon-dot-icon';
 import DropDown from '@/components/dropdown/dropdown';
 import TrashIcon from '@/icons/trash-icon';
 import useSWR, { mutate } from 'swr';
-import { deletePage, getPageList } from '@/apis/side-bar';
+import { deletePage, getPageList } from '@/apis/note';
 import IPageType from '@/types/page-type';
 
 const headerConatiner = css({

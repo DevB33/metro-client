@@ -3,7 +3,7 @@ import { css } from '@/../styled-system/css';
 import { useState } from 'react';
 import PlusIcon from '@/icons/plus-icon';
 import INotes from '@/types/note-type';
-import { createPage, getPageList } from '@/apis/side-bar';
+import { createNote, getNoteList } from '@/apis/note';
 import useSWR, { mutate } from 'swr';
 import PageItem from './page-item';
 
@@ -73,8 +73,8 @@ const FinderCard = () => {
 
   const handleClick = async () => {
     try {
-      await createPage(null);
-      await mutate('pageList', getPageList, false);
+      await createNote(null);
+      await mutate('pageList', getNoteList, false);
     } catch (error) {
       console.log(error);
     }
