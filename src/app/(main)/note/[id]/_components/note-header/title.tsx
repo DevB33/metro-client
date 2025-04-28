@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 import useSWR, { mutate } from 'swr';
-import { editTitle, getNoteInfo } from '@/apis/note-header';
-import { getPageList } from '@/apis/side-bar';
+import { editNoteTitle, getNoteInfo, getNoteList } from '@/apis/note';
 
 interface ITitle {
   noteId: string;
@@ -45,8 +44,8 @@ const Title = ({ noteId }: ITitle) => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
     debounceTimer.current = setTimeout(async () => {
-      await editTitle(noteId, value);
-      await mutate('pageList', getPageList, false);
+      await editNoteTitle(noteId, value);
+      await mutate('pageList', getNoteList, false);
     }, 100);
 
     return () => {

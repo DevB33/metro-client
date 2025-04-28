@@ -1,6 +1,5 @@
 import { css } from '@/../styled-system/css';
-import { editIcon, editTitle, getNoteInfo } from '@/apis/note-header';
-import { getPageList } from '@/apis/side-bar';
+import { getNoteList, editNoteIcon, editNoteTitle, getNoteInfo } from '@/apis/note';
 import IconSelector from '@/app/(main)/note/[id]/_components/note-header/icon-selector';
 import keyName from '@/constants/key-name';
 import { useClickOutside } from '@/hooks/useClickOutside';
@@ -125,8 +124,8 @@ const EditTitleModal = ({ noteId, closeEditModal, top, left, right, bottom }: IE
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
     debounceTimer.current = setTimeout(async () => {
-      await editTitle(noteId, value);
-      await mutate('pageList', getPageList, false);
+      await editNoteTitle(noteId, value);
+      await mutate('pageList', getNoteList, false);
       await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
     }, 100);
 
@@ -140,8 +139,8 @@ const EditTitleModal = ({ noteId, closeEditModal, top, left, right, bottom }: IE
   };
 
   const handleSelectIcon = async (selectedIcon: string | null) => {
-    await editIcon(noteId, selectedIcon);
-    await mutate('pageList', getPageList, false);
+    await editNoteIcon(noteId, selectedIcon);
+    await mutate('pageList', getNoteList, false);
     await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId));
   };
 
