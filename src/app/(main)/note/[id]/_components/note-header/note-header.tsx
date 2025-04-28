@@ -76,7 +76,7 @@ const NoteHeader = () => {
 
   const handleSelectIcon = async (selectedIcon: string | null) => {
     await editNoteIcon(noteId, selectedIcon);
-    await mutate('pageList', getNoteList, false);
+    await mutate('noteList', getNoteList, false);
     await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId));
   };
 
@@ -98,13 +98,13 @@ const NoteHeader = () => {
 
   const handleSelectCover = async (selectedColor: string) => {
     await editNoteCover(noteId, selectedColor);
-    await mutate('pageList', getNoteList, false);
+    await mutate('noteList', getNoteList, false);
     await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
   };
 
   const deleteCover = async () => {
     await editNoteCover(noteId, null);
-    await mutate('pageList', getNoteList, false);
+    await mutate('noteList', getNoteList, false);
     await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
   };
 

@@ -116,7 +116,7 @@ const Tag = ({ noteId }: ITag) => {
       }
 
       await editNoteTags(noteId, [...tagList, { name: inputValue.trim(), color: getRandomColor() }]);
-      await mutate('pageList', getNoteList, false);
+      await mutate('noteList', getNoteList, false);
       await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
 
       setIsEditing(false);
@@ -128,7 +128,7 @@ const Tag = ({ noteId }: ITag) => {
       noteId,
       tagList.filter(tag => tag.name !== tagToDelete),
     );
-    await mutate('pageList', getNoteList, false);
+    await mutate('noteList', getNoteList, false);
     await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
   };
 

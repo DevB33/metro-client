@@ -1,17 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter, useParams, usePathname } from 'next/navigation';
+import { useRef, useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { css } from '@/../styled-system/css';
 
 import LeftArrowIcon from '@/icons/left-arrow-icon';
-import RightArrowIcon from '@/icons/right-arrow-icon';
 import HorizonDotIcon from '@/icons/horizon-dot-icon';
 import DropDown from '@/components/dropdown/dropdown';
 import TrashIcon from '@/icons/trash-icon';
 import useSWR, { mutate } from 'swr';
-import { deletePage, getPageList } from '@/apis/note';
-import IPageType from '@/types/page-type';
+import { deleteNote, getNoteList } from '@/apis/note';
+import INotes from '@/types/note-type';
 
 const headerConatiner = css({
   boxSizing: 'border-box',
@@ -51,12 +50,18 @@ const Header = () => {
   const params = useParams();
   const noteId = params.id as string;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const pathname = usePathname();
-  const pageId = pathname.split('note/')[1];
+  const [dropdownMenuPosition, setDropdownMenuPosition] = useState({ x: 0, y: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const { data: pageList } = useSWR('pageList');
+  const { data: noteList } = useSWR('noteList');
 
   const openSettingDropdown = () => {
+    const rect = buttonRef.current?.getBoundingClientRect();
+    if (rect)
+      setDropdownMenuPosition({
+        x: rect.left - 140,
+        y: rect.top + 30,
+      });
     setIsDropdownOpen(true);
   };
 
@@ -64,11 +69,11 @@ const Header = () => {
     setIsDropdownOpen(false);
   };
 
-  const sharePage = () => {
+  const sharenote = () => {
     router.push(`/note/share/${noteId}`);
   };
 
-  const findParentId = (nodeList: IPageType[], targetId: string, parentId: string | null = null): string | null => {
+  const findParentId = (nodeList: INotes[], targetId: string, parentId: string | null = null): string | null => {
     const match = nodeList.find(node => {
       if (node.id === targetId) return true;
 
@@ -88,9 +93,9 @@ const Header = () => {
 
   const handleDeleteButtonClick = async () => {
     try {
-      await deletePage(pageId);
-      await mutate('pageList', getPageList, false);
-      const parentId = findParentId(pageList.node, pageId);
+      await deleteNote(noteId);
+      await mutate('noteList', getNoteList, false);
+      const parentId = findParentId(noteList.notes, noteId);
       if (parentId) {
         router.push(`/note/${parentId}`);
       } else {
@@ -103,7 +108,7 @@ const Header = () => {
   };
 
   const handleBackButton = () => {
-    const parentId = findParentId(pageList.node, pageId);
+    const parentId = findParentId(noteList.node, noteId);
     if (parentId) {
       router.push(`/note/${parentId}`);
     } else {
@@ -119,13 +124,13 @@ const Header = () => {
         </button>
       </div>
       <div className={rightItemsConatiner}>
-        <button type="button" className={shareButton} onClick={sharePage}>
+        <button type="button" className={shareButton} onClick={sharenote}>
           공유
         </button>
-        <button type="button" className={dropDownButton} onClick={openSettingDropdown}>
+        <button type="button" className={dropDownButton} onClick={openSettingDropdown} ref={buttonRef}>
           <HorizonDotIcon />
           <DropDown handleClose={closeSettingDropdown}>
-            <DropDown.Menu isOpen={isDropdownOpen} top="0.5rem" right="0">
+            <DropDown.Menu isOpen={isDropdownOpen} top={dropdownMenuPosition.y} left={dropdownMenuPosition.x}>
               <DropDown.Item onClick={handleDeleteButtonClick}>
                 <TrashIcon />
                 삭제하기

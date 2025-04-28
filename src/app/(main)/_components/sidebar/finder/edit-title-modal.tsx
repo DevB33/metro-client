@@ -4,7 +4,7 @@ import IconSelector from '@/app/(main)/note/[id]/_components/note-header/icon-se
 import keyName from '@/constants/key-name';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import PageIcon from '@/icons/page-icon';
-import IPageType from '@/types/page-type';
+import INote from '@/types/note-type';
 import { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import useSWR, { mutate } from 'swr';
@@ -70,23 +70,23 @@ const IconSelectorContainer = css({
 });
 
 const EditTitleModal = ({ noteId, closeEditModal, top, left, right, bottom }: IEditTitleModal) => {
-  const { data } = useSWR(`pageList`);
+  const { data } = useSWR(`noteList`);
 
   const [value, setValue] = useState('');
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
-  const [pageNode, setPageNode] = useState<IPageType | null>(null);
+  const [noteNode, setNoteNode] = useState<INote | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const editModalRef = useClickOutside(closeEditModal);
 
-  const findNode = (nodes: IPageType[], id: string): IPageType | null => {
+  const findNode = (nodes: INote[], id: string): INote | null => {
     if (!nodes) return null;
 
     const directFoundNode = nodes.find(node => node.id === id);
     if (directFoundNode) return directFoundNode;
 
-    let foundNode: IPageType | null = null;
+    let foundNode: INote | null = null;
     nodes.some(node => {
       if (node.children?.length) {
         foundNode = findNode(node.children, id);
@@ -99,14 +99,14 @@ const EditTitleModal = ({ noteId, closeEditModal, top, left, right, bottom }: IE
 
   useEffect(() => {
     const foundNode = findNode(data.node, noteId);
-    setPageNode(foundNode);
+    setNoteNode(foundNode);
   }, [data]);
 
   useEffect(() => {
     if (!data) return;
 
     const foundNode = findNode(data.node, noteId);
-    setPageNode(foundNode);
+    setNoteNode(foundNode);
 
     if (foundNode) {
       setValue(foundNode.title ?? '');
@@ -125,7 +125,7 @@ const EditTitleModal = ({ noteId, closeEditModal, top, left, right, bottom }: IE
 
     debounceTimer.current = setTimeout(async () => {
       await editNoteTitle(noteId, value);
-      await mutate('pageList', getNoteList, false);
+      await mutate('noteList', getNoteList, false);
       await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
     }, 100);
 
@@ -140,7 +140,7 @@ const EditTitleModal = ({ noteId, closeEditModal, top, left, right, bottom }: IE
 
   const handleSelectIcon = async (selectedIcon: string | null) => {
     await editNoteIcon(noteId, selectedIcon);
-    await mutate('pageList', getNoteList, false);
+    await mutate('noteList', getNoteList, false);
     await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId));
   };
 
@@ -165,7 +165,7 @@ const EditTitleModal = ({ noteId, closeEditModal, top, left, right, bottom }: IE
     <div ref={editModalRef} className={container} style={{ top, left, right, bottom }}>
       <div className={modalContainer}>
         <div className={iconContainer} onClick={handleSelectorOpen}>
-          {pageNode?.icon ?? <PageIcon />}
+          {noteNode?.icon ?? <PageIcon />}
         </div>
         <input
           ref={inputRef}
