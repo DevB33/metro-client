@@ -5,8 +5,7 @@ import { css } from '@/../styled-system/css';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import useSWR, { mutate } from 'swr';
 import { useParams } from 'next/navigation';
-import { editCover, editIcon, getNoteInfo } from '@/apis/note-header';
-import { getPageList } from '@/apis/pagelist';
+import { editNoteCover, editNoteIcon, getNoteInfo, getNoteList } from '@/apis/note';
 import IconSelector from './icon-selector';
 import Tag from './tag';
 import Title from './title';
@@ -76,8 +75,8 @@ const NoteHeader = () => {
   };
 
   const handleSelectIcon = async (selectedIcon: string | null) => {
-    await editIcon(noteId, selectedIcon);
-    await mutate('pageList', getPageList, false);
+    await editNoteIcon(noteId, selectedIcon);
+    await mutate('pageList', getNoteList, false);
     await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId));
   };
 
@@ -98,14 +97,14 @@ const NoteHeader = () => {
   };
 
   const handleSelectCover = async (selectedColor: string) => {
-    await editCover(noteId, selectedColor);
-    await mutate('pageList', getPageList, false);
+    await editNoteCover(noteId, selectedColor);
+    await mutate('pageList', getNoteList, false);
     await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
   };
 
   const deleteCover = async () => {
-    await editCover(noteId, null);
-    await mutate('pageList', getPageList, false);
+    await editNoteCover(noteId, null);
+    await mutate('pageList', getNoteList, false);
     await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
   };
 
