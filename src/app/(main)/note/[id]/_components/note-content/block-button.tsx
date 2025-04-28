@@ -14,8 +14,6 @@ import GhostBlock from './block/ghost-block';
 interface IBlockButton {
   OpenBlockMenu: () => void;
   CloseBlockMenu: () => void;
-  deleteBlockByIndex: (indexToDelete: number) => void;
-  createBlock: (index: number) => void;
   index: number;
   block: ITextBlock;
   setDragBlockIndex: React.Dispatch<React.SetStateAction<number | null>>;
@@ -25,6 +23,7 @@ interface IBlockButton {
   blockRef: React.RefObject<(HTMLDivElement | null)[]>;
   menuState: IMenuState;
   setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>;
+  setKey: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const blockBtnContainer = css({
@@ -60,8 +59,6 @@ const deleteBtn = css({
 const BlockButton = ({
   OpenBlockMenu,
   CloseBlockMenu,
-  deleteBlockByIndex,
-  createBlock,
   index,
   block,
   blockList,
@@ -71,6 +68,7 @@ const BlockButton = ({
   setIsTyping,
   menuState,
   setMenuState,
+  setKey,
 }: IBlockButton) => {
   const [isblockButtonModalOpen, setIsblockButtonModalOpen] = useState(false);
 
@@ -87,6 +85,34 @@ const BlockButton = ({
 
       event.dataTransfer.setDragImage(ghost, 10, 10);
     }
+  };
+
+  const deleteBlockByIndex = (indexToDelete: number) => {
+    if (blockList.length === 1) return;
+    const newBlockList = blockList.filter((_, idx) => idx !== indexToDelete);
+    setBlockList(newBlockList);
+    setKey(Math.random());
+  };
+
+  const createBlock = (blockIndex: number) => {
+    const newBlock: ITextBlock = {
+      id: Date.now(), // 고유 ID
+      type: 'default',
+      children: [
+        {
+          type: 'text',
+          content: '',
+        },
+      ],
+    };
+
+    const newList = [...blockList];
+    newList.splice(blockIndex + 1, 0, newBlock);
+    setBlockList(newList);
+
+    setTimeout(() => {
+      (blockRef.current[blockIndex + 1]?.parentNode as HTMLElement)?.focus();
+    }, 0);
   };
 
   const handleClose = () => {

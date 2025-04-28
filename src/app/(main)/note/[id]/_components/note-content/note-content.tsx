@@ -42,7 +42,9 @@ const NoteContent = () => {
   const fakeBoxRef = useRef<(HTMLDivElement | null)[]>([]);
   const noteRef = useRef<HTMLDivElement | null>(null);
   const selectionMenuRef = useRef<HTMLDivElement | null>(null);
-  const [dragBlockIndex, setDragBlockIndex] = useState<number | null>(null);
+  const outSideDragging = useRef(false);
+  const isSelection = useRef(false);
+  const prevClientY = useRef(0);
 
   const [blockList, setBlockList] = useState<ITextBlock[]>([
     {
@@ -59,9 +61,9 @@ const NoteContent = () => {
 
   const [key, setKey] = useState(Date.now());
   const [isTyping, setIsTyping] = useState(false);
-
   const [isDragging, setIsDragging] = useState(false);
   const [isUp, setIsUp] = useState(false);
+  const [dragBlockIndex, setDragBlockIndex] = useState<number | null>(null);
 
   const [selection, setSelection] = useState<ISelectionPosition>({
     start: { blockIndex: 0, childNodeIndex: 0, offset: 0 },
@@ -77,7 +79,6 @@ const NoteContent = () => {
   });
 
   const [isBlockMenuOpen, setIsBlockMenuOpen] = useState(false);
-  const isSelection = useRef(false);
 
   const OpenBlockMenu = () => {
     setIsBlockMenuOpen(true);
@@ -274,10 +275,6 @@ const NoteContent = () => {
       grandParent.style.overflow = '';
     };
   }, [menuState.isSlashMenuOpen]);
-
-  const outSideDragging = useRef(false);
-
-  const prevClientY = useRef(0);
 
   useEffect(() => {
     const handleOutsideMouseUp = (event: MouseEvent) => {
@@ -526,35 +523,6 @@ const NoteContent = () => {
     }
   };
 
-  const deleteBlockByIndex = (indexToDelete: number) => {
-    if (blockList.length === 1) return;
-    setBlockList(prev => prev.filter((_, index) => index !== indexToDelete));
-    setKey(Math.random());
-  };
-
-  const createBlock = (index: number) => {
-    const newBlock: ITextBlock = {
-      id: Date.now(), // 고유 ID
-      type: 'default',
-      children: [
-        {
-          type: 'text',
-          content: '',
-        },
-      ],
-    };
-
-    setBlockList(prev => {
-      const newList = [...prev];
-      newList.splice(index + 1, 0, newBlock);
-      return newList;
-    });
-
-    setTimeout(() => {
-      (blockRef.current[index + 1]?.parentNode as HTMLElement)?.focus();
-    }, 0);
-  };
-
   useEffect(() => {
     // 각 블록에 대해 반복하여 해당하는 fakeBox 높이 설정
     blockContainerRef.current.forEach((block, index) => {
@@ -624,8 +592,6 @@ const NoteContent = () => {
                 <BlockButton
                   OpenBlockMenu={OpenBlockMenu}
                   CloseBlockMenu={CloseBlockMenu}
-                  deleteBlockByIndex={deleteBlockByIndex}
-                  createBlock={createBlock}
                   index={index}
                   block={block}
                   blockList={blockList}
@@ -635,6 +601,7 @@ const NoteContent = () => {
                   setIsTyping={setIsTyping}
                   menuState={menuState}
                   setMenuState={setMenuState}
+                  setKey={setKey}
                 />
               </div>
             </div>
