@@ -275,7 +275,7 @@ const NoteContent = () => {
     };
   }, [menuState.isSlashMenuOpen]);
 
-  const isDraggingRef = useRef(false);
+  const outSideDragging = useRef(false);
 
   const prevClientY = useRef(0);
 
@@ -285,7 +285,7 @@ const NoteContent = () => {
         return;
       }
       setIsDragging(false);
-      isDraggingRef.current = false;
+      outSideDragging.current = false;
       if (isSelection.current)
         setMenuState(prev => ({
           ...prev,
@@ -295,10 +295,10 @@ const NoteContent = () => {
 
     const handleOutsideMouseDown = (event: MouseEvent) => {
       if (blockRef.current.some(block => block?.contains(event.target as Node))) {
-        isDraggingRef.current = false;
+        outSideDragging.current = false;
         return;
       }
-      isDraggingRef.current = true;
+      outSideDragging.current = true;
     };
     const handleOutsideClick = (event: MouseEvent) => {
       if (blockRef.current.some(block => block?.contains(event.target as Node))) {
@@ -319,7 +319,7 @@ const NoteContent = () => {
         setIsUp(true);
         prevClientY.current = event.clientY;
       }
-      if (!isDraggingRef.current) return;
+      if (!outSideDragging.current) return;
       const windowSelection = window.getSelection();
       if (windowSelection) windowSelection.removeAllRanges();
     };
