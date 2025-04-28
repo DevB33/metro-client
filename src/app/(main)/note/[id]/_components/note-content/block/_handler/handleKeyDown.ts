@@ -2,9 +2,9 @@ import { ITextBlock } from '@/types/block-type';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import keyName from '@/constants/key-name';
 import ISelectionPosition from '@/types/selection-position';
-import selectionDelete from '../selectionDelete';
-import selectionEnter from '../selectionEnter';
-import selectionWrite from '../selectionWrite';
+import selectionDelete from '../_selection/selectionDelete';
+import selectionEnter from '../_selection/selectionEnter';
+import selectionWrite from '../_selection/selectionWrite';
 
 const focusCurrentBlock = (
   index: number,

@@ -9,7 +9,7 @@ import handleMouseLeave from './_handler/handleMouseLeave';
 import BlockHTMLTag from './block-html-tag';
 import handleMouseDown from './_handler/handleMouseDown';
 import handleMouseMove from './_handler/handleMouseMove';
-import SlashMenu from './slash-menu';
+import SlashMenu from './_slash/slash-menu';
 
 interface IBlockComponent {
   block: ITextBlock;

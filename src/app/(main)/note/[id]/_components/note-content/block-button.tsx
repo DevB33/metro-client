@@ -7,8 +7,8 @@ import DropDown from '@/components/dropdown/dropdown';
 import TrashIcon from '@/icons/trash-icon';
 import ArrowReapeatIcon from '@/icons/arrow-repeat-icon';
 import { ITextBlock } from '@/types/block-type';
-import SlashMenu from './block/slash-menu';
-import GhostBlock from './block/ghost-block';
+import SlashMenu from './block/_slash/slash-menu';
+import GhostBlock from './block/_ghost-block/ghost-block';
 
 interface IBlockButton {
   OpenBlockMenu: () => void;
