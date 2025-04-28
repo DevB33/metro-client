@@ -15,7 +15,7 @@ const MainLayout = async ({ children, modal }: Readonly<{ children: React.ReactN
     redirect('/login');
   }
 
-  const pageResponse = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/documents`, {
+  const pageResponse = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/notes`, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,

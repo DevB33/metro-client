@@ -1,7 +1,72 @@
 import ISelectionPosition from '@/types/selection-position';
-import { ITextBlock } from '@/types/block-type';
+import { ITextBlock, ITextBlockChild } from '@/types/block-type';
 
-const selectionDelete = (
+const defaultStyle = {
+  fontWeight: 'normal',
+  fontStyle: 'normal',
+  textDecoration: 'none',
+  color: '#000000',
+  backgroundColor: 'transparent',
+  width: 'auto',
+  height: 'auto',
+  borderRadius: '0',
+};
+
+const splitChildren = (
+  firstRawChildren: ITextBlockChild[],
+  secondRawChildren: ITextBlockChild[],
+  block: ITextBlock,
+  newBlockList: ITextBlock[],
+  index: number,
+) => {
+  const firstChildren =
+    firstRawChildren.length > 0
+      ? firstRawChildren
+      : [
+          {
+            type: 'text',
+            style: defaultStyle,
+            content: '',
+          },
+        ];
+
+  const secondChildren =
+    secondRawChildren.length > 0
+      ? secondRawChildren
+      : [
+          {
+            type: 'text',
+            style: defaultStyle,
+            content: '',
+          },
+        ];
+
+  const firstUpdatedBlock = {
+    id: Math.random(),
+    type: block.type,
+    children: firstChildren as ITextBlock['children'],
+  };
+  const secondUpdatedBlock = {
+    id: Math.random(),
+    type: block.type,
+    children: secondChildren as ITextBlock['children'],
+  };
+
+  // children이 비어있는 경우 제외하고 추가
+  const updatedBlocks: ITextBlock[] = [];
+  if (firstRawChildren.length > 0) {
+    updatedBlocks.push(firstUpdatedBlock);
+  }
+  if (secondRawChildren.length > 0) {
+    updatedBlocks.push(secondUpdatedBlock);
+  }
+
+  const splitedBlockList = [...newBlockList.slice(0, index), ...updatedBlocks, ...newBlockList.slice(index + 1)];
+
+  return splitedBlockList;
+};
+
+const selectionEnter = (
   selectionStartPosition: ISelectionPosition,
   selectionEndPosition: ISelectionPosition,
   blockList: ITextBlock[],
@@ -10,21 +75,10 @@ const selectionDelete = (
 ) => {
   if (!blockRef.current) return;
 
-  const defaultStyle = {
-    fontWeight: 'normal',
-    fontStyle: 'normal',
-    textDecoration: 'none',
-    color: '#000000',
-    backgroundColor: 'transparent',
-    width: 'auto',
-    height: 'auto',
-    borderRadius: '0',
-  };
-
   const { blockIndex: startBlockIndex, childNodeIndex: startNodeIndex, offset: startOffset } = selectionStartPosition;
   const { blockIndex: endBlockIndex, childNodeIndex: endNodeIndex, offset: endOffset } = selectionEndPosition;
 
-  const newBlockList = [...blockList];
+  let newBlockList = [...blockList];
 
   const deleteIndex = [];
 
@@ -52,31 +106,11 @@ const selectionDelete = (
           content: afterText,
         };
 
-        const rawChildren = [
-          ...block.children.slice(0, startNodeIndex),
-          ...(beforeText ? [beforeNode] : []),
-          ...(afterText ? [afterNode] : []),
-          ...block.children.slice(startNodeIndex + 1),
-        ];
+        const firstRawChildren = [...block.children.slice(0, startNodeIndex), ...(beforeText ? [beforeNode] : [])];
 
-        const finalChildren =
-          rawChildren.length > 0
-            ? rawChildren
-            : [
-                {
-                  type: 'text',
-                  style: defaultStyle,
-                  content: '',
-                },
-              ];
+        const secondRawChildren = [...(afterText ? [afterNode] : []), ...block.children.slice(startNodeIndex + 1)];
 
-        const updatedBlock = {
-          id: block.id,
-          type: block.type,
-          children: finalChildren as ITextBlock['children'],
-        };
-
-        newBlockList[index] = updatedBlock;
+        newBlockList = splitChildren(firstRawChildren, secondRawChildren, block, newBlockList, index);
       }
       // 한 블록에서 여러 노드 선택된 경우
       else {
@@ -98,31 +132,16 @@ const selectionDelete = (
           content: endNodeAfterText,
         };
 
-        const rawChildren = [
+        const firstRawChildren = [
           ...block.children.slice(0, startNodeIndex),
           ...(startNodeBeforeText ? [startNodeBeforeNode] : []),
+        ];
+
+        const secondRawChildren = [
           ...(endNodeAfterText ? [endNodeAfterNode] : []),
           ...block.children.slice(endNodeIndex + 1),
         ];
-
-        const finalChildren =
-          rawChildren.length > 0
-            ? rawChildren
-            : [
-                {
-                  type: 'text',
-                  style: defaultStyle,
-                  content: '',
-                },
-              ];
-
-        const updatedBlock = {
-          id: block.id,
-          type: block.type,
-          children: finalChildren as ITextBlock['children'],
-        };
-
-        newBlockList[index] = updatedBlock;
+        newBlockList = splitChildren(firstRawChildren, secondRawChildren, block, newBlockList, index);
       }
     }
 
@@ -139,26 +158,9 @@ const selectionDelete = (
           content: beforeText,
         };
 
-        const rawChildren = [...block.children.slice(0, startNodeIndex), ...(beforeText ? [beforeNode] : [])];
+        const firstRawChildren = [...block.children.slice(0, startNodeIndex), ...(beforeText ? [beforeNode] : [])];
 
-        const finalChildren =
-          rawChildren.length > 0
-            ? rawChildren
-            : [
-                {
-                  type: 'text',
-                  style: defaultStyle,
-                  content: '',
-                },
-              ];
-
-        const updatedBlock = {
-          id: block.id,
-          type: block.type,
-          children: finalChildren as ITextBlock['children'],
-        };
-
-        newBlockList[index] = updatedBlock;
+        newBlockList = splitChildren(firstRawChildren, [], block, newBlockList, index);
       }
 
       // 중간 블록인 경우
@@ -178,36 +180,13 @@ const selectionDelete = (
           content: afterText,
         };
 
-        // 첫 블록 뒤에 붙이기
-        const startBlock = newBlockList[startBlockIndex];
-        const startBlockChildren = startBlock.children;
+        const secondRawChildren = [...(afterText ? [afterNode] : []), ...block.children.slice(endNodeIndex + 1)];
 
-        const rawChildren = [
-          ...startBlockChildren,
-          ...(afterText ? [afterNode] : []),
-          ...block.children.slice(endNodeIndex + 1),
-        ];
+        newBlockList = splitChildren([], secondRawChildren, block, newBlockList, index);
 
-        const finalChildren =
-          rawChildren.length > 0
-            ? rawChildren
-            : [
-                {
-                  type: 'text',
-                  style: defaultStyle,
-                  content: '',
-                },
-              ];
-
-        const updatedBlock = {
-          id: block.id,
-          type: block.type,
-          children: finalChildren as ITextBlock['children'],
-        };
-
-        // 첫 블록 위치에 넣고, 마지막 블록 삭제
-        newBlockList[startBlockIndex] = updatedBlock;
-        deleteIndex.push(index);
+        // // 첫 블록 위치에 넣고, 마지막 블록 삭제
+        // newBlockList[startBlockIndex] = updatedBlock;
+        // deleteIndex.push(index);
       }
     }
   }
@@ -222,4 +201,4 @@ const selectionDelete = (
   return newBlockList;
 };
 
-export default selectionDelete;
+export default selectionEnter;

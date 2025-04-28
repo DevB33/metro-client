@@ -3,17 +3,17 @@ import getInstance from '.';
 
 export const createNote = async (parentId: string | null) => {
   const instance = await getInstance();
-  await instance.post('/documents', { parentId });
+  await instance.post('/notes', { parentId });
 };
 
 export const deleteNote = async (parentId: string) => {
   const instance = await getInstance();
-  await instance.delete(`/documents/${parentId}`);
+  await instance.delete(`/notes/${parentId}`);
 };
 
 export const getNoteList = async () => {
   const instance = await getInstance();
-  const response = await instance.get(`/documents`);
+  const response = await instance.get(`/notes`);
 
   return response.data;
 };
@@ -21,7 +21,7 @@ export const getNoteList = async () => {
 export const editNoteIcon = async (noteId: string, selectedIcon: string | null) => {
   const instance = await getInstance();
   await instance.patch(
-    `/documents/${noteId}/icon`,
+    `/notes/${noteId}/icon`,
     JSON.stringify({
       value: selectedIcon,
     }),
@@ -31,7 +31,7 @@ export const editNoteIcon = async (noteId: string, selectedIcon: string | null) 
 export const editNoteCover = async (noteId: string, selectedColor: String | null) => {
   const instance = await getInstance();
   await instance.patch(
-    `/documents/${noteId}/cover`,
+    `/notes/${noteId}/cover`,
     JSON.stringify({
       value: selectedColor,
     }),
@@ -41,7 +41,7 @@ export const editNoteCover = async (noteId: string, selectedColor: String | null
 export const editNoteTitle = async (noteId: string, title: String | null) => {
   const instance = await getInstance();
   await instance.patch(
-    `/documents/${noteId}/title`,
+    `/notes/${noteId}/title`,
     JSON.stringify({
       value: title,
     }),
@@ -51,7 +51,7 @@ export const editNoteTitle = async (noteId: string, title: String | null) => {
 export const editNoteTags = async (noteId: string, tags: ITagType[]) => {
   const instance = await getInstance();
   await instance.patch(
-    `/documents/${noteId}/tags`,
+    `/notes/${noteId}/tags`,
     JSON.stringify({
       tags,
     }),
@@ -60,7 +60,7 @@ export const editNoteTags = async (noteId: string, tags: ITagType[]) => {
 
 export const getNoteInfo = async (noteId: string | null) => {
   const instance = await getInstance();
-  const response = await instance.get(`/documents/${noteId}`);
+  const response = await instance.get(`/notes/${noteId}`);
 
   return response.data;
 };

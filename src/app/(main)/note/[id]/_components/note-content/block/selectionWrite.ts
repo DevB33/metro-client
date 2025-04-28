@@ -22,25 +22,8 @@ const selectionWrite = (
     borderRadius: '0',
   };
 
-  // 역 드레그시 설정
-  const {
-    blockIndex: startBlockIndex,
-    childNodeIndex: startNodeIndex,
-    offset: startOffset,
-  } = selectionStartPosition.blockIndex < selectionEndPosition.blockIndex ||
-  (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex &&
-    selectionStartPosition.childNodeIndex <= selectionEndPosition.childNodeIndex)
-    ? selectionStartPosition
-    : selectionEndPosition;
-  const {
-    blockIndex: endBlockIndex,
-    childNodeIndex: endNodeIndex,
-    offset: endOffset,
-  } = selectionStartPosition.blockIndex < selectionEndPosition.blockIndex ||
-  (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex &&
-    selectionStartPosition.childNodeIndex <= selectionEndPosition.childNodeIndex)
-    ? selectionEndPosition
-    : selectionStartPosition;
+  const { blockIndex: startBlockIndex, childNodeIndex: startNodeIndex, offset: startOffset } = selectionStartPosition;
+  const { blockIndex: endBlockIndex, childNodeIndex: endNodeIndex, offset: endOffset } = selectionEndPosition;
 
   const newBlockList = [...blockList];
 

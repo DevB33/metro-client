@@ -9,8 +9,8 @@ import PageOpenIcon from '@/icons/page-open-icon';
 import PageIcon from '@/icons/page-icon';
 import HorizonDotIcon from '@/icons/horizon-dot-icon';
 import PlusIcon from '@/icons/plus-icon';
-import IDocuments from '@/types/document-type';
-import { createPage, deletePage, getPageList } from '@/apis/note';
+import INotes from '@/types/note-type';
+import { createNote, deleteNote, getNoteList } from '@/apis/note';
 import { mutate } from 'swr';
 import TrashIcon from '@/icons/trash-icon';
 import PencilSquareIcon from '@/icons/pencil-square';
@@ -18,7 +18,7 @@ import DropDown from '../../../../../components/dropdown/dropdown';
 import EditTitleModal from './edit-title-modal';
 
 interface IPageItem {
-  page: IDocuments;
+  page: INotes;
   depth: number;
   openedDropdownPageId: string | null;
   setOpenedDropdownPageId: React.Dispatch<React.SetStateAction<string | null>>;
@@ -142,8 +142,8 @@ const PageItem = ({ page, depth, openedDropdownPageId, setOpenedDropdownPageId }
 
   const handleDeleteButtonClick = async () => {
     try {
-      await deletePage(page.id);
-      await mutate('pageList', getPageList, false);
+      await deleteNote(page.id);
+      await mutate('pageList', getNoteList, false);
 
       if (pathname === `/note/${page.id}`) {
         router.push('/');
@@ -157,8 +157,8 @@ const PageItem = ({ page, depth, openedDropdownPageId, setOpenedDropdownPageId }
   const handlePlusButtonClick = async () => {
     try {
       if (!isOpen) togglePage();
-      await createPage(page.id);
-      await mutate('pageList', getPageList, false);
+      await createNote(page.id);
+      await mutate('pageList', getNoteList, false);
     } catch (error) {
       console.log(error);
     }

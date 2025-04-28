@@ -2,8 +2,8 @@ import { css } from '@/../styled-system/css';
 
 import { useState } from 'react';
 import PlusIcon from '@/icons/plus-icon';
-import IDocuments from '@/types/document-type';
-import { createPage, getPageList } from '@/apis/note';
+import INotes from '@/types/note-type';
+import { createNote, getNoteList } from '@/apis/note';
 import useSWR, { mutate } from 'swr';
 import PageItem from './page-item';
 
@@ -73,8 +73,8 @@ const FinderCard = () => {
 
   const handleClick = async () => {
     try {
-      await createPage(null);
-      await mutate('pageList', getPageList, false);
+      await createNote(null);
+      await mutate('pageList', getNoteList, false);
     } catch (error) {
       console.log(error);
     }
@@ -93,8 +93,8 @@ const FinderCard = () => {
         )}
       </div>
       <div className={pageContainer}>
-        {pageList?.node.length ? (
-          pageList.node.map((page: IDocuments) => (
+        {pageList?.notes.length ? (
+          pageList.notes.map((page: INotes) => (
             <PageItem
               key={page.id}
               page={page}
