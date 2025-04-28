@@ -183,10 +183,6 @@ const selectionEnter = (
         const secondRawChildren = [...(afterText ? [afterNode] : []), ...block.children.slice(endNodeIndex + 1)];
 
         newBlockList = splitChildren([], secondRawChildren, block, newBlockList, index);
-
-        // // 첫 블록 위치에 넣고, 마지막 블록 삭제
-        // newBlockList[startBlockIndex] = updatedBlock;
-        // deleteIndex.push(index);
       }
     }
   }

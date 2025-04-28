@@ -3,8 +3,7 @@ import getSelectionInfo from '@/utils/getSelectionInfo';
 import keyName from '@/constants/key-name';
 import ISelectionPosition from '@/types/selection-position';
 import selectionDelete from '../_selection/selectionDelete';
-import selectionEnter from '../_selection/selectionEnter';
-import selectionWrite from '../_selection/selectionWrite';
+import selectionEdit from '../_selection/selectionEdit';
 
 const focusCurrentBlock = (
   index: number,
@@ -974,12 +973,28 @@ const handleKeyDown = (
     // 엔터 입력
     if (event.key === keyName.enter && !event.shiftKey) {
       if (!isBackward) {
-        selectionEnter(selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
+        selectionEdit(
+          'enter',
+          event.key,
+          selectionStartPosition,
+          selectionEndPosition,
+          blockList,
+          setBlockList,
+          blockRef,
+        );
         selectionStartPosition.blockIndex += 1;
         selectionStartPosition.childNodeIndex = 0;
         selectionStartPosition.offset = 0;
       } else {
-        selectionEnter(selectionEndPosition, selectionStartPosition, blockList, setBlockList, blockRef);
+        selectionEdit(
+          'enter',
+          event.key,
+          selectionEndPosition,
+          selectionStartPosition,
+          blockList,
+          setBlockList,
+          blockRef,
+        );
         selectionEndPosition.blockIndex += 1;
         selectionEndPosition.childNodeIndex = 0;
         selectionEndPosition.offset = 0;
@@ -988,14 +1003,30 @@ const handleKeyDown = (
     // 다른 키 입력
     else if (isInputtableKey(event.nativeEvent)) {
       if (!isBackward) {
-        selectionWrite(event.key, selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
+        selectionEdit(
+          'write',
+          event.key,
+          selectionStartPosition,
+          selectionEndPosition,
+          blockList,
+          setBlockList,
+          blockRef,
+        );
         selectionStartPosition.offset = 1;
         // selection 시작점의 offset이 0이라 시작노드가 다 지워질떄가 아니면 새로 생성된 노드에 focus
         if (selectionStartPosition.offset !== 0) {
           selectionStartPosition.childNodeIndex += 1;
         }
       } else {
-        selectionWrite(event.key, selectionEndPosition, selectionStartPosition, blockList, setBlockList, blockRef);
+        selectionEdit(
+          'write',
+          event.key,
+          selectionEndPosition,
+          selectionStartPosition,
+          blockList,
+          setBlockList,
+          blockRef,
+        );
         selectionEndPosition.offset = 1;
         if (selectionEndPosition.offset !== 0) {
           selectionEndPosition.childNodeIndex += 1;
