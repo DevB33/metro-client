@@ -46,21 +46,38 @@ const handleMouseUp = (
 
   finalSelectionEndPosition.offset = charIdx;
 
-  const getNodeStartBounds = (node: Node, nodeStartOffset: number) => {
+  const getNodeBounds = (node: Node, startNodeOffset: number, endNodeOffset: number) => {
     const range = document.createRange();
-    if (node.nodeType === Node.TEXT_NODE) {
-      // 텍스트 노드일 때
-      range.setStart(node as Node, nodeStartOffset);
-      range.setEnd(node as Node, nodeStartOffset);
-    } else if (node.firstChild && node.firstChild.nodeType === Node.TEXT_NODE) {
-      // span 같은 엘리먼트 노드에 텍스트가 있을 경우
-      range.setStart(node.firstChild, nodeStartOffset);
-      range.setEnd(node.firstChild, nodeStartOffset);
-    } else {
-      range.setStart(node as Node, nodeStartOffset);
-      range.setEnd(node as Node, nodeStartOffset);
+
+    let targetNode = node;
+    // span 같은 element면 그 안에 있는 텍스트 노드로 변경
+    if (node.nodeType !== Node.TEXT_NODE) {
+      const firstTextNode = node.childNodes[0];
+      if (!firstTextNode || firstTextNode.nodeType !== Node.TEXT_NODE) {
+        return new DOMRect();
+      }
+      targetNode = firstTextNode;
     }
+
+    range.setStart(targetNode as Node, startNodeOffset);
+    range.setEnd(targetNode as Node, endNodeOffset);
     return range.getBoundingClientRect();
+  };
+
+  const getBoundsForSelection = (blockIndex: number, childNodeIndex: number, offset: number) => {
+    const selectionParent = blockRef.current[blockIndex];
+    const selectionChildNodes = Array.from(selectionParent?.childNodes as NodeListOf<HTMLElement>);
+    let left = Infinity;
+    let top = -Infinity;
+
+    selectionChildNodes.forEach((childNode, idx) => {
+      if (idx !== childNodeIndex) return;
+      const rect = getNodeBounds(childNode as Node, offset, offset);
+      left = Math.min(left, rect.left);
+      top = Math.max(top, rect.top);
+    });
+
+    return { left, top };
   };
 
   let left = 99999;
@@ -68,58 +85,62 @@ const handleMouseUp = (
   let rectOffset = 0;
 
   if (selection.start.blockIndex < selection.end.blockIndex) {
-    const selectionParent = blockRef.current[selection.start.blockIndex];
-    const selectionChildNodes = Array.from(selectionParent?.childNodes as NodeListOf<HTMLElement>);
     rectOffset = selection.start.offset;
-    selectionChildNodes.forEach((childNode, idx) => {
-      if (idx !== selection.start.childNodeIndex) return;
-      const rect = getNodeStartBounds(childNode as Node, rectOffset);
-      left = Math.min(left, rect.left);
-      top = Math.max(top, rect.top);
-    });
+    const { left: newLeft, top: newTop } = getBoundsForSelection(
+      selection.start.blockIndex,
+      selection.start.childNodeIndex,
+      rectOffset,
+    );
+    left = Math.min(left, newLeft);
+    top = Math.max(top, newTop);
   }
 
+  // selection의 시작 블록이 끝 블록보다 인덱스가 클 때,
   if (selection.start.blockIndex > selection.end.blockIndex) {
-    const selectionParent = blockRef.current[selection.end.blockIndex];
-    const selectionChildNodes = Array.from(selectionParent?.childNodes as NodeListOf<HTMLElement>);
     rectOffset = selection.end.offset;
-    selectionChildNodes.forEach((childNode, idx) => {
-      if (idx !== selection.end.childNodeIndex) return;
-      const rect = getNodeStartBounds(childNode as Node, rectOffset);
-      left = Math.min(left, rect.left);
-      top = Math.max(top, rect.top);
-    });
+    const { left: newLeft, top: newTop } = getBoundsForSelection(
+      selection.end.blockIndex,
+      selection.end.childNodeIndex,
+      rectOffset,
+    );
+    left = Math.min(left, newLeft);
+    top = Math.max(top, newTop);
   }
 
+  // selection의 시작 블록이 끝 블록보다 인덱스가 같을 때,
   if (selection.start.blockIndex === selection.end.blockIndex) {
-    const selectionParent = blockRef.current[selection.start.blockIndex];
-    const selectionChildNodes = Array.from(selectionParent?.childNodes as NodeListOf<HTMLElement>);
+    // selection의 시작 블록이 끝 블록보다 node 인덱스가 작을 때,
     if (selection.start.childNodeIndex < selection.end.childNodeIndex) {
       rectOffset = selection.start.offset;
-      selectionChildNodes.forEach((childNode, idx) => {
-        if (idx !== selection.start.childNodeIndex) return;
-        const rect = getNodeStartBounds(childNode as Node, rectOffset);
-        left = Math.min(left, rect.left);
-        top = Math.max(top, rect.top);
-      });
+      const { left: newLeft, top: newTop } = getBoundsForSelection(
+        selection.start.blockIndex,
+        selection.start.childNodeIndex,
+        rectOffset,
+      );
+      left = Math.min(left, newLeft);
+      top = Math.max(top, newTop);
     }
+    // selection의 시작 블록이 끝 블록보다 node 인덱스가 클 때,
     if (selection.start.childNodeIndex > selection.end.childNodeIndex) {
       rectOffset = selection.end.offset;
-      selectionChildNodes.forEach((childNode, idx) => {
-        if (idx !== selection.end.childNodeIndex) return;
-        const rect = getNodeStartBounds(childNode as Node, rectOffset);
-        left = Math.min(left, rect.left);
-        top = Math.max(top, rect.top);
-      });
+      const { left: newLeft, top: newTop } = getBoundsForSelection(
+        selection.start.blockIndex,
+        selection.end.childNodeIndex,
+        rectOffset,
+      );
+      left = Math.min(left, newLeft);
+      top = Math.max(top, newTop);
     }
+    // selection의 시작 블록이 끝 블록보다 node 인덱스가 같을 때,
     if (selection.start.childNodeIndex === selection.end.childNodeIndex) {
       rectOffset = Math.min(selection.start.offset, selection.end.offset);
-      selectionChildNodes.forEach((childNode, idx) => {
-        if (idx !== selection.start.childNodeIndex) return;
-        const rect = getNodeStartBounds(childNode as Node, rectOffset);
-        left = Math.min(left, rect.left);
-        top = Math.max(top, rect.top);
-      });
+      const { left: newLeft, top: newTop } = getBoundsForSelection(
+        selection.start.blockIndex,
+        selection.start.childNodeIndex,
+        rectOffset,
+      );
+      left = Math.min(left, newLeft);
+      top = Math.max(top, newTop);
     }
   }
 
