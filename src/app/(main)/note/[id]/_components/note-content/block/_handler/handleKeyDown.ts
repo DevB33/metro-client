@@ -339,6 +339,7 @@ const mergeBlock = (
   const updatedBlockList = [...blockList];
 
   const previousBlock = updatedBlockList[index - 1];
+  const previousBlockFirstChildContent = previousBlock.children[0].content;
   const previousBlockLength = previousBlock.children.length as number;
   const currentBlock = updatedBlockList[index];
 
@@ -388,7 +389,15 @@ const mergeBlock = (
           );
         }
       } else {
-        range?.setStart(afterBlock?.childNodes[previousBlockLength] as Node, 0);
+        // 이전 블록이 빈 블록이면 합쳐지면서 child가 사라져서 previousBlockLength - 1을 해줌
+        range?.setStart(
+          afterBlock?.childNodes[
+            previousBlockFirstChildContent === '' && previousBlockLength === 1
+              ? previousBlockLength - 1
+              : previousBlockLength
+          ] as Node,
+          0,
+        );
       }
       selection?.removeAllRanges();
       selection?.addRange(range);
