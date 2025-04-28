@@ -9,7 +9,7 @@ import LineThroughIcon from '@/icons/line-through-icon';
 import CodeblockIcon from '@/icons/codeblock-icon';
 import { JSX } from 'react';
 import { useClickOutside } from '@/hooks/useClickOutside';
-import selectionChange from './selectionChange';
+import changeSelectionStyle from './changeSelectionStyle';
 
 interface ISelectionMenuProps {
   position: { x: number; y: number };
@@ -77,7 +77,7 @@ const SelectionMenu = ({
   const menuHeight = 3;
 
   const changeBlock = (type: string) => {
-    selectionChange(type, selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
+    changeSelectionStyle(type, selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
     setIsSelectionMenuOpen(false);
     resetSelection();
     setKey(Math.random());

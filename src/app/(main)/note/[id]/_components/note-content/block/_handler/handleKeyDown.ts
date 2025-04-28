@@ -2,8 +2,7 @@ import { ITextBlock } from '@/types/block-type';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import keyName from '@/constants/key-name';
 import ISelectionPosition from '@/types/selection-position';
-import selectionDelete from '../_selection/selectionDelete';
-import selectionEdit from '../_selection/selectionEdit';
+import editSelectionContent from '../_selection/editSelectionContent';
 
 const focusCurrentBlock = (
   index: number,
@@ -957,13 +956,29 @@ const handleKeyDown = (
     // backspace 클릭
     if (event.key === keyName.backspace) {
       if (!isBackward) {
-        selectionDelete(selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
+        editSelectionContent(
+          'delete',
+          event.key,
+          selectionStartPosition,
+          selectionEndPosition,
+          blockList,
+          setBlockList,
+          blockRef,
+        );
         if (selectionStartPosition.childNodeIndex > 0) {
           selectionStartPosition.childNodeIndex -= 1;
           selectionStartPosition.offset = 0;
         }
       } else {
-        selectionDelete(selectionEndPosition, selectionStartPosition, blockList, setBlockList, blockRef);
+        editSelectionContent(
+          'delete',
+          event.key,
+          selectionEndPosition,
+          selectionStartPosition,
+          blockList,
+          setBlockList,
+          blockRef,
+        );
         if (selectionEndPosition.childNodeIndex > 0) {
           selectionEndPosition.childNodeIndex -= 1;
           selectionEndPosition.offset = 0;
@@ -973,7 +988,7 @@ const handleKeyDown = (
     // 엔터 입력
     if (event.key === keyName.enter && !event.shiftKey) {
       if (!isBackward) {
-        selectionEdit(
+        editSelectionContent(
           'enter',
           event.key,
           selectionStartPosition,
@@ -986,7 +1001,7 @@ const handleKeyDown = (
         selectionStartPosition.childNodeIndex = 0;
         selectionStartPosition.offset = 0;
       } else {
-        selectionEdit(
+        editSelectionContent(
           'enter',
           event.key,
           selectionEndPosition,
@@ -1003,7 +1018,7 @@ const handleKeyDown = (
     // 다른 키 입력
     else if (isInputtableKey(event.nativeEvent)) {
       if (!isBackward) {
-        selectionEdit(
+        editSelectionContent(
           'write',
           event.key,
           selectionStartPosition,
@@ -1018,7 +1033,7 @@ const handleKeyDown = (
           selectionStartPosition.childNodeIndex += 1;
         }
       } else {
-        selectionEdit(
+        editSelectionContent(
           'write',
           event.key,
           selectionEndPosition,

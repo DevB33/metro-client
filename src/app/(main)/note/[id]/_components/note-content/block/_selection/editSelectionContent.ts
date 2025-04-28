@@ -66,7 +66,7 @@ const splitChildren = (
   return splitedBlockList;
 };
 
-const selectionEdit = (
+const editSelectionContent = (
   selectionAction: string,
   key: string,
   selectionStartPosition: ISelectionPosition,
@@ -159,6 +159,34 @@ const selectionEdit = (
 
           newBlockList = splitChildren(firstRawChildren, secondRawChildren, block, newBlockList, index);
         }
+
+        if (selectionAction === 'delete') {
+          const rawChildren = [
+            ...block.children.slice(0, startNodeIndex),
+            ...(beforeText ? [beforeNode] : []),
+            ...(afterText ? [afterNode] : []),
+            ...block.children.slice(startNodeIndex + 1),
+          ];
+
+          const finalChildren =
+            rawChildren.length > 0
+              ? rawChildren
+              : [
+                  {
+                    type: 'text',
+                    style: defaultStyle,
+                    content: '',
+                  },
+                ];
+
+          const updatedBlock = {
+            id: block.id,
+            type: block.type,
+            children: finalChildren as ITextBlock['children'],
+          };
+
+          newBlockList[index] = updatedBlock;
+        }
       }
 
       // 한 블록에서 여러 노드 선택된 경우
@@ -224,6 +252,34 @@ const selectionEdit = (
           ];
           newBlockList = splitChildren(firstRawChildren, secondRawChildren, block, newBlockList, index);
         }
+
+        if (selectionAction === 'delete') {
+          const rawChildren = [
+            ...block.children.slice(0, startNodeIndex),
+            ...(startNodeBeforeText ? [startNodeBeforeNode] : []),
+            ...(endNodeAfterText ? [endNodeAfterNode] : []),
+            ...block.children.slice(endNodeIndex + 1),
+          ];
+
+          const finalChildren =
+            rawChildren.length > 0
+              ? rawChildren
+              : [
+                  {
+                    type: 'text',
+                    style: defaultStyle,
+                    content: '',
+                  },
+                ];
+
+          const updatedBlock = {
+            id: block.id,
+            type: block.type,
+            children: finalChildren as ITextBlock['children'],
+          };
+
+          newBlockList[index] = updatedBlock;
+        }
       }
     }
 
@@ -269,6 +325,28 @@ const selectionEdit = (
         if (selectionAction === 'enter') {
           const firstRawChildren = [...block.children.slice(0, startNodeIndex), ...(beforeText ? [beforeNode] : [])];
           newBlockList = splitChildren(firstRawChildren, [], block, newBlockList, index);
+        }
+        if (selectionAction === 'delete') {
+          const rawChildren = [...block.children.slice(0, startNodeIndex), ...(beforeText ? [beforeNode] : [])];
+
+          const finalChildren =
+            rawChildren.length > 0
+              ? rawChildren
+              : [
+                  {
+                    type: 'text',
+                    style: defaultStyle,
+                    content: '',
+                  },
+                ];
+
+          const updatedBlock = {
+            id: block.id,
+            type: block.type,
+            children: finalChildren as ITextBlock['children'],
+          };
+
+          newBlockList[index] = updatedBlock;
         }
       }
 
@@ -328,6 +406,38 @@ const selectionEdit = (
           const secondRawChildren = [...(afterText ? [afterNode] : []), ...block.children.slice(endNodeIndex + 1)];
           newBlockList = splitChildren([], secondRawChildren, block, newBlockList, index);
         }
+        if (selectionAction === 'delete') {
+          // 첫 블록 뒤에 붙이기
+          const startBlock = newBlockList[startBlockIndex];
+          const startBlockChildren = startBlock.children;
+
+          const rawChildren = [
+            ...startBlockChildren,
+            ...(afterText ? [afterNode] : []),
+            ...block.children.slice(endNodeIndex + 1),
+          ];
+
+          const finalChildren =
+            rawChildren.length > 0
+              ? rawChildren
+              : [
+                  {
+                    type: 'text',
+                    style: defaultStyle,
+                    content: '',
+                  },
+                ];
+
+          const updatedBlock = {
+            id: block.id,
+            type: block.type,
+            children: finalChildren as ITextBlock['children'],
+          };
+
+          // 첫 블록 위치에 넣고, 마지막 블록 삭제
+          newBlockList[startBlockIndex] = updatedBlock;
+          deleteIndex.push(index);
+        }
       }
     }
   }
@@ -341,4 +451,4 @@ const selectionEdit = (
   setBlockList(newBlockList);
 };
 
-export default selectionEdit;
+export default editSelectionContent;

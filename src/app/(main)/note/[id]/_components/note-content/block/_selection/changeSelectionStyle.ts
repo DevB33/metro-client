@@ -76,7 +76,7 @@ const defaultStyle = {
   borderRadius: '0',
 };
 
-const selectionChange = (
+const changeSelectionStyle = (
   type: string,
   selectionStartPosition: ISelectionPosition,
   selectionEndPosition: ISelectionPosition,
@@ -306,4 +306,4 @@ const selectionChange = (
   setBlockList(newBlockList);
 };
 
-export default selectionChange;
+export default changeSelectionStyle;
