@@ -159,8 +159,19 @@ const NoteContent = () => {
 
   const getNodeBounds = (node: Node, startOffset: number, endOffset: number) => {
     const range = document.createRange();
-    range.setStart(node as Node, startOffset);
-    range.setEnd(node as Node, endOffset);
+    let targetNode = node;
+    // span 같은 element면 그 안에 있는 텍스트 노드로 변경
+    if (node.nodeType !== Node.TEXT_NODE) {
+      const firstTextNode = node.childNodes[0];
+      if (!firstTextNode || firstTextNode.nodeType !== Node.TEXT_NODE) {
+        return new DOMRect();
+      }
+      targetNode = firstTextNode;
+    }
+
+    range.setStart(targetNode as Node, startOffset);
+    range.setEnd(targetNode as Node, endOffset);
+
     return range.getBoundingClientRect();
   };
 
@@ -356,8 +367,6 @@ const NoteContent = () => {
     const parent = blockRef.current[index];
     const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
 
-    const textLength = parent?.textContent?.length || 0;
-
     setSelectionEndPosition((prev: ISelectionPosition) => ({
       ...prev,
       blockIndex: index,
@@ -373,15 +382,30 @@ const NoteContent = () => {
     let right = 0;
 
     if (selectionStartPosition.blockIndex === selectionEnd.blockIndex) {
-      childNodes.forEach(childNode => {
-        const rect = getNodeBounds(childNode as Node, 0, selectionStartPosition.offset as number);
-        left = Math.min(left, rect.left);
-        right = Math.max(right, rect.right);
-        const blockElement = blockRef.current[index];
-        const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+      childNodes.forEach((childNode, idx) => {
+        if (idx > selectionStartPosition.childNodeIndex) {
+          return;
+        }
+        if (idx < selectionStartPosition.childNodeIndex) {
+          const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
+          left = Math.min(left, rect.left);
+          right = Math.max(right, rect.right);
+          const blockElement = blockRef.current[index];
+          const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
 
-        if (!blockElement) return;
-        fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+          if (!blockElement) return;
+          fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+        }
+        if (idx === selectionStartPosition.childNodeIndex) {
+          const rect = getNodeBounds(childNode as Node, 0, selectionStartPosition.offset as number);
+          left = Math.min(left, rect.left);
+          right = Math.max(right, rect.right);
+          const blockElement = blockRef.current[index];
+          const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+
+          if (!blockElement) return;
+          fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+        }
       });
     }
 
@@ -398,11 +422,7 @@ const NoteContent = () => {
       });
     }
     if (selectionStartPosition.blockIndex < selectionEnd.blockIndex) {
-      setSelectionEndPosition((prev: ISelectionPosition) => ({
-        ...prev,
-        offset: textLength,
-      }));
-      childNodes.forEach(childNode => {
+      childNodes.forEach((childNode, idx) => {
         const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
         left = Math.min(left, rect.left);
         right = Math.max(right, rect.right);
@@ -411,6 +431,14 @@ const NoteContent = () => {
 
         if (!blockElement) return;
         fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+
+        if (idx === childNodes.length - 1) {
+          setSelectionEndPosition((prev: ISelectionPosition) => ({
+            ...prev,
+            childNodeIndex: idx,
+            offset: childNode.textContent?.length || 0,
+          }));
+        }
       });
     }
   };
@@ -579,6 +607,7 @@ const NoteContent = () => {
           >
             <div
               className={fakeBox}
+              id="fakeBox"
               ref={element => {
                 fakeBoxRef.current[index] = element;
               }}

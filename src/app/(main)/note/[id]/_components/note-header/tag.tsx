@@ -6,8 +6,7 @@ import LineColor from '@/constants/line-color';
 import keyName from '@/constants/key-name';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import useSWR, { mutate } from 'swr';
-import { editTags, getNoteInfo } from '@/apis/note-header';
-import { getPageList } from '@/apis/side-bar';
+import { editNoteTags, getNoteInfo, getNoteList } from '@/apis/note';
 import TagBox from './tag-box';
 
 interface ITag {
@@ -116,8 +115,8 @@ const Tag = ({ noteId }: ITag) => {
         return;
       }
 
-      await editTags(noteId, [...tagList, { name: inputValue.trim(), color: getRandomColor() }]);
-      await mutate('pageList', getPageList, false);
+      await editNoteTags(noteId, [...tagList, { name: inputValue.trim(), color: getRandomColor() }]);
+      await mutate('pageList', getNoteList, false);
       await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
 
       setIsEditing(false);
@@ -125,11 +124,11 @@ const Tag = ({ noteId }: ITag) => {
   };
 
   const handleTagDelete = async (tagToDelete: string) => {
-    await editTags(
+    await editNoteTags(
       noteId,
       tagList.filter(tag => tag.name !== tagToDelete),
     );
-    await mutate('pageList', getPageList, false);
+    await mutate('pageList', getNoteList, false);
     await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
   };
 
