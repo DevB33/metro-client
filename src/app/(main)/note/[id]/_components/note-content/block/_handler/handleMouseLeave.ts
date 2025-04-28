@@ -32,7 +32,7 @@ const handleMouseLeave = (
   const windowSelection = window.getSelection();
   if (windowSelection) windowSelection.removeAllRanges();
 
-  const fakeBox = document.getElementById('fakeBox');
+  const fakeBox = document.getElementById(`fakeBox-${index}`);
 
   const parent = blockRef.current[index];
   const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
@@ -44,7 +44,9 @@ const handleMouseLeave = (
     let right = 0;
 
     // fakeBox로 떠날 때, position 변화 x
+    console.log(event.relatedTarget, fakeBox);
     if (event.relatedTarget instanceof HTMLElement && fakeBox?.contains(event.relatedTarget)) {
+      console.log('1');
       return;
     }
 

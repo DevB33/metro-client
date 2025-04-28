@@ -88,15 +88,16 @@ const NoteContent = () => {
     setIsBlockMenuOpen(false);
   };
 
+  // blockButton의 위치를 계산해 style에 적용하는 함수
   const updateBlockButtonPosition = (index: number) => {
     const blockEl = blockRef.current[index];
     const buttonEl = blockButtonRef.current[index];
     const fakeBoxEl = fakeBoxRef.current[index];
 
+    // getBoundingClientRect를 통해 화면 절대 좌표를 구해 적용
     if (blockEl && buttonEl && fakeBoxEl) {
       const blockRect = blockEl.getBoundingClientRect();
-      const containerRect = fakeBoxEl.getBoundingClientRect(); // relative 기준 부모
-
+      const containerRect = fakeBoxEl.getBoundingClientRect();
       const offsetLeft = blockRect.left - containerRect.left;
       const blockType = blockEl.getAttribute('data-placeholder');
 
@@ -135,6 +136,7 @@ const NoteContent = () => {
     }
   };
 
+  // Selection의 상태를 초기화 해주는 함수
   const resetSelection = () => {
     setSelection(prev => ({
       ...prev,
@@ -146,6 +148,7 @@ const NoteContent = () => {
     }));
   };
 
+  // FakeBox에 MouseEnter, Leave 시 BlockButton 활성화 및 숨기기
   const handleMouseEnter = (index: number) => {
     updateBlockButtonPosition(index);
   };
@@ -155,94 +158,116 @@ const NoteContent = () => {
     blockButtonRef.current[index]?.style.setProperty('display', 'none');
   };
 
-  const hasSelection = () => {
+  // Selection이 활성화 되어있는지 여부를 확인하는 함수
+  const isSelectionActive = () => {
     const { blockIndex: startBlock, childNodeIndex: startChild, offset: startOffset } = selection.start;
     const { blockIndex: endBlock, childNodeIndex: endChild, offset: endOffset } = selection.end;
     if (startBlock !== endBlock || startChild !== endChild || startOffset !== endOffset) isSelection.current = true;
     else isSelection.current = false;
   };
 
+  // node의 시작점과 끝점까지 범위의 위치를 계산하는 함수
   const getNodeBounds = (node: Node, startOffset: number, endOffset: number) => {
     const range = document.createRange();
-    let targetNode = node;
-    // span 같은 element면 그 안에 있는 텍스트 노드로 변경
-    if (node.nodeType !== Node.TEXT_NODE) {
-      const firstTextNode = node.childNodes[0];
-      if (!firstTextNode || firstTextNode.nodeType !== Node.TEXT_NODE) {
-        return new DOMRect();
-      }
-      targetNode = firstTextNode;
+    if (node.nodeType === Node.TEXT_NODE) {
+      // 텍스트 노드일 때
+      range.setStart(node as Node, startOffset);
+      range.setEnd(node as Node, endOffset);
+    } else if (node.firstChild && node.firstChild.nodeType === Node.TEXT_NODE) {
+      range.setStart(node.firstChild, startOffset);
+      range.setEnd(node.firstChild, endOffset);
+    } else {
+      range.setStart(node as Node, startOffset);
+      range.setEnd(node as Node, endOffset);
     }
-
-    range.setStart(targetNode as Node, startOffset);
-    range.setEnd(targetNode as Node, endOffset);
-
     return range.getBoundingClientRect();
   };
 
-  useEffect(() => {
-    hasSelection();
+  // selection의 범위를 구하는 함수
+  const getBoundsForSelection = (blockIndex: number, childNodeIndex: number, offset: number) => {
+    const parent = blockRef.current[blockIndex];
+    const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+    let left = Infinity;
+    let top = -Infinity;
 
+    childNodes.forEach((childNode, index) => {
+      if (index !== childNodeIndex) return;
+      const rect = getNodeBounds(childNode as Node, offset, offset);
+      left = Math.min(left, rect.left);
+      top = Math.max(top, rect.top);
+    });
+
+    return { left, top };
+  };
+
+  // selection에 변화가 있을 때, selectionMenu의 위치를 잡는 useEffect
+  useEffect(() => {
+    console.log(selection.start, selection.end);
     let left = 99999;
     let top = 0;
     let rectOffset = 0;
 
+    // selection의 시작 블록이 끝 블록보다 인덱스가 작을 때,
     if (selection.start.blockIndex < selection.end.blockIndex) {
-      const parent = blockRef.current[selection.start.blockIndex];
-      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
       rectOffset = selection.start.offset;
-      childNodes.forEach((childNode, index) => {
-        if (index !== selection.start.childNodeIndex) return;
-        const rect = getNodeBounds(childNode as Node, rectOffset, rectOffset);
-        left = Math.min(left, rect.left);
-        top = Math.max(top, rect.top);
-      });
+      const { left: newLeft, top: newTop } = getBoundsForSelection(
+        selection.start.blockIndex,
+        selection.start.childNodeIndex,
+        rectOffset,
+      );
+      left = Math.min(left, newLeft);
+      top = Math.max(top, newTop);
     }
 
+    // selection의 시작 블록이 끝 블록보다 인덱스가 클 때,
     if (selection.start.blockIndex > selection.end.blockIndex) {
-      const parent = blockRef.current[selection.end.blockIndex];
-      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
       rectOffset = selection.end.offset;
-      childNodes.forEach((childNode, index) => {
-        if (index !== selection.end.childNodeIndex) return;
-        const rect = getNodeBounds(childNode as Node, rectOffset, rectOffset);
-        left = Math.min(left, rect.left);
-        top = Math.max(top, rect.top);
-      });
+      const { left: newLeft, top: newTop } = getBoundsForSelection(
+        selection.end.blockIndex,
+        selection.end.childNodeIndex,
+        rectOffset,
+      );
+      left = Math.min(left, newLeft);
+      top = Math.max(top, newTop);
     }
 
+    // selection의 시작 블록이 끝 블록보다 인덱스가 같을 때,
     if (selection.start.blockIndex === selection.end.blockIndex) {
-      const parent = blockRef.current[selection.start.blockIndex];
-      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+      // selection의 시작 블록이 끝 블록보다 node 인덱스가 작을 때,
       if (selection.start.childNodeIndex < selection.end.childNodeIndex) {
         rectOffset = selection.start.offset;
-        childNodes.forEach((childNode, index) => {
-          if (index !== selection.start.childNodeIndex) return;
-          const rect = getNodeBounds(childNode as Node, rectOffset, rectOffset);
-          left = Math.min(left, rect.left);
-          top = Math.max(top, rect.top);
-        });
+        const { left: newLeft, top: newTop } = getBoundsForSelection(
+          selection.start.blockIndex,
+          selection.start.childNodeIndex,
+          rectOffset,
+        );
+        left = Math.min(left, newLeft);
+        top = Math.max(top, newTop);
       }
+      // selection의 시작 블록이 끝 블록보다 node 인덱스가 클 때,
       if (selection.start.childNodeIndex > selection.end.childNodeIndex) {
         rectOffset = selection.end.offset;
-        childNodes.forEach((childNode, index) => {
-          if (index !== selection.end.childNodeIndex) return;
-          const rect = getNodeBounds(childNode as Node, rectOffset, rectOffset);
-          left = Math.min(left, rect.left);
-          top = Math.max(top, rect.top);
-        });
+        const { left: newLeft, top: newTop } = getBoundsForSelection(
+          selection.start.blockIndex,
+          selection.end.childNodeIndex,
+          rectOffset,
+        );
+        left = Math.min(left, newLeft);
+        top = Math.max(top, newTop);
       }
+      // selection의 시작 블록이 끝 블록보다 node 인덱스가 같을 때,
       if (selection.start.childNodeIndex === selection.end.childNodeIndex) {
         rectOffset = Math.min(selection.start.offset, selection.end.offset);
-        childNodes.forEach((childNode, index) => {
-          if (index !== selection.start.childNodeIndex) return;
-          const rect = getNodeBounds(childNode as Node, rectOffset, rectOffset);
-          left = Math.min(left, rect.left);
-          top = Math.max(top, rect.top);
-        });
+        const { left: newLeft, top: newTop } = getBoundsForSelection(
+          selection.start.blockIndex,
+          selection.start.childNodeIndex,
+          rectOffset,
+        );
+        left = Math.min(left, newLeft);
+        top = Math.max(top, newTop);
       }
     }
-
+    // selectionMenu의 위치를 설정
     setMenuState(prev => ({
       ...prev,
       selectionMenuPosition: {
@@ -250,8 +275,11 @@ const NoteContent = () => {
         y: top,
       },
     }));
+    // selection이 활성화 되어 있는지 확인
+    isSelectionActive();
   }, [selection]);
 
+  // 각 menu들 초기화
   useEffect(() => {
     setMenuState(prev => ({
       ...prev,
@@ -264,8 +292,7 @@ const NoteContent = () => {
   useEffect(() => {
     const grandParent = noteRef.current?.parentElement?.parentElement;
     if (!grandParent) return;
-    const isAnyMenuOpen = menuState.isSlashMenuOpen;
-    if (isAnyMenuOpen) {
+    if (menuState.isSlashMenuOpen) {
       grandParent.style.overflowY = 'hidden';
     } else {
       grandParent.style.overflowY = '';
@@ -276,13 +303,17 @@ const NoteContent = () => {
     };
   }, [menuState.isSlashMenuOpen]);
 
+  // 초기 렌더링 시 block 외의 이벤트를 처리하기 위한 useEffect
   useEffect(() => {
     const handleOutsideMouseUp = (event: MouseEvent) => {
+      // Mouse 이벤트가 block위가 아닐때,
       if (blockRef.current.some(block => block?.contains(event.target as Node))) {
         return;
       }
       setIsDragging(false);
       outSideDragging.current = false;
+
+      // 외부에서 MouseUp 시에도 SelectionMenu가 띄워질 수 있도록 함
       if (isSelection.current)
         setMenuState(prev => ({
           ...prev,
@@ -291,17 +322,21 @@ const NoteContent = () => {
     };
 
     const handleOutsideMouseDown = (event: MouseEvent) => {
+      // Mouse 이벤트가 block위가 아닐때,
       if (blockRef.current.some(block => block?.contains(event.target as Node))) {
         outSideDragging.current = false;
         return;
       }
+      // 외부에서 MouseDown이 일어났으므로 외부 드래그 true
       outSideDragging.current = true;
     };
+
     const handleOutsideClick = (event: MouseEvent) => {
       if (blockRef.current.some(block => block?.contains(event.target as Node))) {
         return;
       }
 
+      // selectionMenu가 아닌 곳에서 Click 시 resetSelection
       if (selectionMenuRef.current) {
         if (!selectionMenuRef.current.contains(event.target as Node)) resetSelection();
         setKey(Math.random());
@@ -316,6 +351,8 @@ const NoteContent = () => {
         setIsUp(true);
         prevClientY.current = event.clientY;
       }
+
+      // 외부 드래깅중이라면 window 기본 selection이 작동하지 않도록 함
       if (!outSideDragging.current) return;
       const windowSelection = window.getSelection();
       if (windowSelection) windowSelection.removeAllRanges();
@@ -333,6 +370,15 @@ const NoteContent = () => {
       document.removeEventListener('mousemove', handleOutsideDrag);
     };
   }, []);
+
+  // Node의 배경을 칠해주는 함수
+  const fillBackgroundNode = (left: number, right: number, index: number) => {
+    const blockElement = blockRef.current[index];
+    const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+
+    if (!blockElement) return;
+    fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+  };
 
   const handleFakeBoxMouseEnter = (index: number) => {
     if (isTyping) {
@@ -376,6 +422,7 @@ const NoteContent = () => {
     let left = 99999;
     let right = 0;
 
+    // selction의 시작 블록과 끝 블록이 인덱스가 같을 때, 각 노드 색칠
     if (selection.start.blockIndex === selectionEnd.blockIndex) {
       childNodes.forEach((childNode, idx) => {
         if (idx > selection.start.childNodeIndex) {
@@ -385,47 +432,32 @@ const NoteContent = () => {
           const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
           left = Math.min(left, rect.left);
           right = Math.max(right, rect.right);
-          const blockElement = blockRef.current[index];
-          const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
-
-          if (!blockElement) return;
-          fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
         }
         if (idx === selection.start.childNodeIndex) {
           const rect = getNodeBounds(childNode as Node, 0, selection.start.offset as number);
           left = Math.min(left, rect.left);
           right = Math.max(right, rect.right);
-          const blockElement = blockRef.current[index];
-          const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
-
-          if (!blockElement) return;
-          fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
         }
       });
+      fillBackgroundNode(left, right, index);
     }
 
+    // selction의 시작 블록과 끝 블록이 인덱스가 클 때, 각 노드 색칠
     if (selection.start.blockIndex > selectionEnd.blockIndex) {
       childNodes.forEach(childNode => {
         const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
         left = Math.min(left, rect.left);
         right = Math.max(right, rect.right);
-        const blockElement = blockRef.current[index];
-        const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
-
-        if (!blockElement) return;
-        fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
       });
+      fillBackgroundNode(left, right, index);
     }
+
+    // selction의 시작 블록과 끝 블록이 인덱스가 작을 때, 각 노드 색칠
     if (selection.start.blockIndex < selectionEnd.blockIndex) {
       childNodes.forEach((childNode, idx) => {
         const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
         left = Math.min(left, rect.left);
         right = Math.max(right, rect.right);
-        const blockElement = blockRef.current[index];
-        const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
-
-        if (!blockElement) return;
-        fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
 
         if (idx === childNodes.length - 1) {
           setSelection(prev => ({
@@ -434,6 +466,7 @@ const NoteContent = () => {
           }));
         }
       });
+      fillBackgroundNode(left, right, index);
     }
   };
 
@@ -444,12 +477,15 @@ const NoteContent = () => {
     const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
     const textLength = parent?.textContent?.length || 0;
 
+    // selction의 시작 블록과 끝 블록이 인덱스가 같을 때
     if (selection.start.blockIndex === selection.end.blockIndex) {
+      // 첫번째 블록에서 위로 나가면 배경 없애기
       if (isUp && selection.start.blockIndex === 0) {
         const el = blockRef.current[index];
         if (!el) return;
         el.style.backgroundImage = `none`;
       }
+      // 아래로 나갈 때, 커서 위치부터 끝까지 칠하기
       if (!isUp) {
         let left = 99999;
         let right = 0;
@@ -461,13 +497,9 @@ const NoteContent = () => {
             childNode.textContent?.length as number,
           );
           left = Math.min(left, rect.left);
-          right = Math.max(right, rect.right);
-          const blockElement = blockRef.current[index];
-          const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
-
-          if (!blockElement) return;
-          fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+          right = Math.max(rect.right);
         });
+        fillBackgroundNode(left, right, index);
       }
     }
 
@@ -486,11 +518,8 @@ const NoteContent = () => {
           const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
           left = Math.min(left, rect.left);
           right = Math.max(right, rect.right);
-          const blockElement = blockRef.current[index];
-          const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
-          if (!blockElement) return;
-          fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
         });
+        fillBackgroundNode(left, right, index);
         setSelection(prev => ({
           ...prev,
           end: { ...prev.end, offset: textLength },
@@ -514,11 +543,8 @@ const NoteContent = () => {
           const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
           left = Math.min(left, rect.left);
           right = Math.max(right, rect.right);
-          const blockElement = blockRef.current[index];
-          const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
-          if (!blockElement) return;
-          fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
         });
+        fillBackgroundNode(left, right, index);
       }
     }
   };
@@ -534,10 +560,6 @@ const NoteContent = () => {
       }
     });
   }, [key, blockList]);
-
-  useEffect(() => {
-    console.log(menuState);
-  }, [menuState]);
 
   return (
     <div style={{ pointerEvents: 'none' }}>
@@ -576,7 +598,7 @@ const NoteContent = () => {
           >
             <div
               className={fakeBox}
-              id="fakeBox"
+              id={`fakeBox-${index}`}
               ref={element => {
                 fakeBoxRef.current[index] = element;
               }}
