@@ -159,7 +159,6 @@ const NoteContent = () => {
 
   const getNodeBounds = (node: Node, startOffset: number, endOffset: number) => {
     const range = document.createRange();
-
     let targetNode = node;
     // span 같은 element면 그 안에 있는 텍스트 노드로 변경
     if (node.nodeType !== Node.TEXT_NODE) {
@@ -172,6 +171,7 @@ const NoteContent = () => {
 
     range.setStart(targetNode as Node, startOffset);
     range.setEnd(targetNode as Node, endOffset);
+
     return range.getBoundingClientRect();
   };
 

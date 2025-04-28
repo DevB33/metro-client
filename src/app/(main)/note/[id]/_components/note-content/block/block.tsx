@@ -190,7 +190,7 @@ const Block = memo(
               return <br key={Math.random()} />;
             }
 
-            if (child.type === 'text') {
+            if (child.type === 'text' || child.content === '') {
               return child.content;
             }
 
