@@ -70,6 +70,7 @@ const NoteContent = () => {
 
   const [menuState, setMenuState] = useState<IMenuState>({
     isSlashMenuOpen: false,
+    slashMenuOpenIndex: null,
     isSelectionMenuOpen: false,
     slashMenuPosition: { x: 0, y: 0 },
     selectionMenuPosition: { x: 0, y: 0 },
@@ -254,6 +255,7 @@ const NoteContent = () => {
     setMenuState(prev => ({
       ...prev,
       isSlashMenuOpen: false,
+      slashMenuOpenIndex: null,
     }));
   }, []);
 

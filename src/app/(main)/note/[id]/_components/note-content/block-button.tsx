@@ -125,6 +125,7 @@ const BlockButton = ({
     setMenuState(prev => ({
       ...prev,
       isSlashMenuOpen: true,
+      slashMenuOpenIndex: index,
     }));
   };
 
@@ -151,7 +152,7 @@ const BlockButton = ({
           </DropDown.Item>
         </DropDown.Menu>
       </DropDown>
-      {menuState.isSlashMenuOpen && (
+      {menuState.isSlashMenuOpen && menuState.slashMenuOpenIndex === index && (
         <SlashMenu
           index={index}
           blockList={blockList}

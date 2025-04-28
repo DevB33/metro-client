@@ -10,7 +10,6 @@ import handleMouseLeave from './_handler/handleMouseLeave';
 import BlockHTMLTag from './block-html-tag';
 import handleMouseDown from './_handler/handleMouseDown';
 import handleMouseMove from './_handler/handleMouseMove';
-import SlashMenu from './slash-menu';
 
 interface IBlockComponent {
   block: ITextBlock;
@@ -159,17 +158,6 @@ const Block = memo(
             );
           })}
         </BlockHTMLTag>
-        {menuState.isSlashMenuOpen && (
-          <SlashMenu
-            index={index}
-            blockList={blockList}
-            blockRef={blockRef}
-            setBlockList={setBlockList}
-            menuState={menuState}
-            setMenuState={setMenuState}
-            openedBySlashKey
-          />
-        )}
       </div>
     );
   },

@@ -103,6 +103,7 @@ const SlashMenu = ({
     setMenuState(prev => ({
       ...prev,
       isSlashMenuOpen: false,
+      slashMenuOpenIndex: null,
     }));
   });
 
@@ -119,6 +120,7 @@ const SlashMenu = ({
     setMenuState(prev => ({
       ...prev,
       isSlashMenuOpen: false,
+      slashMenuOpenIndex: null,
     }));
 
     setTimeout(() => {
@@ -140,8 +142,9 @@ const SlashMenu = ({
     setMenuState(prev => ({
       ...prev,
       isSlashMenuOpen: false,
+      slashMenuOpenIndex: null,
     }));
-    console.log('11231231231231');
+
     setTimeout(() => {
       if (blockList[index].type === 'ul' || blockList[index].type === 'ol') {
         (blockRef.current[index]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
@@ -173,7 +176,7 @@ const SlashMenu = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [selectedIndex, index, blockList, menuState.isSlashMenuOpen]);
 
-  return menuState.isSlashMenuOpen
+  return menuState.isSlashMenuOpen && menuState.slashMenuOpenIndex === index
     ? ReactDOM.createPortal(
         <div
           style={{ top: menuState.slashMenuPosition.y, left: menuState.slashMenuPosition.x }}
