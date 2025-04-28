@@ -11,15 +11,15 @@ import QuoteIcon from '@/icons/quote-icon';
 import TextIcon from '@/icons/text-icon';
 import ReactDOM from 'react-dom';
 import { useClickOutside } from '@/hooks/useClickOutside';
+import IMenuState from '@/types/menu-type';
 
 interface ISlashMenuProps {
-  position: { x: number; y: number };
   index: number;
   blockList: ITextBlock[];
   blockRef: React.RefObject<(HTMLDivElement | null)[]>;
   setBlockList: (blockList: ITextBlock[]) => void;
-  isSlashMenuOpen: boolean;
-  setIsSlashMenuOpen: (isSlashMenu: boolean) => void;
+  menuState: IMenuState;
+  setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>;
   openedBySlashKey: boolean;
 }
 
@@ -90,17 +90,21 @@ const MENU_ITEMS: {
 ];
 
 const SlashMenu = ({
-  position,
   index,
   blockList,
   blockRef,
   setBlockList,
-  isSlashMenuOpen,
-  setIsSlashMenuOpen,
+  menuState,
+  setMenuState,
   openedBySlashKey,
 }: ISlashMenuProps) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const slashMenuRef = useClickOutside(() => setIsSlashMenuOpen(false));
+  const slashMenuRef = useClickOutside(() => {
+    setMenuState(prev => ({
+      ...prev,
+      isSlashMenuOpen: false,
+    }));
+  });
 
   const makeBlock = (type: 'default' | 'h1' | 'h2' | 'h3' | 'ul' | 'ol' | 'quote') => {
     const newBlockList = [...blockList];
@@ -112,7 +116,10 @@ const SlashMenu = ({
     newBlockList.splice(index + 1, 0, newBlock);
     setBlockList(newBlockList);
 
-    setIsSlashMenuOpen(false);
+    setMenuState(prev => ({
+      ...prev,
+      isSlashMenuOpen: false,
+    }));
 
     setTimeout(() => {
       if (newBlockList[index + 1].type === 'ul' || newBlockList[index + 1].type === 'ol') {
@@ -130,7 +137,11 @@ const SlashMenu = ({
     newBlockList[index].type = type;
     setBlockList(newBlockList);
 
-    setIsSlashMenuOpen(false);
+    setMenuState(prev => ({
+      ...prev,
+      isSlashMenuOpen: false,
+    }));
+    console.log('11231231231231');
     setTimeout(() => {
       if (blockList[index].type === 'ul' || blockList[index].type === 'ol') {
         (blockRef.current[index]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
@@ -160,11 +171,15 @@ const SlashMenu = ({
     // TODO: 이벤트 리스너를 document말고 다른곳에 달기
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIndex, index, blockList, isSlashMenuOpen]);
+  }, [selectedIndex, index, blockList, menuState.isSlashMenuOpen]);
 
-  return isSlashMenuOpen
+  return menuState.isSlashMenuOpen
     ? ReactDOM.createPortal(
-        <div style={{ top: position.y, left: position.x }} className={menu} ref={slashMenuRef}>
+        <div
+          style={{ top: menuState.slashMenuPosition.y, left: menuState.slashMenuPosition.x }}
+          className={menu}
+          ref={slashMenuRef}
+        >
           <div className={menuTitle}>blocks</div>
           {MENU_ITEMS.map((item, i) => (
             <div

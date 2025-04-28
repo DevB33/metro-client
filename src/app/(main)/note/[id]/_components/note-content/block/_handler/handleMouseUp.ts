@@ -1,3 +1,4 @@
+import IMenuState from '@/types/menu-type';
 import ISelectionPosition from '@/types/selection-position';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 
@@ -6,8 +7,7 @@ const handleMouseUp = (
   index: number,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   selection: ISelectionPosition,
-  setIsSelectionMenuOpen: React.Dispatch<React.SetStateAction<boolean>>,
-  setSelectionMenuPosition: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>,
+  setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>,
 ) => {
   if (!blockRef.current || blockRef.current.length === 0) return;
 
@@ -123,10 +123,10 @@ const handleMouseUp = (
     }
   }
 
-  setSelectionMenuPosition({
-    x: left,
-    y: top,
-  });
+  setMenuState(prev => ({
+    ...prev,
+    selectionMenuPosition: { x: left, y: top },
+  }));
 
   // selection이 없을 때, 다른 곳 클릭시 메뉴 닫기
   if (
@@ -135,11 +135,17 @@ const handleMouseUp = (
       selection.start.offset === finalSelectionEndPosition.offset) ||
     selection.start.childNodeIndex === -1
   ) {
-    setIsSelectionMenuOpen(false);
+    setMenuState(prev => ({
+      ...prev,
+      isSelectionMenuOpen: false,
+    }));
     return;
   }
 
-  setIsSelectionMenuOpen(true);
+  setMenuState(prev => ({
+    ...prev,
+    isSelectionMenuOpen: true,
+  }));
 };
 
 export default handleMouseUp;

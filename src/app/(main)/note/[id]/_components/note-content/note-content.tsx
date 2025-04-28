@@ -8,6 +8,7 @@ import { ITextBlock } from '@/types/block-type';
 import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundImage';
 import ISelectionPosition from '@/types/selection-position';
 import BUTTON_OFFSET from '@/constants/button-offset';
+import IMenuState from '@/types/menu-type';
 import Block from './block/block';
 import BlockButton from './block-button';
 import SelectionMenu from './block/selection-menu';
@@ -67,11 +68,12 @@ const NoteContent = () => {
     end: { blockIndex: 0, childNodeIndex: 0, offset: 0 },
   });
 
-  const [isSlashMenuOpen, setIsSlashMenuOpen] = useState<boolean>(false);
-  const [slashMenuPosition, setSlashMenuPosition] = useState({ x: 0, y: 0 });
-
-  const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(true);
-  const [selectionMenuPosition, setSelectionMenuPosition] = useState({ x: 0, y: 0 });
+  const [menuState, setMenuState] = useState<IMenuState>({
+    isSlashMenuOpen: false,
+    isSelectionMenuOpen: false,
+    slashMenuPosition: { x: 0, y: 0 },
+    selectionMenuPosition: { x: 0, y: 0 },
+  });
 
   const [isBlockMenuOpen, setIsBlockMenuOpen] = useState(false);
   const isSelection = useRef(false);
@@ -239,21 +241,27 @@ const NoteContent = () => {
       }
     }
 
-    setSelectionMenuPosition({
-      x: left,
-      y: top,
-    });
-  }, [selection.start, selection.end]);
+    setMenuState(prev => ({
+      ...prev,
+      selectionMenuPosition: {
+        x: left,
+        y: top,
+      },
+    }));
+  }, [selection]);
 
   useEffect(() => {
-    setIsSlashMenuOpen(false);
+    setMenuState(prev => ({
+      ...prev,
+      isSlashMenuOpen: false,
+    }));
   }, []);
 
-  // isSlashMenuOpen 상태에 따라 스크롤 막기
+  // menuState.isSlashMenuOpen 상태에 따라 스크롤 막기
   useEffect(() => {
     const grandParent = noteRef.current?.parentElement?.parentElement;
     if (!grandParent) return;
-    const isAnyMenuOpen = isSlashMenuOpen;
+    const isAnyMenuOpen = menuState.isSlashMenuOpen;
     if (isAnyMenuOpen) {
       grandParent.style.overflowY = 'hidden';
     } else {
@@ -263,7 +271,7 @@ const NoteContent = () => {
     return () => {
       grandParent.style.overflow = '';
     };
-  }, [isSlashMenuOpen]);
+  }, [menuState.isSlashMenuOpen]);
 
   const isDraggingRef = useRef(false);
 
@@ -276,7 +284,11 @@ const NoteContent = () => {
       }
       setIsDragging(false);
       isDraggingRef.current = false;
-      if (isSelection.current) setIsSelectionMenuOpen(true);
+      if (isSelection.current)
+        setMenuState(prev => ({
+          ...prev,
+          isSelectionMenuOpen: true,
+        }));
     };
 
     const handleOutsideMouseDown = (event: MouseEvent) => {
@@ -553,6 +565,10 @@ const NoteContent = () => {
     });
   }, [key, blockList]);
 
+  useEffect(() => {
+    console.log(menuState);
+  }, [menuState]);
+
   return (
     <div style={{ pointerEvents: 'none' }}>
       <div
@@ -560,8 +576,18 @@ const NoteContent = () => {
         tabIndex={0}
         key={key}
         ref={noteRef}
-        onMouseDown={() => setIsSelectionMenuOpen(false)}
-        onKeyDown={() => setIsSelectionMenuOpen(false)}
+        onMouseDown={() =>
+          setMenuState(prev => ({
+            ...prev,
+            isSelectionMenuOpen: false,
+          }))
+        }
+        onKeyDown={() =>
+          setMenuState(prev => ({
+            ...prev,
+            isSelectionMenuOpen: false,
+          }))
+        }
       >
         {blockList.map((block, index) => (
           <div
@@ -576,9 +602,7 @@ const NoteContent = () => {
             onMouseLeave={() => handleMouseLeave(index)}
             onKeyDown={() => handleMouseLeave(index)}
             onMouseMove={() => handleMouseEnter(index)}
-            onMouseUp={event =>
-              handleMouseUp(event, index, blockRef, selection, setIsSelectionMenuOpen, setSelectionMenuPosition)
-            }
+            onMouseUp={event => handleMouseUp(event, index, blockRef, selection, setMenuState)}
           >
             <div
               className={fakeBox}
@@ -607,6 +631,8 @@ const NoteContent = () => {
                   blockRef={blockRef}
                   setDragBlockIndex={setDragBlockIndex}
                   setIsTyping={setIsTyping}
+                  menuState={menuState}
+                  setMenuState={setMenuState}
                 />
               </div>
             </div>
@@ -625,26 +651,23 @@ const NoteContent = () => {
               setIsUp={setIsUp}
               selection={selection}
               setSelection={setSelection}
-              isSlashMenuOpen={isSlashMenuOpen}
-              setIsSlashMenuOpen={setIsSlashMenuOpen}
-              slashMenuPosition={slashMenuPosition}
-              setSlashMenuPosition={setSlashMenuPosition}
+              menuState={menuState}
+              setMenuState={setMenuState}
               dragBlockIndex={dragBlockIndex}
-              isSelectionMenuOpen={isSelectionMenuOpen}
             />
           </div>
         ))}
       </div>
-      {isSelectionMenuOpen && (
+      {menuState.isSelectionMenuOpen && (
         <div ref={selectionMenuRef}>
           <SelectionMenu
-            position={selectionMenuPosition}
             setKey={setKey}
             selection={selection}
             blockList={blockList}
             setBlockList={setBlockList}
             blockRef={blockRef}
-            setIsSelectionMenuOpen={setIsSelectionMenuOpen}
+            menuState={menuState}
+            setMenuState={setMenuState}
             resetSelection={resetSelection}
           />
         </div>

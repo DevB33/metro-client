@@ -2,6 +2,7 @@ import { ITextBlock } from '@/types/block-type';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import keyName from '@/constants/key-name';
 import ISelectionPosition from '@/types/selection-position';
+import IMenuState from '@/types/menu-type';
 import selectionDelete from '../selectionDelete';
 import selectionEnter from '../selectionEnter';
 import selectionWrite from '../selectionWrite';
@@ -480,10 +481,12 @@ const mergeLine = (
 const openSlashMenu = (
   index: number,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
-  setIsSlashMenuOpen: (isSlashMenuOpen: boolean) => void,
-  setSlashMenuPosition: (position: { x: number; y: number }) => void,
+  setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>,
 ) => {
-  setIsSlashMenuOpen(true);
+  setMenuState(prev => ({
+    ...prev,
+    isSlashMenuOpen: false,
+  }));
 
   // 메뉴 띄울 슬래시 위치 받아오기
   const { range } = getSelectionInfo(0) || {};
@@ -497,10 +500,13 @@ const openSlashMenu = (
   }
 
   if (rect) {
-    setSlashMenuPosition({
-      x: rect.left,
-      y: rect.top - 282,
-    });
+    setMenuState(prev => ({
+      ...prev,
+      slashMenuPosition: {
+        x: rect.left,
+        y: rect.top - 282,
+      },
+    }));
   }
 };
 
@@ -577,13 +583,12 @@ const handleKeyDown = (
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   setIsTyping: (isTyping: boolean) => void,
   setKey: (key: number) => void,
-  setIsSlashMenuOpen: (isSlashMenuOpen: boolean) => void,
-  setSlashMenuPosition: (position: { x: number; y: number }) => void,
-  isSelectionMenuOpen: boolean,
+  menuState: IMenuState,
+  setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>,
   selection: ISelectionPosition,
 ) => {
   // selection 없을때
-  if (!isSelectionMenuOpen) {
+  if (!menuState.isSelectionMenuOpen) {
     if (
       event.shiftKey &&
       (event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowRight')
@@ -610,7 +615,7 @@ const handleKeyDown = (
     }
 
     // 일반 backspace 클릭
-    if (event.key === keyName.backspace && !isSelectionMenuOpen) {
+    if (event.key === keyName.backspace && !menuState.isSelectionMenuOpen) {
       const { startOffset, startContainer } = getSelectionInfo(0) || {};
       if (startOffset === undefined || startOffset === null || !startContainer) return;
 
@@ -835,7 +840,7 @@ const handleKeyDown = (
       event.preventDefault();
       setIsTyping(false);
       setKey(Math.random());
-      openSlashMenu(index, blockRef, setIsSlashMenuOpen, setSlashMenuPosition);
+      openSlashMenu(index, blockRef, setMenuState);
     }
 
     // 방향키 클릭
@@ -937,7 +942,7 @@ const handleKeyDown = (
   }
 
   // selection 있을때
-  if (isSelectionMenuOpen) {
+  if (menuState.isSelectionMenuOpen) {
     event.preventDefault();
     setIsTyping(false);
     setKey(Math.random());

@@ -7,6 +7,7 @@ import DropDown from '@/components/dropdown/dropdown';
 import TrashIcon from '@/icons/trash-icon';
 import ArrowReapeatIcon from '@/icons/arrow-repeat-icon';
 import { ITextBlock } from '@/types/block-type';
+import IMenuState from '@/types/menu-type';
 import SlashMenu from './block/slash-menu';
 import GhostBlock from './block/ghost-block';
 
@@ -22,6 +23,8 @@ interface IBlockButton {
   blockList: ITextBlock[];
   setBlockList: (blockList: ITextBlock[]) => void;
   blockRef: React.RefObject<(HTMLDivElement | null)[]>;
+  menuState: IMenuState;
+  setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>;
 }
 
 const blockBtnContainer = css({
@@ -66,10 +69,10 @@ const BlockButton = ({
   blockRef,
   setDragBlockIndex,
   setIsTyping,
+  menuState,
+  setMenuState,
 }: IBlockButton) => {
   const [isblockButtonModalOpen, setIsblockButtonModalOpen] = useState(false);
-  const [isSlashMenuOpen, setIsSlashMenuOpen] = useState(false);
-  const [slashMenuPosition, setSlashMenuPosition] = useState({ x: 0, y: 0 });
 
   const buttonRef = useRef<HTMLDivElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
@@ -111,13 +114,18 @@ const BlockButton = ({
   const handleChange = () => {
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      setSlashMenuPosition({
-        x: rect.left + 20,
-        y: rect.top,
-      });
+      setMenuState(prev => ({
+        ...prev,
+        slashMenuPosition: {
+          x: rect.left + 20,
+          y: rect.top,
+        },
+      }));
     }
-
-    setIsSlashMenuOpen(true);
+    setMenuState(prev => ({
+      ...prev,
+      isSlashMenuOpen: true,
+    }));
   };
 
   return (
@@ -143,15 +151,14 @@ const BlockButton = ({
           </DropDown.Item>
         </DropDown.Menu>
       </DropDown>
-      {isSlashMenuOpen && (
+      {menuState.isSlashMenuOpen && (
         <SlashMenu
-          position={slashMenuPosition}
           index={index}
           blockList={blockList}
           blockRef={blockRef}
           setBlockList={setBlockList}
-          isSlashMenuOpen={isSlashMenuOpen}
-          setIsSlashMenuOpen={setIsSlashMenuOpen}
+          menuState={menuState}
+          setMenuState={setMenuState}
           openedBySlashKey={false}
         />
       )}

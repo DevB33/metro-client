@@ -3,6 +3,7 @@ import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
 import ISelectionPosition from '@/types/selection-position';
+import IMenuState from '@/types/menu-type';
 import handleInput from './_handler/handleInput';
 import handleKeyDown from './_handler/handleKeyDown';
 import handleMouseLeave from './_handler/handleMouseLeave';
@@ -26,12 +27,9 @@ interface IBlockComponent {
   setIsUp: React.Dispatch<React.SetStateAction<boolean>>;
   selection: ISelectionPosition;
   setSelection: React.Dispatch<React.SetStateAction<ISelectionPosition>>;
-  isSlashMenuOpen: boolean;
-  setIsSlashMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  slashMenuPosition: { x: number; y: number };
-  setSlashMenuPosition: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
+  menuState: IMenuState;
+  setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>;
   dragBlockIndex: number | null;
-  isSelectionMenuOpen: boolean;
 }
 
 const blockDiv = css({
@@ -64,12 +62,9 @@ const Block = memo(
     setIsUp,
     selection,
     setSelection,
-    isSlashMenuOpen,
-    setIsSlashMenuOpen,
-    slashMenuPosition,
-    setSlashMenuPosition,
+    menuState,
+    setMenuState,
     dragBlockIndex,
-    isSelectionMenuOpen,
   }: IBlockComponent) => {
     const prevChildNodesLength = useRef(0);
     const prevClientY = useRef(0);
@@ -103,9 +98,8 @@ const Block = memo(
             blockRef,
             setIsTyping,
             setKey,
-            setIsSlashMenuOpen,
-            setSlashMenuPosition,
-            isSelectionMenuOpen,
+            menuState,
+            setMenuState,
             selection,
           )
         }
@@ -165,15 +159,14 @@ const Block = memo(
             );
           })}
         </BlockHTMLTag>
-        {isSlashMenuOpen && (
+        {menuState.isSlashMenuOpen && (
           <SlashMenu
-            position={slashMenuPosition}
             index={index}
             blockList={blockList}
             blockRef={blockRef}
             setBlockList={setBlockList}
-            isSlashMenuOpen={isSlashMenuOpen}
-            setIsSlashMenuOpen={setIsSlashMenuOpen}
+            menuState={menuState}
+            setMenuState={setMenuState}
             openedBySlashKey
           />
         )}
