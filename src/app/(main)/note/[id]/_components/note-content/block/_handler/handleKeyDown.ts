@@ -5,6 +5,7 @@ import ISelectionPosition from '@/types/selection-position';
 import IMenuState from '@/types/menu-type';
 import editSelectionContent from '../_selection/editSelectionContent';
 
+// 현재 블록의 맨 앞에 focus
 const focusCurrentBlock = (
   index: number,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
@@ -337,6 +338,7 @@ const splitLine = (
     setBlockList(updatedBlockList);
   }
 
+  // 줄 바꿈 후 focus를 바뀐줄 맨 앞에 주는 로직
   setTimeout(() => {
     const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
     const range = document.createRange();
@@ -394,6 +396,7 @@ const mergeBlock = (
 
   setBlockList(updatedBlockList);
 
+  // 블록을 합친 뒤 합친 블록 사이에 focus를 주는 로직
   const range = document.createRange();
   setTimeout(() => {
     if (range) {
@@ -406,19 +409,22 @@ const mergeBlock = (
         (currentBlock.children[0].type === 'text' || 'span') &&
         currentBlock.children[0].content === ''
       ) {
-        // 빈 블록에서 빈븍록이 아닌 블록으로 합쳐질 때
+        // 빈 블록에서 빈블록이 아닌 블록으로 합쳐질 때
         if (afterBlock?.childNodes[previousBlockLength - 1].nodeName === 'SPAN') {
+          // span일 때는 span의 자식인 textNode로 range 설정
           range?.setStart(
             afterBlock?.childNodes[previousBlockLength - 1].firstChild as Node,
             afterBlock?.childNodes[previousBlockLength - 1].textContent?.length as number,
           );
         } else {
+          // textNode일 때는 textNode 자신으로 range 설정
           range?.setStart(
             afterBlock?.childNodes[previousBlockLength - 1] as Node,
             afterBlock?.childNodes[previousBlockLength - 1].textContent?.length as number,
           );
         }
       } else {
+        // 빈 블록에서 빈블록이 아닌 블록으로 합쳐질 때를 제외한 나머지
         // 이전 블록이 빈 블록이면 합쳐지면서 child가 사라져서 previousBlockLength - 1을 해줌
         range?.setStart(
           afterBlock?.childNodes[
@@ -449,14 +455,18 @@ const mergeLine = (
 
   setBlockList(updatedBlockList);
 
+  // 줄이 합쳐질 때 이전 합친 줄 사이에 focus를 주는 로직
   setTimeout(() => {
     const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
     const range = document.createRange();
 
+    //  TODO: 중복 줄바꿈인 상태일 때인데 지금 이상한 상태여서 수정해야함
     if (newChildNodes[currentChildNodeIndex - 2]?.nodeName === 'BR' || currentChildNodeIndex === 1) {
       range.setStart(newChildNodes[currentChildNodeIndex - 1], 0);
     }
 
+    // a줄 <br> b줄 인 상황에서 b줄에서 백스페이스를 누르면 포커스가 a줄 맨 마지막 노드의 맨 마지막 offset으로 focus
+    // b줄의 맨 앞이 currentChildNodeIndex일 때 <br>은 currentChildNodeIndex - 1, a줄의 맨 마지막 노드는 currentChildNodeIndex - 2
     if (newChildNodes[currentChildNodeIndex - 2].nodeName === 'SPAN') {
       range.setStart(
         newChildNodes[currentChildNodeIndex - 2].firstChild as Node,
@@ -676,20 +686,22 @@ const handleKeyDown = (
 
           setBlockList(updatedBlockList);
 
+          // 한 줄이 다 지워진 상태에서의 줄 합치기 일때 focus를 주는 로직
           setTimeout(() => {
             const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
             const range = document.createRange();
 
-            if (blockRef.current[index]?.childNodes[startOffset - 1]) {
+            // 한줄이 다 지워졌을때는 startContainer가 부모로 잡히기 때문에 현재 위치를 startOffset으로 알 수 있음
+            // 따라서 줄이 지워질 때 startOffset - 1인 노드에 마지막에 focus
+            // 빈 줄이 2개만 있을 때 두 번째 줄에서 첫 번째 줄로 합치면 newChildNodes[startOffset - 1] 이 undefined가 됨
+            // 따라서 undefined일 때는 블록의 내용이 모두 지워졌을 때 이므로 현재 block에 focus
+            if (newChildNodes[startOffset - 1]) {
               range.setStart(
                 newChildNodes[startOffset - 1],
                 newChildNodes[startOffset - 1].textContent?.length as number,
               );
             } else {
-              range.setStart(
-                newChildNodes[startOffset - 2],
-                newChildNodes[startOffset - 2].textContent?.length as number,
-              );
+              focusCurrentBlock(index, blockRef, blockList);
             }
             const windowSelection = window.getSelection();
 
@@ -858,8 +870,10 @@ const handleKeyDown = (
       // 이전 블록으로 커서 이동
       if (event.key === keyName.arrowUp && index > 0) {
         event.preventDefault();
+        // 현재 위치에서 y좌표만 위로 10 높은 곳에 focus
         const caret = document.caretPositionFromPoint(cursorX, rect.top - 10) as CaretPosition;
         if (blockList[index].children.length === 1 && blockList[index].children[0].content === '') {
+          // 빈 블록으로 갈때는 그냥 그 블록에 focus
           focusCurrentBlock(index - 1, blockRef, blockList);
         } else {
           setTimeout(() => {
@@ -880,8 +894,10 @@ const handleKeyDown = (
       // 다음 블록으로 커서 이동
       if (event.key === keyName.arrowDown && index < blockList.length - 1) {
         event.preventDefault();
+        // 현재 위치에서 y좌표만 아래로 10 낮은 곳에 focus
         const caret = document.caretPositionFromPoint(cursorX, rect.bottom + 10) as CaretPosition;
         if (blockList[index].children.length === 1 && blockList[index].children[0].content === '') {
+          // 빈 블록으로 갈때는 그냥 그 블록에 focus
           focusCurrentBlock(index + 1, blockRef, blockList);
         } else {
           setTimeout(() => {

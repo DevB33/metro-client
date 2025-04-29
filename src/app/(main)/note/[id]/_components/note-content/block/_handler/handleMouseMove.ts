@@ -58,6 +58,7 @@ const handleMouseMove = (
   const { startOffset } = getSelectionInfo(0) || {};
   const charIdx = document.caretPositionFromPoint(event.clientX, event.clientY)?.offset as number;
 
+  // 셀렉션이 만들어 질 때 기본 셀렉션 지우기
   if (startOffset !== undefined && charIdx !== startOffset) {
     const windowSelection = window.getSelection();
     if (windowSelection) windowSelection.removeAllRanges();

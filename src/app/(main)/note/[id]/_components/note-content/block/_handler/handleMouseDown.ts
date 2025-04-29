@@ -34,6 +34,7 @@ const handleMouseDown = (
 
   setTimeout(() => {
     // 빈 블록일 때 클릭 한 블록에 focus
+    // block의 타입마다 blockRef의 깊이가 달라서 type에 맞게 focus
     if (blockList[index].children.length === 1 && blockList[index].children[0].content === '') {
       if (blockList[index].type === 'ul' || blockList[index].type === 'ol') {
         (blockRef.current[index]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
@@ -57,8 +58,6 @@ const handleMouseDown = (
       } else if (targetNode.firstChild && targetNode.firstChild.nodeType === Node.TEXT_NODE) {
         // span 같은 엘리먼트 노드에 텍스트가 있을 경우
         range.setStart(targetNode.firstChild, charIdx);
-      } else {
-        range.setStart(targetNode, 0);
       }
 
       selection?.removeAllRanges();
