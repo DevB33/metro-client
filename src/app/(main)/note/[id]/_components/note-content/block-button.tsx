@@ -7,14 +7,13 @@ import DropDown from '@/components/dropdown/dropdown';
 import TrashIcon from '@/icons/trash-icon';
 import ArrowReapeatIcon from '@/icons/arrow-repeat-icon';
 import { ITextBlock } from '@/types/block-type';
+import IMenuState from '@/types/menu-type';
 import SlashMenu from './block/_slash/slash-menu';
 import GhostBlock from './block/_ghost-block/ghost-block';
 
 interface IBlockButton {
   OpenBlockMenu: () => void;
   CloseBlockMenu: () => void;
-  deleteBlockByIndex: (indexToDelete: number) => void;
-  createBlock: (index: number) => void;
   index: number;
   block: ITextBlock;
   setDragBlockIndex: React.Dispatch<React.SetStateAction<number | null>>;
@@ -22,6 +21,9 @@ interface IBlockButton {
   blockList: ITextBlock[];
   setBlockList: (blockList: ITextBlock[]) => void;
   blockRef: React.RefObject<(HTMLDivElement | null)[]>;
+  menuState: IMenuState;
+  setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>;
+  setKey: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const blockBtnContainer = css({
@@ -57,8 +59,6 @@ const deleteBtn = css({
 const BlockButton = ({
   OpenBlockMenu,
   CloseBlockMenu,
-  deleteBlockByIndex,
-  createBlock,
   index,
   block,
   blockList,
@@ -66,10 +66,11 @@ const BlockButton = ({
   blockRef,
   setDragBlockIndex,
   setIsTyping,
+  menuState,
+  setMenuState,
+  setKey,
 }: IBlockButton) => {
   const [isblockButtonModalOpen, setIsblockButtonModalOpen] = useState(false);
-  const [isSlashMenuOpen, setIsSlashMenuOpen] = useState(false);
-  const [slashMenuPosition, setSlashMenuPosition] = useState({ x: 0, y: 0 });
 
   const buttonRef = useRef<HTMLDivElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
@@ -84,6 +85,34 @@ const BlockButton = ({
 
       event.dataTransfer.setDragImage(ghost, 10, 10);
     }
+  };
+
+  const deleteBlockByIndex = (indexToDelete: number) => {
+    if (blockList.length === 1) return;
+    const newBlockList = blockList.filter((_, idx) => idx !== indexToDelete);
+    setBlockList(newBlockList);
+    setKey(Math.random());
+  };
+
+  const createBlock = (blockIndex: number) => {
+    const newBlock: ITextBlock = {
+      id: Date.now(), // 고유 ID
+      type: 'default',
+      children: [
+        {
+          type: 'text',
+          content: '',
+        },
+      ],
+    };
+
+    const newList = [...blockList];
+    newList.splice(blockIndex + 1, 0, newBlock);
+    setBlockList(newList);
+
+    setTimeout(() => {
+      (blockRef.current[blockIndex + 1]?.parentNode as HTMLElement)?.focus();
+    }, 0);
   };
 
   const handleClose = () => {
@@ -111,13 +140,19 @@ const BlockButton = ({
   const handleChange = () => {
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      setSlashMenuPosition({
-        x: rect.left + 20,
-        y: rect.top,
-      });
+      setMenuState(prev => ({
+        ...prev,
+        slashMenuPosition: {
+          x: rect.left + 20,
+          y: rect.top,
+        },
+      }));
     }
-
-    setIsSlashMenuOpen(true);
+    setMenuState(prev => ({
+      ...prev,
+      isSlashMenuOpen: true,
+      slashMenuOpenIndex: index,
+    }));
   };
 
   return (
@@ -143,15 +178,14 @@ const BlockButton = ({
           </DropDown.Item>
         </DropDown.Menu>
       </DropDown>
-      {isSlashMenuOpen && (
+      {menuState.isSlashMenuOpen && menuState.slashMenuOpenIndex === index && (
         <SlashMenu
-          position={slashMenuPosition}
           index={index}
           blockList={blockList}
           blockRef={blockRef}
           setBlockList={setBlockList}
-          isSlashMenuOpen={isSlashMenuOpen}
-          setIsSlashMenuOpen={setIsSlashMenuOpen}
+          menuState={menuState}
+          setMenuState={setMenuState}
           openedBySlashKey={false}
         />
       )}

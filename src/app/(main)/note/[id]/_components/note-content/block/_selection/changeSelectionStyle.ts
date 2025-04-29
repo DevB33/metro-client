@@ -78,8 +78,7 @@ const defaultStyle = {
 
 const changeSelectionStyle = (
   type: string,
-  selectionStartPosition: ISelectionPosition,
-  selectionEndPosition: ISelectionPosition,
+  selection: ISelectionPosition,
   blockList: ITextBlock[],
   setBlockList: (blockList: ITextBlock[]) => void,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
@@ -91,20 +90,20 @@ const changeSelectionStyle = (
     blockIndex: startBlockIndex,
     childNodeIndex: startNodeIndex,
     offset: startOffset,
-  } = selectionStartPosition.blockIndex < selectionEndPosition.blockIndex ||
-  (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex &&
-    selectionStartPosition.childNodeIndex <= selectionEndPosition.childNodeIndex)
-    ? selectionStartPosition
-    : selectionEndPosition;
+  } = selection.start.blockIndex < selection.end.blockIndex ||
+  (selection.start.blockIndex === selection.end.blockIndex &&
+    selection.start.childNodeIndex <= selection.end.childNodeIndex)
+    ? selection.start
+    : selection.end;
   const {
     blockIndex: endBlockIndex,
     childNodeIndex: endNodeIndex,
     offset: endOffset,
-  } = selectionStartPosition.blockIndex < selectionEndPosition.blockIndex ||
-  (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex &&
-    selectionStartPosition.childNodeIndex <= selectionEndPosition.childNodeIndex)
-    ? selectionEndPosition
-    : selectionStartPosition;
+  } = selection.start.blockIndex < selection.end.blockIndex ||
+  (selection.start.blockIndex === selection.end.blockIndex &&
+    selection.start.childNodeIndex <= selection.end.childNodeIndex)
+    ? selection.end
+    : selection.start;
 
   const newBlockList = [...blockList];
 

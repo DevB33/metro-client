@@ -9,8 +9,7 @@ const handleMouseDown = (
   setIsDragging: React.Dispatch<React.SetStateAction<boolean>>,
   setIsTyping: React.Dispatch<React.SetStateAction<boolean>>,
   setKey: React.Dispatch<React.SetStateAction<number>>,
-  setSelectionStartPosition: React.Dispatch<React.SetStateAction<ISelectionPosition>>,
-  setSelectionEndPosition: React.Dispatch<React.SetStateAction<ISelectionPosition>>,
+  setSelection: React.Dispatch<React.SetStateAction<ISelectionPosition>>,
 ) => {
   const parent = blockRef.current[index];
   const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
@@ -28,16 +27,9 @@ const handleMouseDown = (
   const range = document.createRange();
   const charIdx = document.caretPositionFromPoint(event.clientX, event.clientY)?.offset as number;
 
-  setSelectionStartPosition({
-    blockIndex: index,
-    childNodeIndex: currentChildNodeIndex,
-    offset: charIdx,
-  });
-
-  setSelectionEndPosition({
-    blockIndex: index,
-    childNodeIndex: currentChildNodeIndex,
-    offset: charIdx,
+  setSelection({
+    start: { blockIndex: index, childNodeIndex: currentChildNodeIndex, offset: charIdx },
+    end: { blockIndex: index, childNodeIndex: currentChildNodeIndex, offset: charIdx },
   });
 
   setTimeout(() => {

@@ -6,7 +6,7 @@ const placeholder = {
   li: '리스트',
   quote: '비어 있는 인용',
   noteTitle: '새 페이지',
-  searchModal: 'Search Page or Keyword',
+  searchModal: 'Search Note or Keyword',
 };
 
 export default placeholder;

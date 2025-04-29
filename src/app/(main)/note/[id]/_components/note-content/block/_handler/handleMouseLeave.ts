@@ -25,22 +25,29 @@ const handleMouseLeave = (
   isDragging: boolean,
   isUp: boolean,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
-  selectionStartPosition: ISelectionPosition,
-  selectionEndPosition: ISelectionPosition,
-  setSelectionEndPosition: React.Dispatch<React.SetStateAction<ISelectionPosition>>,
+  selection: ISelectionPosition,
+  setSelection: React.Dispatch<React.SetStateAction<ISelectionPosition>>,
 ) => {
   if (!isDragging) return;
-  const selection = window.getSelection();
-  if (selection) selection.removeAllRanges();
+  const windowSelection = window.getSelection();
+  if (windowSelection) windowSelection.removeAllRanges();
 
-  const fakeBox = document.getElementById('fakeBox');
+  const fillBackgroundNode = (left: number, right: number, idx: number) => {
+    const blockElement = blockRef.current[idx];
+    const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+
+    if (!blockElement) return;
+    fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+  };
+
+  const fakeBox = document.getElementById(`fakeBox-${index}`);
 
   const parent = blockRef.current[index];
   const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
   const textLength = parent?.textContent?.length || 0;
 
   // 시작 블록에서 떠날 때
-  if (index === selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex) {
+  if (index === selection.start.blockIndex && index === selection.end.blockIndex) {
     let left = 99999;
     let right = 0;
 
@@ -53,129 +60,117 @@ const handleMouseLeave = (
     if (!isUp) {
       childNodes.forEach((childNode, idx) => {
         // 시작 노드보다 뒤에 있는 노드일 때
-        if (idx > selectionStartPosition.childNodeIndex) {
+        if (idx > selection.start.childNodeIndex) {
           const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
           left = Math.min(left, rect.left);
           right = Math.max(right, rect.right);
         }
 
         // 시작 노드일 때
-        if (idx === selectionStartPosition.childNodeIndex) {
+        if (idx === selection.start.childNodeIndex) {
           const rect = getNodeBounds(
             childNode as Node,
-            selectionStartPosition.offset,
+            selection.start.offset,
             childNode.textContent?.length as number,
           );
           left = Math.min(left, rect.left);
           right = Math.max(right, rect.right);
         }
         if (idx === childNodes.length - 1) {
-          setSelectionEndPosition((prev: ISelectionPosition) => ({
+          setSelection(prev => ({
             ...prev,
-            childNodeIndex: idx,
-            offset: childNode.textContent?.length || 0,
+            end: { ...prev.end, childNodeIndex: idx, offset: childNode.textContent?.length || 0 },
           }));
         }
       });
-      setSelectionEndPosition((prev: ISelectionPosition) => ({
+      setSelection(prev => ({
         ...prev,
-        offset: textLength,
+        end: { ...prev.end, offset: textLength },
       }));
+      fillBackgroundNode(left, right, index);
     }
 
     // 위로 떠날 때
     if (isUp) {
       childNodes.forEach((childNode, idx) => {
         // 시작 노드보다 앞에 있는 노드일 때
-        if (idx < selectionStartPosition.childNodeIndex) {
+        if (idx < selection.start.childNodeIndex) {
           const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
           left = Math.min(left, rect.left);
           right = Math.max(right, rect.right);
         }
 
         // 시작 노드일 때
-        if (idx === selectionStartPosition.childNodeIndex) {
-          const rect = getNodeBounds(childNode as Node, 0, selectionStartPosition.offset);
+        if (idx === selection.start.childNodeIndex) {
+          const rect = getNodeBounds(childNode as Node, 0, selection.start.offset);
           left = Math.min(left, rect.left);
           right = Math.max(right, rect.right);
         }
       });
-      setSelectionEndPosition((prev: ISelectionPosition) => ({
+      setSelection(prev => ({
         ...prev,
-        childNodeIndex: 0,
-        offset: 0,
+        end: { ...prev.end, childNodeIndex: 0, offset: 0 },
       }));
     }
 
-    const blockElement = blockRef.current[index];
-    const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
-    if (!blockElement) return;
-    fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+    fillBackgroundNode(left, right, index);
   }
 
   // 아래로 드래그한 상태에서 블록을 떠날 때
-  if (selectionStartPosition.blockIndex < selectionEndPosition.blockIndex) {
+  if (selection.start.blockIndex < selection.end.blockIndex) {
     let left = 99999;
     let right = 0;
 
     // 위로 드래그 할 때
-    if (index !== selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex && isUp) {
+    if (index !== selection.start.blockIndex && index === selection.end.blockIndex && isUp) {
       const el = blockRef.current[index];
       if (!el) return;
       el.style.backgroundImage = `none`;
     }
 
     // 아래로 드래그 할 때
-    if (index !== selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex && !isUp) {
+    if (index !== selection.start.blockIndex && index === selection.end.blockIndex && !isUp) {
       childNodes.forEach((childNode, idx) => {
         const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
         left = Math.min(left, rect.left);
         right = Math.max(right, rect.right);
         if (idx === childNodes.length - 1) {
-          setSelectionEndPosition((prev: ISelectionPosition) => ({
+          setSelection(prev => ({
             ...prev,
-            childNodeIndex: idx,
-            offset: childNode.textContent?.length || 0,
+            end: { ...prev.end, childNodeIndex: idx, offset: childNode.textContent?.length || 0 },
           }));
         }
       });
-      const blockElement = blockRef.current[index];
-      const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
-      if (!blockElement) return;
-      fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
-      setSelectionEndPosition((prev: ISelectionPosition) => ({
+      fillBackgroundNode(left, right, index);
+      setSelection(prev => ({
         ...prev,
-        offset: textLength,
+        end: { ...prev.end, offset: textLength },
       }));
     }
   }
 
   // 위로 드래그한 상태에서 블록을 떠날 때
-  if (selectionStartPosition.blockIndex > selectionEndPosition.blockIndex) {
+  if (selection.start.blockIndex > selection.end.blockIndex) {
     let left = 99999;
     let right = 0;
     // 아래로 드래그 할 때
-    if (index !== selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex && !isUp) {
+    if (index !== selection.start.blockIndex && index === selection.end.blockIndex && !isUp) {
       const el = blockRef.current[index];
       if (!el) return;
       el.style.backgroundImage = `none`;
     }
 
     // 위로 드래그 할 때
-    if (index !== selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex && isUp) {
+    if (index !== selection.start.blockIndex && index === selection.end.blockIndex && isUp) {
       childNodes.forEach(childNode => {
         const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
         left = Math.min(left, rect.left);
         right = Math.max(right, rect.right);
       });
-      const blockElement = blockRef.current[index];
-      const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
-      if (!blockElement) return;
-      fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
-      setSelectionEndPosition((prev: ISelectionPosition) => ({
+      fillBackgroundNode(left, right, index);
+      setSelection(prev => ({
         ...prev,
-        childNodeIndex: 0,
-        offset: 0,
+        end: { ...prev.end, childNodeIndex: 0, offset: 0 },
       }));
     }
   }

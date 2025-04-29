@@ -1,6 +1,6 @@
 import { css } from '@/../styled-system/css';
 
-import IPageType from '@/types/page-type';
+import INotes from '@/types/note-type';
 import PageIcon from '@/icons/page-icon';
 
 const searchBar = css({
@@ -40,12 +40,12 @@ const pagePath = css({
   color: 'gray',
 });
 
-const SearchBar = ({ page }: { page: IPageType }) => {
+const SearchBar = ({ note }: { note: INotes }) => {
   return (
     <div className={searchBar}>
-      <div className={pageIcon}>{page.icon ? `${page.icon}` : <PageIcon />}</div>
-      <div className={pageTitle}>{page.title}</div>
-      <div className={pagePath}>page/경로/page</div>
+      <div className={pageIcon}>{note.icon ? `${note.icon}` : <PageIcon />}</div>
+      <div className={pageTitle}>{note.title}</div>
+      <div className={pagePath}>note/경로/note</div>
     </div>
   );
 };

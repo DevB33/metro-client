@@ -20,7 +20,7 @@ const finderCard = css({
   boxShadow: 'sidebar',
 });
 
-const pageItem = css({
+const noteItem = css({
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'center',
@@ -39,13 +39,13 @@ const pageItem = css({
   },
 });
 
-const pageButtonContainer = css({
+const noteButtonContainer = css({
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'center',
 });
 
-const pageButton = css({
+const noteButton = css({
   borderRadius: '0.25rem',
   cursor: 'pointer',
 
@@ -54,11 +54,11 @@ const pageButton = css({
   },
 });
 
-const emptyPageContainer = css({
+const emptynoteContainer = css({
   px: 'tiny',
 });
 
-const pageContainer = css({
+const noteContainer = css({
   width: '100%',
   height: '100%',
   overflowY: 'auto',
@@ -67,14 +67,14 @@ const pageContainer = css({
 const FinderCard = () => {
   const [isHover, setIsHover] = useState(false);
 
-  const [openedDropdownPageId, setOpenedDropdownPageId] = useState<string | null>(null);
+  const [openedDropdownnoteId, setOpenedDropdownnoteId] = useState<string | null>(null);
 
-  const { data: pageList } = useSWR('pageList');
+  const { data: noteList } = useSWR('noteList');
 
   const handleClick = async () => {
     try {
       await createNote(null);
-      await mutate('pageList', getNoteList, false);
+      await mutate('noteList', getNoteList, false);
     } catch (error) {
       console.log(error);
     }
@@ -82,29 +82,29 @@ const FinderCard = () => {
 
   return (
     <div className={finderCard}>
-      <div className={pageItem} onMouseEnter={() => setIsHover(true)} onMouseLeave={() => setIsHover(false)}>
+      <div className={noteItem} onMouseEnter={() => setIsHover(true)} onMouseLeave={() => setIsHover(false)}>
         기원 님의 workspace
         {isHover && (
-          <div className={pageButtonContainer}>
-            <button type="button" className={pageButton} onClick={handleClick}>
+          <div className={noteButtonContainer}>
+            <button type="button" className={noteButton} onClick={handleClick}>
               <PlusIcon />
             </button>
           </div>
         )}
       </div>
-      <div className={pageContainer}>
-        {pageList?.notes.length ? (
-          pageList.notes.map((page: INotes) => (
+      <div className={noteContainer}>
+        {noteList?.notes.length ? (
+          noteList.notes.map((note: INotes) => (
             <PageItem
-              key={page.id}
-              page={page}
+              key={note.id}
+              note={note}
               depth={1}
-              openedDropdownPageId={openedDropdownPageId}
-              setOpenedDropdownPageId={setOpenedDropdownPageId}
+              openedDropdownnoteId={openedDropdownnoteId}
+              setOpenedDropdownnoteId={setOpenedDropdownnoteId}
             />
           ))
         ) : (
-          <p className={emptyPageContainer}>문서가 없습니다.</p>
+          <p className={emptynoteContainer}>문서가 없습니다.</p>
         )}
       </div>
     </div>
