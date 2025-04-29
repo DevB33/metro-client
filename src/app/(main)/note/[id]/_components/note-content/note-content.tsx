@@ -26,9 +26,8 @@ const blockContainer = css({
 const fakeBox = css({
   position: 'absolute',
   width: '100vw',
-  left: '50%',
+  left: 0,
   height: 'var(--block-height)',
-  transform: 'translateX(-50%)',
   zIndex: '1',
 
   pointerEvents: 'auto',
@@ -601,6 +600,9 @@ const NoteContent = () => {
             <div
               className={fakeBox}
               id={`fakeBox-${index}`}
+              style={{
+                left: `-${(blockContainerRef.current[index]?.getBoundingClientRect().left as number) + 20}px`,
+              }}
               ref={element => {
                 fakeBoxRef.current[index] = element;
               }}
