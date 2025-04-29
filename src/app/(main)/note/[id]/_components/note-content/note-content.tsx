@@ -11,7 +11,7 @@ import BUTTON_OFFSET from '@/constants/button-offset';
 import IMenuState from '@/types/menu-type';
 import Block from './block/block';
 import BlockButton from './block-button';
-import SelectionMenu from './block/selection-menu';
+import SelectionMenu from './block/_selection/selection-menu';
 import handleMouseUp from './block/_handler/handleMouseUp';
 
 const blockContainer = css({

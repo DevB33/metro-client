@@ -76,7 +76,7 @@ const defaultStyle = {
   borderRadius: '0',
 };
 
-const selectionChange = (
+const changeSelectionStyle = (
   type: string,
   selection: ISelectionPosition,
   blockList: ITextBlock[],
@@ -305,4 +305,4 @@ const selectionChange = (
   setBlockList(newBlockList);
 };
 
-export default selectionChange;
+export default changeSelectionStyle;

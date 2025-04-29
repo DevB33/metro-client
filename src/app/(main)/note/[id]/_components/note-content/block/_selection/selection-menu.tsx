@@ -10,7 +10,7 @@ import CodeblockIcon from '@/icons/codeblock-icon';
 import { JSX } from 'react';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import IMenuState from '@/types/menu-type';
-import selectionChange from './selectionChange';
+import changeSelectionStyle from './changeSelectionStyle';
 
 interface ISelectionMenuProps {
   setKey: (key: number) => void;
@@ -81,7 +81,8 @@ const SelectionMenu = ({
   const menuHeight = 3;
 
   const changeBlock = (type: string) => {
-    selectionChange(type, selection, blockList, setBlockList, blockRef);
+    changeSelectionStyle(type, selection, blockList, setBlockList, blockRef);
+
     setMenuState(prev => ({
       ...prev,
       isSelectionMenuOpen: false,

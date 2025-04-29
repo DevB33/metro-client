@@ -3,9 +3,7 @@ import getSelectionInfo from '@/utils/getSelectionInfo';
 import keyName from '@/constants/key-name';
 import ISelectionPosition from '@/types/selection-position';
 import IMenuState from '@/types/menu-type';
-import selectionDelete from '../selectionDelete';
-import selectionEnter from '../selectionEnter';
-import selectionWrite from '../selectionWrite';
+import editSelectionContent from '../_selection/editSelectionContent';
 
 const focusCurrentBlock = (
   index: number,
@@ -959,13 +957,13 @@ const handleKeyDown = (
     // backspace 클릭
     if (event.key === keyName.backspace) {
       if (!isBackward) {
-        selectionDelete(selection, blockList, setBlockList, blockRef);
+        editSelectionContent('delete', event.key, selection, blockList, setBlockList, blockRef);
         if (selection.start.childNodeIndex > 0) {
           selection.start.childNodeIndex -= 1;
           selection.start.offset = 0;
         }
       } else {
-        selectionDelete(selection, blockList, setBlockList, blockRef);
+        editSelectionContent('delete', event.key, selection, blockList, setBlockList, blockRef);
         if (selection.end.childNodeIndex > 0) {
           selection.end.childNodeIndex -= 1;
           selection.end.offset = 0;
@@ -975,12 +973,12 @@ const handleKeyDown = (
     // 엔터 입력
     if (event.key === keyName.enter && !event.shiftKey) {
       if (!isBackward) {
-        selectionEnter(selection, blockList, setBlockList, blockRef);
+        editSelectionContent('enter', event.key, selection, blockList, setBlockList, blockRef);
         selection.start.blockIndex += 1;
         selection.start.childNodeIndex = 0;
         selection.start.offset = 0;
       } else {
-        selectionEnter(selection, blockList, setBlockList, blockRef);
+        editSelectionContent('enter', event.key, selection, blockList, setBlockList, blockRef);
         selection.end.blockIndex += 1;
         selection.end.childNodeIndex = 0;
         selection.end.offset = 0;
@@ -989,14 +987,14 @@ const handleKeyDown = (
     // 다른 키 입력
     else if (isInputtableKey(event.nativeEvent)) {
       if (!isBackward) {
-        selectionWrite(event.key, selection, blockList, setBlockList, blockRef);
+        editSelectionContent('write', event.key, selection, blockList, setBlockList, blockRef);
         selection.start.offset = 1;
         // selection 시작점의 offset이 0이라 시작노드가 다 지워질떄가 아니면 새로 생성된 노드에 focus
         if (selection.start.offset !== 0) {
           selection.start.childNodeIndex += 1;
         }
       } else {
-        selectionWrite(event.key, selection, blockList, setBlockList, blockRef);
+        editSelectionContent('write', event.key, selection, blockList, setBlockList, blockRef);
         selection.end.offset = 1;
         if (selection.end.offset !== 0) {
           selection.end.childNodeIndex += 1;
