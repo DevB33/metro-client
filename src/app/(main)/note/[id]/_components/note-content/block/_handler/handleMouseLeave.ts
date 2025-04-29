@@ -95,7 +95,6 @@ const handleMouseLeave = (
       childNodes.forEach((childNode, idx) => {
         // 시작 노드보다 앞에 있는 노드일 때
         if (idx < selection.start.childNodeIndex) {
-          console.log(childNode);
           const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
           left = Math.min(left, rect.left);
           right = Math.max(right, rect.right);
