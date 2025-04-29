@@ -5,12 +5,11 @@ import { useRouter, useParams, usePathname } from 'next/navigation';
 import { css } from '@/../styled-system/css';
 
 import LeftArrowIcon from '@/icons/left-arrow-icon';
-import RightArrowIcon from '@/icons/right-arrow-icon';
 import HorizonDotIcon from '@/icons/horizon-dot-icon';
 import DropDown from '@/components/dropdown/dropdown';
 import TrashIcon from '@/icons/trash-icon';
 import useSWR, { mutate } from 'swr';
-import { deletePage, getPageList } from '@/apis/note';
+import { deleteNote, getNoteList } from '@/apis/note';
 import IPageType from '@/types/page-type';
 
 const headerConatiner = css({
@@ -88,8 +87,8 @@ const Header = () => {
 
   const handleDeleteButtonClick = async () => {
     try {
-      await deletePage(pageId);
-      await mutate('pageList', getPageList, false);
+      await deleteNote(pageId);
+      await mutate('pageList', getNoteList, false);
       const parentId = findParentId(pageList.node, pageId);
       if (parentId) {
         router.push(`/note/${parentId}`);

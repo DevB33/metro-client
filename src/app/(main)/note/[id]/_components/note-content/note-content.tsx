@@ -266,6 +266,7 @@ const NoteContent = () => {
   }, []);
 
   // isSlashMenuOpen 상태에 따라 스크롤 막기
+  // TODO:
   useEffect(() => {
     const grandParent = noteRef.current?.parentElement?.parentElement;
     if (!grandParent) return;
@@ -340,6 +341,8 @@ const NoteContent = () => {
   }, []);
 
   const handleFakeBoxMouseEnter = (index: number) => {
+    // block 버튼을 누르고 드래그 하기 전에 key를 초기화해서 에러를 가상돔과 돔 조작의 충돌을 방지하기 위한 조건문
+    // key를 초기화 하면 focus도 사라져서 다시 줘야함
     if (isTyping) {
       const { startOffset, startContainer } = getSelectionInfo(0) || {};
       const blockIndex = blockRef.current.findIndex(blockEl => blockEl && blockEl.contains(startContainer as Node));
