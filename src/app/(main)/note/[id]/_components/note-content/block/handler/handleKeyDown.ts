@@ -3,7 +3,7 @@ import getSelectionInfo from '@/utils/getSelectionInfo';
 import keyName from '@/constants/key-name';
 import ISelectionPosition from '@/types/selection-position';
 import IMenuState from '@/types/menu-type';
-import editSelectionContent from '../_selection/editSelectionContent';
+import editSelectionContent from '../../selection-menu/editSelectionContent';
 
 // 현재 블록의 맨 앞에 focus
 const focusCurrentBlock = (

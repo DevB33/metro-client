@@ -4,12 +4,13 @@ import { css } from '@/../styled-system/css';
 import { ITextBlock } from '@/types/block-type';
 import ISelectionPosition from '@/types/selection-position';
 import IMenuState from '@/types/menu-type';
-import handleInput from './_handler/handleInput';
-import handleKeyDown from './_handler/handleKeyDown';
-import handleMouseLeave from './_handler/handleMouseLeave';
+import handleInput from './handler/handleInput';
+import handleKeyDown from './handler/handleKeyDown';
+import handleMouseLeave from './handler/handleMouseLeave';
 import BlockHTMLTag from './block-html-tag';
-import handleMouseDown from './_handler/handleMouseDown';
-import handleMouseMove from './_handler/handleMouseMove';
+import handleMouseDown from './handler/handleMouseDown';
+import handleMouseMove from './handler/handleMouseMove';
+import handleMouseUp from './handler/handleMouseUp';
 
 interface IBlockComponent {
   block: ITextBlock;
@@ -102,7 +103,8 @@ const Block = memo(
             selection,
           )
         }
-        onMouseUp={() => {
+        onMouseUp={event => {
+          handleMouseUp(event, index, blockRef, selection, setMenuState);
           setIsDragging(false);
         }}
         onMouseDown={event =>

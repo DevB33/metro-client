@@ -8,8 +8,8 @@ import TrashIcon from '@/icons/trash-icon';
 import ArrowReapeatIcon from '@/icons/arrow-repeat-icon';
 import { ITextBlock } from '@/types/block-type';
 import IMenuState from '@/types/menu-type';
-import SlashMenu from './block/_slash/slash-menu';
-import GhostBlock from './block/_ghost-block/ghost-block';
+import SlashMenu from './slash-menu/slash-menu';
+import GhostBlock from './ghost-block/ghost-block';
 
 interface IBlockButton {
   OpenBlockMenu: () => void;

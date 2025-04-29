@@ -9,10 +9,9 @@ import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundIma
 import ISelectionPosition from '@/types/selection-position';
 import BUTTON_OFFSET from '@/constants/button-offset';
 import IMenuState from '@/types/menu-type';
-import Block from './block/block';
 import BlockButton from './block-button';
-import SelectionMenu from './block/_selection/selection-menu';
-import handleMouseUp from './block/_handler/handleMouseUp';
+import Block from './block/block';
+import SelectionMenu from './selection-menu/selection-menu';
 
 const blockContainer = css({
   boxSizing: 'content-box',
@@ -321,7 +320,7 @@ const NoteContent = () => {
     };
 
     const handleOutsideMouseDown = (event: MouseEvent) => {
-      // Mouse 이벤트가 block위가 아닐때,
+      // Mouse 이벤트가 block 위일 때,
       if (blockRef.current.some(block => block?.contains(event.target as Node))) {
         outSideDragging.current = false;
         return;
@@ -351,10 +350,9 @@ const NoteContent = () => {
         prevClientY.current = event.clientY;
       }
 
+      // 외부의 input이나, textarea일 때는 기본 selection이 작동하게 함
       const inputElementList = Array.from(document.querySelectorAll('input, textarea'));
-      if (inputElementList.includes(event.target as Element)) {
-        return;
-      }
+      if (inputElementList.includes(event.target as Element)) return;
       // 외부 드래깅중이라면 window 기본 selection이 작동하지 않도록 함
       if (!outSideDragging.current) return;
       const windowSelection = window.getSelection();
@@ -599,7 +597,6 @@ const NoteContent = () => {
             onMouseLeave={() => handleMouseLeave(index)}
             onKeyDown={() => handleMouseLeave(index)}
             onMouseMove={() => handleMouseEnter(index)}
-            onMouseUp={event => handleMouseUp(event, index, blockRef, selection, setMenuState)}
           >
             <div
               className={fakeBox}
