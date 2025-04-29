@@ -5,7 +5,6 @@ import { cookies } from 'next/headers';
 import { SWRConfig } from 'swr';
 import Header from './_components/header';
 import NoteHeader from './_components/note-header/note-header';
-import LineInfo from './_components/line-info/line-info';
 import NoteConent from './_components/note-content/note-content';
 
 const container = css({
@@ -44,6 +43,7 @@ const divider = css({
   width: '44.5rem',
   height: '.5px',
   borderRadius: '1rem',
+  mb: 'small',
 });
 
 const Note = async ({ params }: { params: Promise<{ id: string }> }) => {
@@ -73,8 +73,6 @@ const Note = async ({ params }: { params: Promise<{ id: string }> }) => {
         <div className={contentContainer}>
           <div className={noteContainer}>
             <NoteHeader />
-            <div className={divider} />
-            <LineInfo />
             <div className={divider} />
             <NoteConent />
           </div>

@@ -119,7 +119,7 @@ const Header = () => {
   return (
     <div className={headerConatiner}>
       <div className={leftItemsConatiner}>
-        <button className={backButton} onClick={handleBackButton}>
+        <button type="button" className={backButton} onClick={handleBackButton}>
           <LeftArrowIcon />
         </button>
       </div>
