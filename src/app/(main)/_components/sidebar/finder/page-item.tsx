@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { css } from '@/../styled-system/css';
 
 import PageCloseIcon from '@/icons/page-close-icon';
@@ -11,26 +11,26 @@ import HorizonDotIcon from '@/icons/horizon-dot-icon';
 import PlusIcon from '@/icons/plus-icon';
 import INotes from '@/types/note-type';
 import { createNote, deleteNote, getNoteList } from '@/apis/note';
-import { mutate } from 'swr';
+import useSWR, { mutate } from 'swr';
 import TrashIcon from '@/icons/trash-icon';
 import PencilSquareIcon from '@/icons/pencil-square';
 import DropDown from '../../../../../components/dropdown/dropdown';
 import EditTitleModal from './edit-title-modal';
 
-interface IPageItem {
-  page: INotes;
+interface INoteItem {
+  note: INotes;
   depth: number;
-  openedDropdownPageId: string | null;
-  setOpenedDropdownPageId: React.Dispatch<React.SetStateAction<string | null>>;
+  openedDropdownnoteId: string | null;
+  setOpenedDropdownnoteId: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
-const pageItemContainer = css({
+const noteItemContainer = css({
   display: 'flex',
   flexDirection: 'column',
   width: '100%',
 });
 
-const pageItem = css({
+const noteItem = css({
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'center',
@@ -48,7 +48,7 @@ const pageItem = css({
   },
 });
 
-const pageButton = css({
+const noteButton = css({
   borderRadius: '0.25rem',
   cursor: 'pointer',
 
@@ -57,14 +57,14 @@ const pageButton = css({
   },
 });
 
-const pageButtonContainer = css({
+const noteButtonContainer = css({
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'center',
   gap: '0.75rem',
 });
 
-const pageIcon = css({
+const noteIcon = css({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
@@ -74,14 +74,14 @@ const pageIcon = css({
   minHeight: '1.5rem',
 });
 
-const pageTitle = css({
+const noteTitle = css({
   width: '100%',
   whiteSpace: 'nowrap',
   textOverflow: 'ellipsis',
   overflow: 'hidden',
 });
 
-const pageChildren = css({
+const noteChildren = css({
   display: 'flex',
   flexDirection: 'column',
 });
@@ -97,24 +97,25 @@ const noChildren = css({
   overflow: 'hidden',
 });
 
-const PageItem = ({ page, depth, openedDropdownPageId, setOpenedDropdownPageId }: IPageItem) => {
+const NoteItem = ({ note, depth, openedDropdownnoteId, setOpenedDropdownnoteId }: INoteItem) => {
   const router = useRouter();
-  const pageItemRef = useRef<HTMLDivElement>(null);
+  const noteItemRef = useRef<HTMLDivElement>(null);
   const toggleButtoonRef = useRef<HTMLButtonElement>(null);
   const settingButtonRef = useRef<HTMLButtonElement>(null);
   const plusButtonRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isHover, setIsHover] = useState(false);
-  const pathname = usePathname();
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const [editTitleModalPosition, seteditTitleModalPosition] = useState({ top: 0, left: 0 });
 
-  const togglePage = () => {
+  const { data: noteList } = useSWR('noteList');
+
+  const togglenote = () => {
     setIsOpen(!isOpen);
   };
 
-  const openPage = (event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>) => {
+  const opennote = (event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>) => {
     if (
       toggleButtoonRef.current?.contains(event.target as Node) ||
       settingButtonRef.current?.contains(event.target as Node) ||
@@ -122,7 +123,7 @@ const PageItem = ({ page, depth, openedDropdownPageId, setOpenedDropdownPageId }
     )
       return;
 
-    router.push(`/note/${page.id}`);
+    router.push(`/note/${note.id}`);
   };
 
   const openSettingDropdown = () => {
@@ -133,19 +134,40 @@ const PageItem = ({ page, depth, openedDropdownPageId, setOpenedDropdownPageId }
         left: rect.left + 30,
       });
     }
-    setOpenedDropdownPageId(page.id);
+    setOpenedDropdownnoteId(note.id);
   };
 
   const closeSettingDropdown = () => {
-    setOpenedDropdownPageId(null);
+    setOpenedDropdownnoteId(null);
+  };
+
+  const findParentId = (nodeList: INotes[], targetId: string, parentId: string | null = null): string | null => {
+    const match = nodeList.find(node => {
+      if (node.id === targetId) return true;
+
+      if (node.children?.length) {
+        const found = findParentId(node.children, targetId, node.id);
+        if (found) {
+          parentId = found;
+          return true;
+        }
+      }
+
+      return false;
+    });
+
+    return match ? parentId : null;
   };
 
   const handleDeleteButtonClick = async () => {
     try {
-      await deleteNote(page.id);
-      await mutate('pageList', getNoteList, false);
+      await deleteNote(note.id);
+      await mutate('noteList', getNoteList, false);
+      const parentId = findParentId(noteList.notes, note.id);
 
-      if (pathname === `/note/${page.id}`) {
+      if (parentId) {
+        router.push(`/note/${parentId}`);
+      } else {
         router.push('/');
       }
     } catch (error) {
@@ -156,17 +178,17 @@ const PageItem = ({ page, depth, openedDropdownPageId, setOpenedDropdownPageId }
 
   const handlePlusButtonClick = async () => {
     try {
-      if (!isOpen) togglePage();
-      await createNote(page.id);
-      await mutate('pageList', getNoteList, false);
+      if (!isOpen) togglenote();
+      await createNote(note.id);
+      await mutate('noteList', getNoteList, false);
     } catch (error) {
       console.log(error);
     }
   };
 
   const openEditModal = () => {
-    if (pageItemRef.current) {
-      const rect = pageItemRef.current.getBoundingClientRect();
+    if (noteItemRef.current) {
+      const rect = noteItemRef.current.getBoundingClientRect();
       seteditTitleModalPosition({
         left: rect.left,
         top: rect.top + 30,
@@ -187,34 +209,34 @@ const PageItem = ({ page, depth, openedDropdownPageId, setOpenedDropdownPageId }
       top: event.clientY,
       left: event.clientX,
     });
-    setOpenedDropdownPageId(page.id);
+    setOpenedDropdownnoteId(note.id);
   };
 
   return (
-    <div className={pageItemContainer}>
+    <div className={noteItemContainer}>
       <div
-        className={pageItem}
-        ref={pageItemRef}
+        className={noteItem}
+        ref={noteItemRef}
         style={{ paddingLeft: `${depth * 0.5}rem` }}
-        onClick={openPage}
+        onClick={opennote}
         onMouseEnter={() => setIsHover(true)}
         onMouseLeave={() => setIsHover(false)}
-        onKeyDown={openPage}
+        onKeyDown={opennote}
         role="button"
         tabIndex={0}
         onContextMenu={contextOpenSettingDropdown}
       >
-        <button type="button" ref={toggleButtoonRef} className={pageButton} onClick={togglePage}>
+        <button type="button" ref={toggleButtoonRef} className={noteButton} onClick={togglenote}>
           {isOpen ? <PageOpenIcon color="black" /> : <PageCloseIcon color="black" />}
         </button>
-        <div className={pageIcon}>{page.icon ? `${page.icon}` : <PageIcon />}</div>
-        <div className={pageTitle}>{page.title === null || page.title === '' ? '새 페이지' : page.title}</div>
+        <div className={noteIcon}>{note.icon ? `${note.icon}` : <PageIcon />}</div>
+        <div className={noteTitle}>{note.title === null || note.title === '' ? '새 페이지' : note.title}</div>
         {isHover && (
-          <div className={pageButtonContainer}>
-            <button type="button" ref={settingButtonRef} className={pageButton} onClick={openSettingDropdown}>
+          <div className={noteButtonContainer}>
+            <button type="button" ref={settingButtonRef} className={noteButton} onClick={openSettingDropdown}>
               <HorizonDotIcon />
             </button>
-            <button type="button" ref={plusButtonRef} className={pageButton} onClick={handlePlusButtonClick}>
+            <button type="button" ref={plusButtonRef} className={noteButton} onClick={handlePlusButtonClick}>
               <PlusIcon />
             </button>
           </div>
@@ -222,7 +244,7 @@ const PageItem = ({ page, depth, openedDropdownPageId, setOpenedDropdownPageId }
       </div>
       <DropDown handleClose={closeSettingDropdown}>
         <DropDown.Menu
-          isOpen={openedDropdownPageId === page.id}
+          isOpen={openedDropdownnoteId === note.id}
           top={dropdownPosition.top}
           left={dropdownPosition.left}
         >
@@ -238,22 +260,22 @@ const PageItem = ({ page, depth, openedDropdownPageId, setOpenedDropdownPageId }
       </DropDown>
       {isEditModalOpen && (
         <EditTitleModal
-          noteId={page.id}
+          noteId={note.id}
           closeEditModal={closeEditModal}
           left={editTitleModalPosition.left}
           top={editTitleModalPosition.top}
         />
       )}
       {isOpen &&
-        (page.children.length ? (
-          <div className={pageChildren}>
-            {page.children.map(child => (
-              <PageItem
+        (note.children.length ? (
+          <div className={noteChildren}>
+            {note.children.map(child => (
+              <NoteItem
                 key={child.id}
-                page={child}
+                note={child}
                 depth={depth + 1}
-                openedDropdownPageId={openedDropdownPageId}
-                setOpenedDropdownPageId={setOpenedDropdownPageId}
+                openedDropdownnoteId={openedDropdownnoteId}
+                setOpenedDropdownnoteId={setOpenedDropdownnoteId}
               />
             ))}
           </div>
@@ -264,4 +286,4 @@ const PageItem = ({ page, depth, openedDropdownPageId, setOpenedDropdownPageId }
   );
 };
 
-export default PageItem;
+export default NoteItem;

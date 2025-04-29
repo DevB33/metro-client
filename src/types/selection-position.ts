@@ -1,7 +1,14 @@
 interface ISelectionPosition {
-  blockIndex: number;
-  childNodeIndex: number;
-  offset: number;
+  start: {
+    blockIndex: number;
+    childNodeIndex: number;
+    offset: number;
+  };
+  end: {
+    blockIndex: number;
+    childNodeIndex: number;
+    offset: number;
+  };
 }
 
 export default ISelectionPosition;

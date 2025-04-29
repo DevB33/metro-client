@@ -58,14 +58,14 @@ const LineChart = ({ width: totalWidth, height: totalHeight, margin = defaultMar
 
   const router = useRouter();
 
-  const { data: pageList } = useSWR('pageList');
+  const { data: noteList } = useSWR('noteList');
 
-  const convertPageListToTree = (pages: any[]): ITreeNode[] => {
-    return pages.map(page => ({
-      name: page.title ?? page.id,
-      id: page.id,
+  const convertNoteListToTree = (notes: any[]): ITreeNode[] => {
+    return notes.map(note => ({
+      name: note.title ?? note.id,
+      id: note.id,
       colorKey: 'LINE_ONE',
-      children: convertPageListToTree(page.children || []),
+      children: convertNoteListToTree(note.children || []),
     }));
   };
 
@@ -73,7 +73,7 @@ const LineChart = ({ width: totalWidth, height: totalHeight, margin = defaultMar
     name: 'WorkSpace',
     id: '',
     colorKey: 'LINE_ONE',
-    children: convertPageListToTree(pageList.notes),
+    children: convertNoteListToTree(noteList.notes),
   };
 
   const STORAGE_KEY = 'tree-node-colors';
@@ -157,8 +157,8 @@ const LineChart = ({ width: totalWidth, height: totalHeight, margin = defaultMar
   const isUUID = (value: string) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
-  const openPage = (pageId: string) => {
-    router.push(`/note/${pageId}`);
+  const openNote = (noteId: string) => {
+    router.push(`/note/${noteId}`);
   };
 
   useEffect(() => {
@@ -176,11 +176,11 @@ const LineChart = ({ width: totalWidth, height: totalHeight, margin = defaultMar
   }, [isMouseOverChart]);
 
   useEffect(() => {
-    if (!pageList) return;
+    if (!noteList) return;
 
     const merged = { ...getStoredColors(), ...newColors };
     saveColorsToStorage(merged);
-  }, [pageList]);
+  }, [noteList]);
 
   return totalWidth < 10 ? null : (
     <div>
@@ -255,7 +255,7 @@ const LineChart = ({ width: totalWidth, height: totalHeight, margin = defaultMar
                           onClick={e => {
                             e.stopPropagation();
                             if (node.depth === 0) return;
-                            setTimeout(() => openPage(node.data.id), 0);
+                            setTimeout(() => openNote(node.data.id), 0);
                           }}
                         >
                           <circle r={12} fill="none" stroke="#000" strokeWidth={2} />
