@@ -26,7 +26,8 @@ const blockContainer = css({
 const fakeBox = css({
   position: 'absolute',
   width: '100vw',
-  left: 0,
+  left: '50%',
+  transform: 'translateX(-62%)',
   height: 'var(--block-height)',
   zIndex: '1',
 
@@ -287,9 +288,9 @@ const NoteContent = () => {
 
   // menuState.isSlashMenuOpen 상태에 따라 스크롤 막기
   useEffect(() => {
-    const grandParent = noteRef.current?.parentElement?.parentElement;
+    const grandParent = noteRef.current?.parentElement?.parentElement?.parentElement;
     if (!grandParent) return;
-    if (menuState.isSlashMenuOpen) {
+    if (menuState.isSlashMenuOpen || menuState.isSelectionMenuOpen) {
       grandParent.style.overflowY = 'hidden';
     } else {
       grandParent.style.overflowY = '';
@@ -298,7 +299,7 @@ const NoteContent = () => {
     return () => {
       grandParent.style.overflow = '';
     };
-  }, [menuState.isSlashMenuOpen]);
+  }, [menuState.isSlashMenuOpen, menuState.isSelectionMenuOpen]);
 
   // 초기 렌더링 시 block 외의 이벤트를 처리하기 위한 useEffect
   useEffect(() => {

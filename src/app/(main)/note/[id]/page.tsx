@@ -21,7 +21,7 @@ const container = css({
 const contentContainer = css({
   width: '100%',
   height: '100%',
-  overflowX: 'scroll',
+  overflowY: 'scroll',
 });
 
 const noteContainer = css({
