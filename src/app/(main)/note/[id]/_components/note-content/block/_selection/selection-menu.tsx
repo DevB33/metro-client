@@ -9,17 +9,17 @@ import LineThroughIcon from '@/icons/line-through-icon';
 import CodeblockIcon from '@/icons/codeblock-icon';
 import { JSX } from 'react';
 import { useClickOutside } from '@/hooks/useClickOutside';
-import selectionChange from './selectionChange';
+import IMenuState from '@/types/menu-type';
+import changeSelectionStyle from './changeSelectionStyle';
 
 interface ISelectionMenuProps {
-  position: { x: number; y: number };
   setKey: (key: number) => void;
-  selectionStartPosition: ISelectionPosition;
-  selectionEndPosition: ISelectionPosition;
+  selection: ISelectionPosition;
   blockList: ITextBlock[];
   setBlockList: (blockList: ITextBlock[]) => void;
   blockRef: React.RefObject<(HTMLDivElement | null)[]>;
-  setIsSelectionMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  menuState: IMenuState;
+  setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>;
   resetSelection: () => void;
 }
 
@@ -63,22 +63,30 @@ const MENU_ITEMS: {
 ];
 
 const SelectionMenu = ({
-  position,
   setKey,
-  selectionStartPosition,
-  selectionEndPosition,
+  selection,
   blockList,
   setBlockList,
   blockRef,
-  setIsSelectionMenuOpen,
+  menuState,
+  setMenuState,
   resetSelection,
 }: ISelectionMenuProps) => {
-  const selectionMenuRef = useClickOutside(() => setIsSelectionMenuOpen(false));
+  const selectionMenuRef = useClickOutside(() => {
+    setMenuState(prev => ({
+      ...prev,
+      isSelectionMenuOpen: false,
+    }));
+  });
   const menuHeight = 3;
 
   const changeBlock = (type: string) => {
-    selectionChange(type, selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
-    setIsSelectionMenuOpen(false);
+    changeSelectionStyle(type, selection, blockList, setBlockList, blockRef);
+
+    setMenuState(prev => ({
+      ...prev,
+      isSelectionMenuOpen: false,
+    }));
     resetSelection();
     setKey(Math.random());
   };
@@ -86,7 +94,10 @@ const SelectionMenu = ({
   return (
     <div
       ref={selectionMenuRef}
-      style={{ top: `calc(${position.y}px - ${menuHeight}rem)`, left: position.x }}
+      style={{
+        top: `calc(${menuState.selectionMenuPosition.y}px - ${menuHeight}rem)`,
+        left: menuState.selectionMenuPosition.x,
+      }}
       className={menu}
     >
       {MENU_ITEMS.map(item => (

@@ -3,13 +3,13 @@ import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
 import ISelectionPosition from '@/types/selection-position';
+import IMenuState from '@/types/menu-type';
 import handleInput from './_handler/handleInput';
 import handleKeyDown from './_handler/handleKeyDown';
 import handleMouseLeave from './_handler/handleMouseLeave';
 import BlockHTMLTag from './block-html-tag';
 import handleMouseDown from './_handler/handleMouseDown';
 import handleMouseMove from './_handler/handleMouseMove';
-import SlashMenu from './slash-menu';
 
 interface IBlockComponent {
   block: ITextBlock;
@@ -24,16 +24,11 @@ interface IBlockComponent {
   setIsDragging: React.Dispatch<React.SetStateAction<boolean>>;
   isUp: boolean;
   setIsUp: React.Dispatch<React.SetStateAction<boolean>>;
-  selectionStartPosition: ISelectionPosition;
-  setSelectionStartPosition: React.Dispatch<React.SetStateAction<ISelectionPosition>>;
-  selectionEndPosition: ISelectionPosition;
-  setSelectionEndPosition: React.Dispatch<React.SetStateAction<ISelectionPosition>>;
-  isSlashMenuOpen: boolean;
-  setIsSlashMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  slashMenuPosition: { x: number; y: number };
-  setSlashMenuPosition: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
+  selection: ISelectionPosition;
+  setSelection: React.Dispatch<React.SetStateAction<ISelectionPosition>>;
+  menuState: IMenuState;
+  setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>;
   dragBlockIndex: number | null;
-  isSelectionMenuOpen: boolean;
 }
 
 const blockDiv = css({
@@ -64,16 +59,11 @@ const Block = memo(
     setIsDragging,
     isUp,
     setIsUp,
-    selectionStartPosition,
-    setSelectionStartPosition,
-    selectionEndPosition,
-    setSelectionEndPosition,
-    isSlashMenuOpen,
-    setIsSlashMenuOpen,
-    slashMenuPosition,
-    setSlashMenuPosition,
+    selection,
+    setSelection,
+    menuState,
+    setMenuState,
     dragBlockIndex,
-    isSelectionMenuOpen,
   }: IBlockComponent) => {
     const prevChildNodesLength = useRef(0);
     const prevClientY = useRef(0);
@@ -107,54 +97,21 @@ const Block = memo(
             blockRef,
             setIsTyping,
             setKey,
-            setIsSlashMenuOpen,
-            setSlashMenuPosition,
-            isSelectionMenuOpen,
-            selectionStartPosition,
-            selectionEndPosition,
+            menuState,
+            setMenuState,
+            selection,
           )
         }
         onMouseUp={() => {
           setIsDragging(false);
         }}
         onMouseDown={event =>
-          handleMouseDown(
-            event,
-            blockRef,
-            index,
-            blockList,
-            setIsDragging,
-            setIsTyping,
-            setKey,
-            setSelectionStartPosition,
-            setSelectionEndPosition,
-          )
+          handleMouseDown(event, blockRef, index, blockList, setIsDragging, setIsTyping, setKey, setSelection)
         }
         onMouseMove={event =>
-          handleMouseMove(
-            event,
-            index,
-            blockRef,
-            isDragging,
-            selectionStartPosition,
-            selectionEndPosition,
-            setSelectionEndPosition,
-            setIsUp,
-            prevClientY,
-          )
+          handleMouseMove(event, index, blockRef, isDragging, selection, setSelection, setIsUp, prevClientY)
         }
-        onMouseLeave={event =>
-          handleMouseLeave(
-            event,
-            index,
-            isDragging,
-            isUp,
-            blockRef,
-            selectionStartPosition,
-            selectionEndPosition,
-            setSelectionEndPosition,
-          )
-        }
+        onMouseLeave={event => handleMouseLeave(event, index, isDragging, isUp, blockRef, selection, setSelection)}
         onDragEnter={event => {
           if (dragBlockIndex === index) {
             return;
@@ -201,18 +158,6 @@ const Block = memo(
             );
           })}
         </BlockHTMLTag>
-        {isSlashMenuOpen && (
-          <SlashMenu
-            position={slashMenuPosition}
-            index={index}
-            blockList={blockList}
-            blockRef={blockRef}
-            setBlockList={setBlockList}
-            isSlashMenuOpen={isSlashMenuOpen}
-            setIsSlashMenuOpen={setIsSlashMenuOpen}
-            openedBySlashKey
-          />
-        )}
       </div>
     );
   },

@@ -24,18 +24,17 @@ const handleMouseMove = (
   index: number,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   isDragging: boolean,
-  selectionStartPosition: ISelectionPosition,
-  selectionEndPosition: ISelectionPosition,
-  setSelectionEndPosition: React.Dispatch<React.SetStateAction<ISelectionPosition>>,
+  selection: ISelectionPosition,
+  setSelection: React.Dispatch<React.SetStateAction<ISelectionPosition>>,
   setIsUp: React.Dispatch<React.SetStateAction<boolean>>,
   prevClientY: React.RefObject<number>,
 ) => {
   if (!isDragging) return;
 
-  if (index !== selectionEndPosition.blockIndex) {
-    setSelectionEndPosition((prev: ISelectionPosition) => ({
+  if (index !== selection.end.blockIndex) {
+    setSelection(prev => ({
       ...prev,
-      blockIndex: index,
+      end: { ...prev.end, blockIndex: index },
     }));
   }
 
@@ -49,10 +48,10 @@ const handleMouseMove = (
 
   if (currentChildNodeIndex === -1) return;
 
-  if (currentChildNodeIndex !== selectionEndPosition.childNodeIndex) {
-    setSelectionEndPosition((prev: ISelectionPosition) => ({
+  if (currentChildNodeIndex !== selection.end.childNodeIndex) {
+    setSelection(prev => ({
       ...prev,
-      childNodeIndex: currentChildNodeIndex,
+      end: { ...prev.end, childNodeIndex: currentChildNodeIndex },
     }));
   }
 
@@ -61,23 +60,22 @@ const handleMouseMove = (
 
   // 셀렉션이 만들어 질 때 기본 셀렉션 지우기
   if (startOffset !== undefined && charIdx !== startOffset) {
-    const selection = window.getSelection();
-    if (selection) selection.removeAllRanges();
+    const windowSelection = window.getSelection();
+    if (windowSelection) windowSelection.removeAllRanges();
   }
-
-  setSelectionEndPosition((prev: ISelectionPosition) => ({
+  setSelection(prev => ({
     ...prev,
-    offset: charIdx,
+    end: { ...prev.end, offset: charIdx },
   }));
 
   // 첫 번째 블록에서
-  if (index === selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex) {
+  if (index === selection.start.blockIndex && index === selection.end.blockIndex) {
     // 한 노드 내에서 드래그
-    if (currentChildNodeIndex === selectionStartPosition.childNodeIndex) {
+    if (currentChildNodeIndex === selection.start.childNodeIndex) {
       const rect =
-        charIdx > selectionStartPosition.offset
-          ? getNodeBounds(childNodes[currentChildNodeIndex] as Node, selectionStartPosition.offset, charIdx)
-          : getNodeBounds(childNodes[currentChildNodeIndex] as Node, charIdx, selectionStartPosition.offset);
+        charIdx > selection.start.offset
+          ? getNodeBounds(childNodes[currentChildNodeIndex] as Node, selection.start.offset, charIdx)
+          : getNodeBounds(childNodes[currentChildNodeIndex] as Node, charIdx, selection.start.offset);
 
       const blockElement = blockRef.current[index];
       const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
@@ -90,13 +88,13 @@ const handleMouseMove = (
     }
 
     // 왼쪽으로 드래그
-    if (currentChildNodeIndex < selectionStartPosition.childNodeIndex) {
+    if (currentChildNodeIndex < selection.start.childNodeIndex) {
       let left = 99999;
       let right = 0;
       childNodes.forEach((childNode, idx) => {
         // 드래그를 시작한 노드일 때
-        if (selectionStartPosition.childNodeIndex === idx) {
-          const rect = getNodeBounds(childNode as Node, 0, selectionStartPosition.offset);
+        if (selection.start.childNodeIndex === idx) {
+          const rect = getNodeBounds(childNode as Node, 0, selection.start.offset);
           left = Math.min(left, rect.left);
           right = Math.max(right, rect.right);
         }
@@ -109,7 +107,7 @@ const handleMouseMove = (
         }
 
         // 드래그를 시작한 노드와 끝낸 노드 사이의 노드일 때
-        if (currentChildNodeIndex < idx && selectionStartPosition.childNodeIndex > idx) {
+        if (currentChildNodeIndex < idx && selection.start.childNodeIndex > idx) {
           const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
           left = Math.min(left, rect.left);
           right = Math.max(right, rect.right);
@@ -121,15 +119,15 @@ const handleMouseMove = (
       fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
     }
     // 오른쪽으로 드래그
-    if (currentChildNodeIndex > selectionStartPosition.childNodeIndex) {
+    if (currentChildNodeIndex > selection.start.childNodeIndex) {
       let left = 99999;
       let right = 0;
       childNodes.forEach((childNode, idx) => {
         // 드래그를 시작한 노드일 때
-        if (selectionStartPosition.childNodeIndex === idx) {
+        if (selection.start.childNodeIndex === idx) {
           const rect = getNodeBounds(
             childNode as Node,
-            selectionStartPosition.offset,
+            selection.start.offset,
             childNode.textContent?.length as number,
           );
           left = Math.min(left, rect.left);
@@ -144,7 +142,7 @@ const handleMouseMove = (
         }
 
         // 드래그를 시작한 노드와 끝낸 노드 사이의 노드일 때
-        if (currentChildNodeIndex < idx && selectionStartPosition.childNodeIndex > idx) {
+        if (currentChildNodeIndex < idx && selection.start.childNodeIndex > idx) {
           const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
           left = Math.min(left, rect.left);
           right = Math.max(right, rect.right);
@@ -158,8 +156,8 @@ const handleMouseMove = (
   }
 
   // 마지막 블록에서
-  if (index !== selectionStartPosition.blockIndex && index === selectionEndPosition.blockIndex) {
-    if (selectionStartPosition.blockIndex < selectionEndPosition.blockIndex) {
+  if (index !== selection.start.blockIndex && index === selection.end.blockIndex) {
+    if (selection.start.blockIndex < selection.end.blockIndex) {
       // 아래로 드래그 된 상태일 때
       let left = 99999;
       let right = 0;
@@ -185,7 +183,7 @@ const handleMouseMove = (
     }
 
     // 위로 드래그 된 상태일 때
-    if (selectionStartPosition.blockIndex > selectionEndPosition.blockIndex) {
+    if (selection.start.blockIndex > selection.end.blockIndex) {
       let left = 99999;
       let right = 0;
       childNodes.forEach((childNode, idx) => {

@@ -45,7 +45,7 @@ const Title = ({ noteId }: ITitle) => {
 
     debounceTimer.current = setTimeout(async () => {
       await editNoteTitle(noteId, value);
-      await mutate('pageList', getNoteList, false);
+      await mutate('noteList', getNoteList, false);
     }, 100);
 
     return () => {

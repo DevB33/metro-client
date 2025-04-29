@@ -2,9 +2,8 @@ import { ITextBlock } from '@/types/block-type';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import keyName from '@/constants/key-name';
 import ISelectionPosition from '@/types/selection-position';
-import selectionDelete from '../selectionDelete';
-import selectionEnter from '../selectionEnter';
-import selectionWrite from '../selectionWrite';
+import IMenuState from '@/types/menu-type';
+import editSelectionContent from '../_selection/editSelectionContent';
 
 // 현재 블록의 맨 앞에 focus
 const focusCurrentBlock = (
@@ -24,16 +23,15 @@ const focusCurrentBlock = (
 };
 
 const focusAfterSelection = (
-  selectionStartPosition: ISelectionPosition,
-  selectionEndPosition: ISelectionPosition,
+  selection: ISelectionPosition,
   isBackward: boolean,
   key: string,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
 ) => {
-  let target = isBackward ? selectionEndPosition : selectionStartPosition;
+  let target = isBackward ? selection.end : selection.start;
 
   if (key === keyName.arrowRight) {
-    target = isBackward ? selectionStartPosition : selectionEndPosition;
+    target = isBackward ? selection.start : selection.end;
   }
 
   const { blockIndex, childNodeIndex, offset } = target;
@@ -43,13 +41,13 @@ const focusAfterSelection = (
   setTimeout(() => {
     if (targetNode) {
       const newRange = document.createRange();
-      const selection = window.getSelection();
+      const windowSelection = window.getSelection();
 
       newRange.setStart(targetNode, Math.min(offset, targetNode.textContent?.length ?? 0));
       newRange.collapse(true);
 
-      selection?.removeAllRanges();
-      selection?.addRange(newRange);
+      windowSelection?.removeAllRanges();
+      windowSelection?.addRange(newRange);
     }
   }, 0);
 };
@@ -491,10 +489,13 @@ const mergeLine = (
 const openSlashMenu = (
   index: number,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
-  setIsSlashMenuOpen: (isSlashMenuOpen: boolean) => void,
-  setSlashMenuPosition: (position: { x: number; y: number }) => void,
+  setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>,
 ) => {
-  setIsSlashMenuOpen(true);
+  setMenuState(prev => ({
+    ...prev,
+    isSlashMenuOpen: false,
+    slashMenuOpenIndex: null,
+  }));
 
   // 메뉴 띄울 슬래시 위치 받아오기
   const { range } = getSelectionInfo(0) || {};
@@ -508,10 +509,13 @@ const openSlashMenu = (
   }
 
   if (rect) {
-    setSlashMenuPosition({
-      x: rect.left,
-      y: rect.top - 282,
-    });
+    setMenuState(prev => ({
+      ...prev,
+      slashMenuPosition: {
+        x: rect.left,
+        y: rect.top - 282,
+      },
+    }));
   }
 };
 
@@ -588,14 +592,12 @@ const handleKeyDown = (
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   setIsTyping: (isTyping: boolean) => void,
   setKey: (key: number) => void,
-  setIsSlashMenuOpen: (isSlashMenuOpen: boolean) => void,
-  setSlashMenuPosition: (position: { x: number; y: number }) => void,
-  isSelectionMenuOpen: boolean,
-  selectionStartPosition: ISelectionPosition,
-  selectionEndPosition: ISelectionPosition,
+  menuState: IMenuState,
+  setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>,
+  selection: ISelectionPosition,
 ) => {
   // selection 없을때
-  if (!isSelectionMenuOpen) {
+  if (!menuState.isSelectionMenuOpen) {
     if (
       event.shiftKey &&
       (event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowRight')
@@ -622,7 +624,7 @@ const handleKeyDown = (
     }
 
     // 일반 backspace 클릭
-    if (event.key === keyName.backspace && !isSelectionMenuOpen) {
+    if (event.key === keyName.backspace && !menuState.isSelectionMenuOpen) {
       const { startOffset, startContainer } = getSelectionInfo(0) || {};
       if (startOffset === undefined || startOffset === null || !startContainer) return;
 
@@ -701,10 +703,10 @@ const handleKeyDown = (
             } else {
               focusCurrentBlock(index, blockRef, blockList);
             }
-            const selection = window.getSelection();
+            const windowSelection = window.getSelection();
 
-            selection?.removeAllRanges();
-            selection?.addRange(range);
+            windowSelection?.removeAllRanges();
+            windowSelection?.addRange(range);
           }, 0);
         }
 
@@ -849,7 +851,7 @@ const handleKeyDown = (
       event.preventDefault();
       setIsTyping(false);
       setKey(Math.random());
-      openSlashMenu(index, blockRef, setIsSlashMenuOpen, setSlashMenuPosition);
+      openSlashMenu(index, blockRef, setMenuState);
     }
 
     // 방향키 클릭
@@ -878,12 +880,12 @@ const handleKeyDown = (
             if (range) {
               const { offsetNode, offset } = caret;
               const newRange = document.createRange();
-              const selection = window.getSelection();
+              const windowSelection = window.getSelection();
 
               newRange.setStart(offsetNode, offset);
 
-              selection?.removeAllRanges();
-              selection?.addRange(newRange);
+              windowSelection?.removeAllRanges();
+              windowSelection?.addRange(newRange);
             }
           }, 0);
         }
@@ -902,11 +904,11 @@ const handleKeyDown = (
             if (range) {
               const { offsetNode, offset } = caret;
               const newRange = document.createRange();
-              const selection = window.getSelection();
+              const windowSelection = window.getSelection();
 
               newRange.setStart(offsetNode, offset);
-              selection?.removeAllRanges();
-              selection?.addRange(newRange);
+              windowSelection?.removeAllRanges();
+              windowSelection?.addRange(newRange);
             }
           }, 0);
         }
@@ -942,12 +944,12 @@ const handleKeyDown = (
               (blockRef.current[index - 1]?.parentNode as HTMLElement)?.focus();
             }
 
-            const selection = window.getSelection();
+            const windowSelection = window.getSelection();
             range?.setStart(prevBlockLastChild as Node, prevBlockLastChild?.textContent?.length as number);
             range.collapse(true);
 
-            selection?.removeAllRanges();
-            selection?.addRange(range);
+            windowSelection?.removeAllRanges();
+            windowSelection?.addRange(range);
           }
         }, 0);
       }
@@ -955,69 +957,69 @@ const handleKeyDown = (
   }
 
   // selection 있을때
-  if (isSelectionMenuOpen) {
+  if (menuState.isSelectionMenuOpen) {
     event.preventDefault();
     setIsTyping(false);
     setKey(Math.random());
 
     const isBackward =
-      selectionStartPosition.blockIndex > selectionEndPosition.blockIndex ||
-      (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex &&
-        selectionStartPosition.childNodeIndex > selectionEndPosition.childNodeIndex) ||
-      (selectionStartPosition.blockIndex === selectionEndPosition.blockIndex &&
-        selectionStartPosition.childNodeIndex === selectionEndPosition.childNodeIndex &&
-        selectionStartPosition.offset > selectionEndPosition.offset);
+      selection.start.blockIndex > selection.end.blockIndex ||
+      (selection.start.blockIndex === selection.end.blockIndex &&
+        selection.start.childNodeIndex > selection.end.childNodeIndex) ||
+      (selection.start.blockIndex === selection.end.blockIndex &&
+        selection.start.childNodeIndex === selection.end.childNodeIndex &&
+        selection.start.offset > selection.end.offset);
 
     // backspace 클릭
     if (event.key === keyName.backspace) {
       if (!isBackward) {
-        selectionDelete(selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
-        if (selectionStartPosition.childNodeIndex > 0) {
-          selectionStartPosition.childNodeIndex -= 1;
-          selectionStartPosition.offset = 0;
+        editSelectionContent('delete', event.key, selection, blockList, setBlockList, blockRef);
+        if (selection.start.childNodeIndex > 0) {
+          selection.start.childNodeIndex -= 1;
+          selection.start.offset = 0;
         }
       } else {
-        selectionDelete(selectionEndPosition, selectionStartPosition, blockList, setBlockList, blockRef);
-        if (selectionEndPosition.childNodeIndex > 0) {
-          selectionEndPosition.childNodeIndex -= 1;
-          selectionEndPosition.offset = 0;
+        editSelectionContent('delete', event.key, selection, blockList, setBlockList, blockRef);
+        if (selection.end.childNodeIndex > 0) {
+          selection.end.childNodeIndex -= 1;
+          selection.end.offset = 0;
         }
       }
     }
     // 엔터 입력
     if (event.key === keyName.enter && !event.shiftKey) {
       if (!isBackward) {
-        selectionEnter(selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
-        selectionStartPosition.blockIndex += 1;
-        selectionStartPosition.childNodeIndex = 0;
-        selectionStartPosition.offset = 0;
+        editSelectionContent('enter', event.key, selection, blockList, setBlockList, blockRef);
+        selection.start.blockIndex += 1;
+        selection.start.childNodeIndex = 0;
+        selection.start.offset = 0;
       } else {
-        selectionEnter(selectionEndPosition, selectionStartPosition, blockList, setBlockList, blockRef);
-        selectionEndPosition.blockIndex += 1;
-        selectionEndPosition.childNodeIndex = 0;
-        selectionEndPosition.offset = 0;
+        editSelectionContent('enter', event.key, selection, blockList, setBlockList, blockRef);
+        selection.end.blockIndex += 1;
+        selection.end.childNodeIndex = 0;
+        selection.end.offset = 0;
       }
     }
     // 다른 키 입력
     else if (isInputtableKey(event.nativeEvent)) {
       if (!isBackward) {
-        selectionWrite(event.key, selectionStartPosition, selectionEndPosition, blockList, setBlockList, blockRef);
-        selectionStartPosition.offset = 1;
+        editSelectionContent('write', event.key, selection, blockList, setBlockList, blockRef);
+        selection.start.offset = 1;
         // selection 시작점의 offset이 0이라 시작노드가 다 지워질떄가 아니면 새로 생성된 노드에 focus
-        if (selectionStartPosition.offset !== 0) {
-          selectionStartPosition.childNodeIndex += 1;
+        if (selection.start.offset !== 0) {
+          selection.start.childNodeIndex += 1;
         }
       } else {
-        selectionWrite(event.key, selectionEndPosition, selectionStartPosition, blockList, setBlockList, blockRef);
-        selectionEndPosition.offset = 1;
-        if (selectionEndPosition.offset !== 0) {
-          selectionEndPosition.childNodeIndex += 1;
+        editSelectionContent('write', event.key, selection, blockList, setBlockList, blockRef);
+        selection.end.offset = 1;
+        if (selection.end.offset !== 0) {
+          selection.end.childNodeIndex += 1;
         }
       }
     }
 
     setTimeout(() => {
-      focusAfterSelection(selectionStartPosition, selectionEndPosition, isBackward, event.key, blockRef);
+      focusAfterSelection(selection, isBackward, event.key, blockRef);
     }, 0);
   }
 };
