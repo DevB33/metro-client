@@ -351,6 +351,10 @@ const NoteContent = () => {
         prevClientY.current = event.clientY;
       }
 
+      const inputElementList = Array.from(document.querySelectorAll('input, textarea'));
+      if (inputElementList.includes(event.target as Element)) {
+        return;
+      }
       // 외부 드래깅중이라면 window 기본 selection이 작동하지 않도록 함
       if (!outSideDragging.current) return;
       const windowSelection = window.getSelection();
