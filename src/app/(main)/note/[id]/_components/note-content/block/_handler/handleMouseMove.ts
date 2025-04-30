@@ -26,8 +26,6 @@ const handleMouseMove = (
   isDragging: boolean,
   selection: ISelectionPosition,
   setSelection: React.Dispatch<React.SetStateAction<ISelectionPosition>>,
-  setIsUp: React.Dispatch<React.SetStateAction<boolean>>,
-  prevClientY: React.RefObject<number>,
 ) => {
   if (!isDragging) return;
 
@@ -206,14 +204,6 @@ const handleMouseMove = (
       if (!blockElement) return;
       fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
     }
-  }
-
-  if (prevClientY.current < event.clientY) {
-    setIsUp(false);
-    prevClientY.current = event.clientY;
-  } else if (prevClientY.current > event.clientY) {
-    setIsUp(true);
-    prevClientY.current = event.clientY;
   }
 };
 
