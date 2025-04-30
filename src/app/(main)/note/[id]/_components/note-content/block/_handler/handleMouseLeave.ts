@@ -23,7 +23,7 @@ const handleMouseLeave = (
   event: React.MouseEvent<HTMLDivElement>,
   index: number,
   isDragging: boolean,
-  isUp: boolean,
+  isUp: React.RefObject<boolean>,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   selection: ISelectionPosition,
   setSelection: React.Dispatch<React.SetStateAction<ISelectionPosition>>,
@@ -57,7 +57,7 @@ const handleMouseLeave = (
     }
 
     // 아래로 떠날 때
-    if (!isUp) {
+    if (!isUp.current) {
       childNodes.forEach((childNode, idx) => {
         // 시작 노드보다 뒤에 있는 노드일 때
         if (idx > selection.start.childNodeIndex) {
@@ -91,7 +91,7 @@ const handleMouseLeave = (
     }
 
     // 위로 떠날 때
-    if (isUp) {
+    if (isUp.current) {
       childNodes.forEach((childNode, idx) => {
         // 시작 노드보다 앞에 있는 노드일 때
         if (idx < selection.start.childNodeIndex) {

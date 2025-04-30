@@ -1,3 +1,4 @@
+import { ITextBlock } from '@/types/block-type';
 import IMenuState from '@/types/menu-type';
 import ISelectionPosition from '@/types/selection-position';
 import getSelectionInfo from '@/utils/getSelectionInfo';
@@ -6,6 +7,7 @@ const handleMouseUp = (
   event: React.MouseEvent<HTMLDivElement>,
   index: number,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
+  blockList: ITextBlock[],
   selection: ISelectionPosition,
   setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>,
 ) => {
@@ -36,7 +38,7 @@ const handleMouseUp = (
     finalSelectionEndPosition.childNodeIndex = currentChildNodeIndex;
   }
 
-  const { startOffset } = getSelectionInfo(0) || {};
+  const { range, startOffset } = getSelectionInfo(0) || {};
   const charIdx = document.caretPositionFromPoint(event.clientX, event.clientY)?.offset as number;
 
   if (startOffset !== undefined && charIdx !== startOffset) {
@@ -44,10 +46,43 @@ const handleMouseUp = (
     if (windowSelection) windowSelection.removeAllRanges();
   }
 
+  setTimeout(() => {
+    // 빈 블록일 때 클릭 한 블록에 focus
+    // block의 타입마다 blockRef의 깊이가 달라서 type에 맞게 focus
+    if (blockList[index].children.length === 1 && blockList[index].children[0].content === '') {
+      if (blockList[index].type === 'ul' || blockList[index].type === 'ol') {
+        (blockRef.current[index]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
+      } else if (blockList[index].type === 'quote') {
+        (blockRef.current[index]?.parentNode?.parentNode as HTMLElement)?.focus();
+      } else {
+        (blockRef.current[index]?.parentNode as HTMLElement)?.focus();
+      }
+    }
+
+    if (range) {
+      const windowSelection = window.getSelection();
+      if (currentChildNodeIndex === -1) return;
+
+      const targetNode = blockRef.current[index]?.childNodes[currentChildNodeIndex];
+
+      if (!targetNode) return;
+      if (targetNode.nodeType === Node.TEXT_NODE) {
+        // 텍스트 노드일 때
+        range.setStart(blockRef.current[index]?.childNodes[currentChildNodeIndex] as Node, charIdx);
+      } else if (targetNode.firstChild && targetNode.firstChild.nodeType === Node.TEXT_NODE) {
+        // span 같은 엘리먼트 노드에 텍스트가 있을 경우
+        range.setStart(blockRef.current[index]?.childNodes[currentChildNodeIndex].firstChild as Node, charIdx);
+      }
+
+      windowSelection?.removeAllRanges();
+      windowSelection?.addRange(range);
+    }
+  }, 10);
+
   finalSelectionEndPosition.offset = charIdx;
 
   const getNodeBounds = (node: Node, startNodeOffset: number, endNodeOffset: number) => {
-    const range = document.createRange();
+    const boundRange = document.createRange();
 
     let targetNode = node;
     // span 같은 element면 그 안에 있는 텍스트 노드로 변경
@@ -59,9 +94,9 @@ const handleMouseUp = (
       targetNode = firstTextNode;
     }
 
-    range.setStart(targetNode as Node, startNodeOffset);
-    range.setEnd(targetNode as Node, endNodeOffset);
-    return range.getBoundingClientRect();
+    boundRange.setStart(targetNode as Node, startNodeOffset);
+    boundRange.setEnd(targetNode as Node, endNodeOffset);
+    return boundRange.getBoundingClientRect();
   };
 
   const getBoundsForSelection = (blockIndex: number, childNodeIndex: number, offset: number) => {

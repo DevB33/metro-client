@@ -926,40 +926,44 @@ const handleKeyDown = (
       }
 
       // 블록의 맨 앞에서 왼쪽 방향키 클릭하면 이전 블록으로 커서 이동
-      if (
-        event.key === keyName.arrowLeft &&
-        ((startOffset === 0 && startContainer === firstChild) ||
-          (blockList[index].children.length === 1 && blockList[index].children[0].content === '')) &&
-        index > 0
-      ) {
-        const prevBlockNodeLength = (blockRef.current[index - 1]?.childNodes.length as number) - 1;
-        const prevBlockLastChild = blockRef.current[index - 1]?.childNodes[prevBlockNodeLength];
-        setTimeout(() => {
-          if (range) {
-            if (blockList[index - 1].type === 'ul' || blockList[index - 1].type === 'ol') {
-              (blockRef.current[index - 1]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
-            } else if (blockList[index - 1].type === 'quote') {
-              (blockRef.current[index - 1]?.parentNode?.parentNode as HTMLElement)?.focus();
-            } else {
-              (blockRef.current[index - 1]?.parentNode as HTMLElement)?.focus();
-            }
+      if (event.key === keyName.arrowLeft) {
+        if (
+          ((startOffset === 0 && startContainer === firstChild) ||
+            (startOffset === 0 && startContainer?.firstChild?.firstChild === firstChild?.firstChild) ||
+            (blockList[index].children.length === 1 && blockList[index].children[0].content === '')) &&
+          index > 0
+        ) {
+          const prevBlockNodeLength = (blockRef.current[index - 1]?.childNodes.length as number) - 1;
+          const prevBlockLastChild = blockRef.current[index - 1]?.childNodes[prevBlockNodeLength];
 
-            const windowSelection = window.getSelection();
-            if (prevBlockLastChild?.nodeType === Node.TEXT_NODE)
-              range?.setStart(prevBlockLastChild as Node, prevBlockLastChild?.textContent?.length as number);
-            else {
-              range?.setStart(
-                blockRef.current[index - 1]?.childNodes[prevBlockNodeLength]?.firstChild as Node,
-                blockRef.current[index - 1]?.childNodes[prevBlockNodeLength]?.firstChild?.textContent?.length as number,
-              );
-              console.log(range);
-            }
-            range.collapse(true);
+          setTimeout(() => {
+            if (range) {
+              if (blockList[index - 1].type === 'ul' || blockList[index - 1].type === 'ol') {
+                (blockRef.current[index - 1]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
+              } else if (blockList[index - 1].type === 'quote') {
+                (blockRef.current[index - 1]?.parentNode?.parentNode as HTMLElement)?.focus();
+              } else {
+                (blockRef.current[index - 1]?.parentNode as HTMLElement)?.focus();
+              }
 
-            windowSelection?.removeAllRanges();
-            windowSelection?.addRange(range);
-          }
-        }, 0);
+              const windowSelection = window.getSelection();
+              if (prevBlockLastChild?.nodeType === Node.TEXT_NODE)
+                range?.setStart(prevBlockLastChild as Node, prevBlockLastChild?.textContent?.length as number);
+              else {
+                range?.setStart(
+                  blockRef.current[index - 1]?.childNodes[prevBlockNodeLength]?.firstChild as Node,
+                  blockRef.current[index - 1]?.childNodes[prevBlockNodeLength]?.firstChild?.textContent
+                    ?.length as number,
+                );
+                console.log(range);
+              }
+              range.collapse(true);
+
+              windowSelection?.removeAllRanges();
+              windowSelection?.addRange(range);
+            }
+          }, 0);
+        }
       }
     }
   }
