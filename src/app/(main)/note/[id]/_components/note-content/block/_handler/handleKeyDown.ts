@@ -933,7 +933,7 @@ const handleKeyDown = (
         index > 0
       ) {
         const prevBlockLastChild =
-          blockRef.current[index - 1]?.childNodes[(blockRef.current[index]?.childNodes.length as number) - 1];
+          blockRef.current[index - 1]?.childNodes[(blockRef.current[index - 1]?.childNodes.length as number) - 1];
         setTimeout(() => {
           if (range) {
             if (blockList[index - 1].type === 'ul' || blockList[index - 1].type === 'ol') {
