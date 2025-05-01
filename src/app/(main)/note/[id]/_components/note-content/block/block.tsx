@@ -85,7 +85,8 @@ const Block = memo(
           setIsTyping(true);
           handleInput(event, index, blockList, setBlockList, blockRef, prevChildNodesLength);
         }}
-        onKeyDown={event =>
+        onKeyDown={event => {
+          setIsTyping(true);
           handleKeyDown(
             event,
             index,
@@ -97,8 +98,8 @@ const Block = memo(
             menuState,
             setMenuState,
             selection,
-          )
-        }
+          );
+        }}
         onMouseUp={() => {
           setIsDragging(false);
         }}
