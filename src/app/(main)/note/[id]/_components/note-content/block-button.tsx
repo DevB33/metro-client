@@ -74,6 +74,7 @@ const BlockButton = ({
 
   const buttonRef = useRef<HTMLDivElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [openedBySlashKey, setOpenedBySlashKey] = useState(true);
 
   const ghostRef = useRef<HTMLDivElement>(null);
 
@@ -139,6 +140,7 @@ const BlockButton = ({
 
   const handleChange = () => {
     if (buttonRef.current) {
+      setOpenedBySlashKey(false);
       const rect = buttonRef.current.getBoundingClientRect();
       setMenuState(prev => ({
         ...prev,
@@ -186,7 +188,7 @@ const BlockButton = ({
           setBlockList={setBlockList}
           menuState={menuState}
           setMenuState={setMenuState}
-          openedBySlashKey={false}
+          openedBySlashKey={openedBySlashKey}
         />
       )}
     </div>

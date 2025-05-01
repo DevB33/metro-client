@@ -191,10 +191,12 @@ const SlashMenu = ({
               key={item.label}
               className={`${slashButton} ${selectedIndex === i ? selectedButton : ''}`}
               onClick={() => {
+                console.log(openedBySlashKey);
                 if (openedBySlashKey) {
                   if (blockList[index].children[0].content === '') {
                     changeBlock(item.type);
                   } else {
+                    console.log('empty');
                     makeBlock(item.type);
                   }
                 } else changeBlock(item.type);

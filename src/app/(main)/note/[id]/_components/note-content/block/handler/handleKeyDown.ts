@@ -493,8 +493,8 @@ const openSlashMenu = (
 ) => {
   setMenuState(prev => ({
     ...prev,
-    isSlashMenuOpen: false,
-    slashMenuOpenIndex: null,
+    isSlashMenuOpen: true,
+    slashMenuOpenIndex: index,
   }));
 
   // 메뉴 띄울 슬래시 위치 받아오기
