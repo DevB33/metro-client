@@ -206,31 +206,54 @@ const editSelectionContent = (
           selectionAfterText = selectionEndNode.textContent?.slice(startOffset) || '';
         }
 
-        // const startNode = childNodes[startNodeIndex];
-        // const startNodeBeforeText = startNode.textContent?.slice(0, startOffset) || '';
-        // const startNodeBeforeNode = {
-        //   type: block.children[startNodeIndex].type,
-        //   style: block.children[startNodeIndex].style,
-        //   content: startNodeBeforeText,
-        // };
-
-        // // 선택 끝 노드 분리
-        // const endNode = childNodes[endNodeIndex];
-        // const endNodeAfterText = endNode.textContent?.slice(endOffset) || '';
-        // const endNodeAfterNode = {
-        //   type: block.children[endNodeIndex].type,
-        //   style: block.children[endNodeIndex].style,
-        //   content: endNodeAfterText,
-        // };
-
         if (selectionAction === 'write') {
-          const rawChildren = [
-            ...block.children.slice(0, startNodeIndex),
-            ...(startNodeBeforeText ? [startNodeBeforeNode] : []),
-            newNode,
-            ...(endNodeAfterText ? [endNodeAfterNode] : []),
-            ...block.children.slice(endNodeIndex + 1),
-          ];
+          let rawChildren: ITextBlock['children'] = [];
+          if (startNodeIndex < endNodeIndex) {
+            rawChildren = [
+              ...block.children.slice(0, startNodeIndex),
+              ...(selectionBeforeText
+                ? [
+                    {
+                      ...block.children[startNodeIndex],
+                      content: selectionBeforeText,
+                    },
+                  ]
+                : []),
+              newNode,
+              ...(selectionAfterText
+                ? [
+                    {
+                      ...block.children[endNodeIndex],
+                      content: selectionAfterText,
+                    },
+                  ]
+                : []),
+              ...block.children.slice(endNodeIndex + 1),
+            ];
+          }
+          if (startNodeIndex > endNodeIndex) {
+            rawChildren = [
+              ...block.children.slice(0, endNodeIndex),
+              ...(selectionBeforeText
+                ? [
+                    {
+                      ...block.children[endNodeIndex],
+                      content: selectionBeforeText,
+                    },
+                  ]
+                : []),
+              newNode,
+              ...(selectionAfterText
+                ? [
+                    {
+                      ...block.children[startNodeIndex],
+                      content: selectionAfterText,
+                    },
+                  ]
+                : []),
+              ...block.children.slice(startNodeIndex + 1),
+            ];
+          }
           if (rawChildren.length === 1 && rawChildren[0].content === ' ') {
             rawChildren[0].content = '&nbsp;';
           }
@@ -255,58 +278,107 @@ const editSelectionContent = (
         }
 
         if (selectionAction === 'enter') {
-          const firstRawChildren = [
-            ...block.children.slice(0, startNodeIndex),
-            ...(startNodeBeforeText ? [startNodeBeforeNode] : []),
-          ];
+          let firstRawChildren: ITextBlock['children'] = [];
+          let secondRawChildren: ITextBlock['children'] = [];
+          if (startNodeIndex < endNodeIndex) {
+            firstRawChildren = [
+              ...block.children.slice(0, startNodeIndex),
+              ...(selectionBeforeText
+                ? [
+                    {
+                      ...block.children[startNodeIndex],
+                      content: selectionBeforeText,
+                    },
+                  ]
+                : []),
+            ];
 
-          const secondRawChildren = [
-            ...(endNodeAfterText ? [endNodeAfterNode] : []),
-            ...block.children.slice(endNodeIndex + 1),
-          ];
+            secondRawChildren = [
+              ...(selectionAfterText
+                ? [
+                    {
+                      ...block.children[endNodeIndex],
+                      content: selectionAfterText,
+                    },
+                  ]
+                : []),
+              ...block.children.slice(endNodeIndex + 1),
+            ];
+          }
+          if (startNodeIndex > endNodeIndex) {
+            firstRawChildren = [
+              ...block.children.slice(0, endNodeIndex),
+              ...(selectionBeforeText
+                ? [
+                    {
+                      ...block.children[endNodeIndex],
+                      content: selectionBeforeText,
+                    },
+                  ]
+                : []),
+            ];
+
+            secondRawChildren = [
+              ...(selectionAfterText
+                ? [
+                    {
+                      ...block.children[startNodeIndex],
+                      content: selectionAfterText,
+                    },
+                  ]
+                : []),
+              ...block.children.slice(startNodeIndex + 1),
+            ];
+          }
           newBlockList = splitChildren(firstRawChildren, secondRawChildren, block, newBlockList, index);
         }
 
         if (selectionAction === 'delete') {
-          const rawChildren: ITextBlock['children'] = [];
+          let rawChildren: ITextBlock['children'] = [];
 
           if (startNodeIndex < endNodeIndex) {
-            block.children.forEach((child, idx) => {
-              if (idx < startNodeIndex || idx > endNodeIndex) {
-                rawChildren.push(child);
-              }
-              if (idx === startNodeIndex) {
-                rawChildren.push({
-                  ...child,
-                  content: selectionBeforeText,
-                });
-              }
-              if (idx === endNodeIndex) {
-                rawChildren.push({
-                  ...child,
-                  content: selectionAfterText,
-                });
-              }
-            });
+            rawChildren = [
+              ...block.children.slice(0, startNodeIndex),
+              ...(selectionBeforeText
+                ? [
+                    {
+                      ...block.children[startNodeIndex],
+                      content: selectionBeforeText,
+                    },
+                  ]
+                : []),
+              ...(selectionAfterText
+                ? [
+                    {
+                      ...block.children[endNodeIndex],
+                      content: selectionAfterText,
+                    },
+                  ]
+                : []),
+              ...block.children.slice(endNodeIndex + 1),
+            ];
           }
           if (startNodeIndex > endNodeIndex) {
-            block.children.forEach((child, idx) => {
-              if (idx > startNodeIndex || idx < endNodeIndex) {
-                rawChildren.push(child);
-              }
-              if (idx === startNodeIndex) {
-                rawChildren.push({
-                  ...child,
-                  content: selectionAfterText,
-                });
-              }
-              if (idx === endNodeIndex) {
-                rawChildren.push({
-                  ...child,
-                  content: selectionBeforeText,
-                });
-              }
-            });
+            rawChildren = [
+              ...block.children.slice(0, endNodeIndex),
+              ...(selectionBeforeText
+                ? [
+                    {
+                      ...block.children[endNodeIndex],
+                      content: selectionBeforeText,
+                    },
+                  ]
+                : []),
+              ...(selectionAfterText
+                ? [
+                    {
+                      ...block.children[startNodeIndex],
+                      content: selectionAfterText,
+                    },
+                  ]
+                : []),
+              ...block.children.slice(startNodeIndex + 1),
+            ];
           }
 
           const finalChildren =
