@@ -712,12 +712,12 @@ const editSelectionContent = (
               ...(selectionAfterText
                 ? [
                     {
-                      ...block.children[endNodeIndex],
+                      ...block.children[startNodeIndex],
                       content: selectionAfterText,
                     },
                   ]
                 : []),
-              ...block.children.slice(endNodeIndex + 1),
+              ...block.children.slice(startNodeIndex + 1),
             ];
             if (rawChildren.length === 1 && rawChildren[0].content === ' ') {
               rawChildren[0].content = '&nbsp;';

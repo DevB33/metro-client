@@ -43,11 +43,19 @@ const focusAfterSelection = (
       const newRange = document.createRange();
       const windowSelection = window.getSelection();
 
-      newRange.setStart(targetNode, Math.min(offset, targetNode.textContent?.length ?? 0));
-      newRange.collapse(true);
+      if (targetNode.nodeType === Node.TEXT_NODE) {
+        newRange.setStart(targetNode, Math.min(offset, targetNode.textContent?.length ?? 0));
+        newRange.collapse(true);
 
-      windowSelection?.removeAllRanges();
-      windowSelection?.addRange(newRange);
+        windowSelection?.removeAllRanges();
+        windowSelection?.addRange(newRange);
+      } else {
+        newRange.setStart(targetNode.firstChild as Node, Math.min(offset, targetNode.textContent?.length ?? 0));
+        newRange.collapse(true);
+
+        windowSelection?.removeAllRanges();
+        windowSelection?.addRange(newRange);
+      }
     }
   }, 0);
 };
@@ -984,19 +992,7 @@ const handleKeyDown = (
 
     // backspace 클릭
     if (event.key === keyName.backspace) {
-      if (!isBackward) {
-        editSelectionContent('delete', event.key, selection, blockList, setBlockList, blockRef);
-        if (selection.start.childNodeIndex > 0) {
-          selection.start.childNodeIndex -= 1;
-          selection.start.offset = 0;
-        }
-      } else {
-        editSelectionContent('delete', event.key, selection, blockList, setBlockList, blockRef);
-        if (selection.end.childNodeIndex > 0) {
-          selection.end.childNodeIndex -= 1;
-          selection.end.offset = 0;
-        }
-      }
+      editSelectionContent('delete', event.key, selection, blockList, setBlockList, blockRef);
     }
     // 엔터 입력
     if (event.key === keyName.enter && !event.shiftKey) {
