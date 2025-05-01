@@ -190,22 +190,38 @@ const editSelectionContent = (
       // 한 블록에서 여러 노드 선택된 경우
       else {
         // 선택 시작 노드 분리
-        const startNode = childNodes[startNodeIndex];
-        const startNodeBeforeText = startNode.textContent?.slice(0, startOffset) || '';
-        const startNodeBeforeNode = {
-          type: block.children[startNodeIndex].type,
-          style: block.children[startNodeIndex].style,
-          content: startNodeBeforeText,
-        };
+        let selectionStartNode;
+        let selectionEndNode;
+        let selectionBeforeText;
+        let selectionAfterText;
+        if (startNodeIndex < endNodeIndex) {
+          selectionStartNode = childNodes[startNodeIndex];
+          selectionEndNode = childNodes[endNodeIndex];
+          selectionBeforeText = selectionStartNode.textContent?.slice(0, startOffset) || '';
+          selectionAfterText = selectionEndNode.textContent?.slice(endOffset) || '';
+        } else {
+          selectionStartNode = childNodes[endNodeIndex];
+          selectionEndNode = childNodes[startNodeIndex];
+          selectionBeforeText = selectionStartNode.textContent?.slice(0, endOffset) || '';
+          selectionAfterText = selectionEndNode.textContent?.slice(startOffset) || '';
+        }
 
-        // 선택 끝 노드 분리
-        const endNode = childNodes[endNodeIndex];
-        const endNodeAfterText = endNode.textContent?.slice(endOffset) || '';
-        const endNodeAfterNode = {
-          type: block.children[endNodeIndex].type,
-          style: block.children[endNodeIndex].style,
-          content: endNodeAfterText,
-        };
+        // const startNode = childNodes[startNodeIndex];
+        // const startNodeBeforeText = startNode.textContent?.slice(0, startOffset) || '';
+        // const startNodeBeforeNode = {
+        //   type: block.children[startNodeIndex].type,
+        //   style: block.children[startNodeIndex].style,
+        //   content: startNodeBeforeText,
+        // };
+
+        // // 선택 끝 노드 분리
+        // const endNode = childNodes[endNodeIndex];
+        // const endNodeAfterText = endNode.textContent?.slice(endOffset) || '';
+        // const endNodeAfterNode = {
+        //   type: block.children[endNodeIndex].type,
+        //   style: block.children[endNodeIndex].style,
+        //   content: endNodeAfterText,
+        // };
 
         if (selectionAction === 'write') {
           const rawChildren = [
@@ -252,12 +268,46 @@ const editSelectionContent = (
         }
 
         if (selectionAction === 'delete') {
-          const rawChildren = [
-            ...block.children.slice(0, startNodeIndex),
-            ...(startNodeBeforeText ? [startNodeBeforeNode] : []),
-            ...(endNodeAfterText ? [endNodeAfterNode] : []),
-            ...block.children.slice(endNodeIndex + 1),
-          ];
+          const rawChildren: ITextBlock['children'] = [];
+
+          if (startNodeIndex < endNodeIndex) {
+            block.children.forEach((child, idx) => {
+              if (idx < startNodeIndex || idx > endNodeIndex) {
+                rawChildren.push(child);
+              }
+              if (idx === startNodeIndex) {
+                rawChildren.push({
+                  ...child,
+                  content: selectionBeforeText,
+                });
+              }
+              if (idx === endNodeIndex) {
+                rawChildren.push({
+                  ...child,
+                  content: selectionAfterText,
+                });
+              }
+            });
+          }
+          if (startNodeIndex > endNodeIndex) {
+            block.children.forEach((child, idx) => {
+              if (idx > startNodeIndex || idx < endNodeIndex) {
+                rawChildren.push(child);
+              }
+              if (idx === startNodeIndex) {
+                rawChildren.push({
+                  ...child,
+                  content: selectionAfterText,
+                });
+              }
+              if (idx === endNodeIndex) {
+                rawChildren.push({
+                  ...child,
+                  content: selectionBeforeText,
+                });
+              }
+            });
+          }
 
           const finalChildren =
             rawChildren.length > 0
