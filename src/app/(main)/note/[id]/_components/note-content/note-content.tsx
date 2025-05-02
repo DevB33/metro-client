@@ -9,10 +9,9 @@ import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundIma
 import ISelectionPosition from '@/types/selection-position';
 import BUTTON_OFFSET from '@/constants/button-offset';
 import IMenuState from '@/types/menu-type';
-import Block from './block/block';
 import BlockButton from './block-button';
-import SelectionMenu from './block/_selection/selection-menu';
-import handleMouseUp from './block/_handler/handleMouseUp';
+import Block from './block/block';
+import SelectionMenu from './selection-menu/selection-menu';
 
 const blockContainer = css({
   boxSizing: 'content-box',
@@ -28,8 +27,8 @@ const fakeBox = css({
   position: 'absolute',
   width: '100vw',
   left: '50%',
+  transform: 'translateX(-62%)',
   height: 'var(--block-height)',
-  transform: 'translateX(-50%)',
   zIndex: '1',
 
   pointerEvents: 'auto',
@@ -289,9 +288,9 @@ const NoteContent = () => {
 
   // menuState.isSlashMenuOpen 상태에 따라 스크롤 막기
   useEffect(() => {
-    const grandParent = noteRef.current?.parentElement?.parentElement;
+    const grandParent = noteRef.current?.parentElement?.parentElement?.parentElement;
     if (!grandParent) return;
-    if (menuState.isSlashMenuOpen) {
+    if (menuState.isSlashMenuOpen || menuState.isSelectionMenuOpen) {
       grandParent.style.overflowY = 'hidden';
     } else {
       grandParent.style.overflowY = '';
@@ -300,7 +299,7 @@ const NoteContent = () => {
     return () => {
       grandParent.style.overflow = '';
     };
-  }, [menuState.isSlashMenuOpen]);
+  }, [menuState.isSlashMenuOpen, menuState.isSelectionMenuOpen]);
 
   // 초기 렌더링 시 block 외의 이벤트를 처리하기 위한 useEffect
   useEffect(() => {
@@ -321,7 +320,7 @@ const NoteContent = () => {
     };
 
     const handleOutsideMouseDown = (event: MouseEvent) => {
-      // Mouse 이벤트가 block위가 아닐때,
+      // Mouse 이벤트가 block 위일 때,
       if (blockRef.current.some(block => block?.contains(event.target as Node))) {
         outSideDragging.current = false;
         return;
@@ -351,6 +350,9 @@ const NoteContent = () => {
         prevClientY.current = event.clientY;
       }
 
+      // 외부의 input이나, textarea일 때는 기본 selection이 작동하게 함
+      const inputElementList = Array.from(document.querySelectorAll('input, textarea'));
+      if (inputElementList.includes(event.target as Element)) return;
       // 외부 드래깅중이라면 window 기본 selection이 작동하지 않도록 함
       if (!outSideDragging.current) return;
       const windowSelection = window.getSelection();
@@ -595,11 +597,13 @@ const NoteContent = () => {
             onMouseLeave={() => handleMouseLeave(index)}
             onKeyDown={() => handleMouseLeave(index)}
             onMouseMove={() => handleMouseEnter(index)}
-            onMouseUp={event => handleMouseUp(event, index, blockRef, selection, setMenuState)}
           >
             <div
               className={fakeBox}
               id={`fakeBox-${index}`}
+              style={{
+                left: `-${(blockContainerRef.current[index]?.getBoundingClientRect().left as number) + 20}px`,
+              }}
               ref={element => {
                 fakeBoxRef.current[index] = element;
               }}
