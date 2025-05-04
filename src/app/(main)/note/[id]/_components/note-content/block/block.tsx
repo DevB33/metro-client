@@ -102,7 +102,7 @@ const Block = memo(
           );
         }}
         onMouseUp={event => {
-          handleMouseUp(event, index, blockRef, selection, setMenuState);
+          handleMouseUp(event, index, blockRef, blockList, selection, setMenuState);
           setIsDragging(false);
         }}
         onMouseDown={event =>
