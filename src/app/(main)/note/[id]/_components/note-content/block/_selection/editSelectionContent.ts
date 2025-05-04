@@ -749,12 +749,12 @@ const editSelectionContent = (
               ...(selectionAfterText
                 ? [
                     {
-                      ...block.children[startBlockIndex],
+                      ...block.children[startNodeIndex],
                       content: selectionAfterText,
                     },
                   ]
                 : []),
-              ...block.children.slice(startBlockIndex + 1),
+              ...block.children.slice(startNodeIndex + 1),
             ];
             newBlockList = splitChildren([], secondRawChildren, block, newBlockList, index);
           }
@@ -768,12 +768,12 @@ const editSelectionContent = (
               ...(selectionAfterText
                 ? [
                     {
-                      ...block.children[endNodeIndex],
+                      ...block.children[startNodeIndex],
                       content: selectionAfterText,
                     },
                   ]
                 : []),
-              ...block.children.slice(endNodeIndex + 1),
+              ...block.children.slice(startNodeIndex + 1),
             ];
 
             const finalChildren =
