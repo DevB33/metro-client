@@ -50,7 +50,11 @@ const focusAfterSelection = (
         windowSelection?.removeAllRanges();
         windowSelection?.addRange(newRange);
       } else {
-        newRange.setStart(targetNode.firstChild as Node, Math.min(offset, targetNode.textContent?.length ?? 0));
+        if (targetNode.nodeName === 'BR') {
+          newRange.setStart(targetNode as Node, Math.min(offset, targetNode.textContent?.length ?? 0));
+        } else {
+          newRange.setStart(targetNode.firstChild as Node, Math.min(offset, targetNode.textContent?.length ?? 0));
+        }
         newRange.collapse(true);
 
         windowSelection?.removeAllRanges();

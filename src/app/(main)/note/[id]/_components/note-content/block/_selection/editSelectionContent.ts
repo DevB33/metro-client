@@ -360,6 +360,7 @@ const editSelectionContent = (
     }
 
     // 여러 블록을 선택한 경우
+    // note : for문의 index에 따른 로직이므로 아래 로직이 거의 흡사하나 합치지 못함 추후 리팩토링 시 고려
     else {
       // 정방향 selection의 경우
       if (startBlockIndex < endBlockIndex) {
