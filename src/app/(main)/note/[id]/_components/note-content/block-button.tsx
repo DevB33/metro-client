@@ -8,8 +8,8 @@ import TrashIcon from '@/icons/trash-icon';
 import ArrowReapeatIcon from '@/icons/arrow-repeat-icon';
 import { ITextBlock } from '@/types/block-type';
 import IMenuState from '@/types/menu-type';
-import SlashMenu from './block/_slash/slash-menu';
-import GhostBlock from './block/_ghost-block/ghost-block';
+import SlashMenu from './slash-menu/slash-menu';
+import GhostBlock from './ghost-block/ghost-block';
 
 interface IBlockButton {
   OpenBlockMenu: () => void;
@@ -74,6 +74,7 @@ const BlockButton = ({
 
   const buttonRef = useRef<HTMLDivElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [openedBySlashKey, setOpenedBySlashKey] = useState(true);
 
   const ghostRef = useRef<HTMLDivElement>(null);
 
@@ -139,6 +140,7 @@ const BlockButton = ({
 
   const handleChange = () => {
     if (buttonRef.current) {
+      setOpenedBySlashKey(false);
       const rect = buttonRef.current.getBoundingClientRect();
       setMenuState(prev => ({
         ...prev,
@@ -186,7 +188,7 @@ const BlockButton = ({
           setBlockList={setBlockList}
           menuState={menuState}
           setMenuState={setMenuState}
-          openedBySlashKey={false}
+          openedBySlashKey={openedBySlashKey}
         />
       )}
     </div>
