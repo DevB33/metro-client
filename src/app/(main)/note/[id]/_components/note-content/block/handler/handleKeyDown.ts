@@ -43,11 +43,23 @@ const focusAfterSelection = (
       const newRange = document.createRange();
       const windowSelection = window.getSelection();
 
-      newRange.setStart(targetNode, Math.min(offset, targetNode.textContent?.length ?? 0));
-      newRange.collapse(true);
+      if (targetNode.nodeType === Node.TEXT_NODE) {
+        newRange.setStart(targetNode, Math.min(offset, targetNode.textContent?.length ?? 0));
+        newRange.collapse(true);
 
-      windowSelection?.removeAllRanges();
-      windowSelection?.addRange(newRange);
+        windowSelection?.removeAllRanges();
+        windowSelection?.addRange(newRange);
+      } else {
+        if (targetNode.nodeName === 'BR') {
+          newRange.setStart(targetNode as Node, Math.min(offset, targetNode.textContent?.length ?? 0));
+        } else {
+          newRange.setStart(targetNode.firstChild as Node, Math.min(offset, targetNode.textContent?.length ?? 0));
+        }
+        newRange.collapse(true);
+
+        windowSelection?.removeAllRanges();
+        windowSelection?.addRange(newRange);
+      }
     }
   }, 0);
 };
@@ -410,17 +422,17 @@ const mergeBlock = (
         currentBlock.children[0].content === ''
       ) {
         // 빈 블록에서 빈블록이 아닌 블록으로 합쳐질 때
-        if (afterBlock?.childNodes[previousBlockLength - 1].nodeName === 'SPAN') {
-          // span일 때는 span의 자식인 textNode로 range 설정
+        const prevChildNodesLength = afterBlock ? afterBlock.childNodes.length - 1 : 0;
+
+        if (afterBlock?.childNodes[prevChildNodesLength]?.nodeType === Node.TEXT_NODE) {
           range?.setStart(
-            afterBlock?.childNodes[previousBlockLength - 1].firstChild as Node,
-            afterBlock?.childNodes[previousBlockLength - 1].textContent?.length as number,
+            blockRef.current[index - 1]?.childNodes[prevChildNodesLength] as Node,
+            blockRef.current[index - 1]?.childNodes[prevChildNodesLength]?.textContent?.length ?? 0,
           );
         } else {
-          // textNode일 때는 textNode 자신으로 range 설정
           range?.setStart(
-            afterBlock?.childNodes[previousBlockLength - 1] as Node,
-            afterBlock?.childNodes[previousBlockLength - 1].textContent?.length as number,
+            blockRef.current[index - 1]?.childNodes[prevChildNodesLength]?.firstChild as Node,
+            blockRef.current[index - 1]?.childNodes[prevChildNodesLength]?.textContent?.length ?? 0,
           );
         }
       } else {
@@ -926,32 +938,44 @@ const handleKeyDown = (
       }
 
       // 블록의 맨 앞에서 왼쪽 방향키 클릭하면 이전 블록으로 커서 이동
-      if (
-        event.key === keyName.arrowLeft &&
-        ((startOffset === 0 && startContainer === firstChild) ||
-          (blockList[index].children.length === 1 && blockList[index].children[0].content === '')) &&
-        index > 0
-      ) {
-        const prevBlockLastChild =
-          blockRef.current[index - 1]?.childNodes[(blockRef.current[index]?.childNodes.length as number) - 1];
-        setTimeout(() => {
-          if (range) {
-            if (blockList[index - 1].type === 'ul' || blockList[index - 1].type === 'ol') {
-              (blockRef.current[index - 1]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
-            } else if (blockList[index - 1].type === 'quote') {
-              (blockRef.current[index - 1]?.parentNode?.parentNode as HTMLElement)?.focus();
-            } else {
-              (blockRef.current[index - 1]?.parentNode as HTMLElement)?.focus();
+      if (event.key === keyName.arrowLeft) {
+        if (
+          ((startOffset === 0 && startContainer === firstChild) ||
+            (startOffset === 0 && startContainer?.firstChild?.firstChild === firstChild?.firstChild) ||
+            (blockList[index].children.length === 1 && blockList[index].children[0].content === '')) &&
+          index > 0
+        ) {
+          const prevBlockNodeLength = (blockRef.current[index - 1]?.childNodes.length as number) - 1;
+          const prevBlockLastChild = blockRef.current[index - 1]?.childNodes[prevBlockNodeLength];
+
+          setTimeout(() => {
+            if (range) {
+              if (blockList[index - 1].type === 'ul' || blockList[index - 1].type === 'ol') {
+                (blockRef.current[index - 1]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
+              } else if (blockList[index - 1].type === 'quote') {
+                (blockRef.current[index - 1]?.parentNode?.parentNode as HTMLElement)?.focus();
+              } else {
+                (blockRef.current[index - 1]?.parentNode as HTMLElement)?.focus();
+              }
+
+              const windowSelection = window.getSelection();
+              if (prevBlockLastChild?.nodeType === Node.TEXT_NODE)
+                range?.setStart(prevBlockLastChild as Node, prevBlockLastChild?.textContent?.length as number);
+              else {
+                range?.setStart(
+                  blockRef.current[index - 1]?.childNodes[prevBlockNodeLength]?.firstChild as Node,
+                  blockRef.current[index - 1]?.childNodes[prevBlockNodeLength]?.firstChild?.textContent
+                    ?.length as number,
+                );
+                console.log(range);
+              }
+              range.collapse(true);
+
+              windowSelection?.removeAllRanges();
+              windowSelection?.addRange(range);
             }
-
-            const windowSelection = window.getSelection();
-            range?.setStart(prevBlockLastChild as Node, prevBlockLastChild?.textContent?.length as number);
-            range.collapse(true);
-
-            windowSelection?.removeAllRanges();
-            windowSelection?.addRange(range);
-          }
-        }, 0);
+          }, 0);
+        }
       }
     }
   }
@@ -972,19 +996,7 @@ const handleKeyDown = (
 
     // backspace 클릭
     if (event.key === keyName.backspace) {
-      if (!isBackward) {
-        editSelectionContent('delete', event.key, selection, blockList, setBlockList, blockRef);
-        if (selection.start.childNodeIndex > 0) {
-          selection.start.childNodeIndex -= 1;
-          selection.start.offset = 0;
-        }
-      } else {
-        editSelectionContent('delete', event.key, selection, blockList, setBlockList, blockRef);
-        if (selection.end.childNodeIndex > 0) {
-          selection.end.childNodeIndex -= 1;
-          selection.end.offset = 0;
-        }
-      }
+      editSelectionContent('delete', event.key, selection, blockList, setBlockList, blockRef);
     }
     // 엔터 입력
     if (event.key === keyName.enter && !event.shiftKey) {
