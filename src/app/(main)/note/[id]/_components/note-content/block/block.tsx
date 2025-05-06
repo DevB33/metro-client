@@ -72,7 +72,7 @@ const Block = memo(
     const [isDragOver, setIsDragOver] = useState(false);
 
     useEffect(() => {
-      prevChildNodesLength.current = blockList[index].children.length;
+      prevChildNodesLength.current = blockList[index].nodes.length;
     }, [blockList, index]);
 
     return (
@@ -143,8 +143,8 @@ const Block = memo(
         }}
       >
         <BlockHTMLTag block={block} blockList={blockList} index={index} blockRef={blockRef}>
-          {block.children.length === 1 && block.children[0].content === '' && <br />}
-          {block.children.map(child => {
+          {block.nodes?.length === 1 && block.nodes[0].content === '' && <br />}
+          {block.nodes?.map(child => {
             if (child.type === 'br') {
               return <br key={Math.random()} />;
             }

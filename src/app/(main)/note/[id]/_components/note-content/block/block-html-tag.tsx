@@ -62,11 +62,11 @@ const placeholderStyles = cva({
 });
 
 const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag) => {
-  if (block.type === 'default') {
+  if (block.type === 'DEFAULT') {
     return (
       <p
         data-placeholder={placeholder.block}
-        data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
+        data-empty={`${block.nodes.length === 1 && block.nodes[0].content === ''}`}
         className={placeholderStyles({ tag: 'p' })}
         ref={element => {
           blockRef.current[index] = element;
@@ -81,7 +81,7 @@ const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag
     return (
       <h1
         data-placeholder={placeholder.h1}
-        data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
+        data-empty={`${block.nodes.length === 1 && block.nodes[0].content === ''}`}
         className={placeholderStyles({ tag: 'h1' })}
         ref={element => {
           blockRef.current[index] = element;
@@ -96,7 +96,7 @@ const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag
     return (
       <h2
         data-placeholder={placeholder.h2}
-        data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
+        data-empty={`${block.nodes.length === 1 && block.nodes[0].content === ''}`}
         className={placeholderStyles({ tag: 'h2' })}
         ref={element => {
           blockRef.current[index] = element;
@@ -111,7 +111,7 @@ const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag
     return (
       <h3
         data-placeholder={placeholder.h3}
-        data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
+        data-empty={`${block.nodes.length === 1 && block.nodes[0].content === ''}`}
         className={placeholderStyles({ tag: 'h3' })}
         ref={element => {
           blockRef.current[index] = element;
@@ -128,7 +128,7 @@ const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag
         <li>
           <p
             data-placeholder={placeholder.li}
-            data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
+            data-empty={`${block.nodes.length === 1 && block.nodes[0].content === ''}`}
             className={placeholderStyles({ tag: 'p' })}
             ref={element => {
               blockRef.current[index] = element;
@@ -159,7 +159,7 @@ const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag
         <li>
           <p
             data-placeholder={placeholder.li}
-            data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
+            data-empty={`${block.nodes.length === 1 && block.nodes[0].content === ''}`}
             className={placeholderStyles({ tag: 'p' })}
             ref={element => {
               blockRef.current[index] = element;
@@ -177,7 +177,7 @@ const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag
       <blockquote>
         <p
           data-placeholder={placeholder.quote}
-          data-empty={`${block.children.length === 1 && block.children[0].content === ''}`}
+          data-empty={`${block.nodes.length === 1 && block.nodes[0].content === ''}`}
           className={placeholderStyles({ tag: 'p' })}
           ref={element => {
             blockRef.current[index] = element;

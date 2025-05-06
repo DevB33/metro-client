@@ -98,8 +98,8 @@ const BlockButton = ({
   const createBlock = (blockIndex: number) => {
     const newBlock: ITextBlock = {
       id: Date.now(), // 고유 ID
-      type: 'default',
-      children: [
+      type: 'DEFAULT',
+      nodes: [
         {
           type: 'text',
           content: '',
