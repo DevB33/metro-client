@@ -967,7 +967,6 @@ const handleKeyDown = (
                   blockRef.current[index - 1]?.childNodes[prevBlockNodeLength]?.firstChild?.textContent
                     ?.length as number,
                 );
-                console.log(range);
               }
               range.collapse(true);
 
