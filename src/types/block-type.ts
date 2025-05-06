@@ -1,5 +1,5 @@
 export interface ITextBlock {
-  id: number;
+  id: string;
   type: 'DEFAULT' | 'h1' | 'h2' | 'h3' | 'quote' | 'ol' | 'ul';
   nodes: ITextBlockChild[];
 }

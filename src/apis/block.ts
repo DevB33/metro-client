@@ -1,3 +1,4 @@
+import { ITextBlockChild } from '@/types/block-type';
 import getInstance from '.';
 
 export const getBlockList = async (noteId: string) => {
@@ -11,7 +12,17 @@ export const getBlockList = async (noteId: string) => {
   return response.data.blocks;
 };
 
-export const createBlock = async (body: any) => {
+export const createBlock = async (body: {
+  noteId: string;
+  type: string;
+  upperOrder: number;
+  nodes: ITextBlockChild[];
+}) => {
   const instance = await getInstance();
   await instance.post(`/blocks`, JSON.stringify(body));
+};
+
+export const updateBlockNodes = async (blockId: string, nodes: ITextBlockChild[]) => {
+  const instance = await getInstance();
+  await instance.patch(`/blocks/${blockId}/nodes`, JSON.stringify({ nodes }));
 };

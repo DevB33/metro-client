@@ -1,4 +1,5 @@
 import { memo, useState, useRef, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
@@ -71,6 +72,9 @@ const Block = memo(
 
     const [isDragOver, setIsDragOver] = useState(false);
 
+    const params = useParams();
+    const noteId = params.id as string;
+
     useEffect(() => {
       prevChildNodesLength.current = blockList[index].nodes.length;
     }, [blockList, index]);
@@ -87,7 +91,7 @@ const Block = memo(
         }}
         onInput={event => {
           setIsTyping(true);
-          handleInput(event, index, blockList, setBlockList, blockRef, prevChildNodesLength);
+          handleInput(event, index, blockList, blockRef, prevChildNodesLength, noteId);
         }}
         onKeyDown={event =>
           handleKeyDown(

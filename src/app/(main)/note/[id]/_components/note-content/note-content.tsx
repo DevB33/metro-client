@@ -59,7 +59,7 @@ const NoteContent = () => {
 
   const [blockList, setBlockList] = useState<ITextBlock[]>([
     {
-      id: 1,
+      id: '1',
       type: 'DEFAULT',
       nodes: [
         {
