@@ -54,10 +54,10 @@ const splitChildren = (
 
   // children이 비어있는 경우 제외하고 추가
   const updatedBlocks: ITextBlock[] = [];
-  if (firstRawChildren.length > 0) {
+  if (firstRawChildren.length >= 0) {
     updatedBlocks.push(firstUpdatedBlock);
   }
-  if (secondRawChildren.length > 0) {
+  if (secondRawChildren.length >= 0) {
     updatedBlocks.push(secondUpdatedBlock);
   }
 

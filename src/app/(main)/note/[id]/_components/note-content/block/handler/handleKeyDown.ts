@@ -29,7 +29,7 @@ const focusAfterSelection = (
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
 ) => {
   let target = isBackward ? selection.end : selection.start;
-
+  console.log('target', target);
   if (key === keyName.arrowRight) {
     target = isBackward ? selection.start : selection.end;
   }
@@ -1014,17 +1014,46 @@ const handleKeyDown = (
     // 다른 키 입력
     else if (isInputtableKey(event.nativeEvent)) {
       if (!isBackward) {
+        console.log('isNotBackward');
         editSelectionContent('write', event.key, selection, blockList, setBlockList, blockRef);
-        selection.start.offset = 1;
+        // selection.start.offset = 1;
         // selection 시작점의 offset이 0이라 시작노드가 다 지워질떄가 아니면 새로 생성된 노드에 focus
-        if (selection.start.offset !== 0) {
+        // if (selection.start.offset !== 0) {
+        //   selection.start.childNodeIndex += 1;
+        // }
+
+        // selection start가 처음부터여서 해당 노드가 다 지워지고 새로운 노드가 생긴거면 노드 인덱스는 그대로, offset은 1
+        if (selection.start.offset === 0) {
+          // 한 줄 전체가 지워진 경우
+          if (selection.start.childNodeIndex === 0) {
+            selection.start.childNodeIndex = 0;
+          }
+          selection.start.offset = 1;
+        }
+        // selection start가 처음부터가 아니라 해당 노드가 다 지워지지 않고 새로운 노드가 생긴거면 노드 인덱스는 +1, offset은 1
+        else {
           selection.start.childNodeIndex += 1;
+          selection.start.offset = 1;
         }
       } else {
+        console.log('isBackward');
         editSelectionContent('write', event.key, selection, blockList, setBlockList, blockRef);
-        selection.end.offset = 1;
-        if (selection.end.offset !== 0) {
+        // selection.end.offset = 1;
+        // if (selection.end.offset !== 0) {
+        //   selection.end.childNodeIndex += 1;
+        // }
+        // selection start가 처음부터여서 해당 노드가 다 지워지고 새로운 노드가 생긴거면 노드 인덱스는 그대로, offset은 1
+        if (selection.end.offset === 0) {
+          // 한 줄 전체가 지워진 경우
+          if (selection.start.childNodeIndex === 0) {
+            selection.end.childNodeIndex = 0;
+          }
+          selection.end.offset = 1;
+        }
+        // selection start가 처음부터가 아니라 해당 노드가 다 지워지지 않고 새로운 노드가 생긴거면 노드 인덱스는 +1, offset은 1
+        else {
           selection.end.childNodeIndex += 1;
+          selection.end.offset = 1;
         }
       }
     }

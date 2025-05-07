@@ -14,13 +14,22 @@ const handleMouseUp = (
 ) => {
   if (!blockRef.current || blockRef.current.length === 0) return;
 
-  //
+  // 아래에서 위로 드래그하면 start의 childNoeIndex가 -1 인 경우
+  const fixedSelectionStart =
+    selection.start.childNodeIndex === -1
+      ? { blockIndex: selection.start.blockIndex, childNodeIndex: 0, offset: 0 }
+      : selection.start;
   if (selection.start.childNodeIndex === -1) {
     setSelection(prev => ({
       ...prev,
       start: { ...prev.start, childNodeIndex: 0, offset: 0 },
     }));
   }
+  // 위에서 아래로 드래그하면 start의 childNodeIndex, offset 값이 end값에 그대로 적용되는 경우
+  const fixedSelectionEnd =
+    blockRef.current[index]?.childNodes.length === 1 && blockRef.current[index]?.childNodes[0]?.nodeName === 'BR'
+      ? { blockIndex: selection.end.blockIndex, childNodeIndex: 0, offset: 0 }
+      : selection.end;
   if (blockRef.current[index]?.childNodes.length === 1 && blockRef.current[index]?.childNodes[0]?.nodeName === 'BR') {
     setSelection(prev => ({
       ...prev,
@@ -28,24 +37,11 @@ const handleMouseUp = (
     }));
   }
 
-  // 아래에서 위로 드래그하면 start의 childNoeIndex가 -1 인 경우
-  const fixedSelectionStart =
-    selection.start.childNodeIndex === -1
-      ? { blockIndex: selection.start.blockIndex, childNodeIndex: 0, offset: 0 }
-      : selection.start;
-
-  // 위에서 아래로 드래그하면 위에서 하던 end값을 그대로 갖고 blockindex만 추가되는 경우
-  const fixedSelectionEnd =
-    blockRef.current[index]?.childNodes.length === 1 && blockRef.current[index]?.childNodes[0]?.nodeName === 'BR'
-      ? { blockIndex: selection.end.blockIndex, childNodeIndex: 0, offset: 0 }
-      : selection.end;
-
   const {
     blockIndex: selectionStartBlockIndex,
     childNodeIndex: selectionStartChildNodeIndex,
     offset: selectionStartOffset,
   } = fixedSelectionStart;
-
   const {
     blockIndex: selectionEndBlockIndex,
     childNodeIndex: selectionEndChildNodeIndex,
@@ -241,10 +237,19 @@ const handleMouseUp = (
     return;
   }
 
-  setMenuState(prev => ({
-    ...prev,
-    isSelectionMenuOpen: true,
-  }));
+  // selection이 있을 때, 메뉴 열기
+  if (
+    !(
+      selectionStartBlockIndex === selectionEndBlockIndex &&
+      selectionStartChildNodeIndex === selectionEndChildNodeIndex &&
+      selectionStartOffset === selectionEndOffset
+    )
+  ) {
+    setMenuState(prev => ({
+      ...prev,
+      isSelectionMenuOpen: true,
+    }));
+  }
 };
 
 export default handleMouseUp;
