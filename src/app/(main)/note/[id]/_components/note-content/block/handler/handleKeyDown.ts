@@ -1013,22 +1013,22 @@ const handleKeyDown = (
       }
     }
     // 다른 키 입력
-    else if (isInputtableKey(event.nativeEvent)) {
-      if (!isBackward) {
-        editSelectionContent('write', event.key, selection, blockList, setBlockList, blockRef);
-        selection.start.offset = 1;
-        // selection 시작점의 offset이 0이라 시작노드가 다 지워질떄가 아니면 새로 생성된 노드에 focus
-        if (selection.start.offset !== 0) {
-          selection.start.childNodeIndex += 1;
-        }
-      } else {
-        editSelectionContent('write', event.key, selection, blockList, setBlockList, blockRef);
-        selection.end.offset = 1;
-        if (selection.end.offset !== 0) {
-          selection.end.childNodeIndex += 1;
-        }
-      }
-    }
+    // else if (isInputtableKey(event.nativeEvent)) {
+    //   if (!isBackward) {
+    //     editSelectionContent('write', event.key, selection, blockList, setBlockList, blockRef);
+    //     selection.start.offset = 1;
+    //     // selection 시작점의 offset이 0이라 시작노드가 다 지워질떄가 아니면 새로 생성된 노드에 focus
+    //     if (selection.start.offset !== 0) {
+    //       selection.start.childNodeIndex += 1;
+    //     }
+    //   } else {
+    //     editSelectionContent('write', event.key, selection, blockList, setBlockList, blockRef);
+    //     selection.end.offset = 1;
+    //     if (selection.end.offset !== 0) {
+    //       selection.end.childNodeIndex += 1;
+    //     }
+    //   }
+    // }
 
     setTimeout(() => {
       focusAfterSelection(selection, isBackward, event.key, blockRef);
