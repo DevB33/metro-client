@@ -985,6 +985,7 @@ const handleKeyDown = (
     setIsTyping(false);
     setKey(Math.random());
 
+    // selection이 역방향인지 아닌지 판단
     const isBackward =
       selection.start.blockIndex > selection.end.blockIndex ||
       (selection.start.blockIndex === selection.end.blockIndex &&
@@ -995,17 +996,17 @@ const handleKeyDown = (
 
     // backspace 클릭
     if (event.key === keyName.backspace) {
-      editSelectionContent('delete', event.key, selection, blockList, setBlockList, blockRef);
+      editSelectionContent('delete', event.key, selection, isBackward, blockList, setBlockList, blockRef);
     }
     // 엔터 입력
     if (event.key === keyName.enter && !event.shiftKey) {
       if (!isBackward) {
-        editSelectionContent('enter', event.key, selection, blockList, setBlockList, blockRef);
+        editSelectionContent('enter', event.key, selection, isBackward, blockList, setBlockList, blockRef);
         selection.start.blockIndex += 1;
         selection.start.childNodeIndex = 0;
         selection.start.offset = 0;
       } else {
-        editSelectionContent('enter', event.key, selection, blockList, setBlockList, blockRef);
+        editSelectionContent('enter', event.key, selection, isBackward, blockList, setBlockList, blockRef);
         selection.end.blockIndex += 1;
         selection.end.childNodeIndex = 0;
         selection.end.offset = 0;
@@ -1015,7 +1016,7 @@ const handleKeyDown = (
     else if (isInputtableKey(event.nativeEvent)) {
       if (!isBackward) {
         console.log('isNotBackward');
-        editSelectionContent('write', event.key, selection, blockList, setBlockList, blockRef);
+        editSelectionContent('write', event.key, selection, isBackward, blockList, setBlockList, blockRef);
         // selection.start.offset = 1;
         // selection 시작점의 offset이 0이라 시작노드가 다 지워질떄가 아니면 새로 생성된 노드에 focus
         // if (selection.start.offset !== 0) {
@@ -1037,7 +1038,7 @@ const handleKeyDown = (
         }
       } else {
         console.log('isBackward');
-        editSelectionContent('write', event.key, selection, blockList, setBlockList, blockRef);
+        editSelectionContent('write', event.key, selection, isBackward, blockList, setBlockList, blockRef);
         // selection.end.offset = 1;
         // if (selection.end.offset !== 0) {
         //   selection.end.childNodeIndex += 1;

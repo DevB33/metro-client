@@ -70,14 +70,23 @@ const editSelectionContent = (
   selectionAction: string,
   key: string,
   selection: ISelectionPosition,
+  isBackward: boolean,
   blockList: ITextBlock[],
   setBlockList: (blockList: ITextBlock[]) => void,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
 ) => {
   if (!blockRef.current) return;
 
-  const { blockIndex: startBlockIndex, childNodeIndex: startNodeIndex, offset: startOffset } = selection.start;
-  const { blockIndex: endBlockIndex, childNodeIndex: endNodeIndex, offset: endOffset } = selection.end;
+  const {
+    blockIndex: startBlockIndex,
+    childNodeIndex: startNodeIndex,
+    offset: startOffset,
+  } = !isBackward ? selection.start : selection.end;
+  const {
+    blockIndex: endBlockIndex,
+    childNodeIndex: endNodeIndex,
+    offset: endOffset,
+  } = !isBackward ? selection.end : selection.start;
   let newBlockList = [...blockList];
 
   const deleteIndex = [];
@@ -114,9 +123,9 @@ const editSelectionContent = (
       if (startNodeIndex === endNodeIndex) {
         //
         const startNode = childNodes[startNodeIndex]; // startNodeIndex와 endNodeIndex가 같기에 임의로 startNodeIndex로 설정
-        // 역방향 selection을 고려
-        const beforeText = startNode.textContent?.slice(0, startOffset <= endOffset ? startOffset : endOffset) || '';
-        const afterText = startNode.textContent?.slice(startOffset <= endOffset ? endOffset : startOffset) || '';
+
+        const beforeText = startNode.textContent?.slice(0, startOffset) || '';
+        const afterText = startNode.textContent?.slice(endOffset) || '';
         const beforeNode = {
           type: block.children[startNodeIndex].type,
           style: block.children[startNodeIndex].style,
@@ -203,28 +212,13 @@ const editSelectionContent = (
         // selection이 시작된 노드와 끝난 노드, 각 노드에서 이전 Text와 이후 Text를 변수에 저장
         // ex) 111[2|22][33|3]444 -> 222와 333은 selection의 start,end Node, 2233을 selection한 상태에서 beforText는 2, afterText는 3
         // 만약 노드가 여러개더라도, selection에 포함되면 입력, 삭제, enter 시 제거되어야 하기 때문에 시작과 끝 노드만 저장
-        let selectionStartNodeIndex;
-        let selectionEndNodeIndex;
-        let selectionStartNode;
-        let selectionEndNode;
-        let selectionBeforeText;
-        let selectionAfterText;
-        // selection의 방향을 고려하여 변수 저장
-        if (startNodeIndex < endNodeIndex) {
-          selectionStartNodeIndex = startNodeIndex;
-          selectionEndNodeIndex = endNodeIndex;
-          selectionStartNode = childNodes[selectionStartNodeIndex];
-          selectionEndNode = childNodes[selectionEndNodeIndex];
-          selectionBeforeText = selectionStartNode.textContent?.slice(0, startOffset) || '';
-          selectionAfterText = selectionEndNode.textContent?.slice(endOffset) || '';
-        } else {
-          selectionStartNodeIndex = endNodeIndex;
-          selectionEndNodeIndex = startNodeIndex;
-          selectionStartNode = childNodes[endNodeIndex];
-          selectionEndNode = childNodes[startNodeIndex];
-          selectionBeforeText = selectionStartNode.textContent?.slice(0, endOffset) || '';
-          selectionAfterText = selectionEndNode.textContent?.slice(startOffset) || '';
-        }
+
+        const selectionStartNodeIndex = startNodeIndex;
+        const selectionEndNodeIndex = endNodeIndex;
+        const selectionStartNode = childNodes[selectionStartNodeIndex];
+        const selectionEndNode = childNodes[selectionEndNodeIndex];
+        const selectionBeforeText = selectionStartNode.textContent?.slice(0, startOffset) || '';
+        const selectionAfterText = selectionEndNode.textContent?.slice(endOffset) || '';
 
         // 여러 노드를 selection 한 상태로 글자 입력
         if (selectionAction === 'write') {
@@ -362,410 +356,203 @@ const editSelectionContent = (
     // 여러 블록을 선택한 경우
     // note : for문의 index에 따른 로직이므로 아래 로직이 거의 흡사하나 합치지 못함 추후 리팩토링 시 고려
     else {
-      // 정방향 selection의 경우
-      if (startBlockIndex < endBlockIndex) {
-        // selection의 가장 위 블록
-        if (index === startBlockIndex) {
-          // 가장 윗 블록의 selection 시작 index 및, 이전 text 저장
-          const selectionStartNodeIndex = startNodeIndex;
-          const selectionStartNode = childNodes[selectionStartNodeIndex];
-          const selectionBeforeText = selectionStartNode.textContent?.slice(0, startOffset) || '';
-          // 여러 블록 selection 상태에서 입력, enter, 삭제 시 가장 윗줄은 이전 노드 + 이전 텍스트 + 새로 입력한 값 저장
-          if (selectionAction === 'write') {
-            const rawChildren = [
-              ...block.children.slice(0, selectionStartNodeIndex),
-              ...(selectionBeforeText
-                ? [
-                    {
-                      ...block.children[selectionStartNodeIndex],
-                      content: selectionBeforeText,
-                    },
-                  ]
-                : []),
-              newNode,
-            ];
-            if (rawChildren.length === 1 && rawChildren[0].content === ' ') {
-              rawChildren[0].content = '&nbsp;';
-            }
-            const finalChildren =
-              rawChildren.length > 0
-                ? rawChildren
-                : [
-                    {
-                      type: 'text',
-                      style: defaultStyle,
-                      content: '',
-                    },
-                  ];
-            const updatedBlock = {
-              id: block.id,
-              type: block.type,
-              children: finalChildren as ITextBlock['children'],
-            };
-            newBlockList[startBlockIndex] = updatedBlock;
+      // selection의 가장 위 블록
+      if (index === startBlockIndex) {
+        // 가장 윗 블록의 selection 시작 index 및, 이전 text 저장
+        const selectionStartNodeIndex = startNodeIndex;
+        const selectionStartNode = childNodes[selectionStartNodeIndex];
+        const selectionBeforeText = selectionStartNode.textContent?.slice(0, startOffset) || '';
+        // 여러 블록 selection 상태에서 입력, enter, 삭제 시 가장 윗줄은 이전 노드 + 이전 텍스트 + 새로 입력한 값 저장
+        if (selectionAction === 'write') {
+          const rawChildren = [
+            ...block.children.slice(0, selectionStartNodeIndex),
+            ...(selectionBeforeText
+              ? [
+                  {
+                    ...block.children[selectionStartNodeIndex],
+                    content: selectionBeforeText,
+                  },
+                ]
+              : []),
+            newNode,
+          ];
+          if (rawChildren.length === 1 && rawChildren[0].content === ' ') {
+            rawChildren[0].content = '&nbsp;';
           }
-          if (selectionAction === 'enter') {
-            const firstRawChildren = [
-              ...block.children.slice(0, selectionStartNodeIndex),
-              ...(selectionBeforeText
-                ? [
-                    {
-                      ...block.children[selectionStartNodeIndex],
-                      content: selectionBeforeText,
-                    },
-                  ]
-                : []),
-            ];
-            newBlockList = splitChildren(firstRawChildren, [], block, newBlockList, index);
-          }
-          if (selectionAction === 'delete') {
-            const rawChildren = [
-              ...block.children.slice(0, selectionStartNodeIndex),
-              ...(selectionBeforeText
-                ? [
-                    {
-                      ...block.children[selectionStartNodeIndex],
-                      content: selectionBeforeText,
-                    },
-                  ]
-                : []),
-            ];
-
-            const finalChildren =
-              rawChildren.length > 0
-                ? rawChildren
-                : [
-                    {
-                      type: 'text',
-                      style: defaultStyle,
-                      content: '',
-                    },
-                  ];
-
-            const updatedBlock = {
-              id: block.id,
-              type: block.type,
-              children: finalChildren as ITextBlock['children'],
-            };
-
-            newBlockList[index] = updatedBlock;
-          }
+          const finalChildren =
+            rawChildren.length > 0
+              ? rawChildren
+              : [
+                  {
+                    type: 'text',
+                    style: defaultStyle,
+                    content: '',
+                  },
+                ];
+          const updatedBlock = {
+            id: block.id,
+            type: block.type,
+            children: finalChildren as ITextBlock['children'],
+          };
+          newBlockList[startBlockIndex] = updatedBlock;
         }
-
-        // seleciton의 중간 블록은 어떤 action이던, 전부 제거
-        if (index > startBlockIndex && index < endBlockIndex) {
-          // 해당 블록 삭제
-          deleteIndex.push(index);
+        if (selectionAction === 'enter') {
+          const firstRawChildren = [
+            ...block.children.slice(0, selectionStartNodeIndex),
+            ...(selectionBeforeText
+              ? [
+                  {
+                    ...block.children[selectionStartNodeIndex],
+                    content: selectionBeforeText,
+                  },
+                ]
+              : []),
+          ];
+          newBlockList = splitChildren(firstRawChildren, [], block, newBlockList, index);
         }
+        if (selectionAction === 'delete') {
+          const rawChildren = [
+            ...block.children.slice(0, selectionStartNodeIndex),
+            ...(selectionBeforeText
+              ? [
+                  {
+                    ...block.children[selectionStartNodeIndex],
+                    content: selectionBeforeText,
+                  },
+                ]
+              : []),
+          ];
 
-        // selection의 가장 아래 블록
-        if (index === endBlockIndex) {
-          // 가장 아래 블록의 selection 마지막 index 및, 이후 text 저장
-          const selectionEndNodeIndex = endNodeIndex;
-          const selectionEndNode = childNodes[selectionEndNodeIndex];
-          const selectionAfterText = selectionEndNode.textContent?.slice(endOffset) || '';
-          // 입력 시, 위 로직에서 만들어진 윗 블록에 이후 블록내용을 합쳐 마무리
-          if (selectionAction === 'write') {
-            // 가장 윗 블록 뒤에 붙이기
-            const startBlock = newBlockList[startBlockIndex];
-            const startBlockChildren = startBlock.children;
+          const finalChildren =
+            rawChildren.length > 0
+              ? rawChildren
+              : [
+                  {
+                    type: 'text',
+                    style: defaultStyle,
+                    content: '',
+                  },
+                ];
 
-            const rawChildren = [
-              ...startBlockChildren, // startBlockIndex에서 만들어진 block
-              ...(selectionAfterText
-                ? [
-                    {
-                      ...block.children[selectionEndNodeIndex],
-                      content: selectionAfterText,
-                    },
-                  ]
-                : []),
-              ...block.children.slice(selectionEndNodeIndex + 1),
-            ];
-            if (rawChildren.length === 1 && rawChildren[0].content === ' ') {
-              rawChildren[0].content = '&nbsp;';
-            }
+          const updatedBlock = {
+            id: block.id,
+            type: block.type,
+            children: finalChildren as ITextBlock['children'],
+          };
 
-            const finalChildren =
-              rawChildren.length > 0
-                ? rawChildren
-                : [
-                    {
-                      type: 'text',
-                      style: defaultStyle,
-                      content: '',
-                    },
-                  ];
-
-            const updatedBlock = {
-              id: block.id,
-              type: block.type,
-              children: finalChildren as ITextBlock['children'],
-            };
-
-            // 첫 블록 위치에 넣고, 마지막 블록 삭제
-            newBlockList[startBlockIndex] = updatedBlock;
-            deleteIndex.push(index);
-          }
-          // enter 시, 위 로직에서 만들어진 블록과, 이후 블록을 분리
-          if (selectionAction === 'enter') {
-            const secondRawChildren = [
-              ...(selectionAfterText
-                ? [
-                    {
-                      ...block.children[selectionEndNodeIndex],
-                      content: selectionAfterText,
-                    },
-                  ]
-                : []),
-              ...block.children.slice(selectionEndNodeIndex + 1),
-            ];
-            newBlockList = splitChildren([], secondRawChildren, block, newBlockList, index);
-          }
-          // 입력 시, 위 로직에서 만들어진 윗 블록에 이후 블록내용을 합쳐 마무리
-          if (selectionAction === 'delete') {
-            // 첫 블록 뒤에 붙이기
-            const startBlock = newBlockList[startBlockIndex];
-            const startBlockChildren = startBlock.children;
-
-            const rawChildren = [
-              ...startBlockChildren,
-              ...(selectionAfterText
-                ? [
-                    {
-                      ...block.children[selectionEndNodeIndex],
-                      content: selectionAfterText,
-                    },
-                  ]
-                : []),
-              ...block.children.slice(selectionEndNodeIndex + 1),
-            ];
-
-            const finalChildren =
-              rawChildren.length > 0
-                ? rawChildren
-                : [
-                    {
-                      type: 'text',
-                      style: defaultStyle,
-                      content: '',
-                    },
-                  ];
-
-            const updatedBlock = {
-              id: block.id,
-              type: block.type,
-              children: finalChildren as ITextBlock['children'],
-            };
-
-            // 첫 블록 위치에 넣고, 마지막 블록 삭제
-            newBlockList[startBlockIndex] = updatedBlock;
-            deleteIndex.push(index);
-          }
+          newBlockList[index] = updatedBlock;
         }
       }
 
-      // 역방향 selection의 경우
-      if (startBlockIndex > endBlockIndex) {
-        // 가장 윗 블록의 경우
-        if (index === endBlockIndex) {
-          // 역방향이므로 가장 윗 블록 관련 변수들을 이해하기 쉽게 변경
-          const selectionStartNodeIndex = endNodeIndex;
-          const selectionStartNode = childNodes[selectionStartNodeIndex];
-          const selectionBeforeText = selectionStartNode.textContent?.slice(0, endOffset) || '';
-          // 여러 블록 selection 상태에서 입력, enter, 삭제 시 가장 윗줄은 이전 노드 + 이전 텍스트 + 새로 입력한 값 저장
-          if (selectionAction === 'write') {
-            const rawChildren = [
-              ...block.children.slice(0, selectionStartNodeIndex),
-              ...(selectionBeforeText
-                ? [
-                    {
-                      ...block.children[selectionStartNodeIndex],
-                      content: selectionBeforeText,
-                    },
-                  ]
-                : []),
-              newNode,
-            ];
-            if (rawChildren.length === 1 && rawChildren[0].content === ' ') {
-              rawChildren[0].content = '&nbsp;';
-            }
-            const finalChildren =
-              rawChildren.length > 0
-                ? rawChildren
-                : [
-                    {
-                      type: 'text',
-                      style: defaultStyle,
-                      content: '',
-                    },
-                  ];
-            const updatedBlock = {
-              id: block.id,
-              type: block.type,
-              children: finalChildren as ITextBlock['children'],
-            };
-            newBlockList[endBlockIndex] = updatedBlock;
+      // seleciton의 중간 블록은 어떤 action이던, 전부 제거
+      if (index > startBlockIndex && index < endBlockIndex) {
+        // 해당 블록 삭제
+        deleteIndex.push(index);
+      }
+
+      // selection의 가장 아래 블록
+      if (index === endBlockIndex) {
+        // 가장 아래 블록의 selection 마지막 index 및, 이후 text 저장
+        const selectionEndNodeIndex = endNodeIndex;
+        const selectionEndNode = childNodes[selectionEndNodeIndex];
+        const selectionAfterText = selectionEndNode.textContent?.slice(endOffset) || '';
+        // 입력 시, 위 로직에서 만들어진 윗 블록에 이후 블록내용을 합쳐 마무리
+        if (selectionAction === 'write') {
+          // 가장 윗 블록 뒤에 붙이기
+          const startBlock = newBlockList[startBlockIndex];
+          const startBlockChildren = startBlock.children;
+
+          const rawChildren = [
+            ...startBlockChildren, // startBlockIndex에서 만들어진 block
+            ...(selectionAfterText
+              ? [
+                  {
+                    ...block.children[selectionEndNodeIndex],
+                    content: selectionAfterText,
+                  },
+                ]
+              : []),
+            ...block.children.slice(selectionEndNodeIndex + 1),
+          ];
+          if (rawChildren.length === 1 && rawChildren[0].content === ' ') {
+            rawChildren[0].content = '&nbsp;';
           }
-          if (selectionAction === 'enter') {
-            const firstRawChildren = [
-              ...block.children.slice(0, selectionStartNodeIndex),
-              ...(selectionBeforeText
-                ? [
-                    {
-                      ...block.children[selectionStartNodeIndex],
-                      content: selectionBeforeText,
-                    },
-                  ]
-                : []),
-            ];
-            newBlockList = splitChildren(firstRawChildren, [], block, newBlockList, index);
-          }
-          if (selectionAction === 'delete') {
-            const rawChildren = [
-              ...block.children.slice(0, selectionStartNodeIndex),
-              ...(selectionBeforeText
-                ? [
-                    {
-                      ...block.children[selectionStartNodeIndex],
-                      content: selectionBeforeText,
-                    },
-                  ]
-                : []),
-            ];
 
-            const finalChildren =
-              rawChildren.length > 0
-                ? rawChildren
-                : [
-                    {
-                      type: 'text',
-                      style: defaultStyle,
-                      content: '',
-                    },
-                  ];
+          const finalChildren =
+            rawChildren.length > 0
+              ? rawChildren
+              : [
+                  {
+                    type: 'text',
+                    style: defaultStyle,
+                    content: '',
+                  },
+                ];
 
-            const updatedBlock = {
-              id: block.id,
-              type: block.type,
-              children: finalChildren as ITextBlock['children'],
-            };
+          const updatedBlock = {
+            id: block.id,
+            type: block.type,
+            children: finalChildren as ITextBlock['children'],
+          };
 
-            newBlockList[index] = updatedBlock;
-          }
-        }
-
-        // 중간 블록인 경우
-        if (index < startBlockIndex && index > endBlockIndex) {
-          // 해당 블록 삭제
+          // 첫 블록 위치에 넣고, 마지막 블록 삭제
+          newBlockList[startBlockIndex] = updatedBlock;
           deleteIndex.push(index);
         }
+        // enter 시, 위 로직에서 만들어진 블록과, 이후 블록을 분리
+        if (selectionAction === 'enter') {
+          const secondRawChildren = [
+            ...(selectionAfterText
+              ? [
+                  {
+                    ...block.children[selectionEndNodeIndex],
+                    content: selectionAfterText,
+                  },
+                ]
+              : []),
+            ...block.children.slice(selectionEndNodeIndex + 1),
+          ];
+          newBlockList = splitChildren([], secondRawChildren, block, newBlockList, index);
+        }
+        // 입력 시, 위 로직에서 만들어진 윗 블록에 이후 블록내용을 합쳐 마무리
+        if (selectionAction === 'delete') {
+          // 첫 블록 뒤에 붙이기
+          const startBlock = newBlockList[startBlockIndex];
+          const startBlockChildren = startBlock.children;
 
-        // selection의 가장 아래 블록
-        if (index === startBlockIndex) {
-          // 선택 끝 노드 분리
-          const selectionStartBlockIndex = endBlockIndex;
-          const selectionEndNodeIndex = startNodeIndex;
-          const selectionEndNode = childNodes[selectionEndNodeIndex];
-          const selectionAfterText = selectionEndNode.textContent?.slice(startOffset) || '';
-          // 입력 시, 위 로직에서 만들어진 윗 블록에 이후 블록내용을 합쳐 마무리
-          if (selectionAction === 'write') {
-            // 첫 블록 뒤에 붙이기
-            const startBlock = newBlockList[selectionStartBlockIndex];
-            const startBlockChildren = startBlock.children;
+          const rawChildren = [
+            ...startBlockChildren,
+            ...(selectionAfterText
+              ? [
+                  {
+                    ...block.children[selectionEndNodeIndex],
+                    content: selectionAfterText,
+                  },
+                ]
+              : []),
+            ...block.children.slice(selectionEndNodeIndex + 1),
+          ];
 
-            const rawChildren = [
-              ...startBlockChildren,
-              ...(selectionAfterText
-                ? [
-                    {
-                      ...block.children[selectionEndNodeIndex],
-                      content: selectionAfterText,
-                    },
-                  ]
-                : []),
-              ...block.children.slice(selectionEndNodeIndex + 1),
-            ];
-            if (rawChildren.length === 1 && rawChildren[0].content === ' ') {
-              rawChildren[0].content = '&nbsp;';
-            }
+          const finalChildren =
+            rawChildren.length > 0
+              ? rawChildren
+              : [
+                  {
+                    type: 'text',
+                    style: defaultStyle,
+                    content: '',
+                  },
+                ];
 
-            const finalChildren =
-              rawChildren.length > 0
-                ? rawChildren
-                : [
-                    {
-                      type: 'text',
-                      style: defaultStyle,
-                      content: '',
-                    },
-                  ];
+          const updatedBlock = {
+            id: block.id,
+            type: block.type,
+            children: finalChildren as ITextBlock['children'],
+          };
 
-            const updatedBlock = {
-              id: block.id,
-              type: block.type,
-              children: finalChildren as ITextBlock['children'],
-            };
-
-            // 첫 블록 위치에 넣고, 마지막 블록 삭제
-            newBlockList[selectionStartBlockIndex] = updatedBlock;
-            deleteIndex.push(index);
-          }
-          // enter 시, 위 로직에서 만들어진 블록과, 이후 블록을 분리
-          if (selectionAction === 'enter') {
-            const secondRawChildren = [
-              ...(selectionAfterText
-                ? [
-                    {
-                      ...block.children[selectionEndNodeIndex],
-                      content: selectionAfterText,
-                    },
-                  ]
-                : []),
-              ...block.children.slice(selectionEndNodeIndex + 1),
-            ];
-            newBlockList = splitChildren([], secondRawChildren, block, newBlockList, index);
-          }
-          // 입력 시, 위 로직에서 만들어진 윗 블록에 이후 블록내용을 합쳐 마무리
-          if (selectionAction === 'delete') {
-            // 첫 블록 뒤에 붙이기
-            const startBlock = newBlockList[selectionStartBlockIndex];
-            const startBlockChildren = startBlock.children;
-
-            const rawChildren = [
-              ...startBlockChildren,
-              ...(selectionAfterText
-                ? [
-                    {
-                      ...block.children[selectionEndNodeIndex],
-                      content: selectionAfterText,
-                    },
-                  ]
-                : []),
-              ...block.children.slice(selectionEndNodeIndex + 1),
-            ];
-
-            const finalChildren =
-              rawChildren.length > 0
-                ? rawChildren
-                : [
-                    {
-                      type: 'text',
-                      style: defaultStyle,
-                      content: '',
-                    },
-                  ];
-
-            const updatedBlock = {
-              id: block.id,
-              type: block.type,
-              children: finalChildren as ITextBlock['children'],
-            };
-
-            // 첫 블록 위치에 넣고, 마지막 블록 삭제
-            newBlockList[selectionStartBlockIndex] = updatedBlock;
-            deleteIndex.push(index);
-          }
+          // 첫 블록 위치에 넣고, 마지막 블록 삭제
+          newBlockList[startBlockIndex] = updatedBlock;
+          deleteIndex.push(index);
         }
       }
     }
