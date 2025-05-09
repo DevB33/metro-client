@@ -16,18 +16,18 @@ import IMenuState from '@/types/menu-type';
 import editSelectionContent from '../../selection-menu/editSelectionContent';
 
 // 현재 블록의 맨 앞에 focus
-const focusCurrentBlock = (
-  index: number,
+const focusBlock = (
+  indexToFocus: number,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   blockList: ITextBlock[],
 ) => {
   setTimeout(() => {
-    if (blockList[index].type === 'ul' || blockList[index].type === 'ol') {
-      (blockRef.current[index]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
-    } else if (blockList[index].type === 'quote') {
-      (blockRef.current[index]?.parentNode?.parentNode as HTMLElement)?.focus();
+    if (blockList[indexToFocus].type === 'ul' || blockList[indexToFocus].type === 'ol') {
+      (blockRef.current[indexToFocus]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
+    } else if (blockList[indexToFocus].type === 'quote') {
+      (blockRef.current[indexToFocus]?.parentNode?.parentNode as HTMLElement)?.focus();
     } else {
-      (blockRef.current[index]?.parentNode as HTMLElement)?.focus();
+      (blockRef.current[indexToFocus]?.parentNode as HTMLElement)?.focus();
     }
   }, 0);
 };
@@ -246,7 +246,7 @@ const splitBlock = async (
   });
   await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 
-  focusCurrentBlock(index + 1, blockRef, updatedBlockList);
+  focusBlock(index + 1, blockRef, updatedBlockList);
 };
 
 const splitLine = async (
@@ -692,14 +692,14 @@ const handleKeyDown = (
         event.preventDefault();
 
         // default 블록이 아닐 때는 default로 변경
-        if (blockList[index].type !== 'default') {
+        if (blockList[index].type !== 'DEFAULT') {
           setIsTyping(false);
           setKey(Math.random());
 
           const updatedBlockList = [...blockList];
-          updatedBlockList[index].type = 'default';
+          updatedBlockList[index].type = 'DEFAULT';
           setBlockList(updatedBlockList);
-          focusCurrentBlock(index, blockRef, blockList);
+          focusBlock(index, blockRef, blockList);
         }
         return;
       }
@@ -717,7 +717,7 @@ const handleKeyDown = (
             const updatedBlockList = [...blockList];
             updatedBlockList[index].type = 'DEFAULT';
             setBlockList(updatedBlockList);
-            focusCurrentBlock(index, blockRef, blockList);
+            focusBlock(index, blockRef, blockList);
           } else {
             mergeBlock(index, blockList, blockRef, noteId);
           }
@@ -753,7 +753,7 @@ const handleKeyDown = (
                 newChildNodes[startOffset - 1].textContent?.length as number,
               );
             } else {
-              focusCurrentBlock(index, blockRef, blockList);
+              focusBlock(index, blockRef, blockList);
             }
             const windowSelection = window.getSelection();
 
@@ -776,7 +776,7 @@ const handleKeyDown = (
             const updatedBlockList = [...blockList];
             updatedBlockList[index].type = 'DEFAULT';
             setBlockList(updatedBlockList);
-            focusCurrentBlock(index, blockRef, blockList);
+            focusBlock(index, blockRef, blockList);
           } else {
             mergeBlock(index, blockList, blockRef, noteId);
           }
@@ -816,7 +816,7 @@ const handleKeyDown = (
         setIsTyping(false);
         setKey(Math.random());
         turnIntoH1(index, blockList, noteId);
-        focusCurrentBlock(index, blockRef, blockList);
+        focusBlock(index, blockRef, blockList);
       }
 
       // h2로 전환
@@ -832,7 +832,7 @@ const handleKeyDown = (
         setIsTyping(false);
         setKey(Math.random());
         turnIntoH2(index, blockList, setBlockList);
-        focusCurrentBlock(index, blockRef, blockList);
+        focusBlock(index, blockRef, blockList);
       }
 
       // h3으로 전환
@@ -849,7 +849,7 @@ const handleKeyDown = (
         setIsTyping(false);
         setKey(Math.random());
         turnIntoH3(index, blockList, setBlockList);
-        focusCurrentBlock(index, blockRef, blockList);
+        focusBlock(index, blockRef, blockList);
       }
 
       // ul로 전환
@@ -864,7 +864,7 @@ const handleKeyDown = (
         setIsTyping(false);
         setKey(Math.random());
         turnIntoUl(index, blockList, setBlockList);
-        focusCurrentBlock(index, blockRef, blockList);
+        focusBlock(index, blockRef, blockList);
       }
 
       // ol로 전환
@@ -879,7 +879,7 @@ const handleKeyDown = (
         setIsTyping(false);
         setKey(Math.random());
         turnIntoOl(index, blockList, setBlockList, startOffset);
-        focusCurrentBlock(index, blockRef, blockList);
+        focusBlock(index, blockRef, blockList);
       }
 
       // 인용문으로 전환
@@ -894,7 +894,7 @@ const handleKeyDown = (
         setIsTyping(false);
         setKey(Math.random());
         turnIntoQuote(index, blockList, setBlockList);
-        focusCurrentBlock(index, blockRef, blockList);
+        focusBlock(index, blockRef, blockList);
       }
     }
 
@@ -924,9 +924,9 @@ const handleKeyDown = (
         event.preventDefault();
         // 현재 위치에서 y좌표만 위로 10 높은 곳에 focus
         const caret = document.caretPositionFromPoint(cursorX, rect.top - 10) as CaretPosition;
-        if (blockList[index].children.length === 1 && blockList[index].children[0].content === '') {
+        if (blockList[index].nodes.length === 1 && blockList[index].nodes[0].content === '') {
           // 빈 블록으로 갈때는 그냥 그 블록에 focus
-          focusCurrentBlock(index - 1, blockRef, blockList);
+          focusBlock(index - 1, blockRef, blockList);
         } else {
           setTimeout(() => {
             if (range) {
@@ -948,9 +948,9 @@ const handleKeyDown = (
         event.preventDefault();
         // 현재 위치에서 y좌표만 아래로 10 낮은 곳에 focus
         const caret = document.caretPositionFromPoint(cursorX, rect.bottom + 10) as CaretPosition;
-        if (blockList[index].children.length === 1 && blockList[index].children[0].content === '') {
+        if (blockList[index].nodes.length === 1 && blockList[index].nodes[0].content === '') {
           // 빈 블록으로 갈때는 그냥 그 블록에 focus
-          focusCurrentBlock(index + 1, blockRef, blockList);
+          focusBlock(index + 1, blockRef, blockList);
         } else {
           setTimeout(() => {
             if (range) {
@@ -970,18 +970,18 @@ const handleKeyDown = (
       if (
         event.key === keyName.arrowRight &&
         ((startOffset === (lastChild?.textContent?.length as number) && startContainer === lastChild) ||
-          (blockList[index].children.length === 1 && blockList[index].children[0].content === '')) &&
+          (blockList[index].nodes.length === 1 && blockList[index].nodes[0].content === '')) &&
         index < blockList.length - 1
       ) {
         event.preventDefault();
-        focusCurrentBlock(index + 1, blockRef, blockList);
+        focusBlock(index + 1, blockRef, blockList);
       }
 
       // 블록의 맨 앞에서 왼쪽 방향키 클릭하면 이전 블록으로 커서 이동
       if (
         event.key === keyName.arrowLeft &&
         ((startOffset === 0 && startContainer === firstChild) ||
-          (blockList[index].children.length === 1 && blockList[index].children[0].content === '')) &&
+          (blockList[index].nodes.length === 1 && blockList[index].nodes[0].content === '')) &&
         index > 0
       ) {
         const prevBlockLastChild =
