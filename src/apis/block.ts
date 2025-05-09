@@ -31,3 +31,14 @@ export const updateBlocksOrder = async (noteId: string, startOrder: number, endO
   const instance = await getInstance();
   await instance.patch(`/blocks/order`, JSON.stringify({ noteId, startOrder, endOrder, upperOrder }));
 };
+
+export const deleteBlock = async (noteId: string, startOrder: number, endOrder: number) => {
+  const instance = await getInstance();
+  await instance.delete(`/blocks`, {
+    data: {
+      noteId,
+      startOrder,
+      endOrder,
+    },
+  });
+};

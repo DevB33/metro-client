@@ -1,6 +1,6 @@
 import { mutate } from 'swr';
 
-import { createBlock, getBlockList, updateBlockNodes, updateBlocksOrder } from '@/apis/block';
+import { createBlock, deleteBlock, getBlockList, updateBlockNodes, updateBlocksOrder } from '@/apis/block';
 import { ITextBlock } from '@/types/block-type';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import keyName from '@/constants/key-name';
@@ -382,39 +382,54 @@ const splitLine = (
   }, 0);
 };
 
-const mergeBlock = (
+const mergeBlock = async (
   index: number,
   blockList: ITextBlock[],
-  setBlockList: (blockList: ITextBlock[]) => void,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
+  noteId: string,
 ) => {
   const updatedBlockList = [...blockList];
 
   const previousBlock = updatedBlockList[index - 1];
-  const previousBlockFirstChildContent = previousBlock.children[0].content;
-  const previousBlockLength = previousBlock.children.length as number;
+  const previousBlockFirstChildContent = previousBlock.nodes[0].content;
+  const previousBlockLength = previousBlock.nodes.length as number;
   const currentBlock = updatedBlockList[index];
 
   // 이전 블록의 마지막이 <br>인 상태에서 블록을 합치면 이전 블록의 <br> 제거
-  if (previousBlock.children[previousBlock.children.length - 1].type === 'br') {
-    previousBlock.children.pop();
+  if (previousBlock.nodes[previousBlock.nodes.length - 1].type === 'br') {
+    previousBlock.nodes.pop();
   }
 
-  const updatedChildren = [...previousBlock.children, ...currentBlock.children];
+  const updatedChildren = [...previousBlock.nodes, ...currentBlock.nodes];
 
-  updatedBlockList[index - 1].children = updatedChildren;
+  updatedBlockList[index - 1].nodes = updatedChildren;
   updatedBlockList.splice(index, 1);
 
   // 빈 블록 두개 합치기 후 빈 텍스트 노드가 두개 중복해서 생기면 하나 지우기
   if (
-    updatedBlockList[index - 1].children.length === 2 &&
-    updatedBlockList[index - 1].children[0].content === '' &&
-    updatedBlockList[index - 1].children[1].content === ''
+    updatedBlockList[index - 1].nodes.length === 2 &&
+    updatedBlockList[index - 1].nodes[0].content === '' &&
+    updatedBlockList[index - 1].nodes[1].content === ''
   ) {
-    updatedBlockList[index - 1].children.shift();
+    updatedBlockList[index - 1].nodes.shift();
   }
 
-  setBlockList(updatedBlockList);
+  // 현재 블록의 바로 이전 블록 업데이트
+  await updateBlockNodes(blockList[index - 1].id, updatedBlockList[index - 1].nodes);
+  // 현재 블록 삭제
+  await deleteBlock(noteId, blockList[index].order, blockList[index].order);
+  // 현재 블록 이후 블록 앞으로 한칸 씩 당기기
+  // 현재 블록이 마지막 블록이 아닐 때만 당김
+  if (index < blockList.length - 1) {
+    await updateBlocksOrder(
+      noteId,
+      blockList[index + 1].order,
+      blockList[blockList.length - 1].order,
+      blockList[index - 1].order,
+    );
+  }
+
+  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 
   // 블록을 합친 뒤 합친 블록 사이에 focus를 주는 로직
   const range = document.createRange();
@@ -425,9 +440,9 @@ const mergeBlock = (
 
       if (
         afterBlock?.childNodes[0]?.nodeName !== 'BR' &&
-        currentBlock.children.length === 1 &&
-        (currentBlock.children[0].type === 'text' || 'span') &&
-        currentBlock.children[0].content === ''
+        currentBlock.nodes.length === 1 &&
+        (currentBlock.nodes[0].type === 'text' || 'span') &&
+        currentBlock.nodes[0].content === ''
       ) {
         // 빈 블록에서 빈블록이 아닌 블록으로 합쳐질 때
         if (afterBlock?.childNodes[previousBlockLength - 1].nodeName === 'SPAN') {
@@ -681,14 +696,14 @@ const handleKeyDown = (
 
         if (startOffset === 0) {
           // 블록 합치기 로직
-          if (blockList[index].type !== 'default') {
+          if (blockList[index].type !== 'DEFAULT') {
             // default 블록이 아닐 때는 블록을 합치는 대신 블록을 default로 변경
             const updatedBlockList = [...blockList];
-            updatedBlockList[index].type = 'default';
+            updatedBlockList[index].type = 'DEFAULT';
             setBlockList(updatedBlockList);
             focusCurrentBlock(index, blockRef, blockList);
           } else {
-            mergeBlock(index, blockList, setBlockList, blockRef);
+            mergeBlock(index, blockList, blockRef, noteId);
           }
         } else {
           // 줄 합치기 로직
@@ -741,13 +756,13 @@ const handleKeyDown = (
           setIsTyping(false);
           setKey(Math.random());
 
-          if (blockList[index].type !== 'default') {
+          if (blockList[index].type !== 'DEFAULT') {
             const updatedBlockList = [...blockList];
-            updatedBlockList[index].type = 'default';
+            updatedBlockList[index].type = 'DEFAULT';
             setBlockList(updatedBlockList);
             focusCurrentBlock(index, blockRef, blockList);
           } else {
-            mergeBlock(index, blockList, setBlockList, blockRef);
+            mergeBlock(index, blockList, blockRef, noteId);
           }
         } else if (currentChildNodeIndex > 0) {
           if (blockList[index].children[currentChildNodeIndex - 1].type === 'br') {
