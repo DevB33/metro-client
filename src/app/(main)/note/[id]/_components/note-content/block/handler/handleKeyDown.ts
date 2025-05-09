@@ -372,6 +372,8 @@ const splitLine = async (
     await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
   }
 
+  // console.log(updatedBlockList[index].nodes);
+
   await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 
   // 줄 바꿈 후 focus를 바뀐줄 맨 앞에 주는 로직
@@ -492,19 +494,21 @@ const mergeBlock = async (
   }, 0);
 };
 
-const mergeLine = (
+const mergeLine = async (
   index: number,
   currentChildNodeIndex: number,
   blockList: ITextBlock[],
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
-  setBlockList: (blockList: ITextBlock[]) => void,
+  noteId: string,
 ) => {
   const updatedBlockList = [...blockList];
-  const newChildren = [...blockList[index].children];
+  const newChildren = [...blockList[index].nodes];
   newChildren.splice(currentChildNodeIndex - 1, 1);
-  updatedBlockList[index] = { ...updatedBlockList[index], children: newChildren };
+  updatedBlockList[index] = { ...updatedBlockList[index], nodes: newChildren };
 
-  setBlockList(updatedBlockList);
+  // 현재 블록 업데이트
+  await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
+  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 
   // 줄이 합쳐질 때 이전 합친 줄 사이에 focus를 주는 로직
   setTimeout(() => {
@@ -635,7 +639,7 @@ const isInputtableKey = (e: KeyboardEvent) => {
   return e.key.length === 1 || e.key === ' ';
 };
 
-const handleKeyDown = (
+const handleKeyDown = async (
   event: React.KeyboardEvent<HTMLDivElement>,
   index: number,
   blockList: ITextBlock[],
@@ -726,17 +730,19 @@ const handleKeyDown = (
           const updatedBlockList = [...blockList];
 
           if (
-            updatedBlockList[index].children[startOffset - 1].type === 'br' &&
-            (!updatedBlockList[index].children[startOffset - 2] ||
-              updatedBlockList[index].children[startOffset - 2].type !== 'br') &&
-            !updatedBlockList[index].children[startOffset + 1]
+            updatedBlockList[index].nodes[startOffset - 1].type === 'br' &&
+            (!updatedBlockList[index].nodes[startOffset - 2] ||
+              updatedBlockList[index].nodes[startOffset - 2].type !== 'br') &&
+            !updatedBlockList[index].nodes[startOffset + 1]
           ) {
-            updatedBlockList[index].children.splice(startOffset - 1, 2);
+            updatedBlockList[index].nodes.splice(startOffset - 1, 2);
           } else {
-            updatedBlockList[index].children.splice(startOffset, 1);
+            updatedBlockList[index].nodes.splice(startOffset, 1);
           }
 
-          setBlockList(updatedBlockList);
+          // 현재 블록 업데이트
+          await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
+          await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 
           // 한 줄이 다 지워진 상태에서의 줄 합치기 일때 focus를 주는 로직
           setTimeout(() => {
@@ -781,12 +787,12 @@ const handleKeyDown = (
             mergeBlock(index, blockList, blockRef, noteId);
           }
         } else if (currentChildNodeIndex > 0) {
-          if (blockList[index].children[currentChildNodeIndex - 1].type === 'br') {
+          if (blockList[index].nodes[currentChildNodeIndex - 1].type === 'br') {
             event.preventDefault();
             setIsTyping(false);
             setKey(Math.random());
 
-            mergeLine(index, currentChildNodeIndex, blockList, blockRef, setBlockList);
+            mergeLine(index, currentChildNodeIndex, blockList, blockRef, noteId);
           }
         }
       }
