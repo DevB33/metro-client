@@ -1,3 +1,6 @@
+import { mutate } from 'swr';
+
+import { createBlock, getBlockList, updateBlockNodes, updateBlocksOrder } from '@/apis/block';
 import { ITextBlock } from '@/types/block-type';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import keyName from '@/constants/key-name';
@@ -52,11 +55,11 @@ const focusAfterSelection = (
   }, 0);
 };
 
-const splitBlock = (
+const splitBlock = async (
   index: number,
   blockList: ITextBlock[],
-  setBlockList: (blockList: ITextBlock[]) => void,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
+  noteId: string,
 ) => {
   const { startOffset, startContainer } = getSelectionInfo(0) || {};
   if (startOffset === undefined || startOffset === null || !startContainer) return;
@@ -205,19 +208,36 @@ const splitBlock = (
     };
   }
 
-  updatedBlockList[index].children = newBeforeBlock;
+  updatedBlockList[index].nodes = newBeforeBlock;
 
-  updatedBlockList.splice(index + 1, 0, {
-    id: Date.now(),
-    type: 'default',
-    children: newAfterBlock,
-  });
-
-  if (updatedBlockList[index + 1].children.length === 2 && updatedBlockList[index + 1].children[0].type === 'br') {
-    updatedBlockList[index + 1].children.shift();
+  if (newAfterBlock.length === 2 && newAfterBlock[0].type === 'br') {
+    newAfterBlock.shift();
   }
 
-  setBlockList(updatedBlockList);
+  updatedBlockList.splice(index + 1, 0, {
+    id: `${Date.now()}`,
+    type: 'DEFAULT',
+    nodes: newAfterBlock,
+    order: updatedBlockList[index].order + 1,
+  });
+
+  // 현재 블록 업데이트
+  await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
+  // 현재 블록 이후 블록 뒤로 한칸씩 미루기
+  await updateBlocksOrder(
+    noteId,
+    updatedBlockList[index + 1].order,
+    updatedBlockList[blockList.length - 1].order,
+    updatedBlockList[index + 1].order,
+  );
+  // 현재 블록 바로 뒤에 블록 생성
+  await createBlock({
+    noteId,
+    type: 'DEFAULT',
+    upperOrder: updatedBlockList[index].order,
+    nodes: newAfterBlock,
+  });
+  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 
   focusCurrentBlock(index + 1, blockRef, updatedBlockList);
 };
@@ -595,6 +615,7 @@ const handleKeyDown = (
   menuState: IMenuState,
   setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>,
   selection: ISelectionPosition,
+  noteId: string,
 ) => {
   // selection 없을때
   if (!menuState.isSelectionMenuOpen) {
@@ -612,7 +633,7 @@ const handleKeyDown = (
       }
       setIsTyping(false);
       setKey(Math.random());
-      splitBlock(index, blockList, setBlockList, blockRef);
+      splitBlock(index, blockList, blockRef, noteId);
     }
 
     // shift + enter 클릭

@@ -19,7 +19,6 @@ const container = css({
 });
 
 const GhostBlock = ({ ghostRef, block, blockList, index }: IGhostBlock) => {
-  console.log(block);
   return (
     <div ref={ghostRef} className={container}>
       <GhostBlockHTMLTag block={block} blockList={blockList} index={index}>

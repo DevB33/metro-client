@@ -26,3 +26,8 @@ export const updateBlockNodes = async (blockId: string, nodes: ITextBlockChild[]
   const instance = await getInstance();
   await instance.patch(`/blocks/${blockId}/nodes`, JSON.stringify({ nodes }));
 };
+
+export const updateBlocksOrder = async (noteId: string, startOrder: number, endOrder: number, upperOrder: number) => {
+  const instance = await getInstance();
+  await instance.patch(`/blocks/order`, JSON.stringify({ noteId, startOrder, endOrder, upperOrder }));
+};

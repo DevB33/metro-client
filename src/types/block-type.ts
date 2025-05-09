@@ -2,6 +2,7 @@ export interface ITextBlock {
   id: string;
   type: 'DEFAULT' | 'h1' | 'h2' | 'h3' | 'quote' | 'ol' | 'ul';
   nodes: ITextBlockChild[];
+  order: number;
 }
 
 export interface ITextBlockChild {

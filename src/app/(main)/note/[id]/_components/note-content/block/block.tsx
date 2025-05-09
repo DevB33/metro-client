@@ -105,6 +105,7 @@ const Block = memo(
             menuState,
             setMenuState,
             selection,
+            noteId,
           )
         }
         onMouseUp={event => {
