@@ -1,6 +1,13 @@
 import { mutate } from 'swr';
 
-import { createBlock, deleteBlock, getBlockList, updateBlockNodes, updateBlocksOrder } from '@/apis/block';
+import {
+  createBlock,
+  deleteBlock,
+  getBlockList,
+  updateBlockNodes,
+  updateBlocksOrder,
+  updateBlockType,
+} from '@/apis/block';
 import { ITextBlock } from '@/types/block-type';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import keyName from '@/constants/key-name';
@@ -242,11 +249,11 @@ const splitBlock = async (
   focusCurrentBlock(index + 1, blockRef, updatedBlockList);
 };
 
-const splitLine = (
+const splitLine = async (
   index: number,
   blockList: ITextBlock[],
-  setBlockList: (blockList: ITextBlock[]) => void,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
+  noteId: string,
 ) => {
   const { startOffset, startContainer } = getSelectionInfo(0) || {};
   if (startOffset === undefined || startOffset === null || !startContainer) return;
@@ -257,7 +264,7 @@ const splitLine = (
     childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
       ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
       : childNodes.indexOf(startContainer as HTMLElement);
-  const newChildren = [...blockList[index].children];
+  const newChildren = [...blockList[index].nodes];
 
   if (startContainer.nodeType === Node.TEXT_NODE) {
     const textBefore = startContainer.textContent?.substring(0, startOffset);
@@ -271,14 +278,16 @@ const splitLine = (
       ...newChildren.slice(0, currentChildNodeIndex),
       textBefore && {
         type: !isSpan ? 'text' : 'span',
-        style: {
-          fontStyle: !isSpan ? 'normal' : parentNode?.style.fontStyle || 'normal',
-          fontWeight: !isSpan ? 'regular' : parentNode?.style.fontWeight || 'regular',
-          color: !isSpan ? 'black' : parentNode?.style.color || 'black',
-          backgroundColor: !isSpan ? 'white' : parentNode?.style.backgroundColor || 'white',
-          width: 'auto',
-          height: 'auto',
-        },
+        style: isSpan
+          ? {
+              fontStyle: parentNode?.style.fontStyle,
+              fontWeight: parentNode?.style.fontWeight,
+              color: parentNode?.style.color,
+              backgroundColor: parentNode?.style.backgroundColor,
+              width: 'auto',
+              height: 'auto',
+            }
+          : null,
         content: textBefore || '',
       },
       textBefore && textAfter
@@ -288,14 +297,16 @@ const splitLine = (
         : null,
       textAfter && {
         type: !isSpan ? 'text' : 'span',
-        style: {
-          fontStyle: !isSpan ? 'normal' : parentNode?.style.fontStyle || 'normal',
-          fontWeight: !isSpan ? 'regular' : parentNode?.style.fontWeight || 'regular',
-          color: !isSpan ? 'black' : parentNode?.style.color || 'black',
-          backgroundColor: !isSpan ? 'white' : parentNode?.style.backgroundColor || 'white',
-          width: 'auto',
-          height: 'auto',
-        },
+        style: isSpan
+          ? {
+              fontStyle: parentNode?.style.fontStyle,
+              fontWeight: parentNode?.style.fontWeight,
+              color: parentNode?.style.color,
+              backgroundColor: parentNode?.style.backgroundColor,
+              width: 'auto',
+              height: 'auto',
+            }
+          : null,
         content: textAfter || '',
       },
       ...newChildren.slice(currentChildNodeIndex + 1),
@@ -324,39 +335,44 @@ const splitLine = (
     const updatedBlockList = [...blockList];
     updatedBlockList[index] = {
       ...updatedBlockList[index],
-      children: updatedChildren as ITextBlock['children'],
+      nodes: updatedChildren as ITextBlock['nodes'],
     };
 
-    setBlockList(updatedBlockList);
+    // 현재 블록 업데이트
+    await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
   } else if ((startContainer as HTMLElement).tagName === 'BR') {
     // 현재 커서 위치 한 곳이 빈 문자열일 때 → 중복 줄바꿈 로직
     // 직접 focus를 줄 때는 startContainer가 <br>로 잡힘
     const updatedBlockList = [...blockList];
-    if (updatedBlockList[index].children.length === 1 && updatedBlockList[index].children[0].content === '') {
-      updatedBlockList[index].children[0] = {
+    if (updatedBlockList[index].nodes.length === 1 && updatedBlockList[index].nodes[0].content === '') {
+      updatedBlockList[index].nodes[0] = {
         type: 'br',
       };
     }
-    updatedBlockList[index].children.splice(currentChildNodeIndex, 0, {
+    updatedBlockList[index].nodes.splice(currentChildNodeIndex, 0, {
       type: 'br',
     });
 
-    setBlockList(updatedBlockList);
+    // 현재 블록 업데이트
+    await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
   } else {
     // 현재 커서 위치 한 곳이 빈 문자열일 때 → 중복 줄바꿈 로직
     // 직접 focus를 주지 않을 때는 startContainer가 부모로 잡혀 text node와 br이 아님
     const updatedBlockList = [...blockList];
-    if (updatedBlockList[index].children.length === 1 && updatedBlockList[index].children[0].content === '') {
-      updatedBlockList[index].children[0] = {
+    if (updatedBlockList[index].nodes.length === 1 && updatedBlockList[index].nodes[0].content === '') {
+      updatedBlockList[index].nodes[0] = {
         type: 'br',
       };
     }
-    updatedBlockList[index].children.splice(startOffset, 0, {
+    updatedBlockList[index].nodes.splice(startOffset, 0, {
       type: 'br',
     });
 
-    setBlockList(updatedBlockList);
+    // 현재 블록 업데이트
+    await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
   }
+
+  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 
   // 줄 바꿈 후 focus를 바뀐줄 맨 앞에 주는 로직
   setTimeout(() => {
@@ -554,12 +570,12 @@ const openSlashMenu = (
   }
 };
 
-const turnIntoH1 = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
-  const updatedBlockList = [...blockList];
-  updatedBlockList[index].type = 'h1';
-  updatedBlockList[index].children[0].content = (updatedBlockList[index].children[0].content as string).substring(1);
+const turnIntoH1 = async (index: number, blockList: ITextBlock[], noteId: string) => {
+  await updateBlockType(blockList[index].id, 'H1');
 
-  setBlockList(updatedBlockList);
+  // updatedBlockList[index].children[0].content = (updatedBlockList[index].children[0].content as string).substring(1);
+
+  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 };
 
 const turnIntoH2 = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
@@ -656,7 +672,7 @@ const handleKeyDown = (
       event.preventDefault();
       setIsTyping(false);
       setKey(Math.random());
-      splitLine(index, blockList, setBlockList, blockRef);
+      splitLine(index, blockList, blockRef, noteId);
     }
 
     // 일반 backspace 클릭
@@ -799,7 +815,7 @@ const handleKeyDown = (
         event.preventDefault();
         setIsTyping(false);
         setKey(Math.random());
-        turnIntoH1(index, blockList, setBlockList);
+        turnIntoH1(index, blockList, noteId);
         focusCurrentBlock(index, blockRef, blockList);
       }
 
