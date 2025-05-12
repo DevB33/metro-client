@@ -202,8 +202,6 @@ const NoteContent = () => {
 
   // selection에 변화가 있을 때, selectionMenu의 위치를 잡는 useEffect
   useEffect(() => {
-    console.log(selection.start);
-    console.log(selection.end);
     let left = 99999;
     let top = 0;
     let rectOffset = 0;

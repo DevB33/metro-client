@@ -1,5 +1,6 @@
 import { ITextBlock } from '@/types/block-type';
 import getSelectionInfo from '@/utils/getSelectionInfo';
+import { combineHangul } from 'hangul-util';
 
 const handleInput = (
   event: React.FormEvent<HTMLDivElement>,
@@ -8,10 +9,11 @@ const handleInput = (
   setBlockList: (blockList: ITextBlock[]) => void,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   prevChildNodesLength: React.RefObject<number>,
+  setIsTyping: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   const updatedBlockList = [...blockList];
+  console.log(updatedBlockList);
   let target;
-
   if (blockList[index].type === 'ol' || blockList[index].type === 'ul') {
     target = event.currentTarget.childNodes[0]?.childNodes[0]?.childNodes[0] as HTMLElement;
   } else if (blockList[index].type === 'quote') {
@@ -67,7 +69,6 @@ const handleInput = (
   // 블록에 입력된 내용을 blockList에 반영하는 로직
   updatedBlockList[index].children[currentChildNodeIndex === -1 ? startOffset : currentChildNodeIndex].content =
     currentChildNodeIndex !== -1 ? childNodes[currentChildNodeIndex].textContent || '' : '';
-
   // 블록 중간에 빈 textNode가 생기면 삭제하고, 마지막 줄에 빈 textNode 생기면 <br>로 변경
   if (currentChildNodeIndex === -1) {
     const updatedChildList = updatedBlockList[index].children

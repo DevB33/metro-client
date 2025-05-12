@@ -41,7 +41,7 @@ const handleMouseUp = (
   const { range, startOffset } = getSelectionInfo(0) || {};
   const charIdx = document.caretPositionFromPoint(event.clientX, event.clientY)?.offset as number;
 
-  if (startOffset !== undefined && charIdx !== startOffset) {
+  if (startOffset !== undefined) {
     const windowSelection = window.getSelection();
     if (windowSelection) windowSelection.removeAllRanges();
   }
@@ -59,24 +59,42 @@ const handleMouseUp = (
       }
     }
 
-    if (range) {
-      const windowSelection = window.getSelection();
-      if (currentChildNodeIndex === -1) return;
+    const windowSelection = window.getSelection();
+    const windowRange = document.createRange();
+    if (currentChildNodeIndex === -1) return;
 
-      const targetNode = blockRef.current[index]?.childNodes[currentChildNodeIndex];
+    const targetNode = blockRef.current[index]?.childNodes[currentChildNodeIndex];
 
-      if (!targetNode) return;
-      if (targetNode.nodeType === Node.TEXT_NODE) {
-        // 텍스트 노드일 때
-        range.setStart(blockRef.current[index]?.childNodes[currentChildNodeIndex] as Node, charIdx);
-      } else if (targetNode.firstChild && targetNode.firstChild.nodeType === Node.TEXT_NODE) {
-        // span 같은 엘리먼트 노드에 텍스트가 있을 경우
-        range.setStart(blockRef.current[index]?.childNodes[currentChildNodeIndex].firstChild as Node, charIdx);
-      }
-
-      windowSelection?.removeAllRanges();
-      windowSelection?.addRange(range);
+    if (!targetNode) return;
+    if (targetNode.nodeType === Node.TEXT_NODE) {
+      // 텍스트 노드일 때
+      windowRange.setStart(blockRef.current[index]?.childNodes[currentChildNodeIndex] as Node, charIdx);
+    } else if (targetNode.firstChild && targetNode.firstChild.nodeType === Node.TEXT_NODE) {
+      // span 같은 엘리먼트 노드에 텍스트가 있을 경우
+      windowRange.setStart(blockRef.current[index]?.childNodes[currentChildNodeIndex].firstChild as Node, charIdx);
     }
+
+    windowSelection?.removeAllRanges();
+    windowSelection?.addRange(windowRange);
+
+    // if (range) {
+    //   const windowSelection = window.getSelection();
+    //   if (currentChildNodeIndex === -1) return;
+
+    //   const targetNode = blockRef.current[index]?.childNodes[currentChildNodeIndex];
+
+    //   if (!targetNode) return;
+    //   if (targetNode.nodeType === Node.TEXT_NODE) {
+    //     // 텍스트 노드일 때
+    //     range.setStart(blockRef.current[index]?.childNodes[currentChildNodeIndex] as Node, charIdx);
+    //   } else if (targetNode.firstChild && targetNode.firstChild.nodeType === Node.TEXT_NODE) {
+    //     // span 같은 엘리먼트 노드에 텍스트가 있을 경우
+    //     range.setStart(blockRef.current[index]?.childNodes[currentChildNodeIndex].firstChild as Node, charIdx);
+    //   }
+    //   console.log(range);
+    //   windowSelection?.removeAllRanges();
+    //   windowSelection?.addRange(range);
+    // }
   }, 10);
 
   finalSelectionEndPosition.offset = charIdx;

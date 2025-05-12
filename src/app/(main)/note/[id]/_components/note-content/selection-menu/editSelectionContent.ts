@@ -97,6 +97,38 @@ const editSelectionContent = (
     content: key,
   };
 
+  const focusAfterSelection = (
+    selection: ISelectionPosition,
+    isBackward: boolean,
+    blockRef: React.RefObject<(HTMLDivElement | null)[]>,
+  ) => {
+    const target = isBackward ? selection.end : selection.start;
+
+    const { blockIndex, childNodeIndex, offset } = target;
+    const targetBlockNode = blockRef.current[blockIndex];
+    const targetNode = targetBlockNode?.childNodes[childNodeIndex];
+
+    const newRange = document.createRange();
+    const windowSelection = window.getSelection();
+    console.log(windowSelection);
+    if (targetNode.nodeType === Node.TEXT_NODE) {
+      newRange.setStart(targetNode, Math.min(offset, targetNode.textContent?.length ?? 0));
+      newRange.collapse(true);
+
+      windowSelection?.removeAllRanges();
+      windowSelection?.addRange(newRange);
+    } else {
+      if (targetNode.nodeName === 'BR') {
+        newRange.setStart(targetNode as Node, Math.min(offset, targetNode.textContent?.length ?? 0));
+      } else {
+        newRange.setStart(targetNode.firstChild as Node, Math.min(offset, targetNode.textContent?.length ?? 0));
+      }
+      newRange.collapse(true);
+      windowSelection?.removeAllRanges();
+      windowSelection?.addRange(newRange);
+    }
+  };
+
   // 블록 인덱스 범위
   // for문이 start와 end의 순서가 바뀐 역방향 selection에서도 잘 작동하도록 구현
   for (
@@ -778,6 +810,14 @@ const editSelectionContent = (
     });
 
   setBlockList(newBlockList);
+  const isBackward =
+    selection.start.blockIndex > selection.end.blockIndex ||
+    (selection.start.blockIndex === selection.end.blockIndex &&
+      selection.start.childNodeIndex > selection.end.childNodeIndex) ||
+    (selection.start.blockIndex === selection.end.blockIndex &&
+      selection.start.childNodeIndex === selection.end.childNodeIndex &&
+      selection.start.offset > selection.end.offset);
+  focusAfterSelection(selection, isBackward, blockRef);
 };
 
 export default editSelectionContent;

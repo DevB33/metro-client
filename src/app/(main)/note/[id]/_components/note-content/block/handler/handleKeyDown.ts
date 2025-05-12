@@ -586,15 +586,15 @@ const turnIntoQuote = (index: number, blockList: ITextBlock[], setBlockList: (bl
   setBlockList(updatedBlockList);
 };
 
-const isInputtableKey = (e: KeyboardEvent) => {
-  // return e.key.length === 1 && /^[a-zA-Z가-힣0-9!@#\$%\^\&*\)\(+=._-]+$/.test(e.key);
+// const isInputtableKey = (e: KeyboardEvent) => {
+//   // return e.key.length === 1 && /^[a-zA-Z가-힣0-9!@#\$%\^\&*\)\(+=._-]+$/.test(e.key);
 
-  // 조합 중인 한글은 무시
-  if (e.isComposing) return false;
+//   // 조합 중인 한글은 무시
+//   if (e.isComposing) return false;
 
-  // 단일 글자 or 스페이스바만 허용
-  return e.key.length === 1 || e.key === ' ';
-};
+//   // 단일 글자 or 스페이스바만 허용
+//   return e.key.length === 1 || e.key === ' ';
+// };
 
 const handleKeyDown = (
   event: React.KeyboardEvent<HTMLDivElement>,
@@ -982,9 +982,9 @@ const handleKeyDown = (
 
   // selection 있을때
   if (menuState.isSelectionMenuOpen) {
-    event.preventDefault();
+    // event.preventDefault();
     setIsTyping(false);
-    setKey(Math.random());
+    // setKey(Math.random());
 
     const isBackward =
       selection.start.blockIndex > selection.end.blockIndex ||
@@ -993,7 +993,6 @@ const handleKeyDown = (
       (selection.start.blockIndex === selection.end.blockIndex &&
         selection.start.childNodeIndex === selection.end.childNodeIndex &&
         selection.start.offset > selection.end.offset);
-
     // backspace 클릭
     if (event.key === keyName.backspace) {
       editSelectionContent('delete', event.key, selection, blockList, setBlockList, blockRef);
@@ -1013,22 +1012,23 @@ const handleKeyDown = (
       }
     }
     // 다른 키 입력
-    // else if (isInputtableKey(event.nativeEvent)) {
-    //   if (!isBackward) {
-    //     editSelectionContent('write', event.key, selection, blockList, setBlockList, blockRef);
-    //     selection.start.offset = 1;
-    //     // selection 시작점의 offset이 0이라 시작노드가 다 지워질떄가 아니면 새로 생성된 노드에 focus
-    //     if (selection.start.offset !== 0) {
-    //       selection.start.childNodeIndex += 1;
-    //     }
-    //   } else {
-    //     editSelectionContent('write', event.key, selection, blockList, setBlockList, blockRef);
-    //     selection.end.offset = 1;
-    //     if (selection.end.offset !== 0) {
-    //       selection.end.childNodeIndex += 1;
-    //     }
-    //   }
-    // }
+    else {
+      editSelectionContent('delete', event.key, selection, blockList, setBlockList, blockRef);
+      // if (!isBackward) {
+      //   editSelectionContent('delete', event.key, selection, blockList, setBlockList, blockRef);
+      //   selection.start.offset = 1;
+      //   // selection 시작점의 offset이 0이라 시작노드가 다 지워질떄가 아니면 새로 생성된 노드에 focus
+      //   if (selection.start.offset !== 0) {
+      //     selection.start.childNodeIndex += 1;
+      //   }
+      // } else {
+      //   editSelectionContent('delete', event.key, selection, blockList, setBlockList, blockRef);
+      //   selection.end.offset = 1;
+      //   if (selection.end.offset !== 0) {
+      //     selection.end.childNodeIndex += 1;
+      //   }
+      // }
+    }
 
     setTimeout(() => {
       focusAfterSelection(selection, isBackward, event.key, blockRef);
