@@ -54,10 +54,10 @@ const splitChildren = (
 
   // children이 비어있는 경우 제외하고 추가
   const updatedBlocks: ITextBlock[] = [];
-  if (firstRawChildren.length >= 0) {
+  if (firstRawChildren.length > 0) {
     updatedBlocks.push(firstUpdatedBlock);
   }
-  if (secondRawChildren.length >= 0) {
+  if (secondRawChildren.length > 0) {
     updatedBlocks.push(secondUpdatedBlock);
   }
 
@@ -106,6 +106,13 @@ const editSelectionContent = (
     content: key,
   };
 
+  const emptyRawChildren = [
+    {
+      type: 'text' as const,
+      style: defaultStyle,
+      content: '',
+    },
+  ];
   // 블록 인덱스 범위
   // for문이 start와 end의 순서가 바뀐 역방향 selection에서도 잘 작동하도록 구현
   for (
@@ -170,9 +177,15 @@ const editSelectionContent = (
 
         // 한 노드 내에서 이전 텍스트와 다음 텍스트를 분리, selection된 부분은 list에서 제외 후 블록 분리
         if (selectionAction === 'enter') {
-          const firstRawChildren = [...block.children.slice(0, startNodeIndex), ...(beforeText ? [beforeNode] : [])];
+          const firstRawChildren = [
+            ...block.children.slice(0, startNodeIndex),
+            ...(beforeText ? [beforeNode] : emptyRawChildren),
+          ];
 
-          const secondRawChildren = [...(afterText ? [afterNode] : []), ...block.children.slice(startNodeIndex + 1)];
+          const secondRawChildren = [
+            ...(afterText ? [afterNode] : emptyRawChildren),
+            ...block.children.slice(startNodeIndex + 1),
+          ];
 
           newBlockList = splitChildren(firstRawChildren, secondRawChildren, block, newBlockList, index);
         }
@@ -287,7 +300,7 @@ const editSelectionContent = (
                     content: selectionBeforeText,
                   },
                 ]
-              : []),
+              : emptyRawChildren),
           ];
 
           secondRawChildren = [
@@ -298,7 +311,7 @@ const editSelectionContent = (
                     content: selectionAfterText, // selection에 포함된 가장 뒷 노드에서 selection 되지 않은 text만 남김
                   },
                 ]
-              : []),
+              : emptyRawChildren),
             ...block.children.slice(selectionEndNodeIndex + 1), // selection에 포함되지 않은 노드
           ];
 
@@ -406,7 +419,7 @@ const editSelectionContent = (
                     content: selectionBeforeText,
                   },
                 ]
-              : []),
+              : emptyRawChildren),
           ];
           newBlockList = splitChildren(firstRawChildren, [], block, newBlockList, index);
         }
@@ -509,11 +522,12 @@ const editSelectionContent = (
                     content: selectionAfterText,
                   },
                 ]
-              : []),
+              : emptyRawChildren),
             ...block.children.slice(selectionEndNodeIndex + 1),
           ];
           newBlockList = splitChildren([], secondRawChildren, block, newBlockList, index);
         }
+
         // 입력 시, 위 로직에서 만들어진 윗 블록에 이후 블록내용을 합쳐 마무리
         if (selectionAction === 'delete') {
           // 첫 블록 뒤에 붙이기
