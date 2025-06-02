@@ -35,7 +35,6 @@ const handleMouseLeave = (
   const fillBackgroundNode = (left: number, right: number, idx: number) => {
     const blockElement = blockRef.current[idx];
     const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
-
     if (!blockElement) return;
     fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
   };
@@ -45,7 +44,6 @@ const handleMouseLeave = (
   const parent = blockRef.current[index];
   const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
   const textLength = parent?.textContent?.length || 0;
-
   // 시작 블록에서 떠날 때
   if (index === selection.start.blockIndex && index === selection.end.blockIndex) {
     let left = 99999;
@@ -122,14 +120,14 @@ const handleMouseLeave = (
     let right = 0;
 
     // 위로 드래그 할 때
-    if (index !== selection.start.blockIndex && index === selection.end.blockIndex && isUp) {
+    if (index !== selection.start.blockIndex && index === selection.end.blockIndex && isUp.current) {
       const el = blockRef.current[index];
       if (!el) return;
       el.style.backgroundImage = `none`;
     }
 
     // 아래로 드래그 할 때
-    if (index !== selection.start.blockIndex && index === selection.end.blockIndex && !isUp) {
+    if (index !== selection.start.blockIndex && index === selection.end.blockIndex && !isUp.current) {
       childNodes.forEach((childNode, idx) => {
         const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
         left = Math.min(left, rect.left);
@@ -154,14 +152,14 @@ const handleMouseLeave = (
     let left = 99999;
     let right = 0;
     // 아래로 드래그 할 때
-    if (index !== selection.start.blockIndex && index === selection.end.blockIndex && !isUp) {
+    if (index !== selection.start.blockIndex && index === selection.end.blockIndex && !isUp.current) {
       const el = blockRef.current[index];
       if (!el) return;
       el.style.backgroundImage = `none`;
     }
 
     // 위로 드래그 할 때
-    if (index !== selection.start.blockIndex && index === selection.end.blockIndex && isUp) {
+    if (index !== selection.start.blockIndex && index === selection.end.blockIndex && isUp.current) {
       childNodes.forEach(childNode => {
         const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
         left = Math.min(left, rect.left);

@@ -9,18 +9,53 @@ const handleMouseUp = (
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   blockList: ITextBlock[],
   selection: ISelectionPosition,
+  setSelection: React.Dispatch<React.SetStateAction<ISelectionPosition>>,
   setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>,
 ) => {
   if (!blockRef.current || blockRef.current.length === 0) return;
 
+  // 아래에서 위로 드래그하면 start의 childNoeIndex가 -1 인 경우
+  const fixedSelectionStart =
+    selection.start.childNodeIndex === -1
+      ? { blockIndex: selection.start.blockIndex, childNodeIndex: 0, offset: 0 }
+      : selection.start;
+  if (selection.start.childNodeIndex === -1) {
+    setSelection(prev => ({
+      ...prev,
+      start: { ...prev.start, childNodeIndex: 0, offset: 0 },
+    }));
+  }
+  // 위에서 아래로 드래그하면 start의 childNodeIndex, offset 값이 end값에 그대로 적용되는 경우
+  const fixedSelectionEnd =
+    blockRef.current[index]?.childNodes.length === 1 && blockRef.current[index]?.childNodes[0]?.nodeName === 'BR'
+      ? { blockIndex: selection.end.blockIndex, childNodeIndex: 0, offset: 0 }
+      : selection.end;
+  if (blockRef.current[index]?.childNodes.length === 1 && blockRef.current[index]?.childNodes[0]?.nodeName === 'BR') {
+    setSelection(prev => ({
+      ...prev,
+      end: { ...prev.end, childNodeIndex: 0, offset: 0 },
+    }));
+  }
+
+  const {
+    blockIndex: selectionStartBlockIndex,
+    childNodeIndex: selectionStartChildNodeIndex,
+    offset: selectionStartOffset,
+  } = fixedSelectionStart;
+  const {
+    blockIndex: selectionEndBlockIndex,
+    childNodeIndex: selectionEndChildNodeIndex,
+    offset: selectionEndOffset,
+  } = fixedSelectionEnd;
+
   // selection.end 재설정
   const finalSelectionEndPosition = {
-    blockIndex: selection.end.blockIndex,
-    childNodeIndex: selection.end.childNodeIndex,
-    offset: selection.end.offset,
+    blockIndex: selectionEndBlockIndex,
+    childNodeIndex: selectionEndChildNodeIndex,
+    offset: selectionEndOffset,
   };
 
-  if (index !== selection.end.blockIndex) {
+  if (index !== selectionEndBlockIndex) {
     finalSelectionEndPosition.blockIndex = index;
   }
 
@@ -32,9 +67,7 @@ const handleMouseUp = (
       ? childNodes.indexOf(textNode.parentNode as HTMLElement)
       : childNodes.indexOf(textNode as HTMLElement);
 
-  if (currentChildNodeIndex === -1) return;
-
-  if (currentChildNodeIndex !== selection.end.childNodeIndex) {
+  if (currentChildNodeIndex !== selectionEndChildNodeIndex) {
     finalSelectionEndPosition.childNodeIndex = currentChildNodeIndex;
   }
 
@@ -119,11 +152,11 @@ const handleMouseUp = (
   let top = 0;
   let rectOffset = 0;
 
-  if (selection.start.blockIndex < selection.end.blockIndex) {
-    rectOffset = selection.start.offset;
+  if (selectionStartBlockIndex < selectionEndBlockIndex) {
+    rectOffset = selectionStartOffset;
     const { left: newLeft, top: newTop } = getBoundsForSelection(
-      selection.start.blockIndex,
-      selection.start.childNodeIndex,
+      selectionStartBlockIndex,
+      selectionStartChildNodeIndex,
       rectOffset,
     );
     left = Math.min(left, newLeft);
@@ -131,11 +164,11 @@ const handleMouseUp = (
   }
 
   // selection의 시작 블록이 끝 블록보다 인덱스가 클 때,
-  if (selection.start.blockIndex > selection.end.blockIndex) {
-    rectOffset = selection.end.offset;
+  if (selectionStartBlockIndex > selectionEndBlockIndex) {
+    rectOffset = selectionEndOffset;
     const { left: newLeft, top: newTop } = getBoundsForSelection(
-      selection.end.blockIndex,
-      selection.end.childNodeIndex,
+      selectionEndBlockIndex,
+      selectionEndChildNodeIndex,
       rectOffset,
     );
     left = Math.min(left, newLeft);
@@ -143,35 +176,35 @@ const handleMouseUp = (
   }
 
   // selection의 시작 블록이 끝 블록보다 인덱스가 같을 때,
-  if (selection.start.blockIndex === selection.end.blockIndex) {
+  if (selectionStartBlockIndex === selectionEndBlockIndex) {
     // selection의 시작 블록이 끝 블록보다 node 인덱스가 작을 때,
-    if (selection.start.childNodeIndex < selection.end.childNodeIndex) {
-      rectOffset = selection.start.offset;
+    if (selectionStartChildNodeIndex < selectionEndChildNodeIndex) {
+      rectOffset = selectionStartOffset;
       const { left: newLeft, top: newTop } = getBoundsForSelection(
-        selection.start.blockIndex,
-        selection.start.childNodeIndex,
+        selectionStartBlockIndex,
+        selectionStartChildNodeIndex,
         rectOffset,
       );
       left = Math.min(left, newLeft);
       top = Math.max(top, newTop);
     }
     // selection의 시작 블록이 끝 블록보다 node 인덱스가 클 때,
-    if (selection.start.childNodeIndex > selection.end.childNodeIndex) {
-      rectOffset = selection.end.offset;
+    if (selectionStartChildNodeIndex > selectionEndChildNodeIndex) {
+      rectOffset = selectionEndOffset;
       const { left: newLeft, top: newTop } = getBoundsForSelection(
-        selection.start.blockIndex,
-        selection.end.childNodeIndex,
+        selectionStartBlockIndex,
+        selectionEndChildNodeIndex,
         rectOffset,
       );
       left = Math.min(left, newLeft);
       top = Math.max(top, newTop);
     }
     // selection의 시작 블록이 끝 블록보다 node 인덱스가 같을 때,
-    if (selection.start.childNodeIndex === selection.end.childNodeIndex) {
-      rectOffset = Math.min(selection.start.offset, selection.end.offset);
+    if (selectionStartChildNodeIndex === selectionEndChildNodeIndex) {
+      rectOffset = Math.min(selectionStartOffset, selectionEndOffset);
       const { left: newLeft, top: newTop } = getBoundsForSelection(
-        selection.start.blockIndex,
-        selection.start.childNodeIndex,
+        selectionStartBlockIndex,
+        selectionStartChildNodeIndex,
         rectOffset,
       );
       left = Math.min(left, newLeft);
@@ -186,10 +219,10 @@ const handleMouseUp = (
 
   // selection이 없을 때, 다른 곳 클릭시 메뉴 닫기
   if (
-    (selection.start.blockIndex === finalSelectionEndPosition.blockIndex &&
-      selection.start.childNodeIndex === finalSelectionEndPosition.childNodeIndex &&
-      selection.start.offset === finalSelectionEndPosition.offset) ||
-    selection.start.childNodeIndex === -1
+    (selectionStartBlockIndex === finalSelectionEndPosition.blockIndex &&
+      selectionStartChildNodeIndex === finalSelectionEndPosition.childNodeIndex &&
+      selectionStartOffset === finalSelectionEndPosition.offset) ||
+    selectionStartChildNodeIndex === -1
   ) {
     setMenuState(prev => ({
       ...prev,
@@ -198,10 +231,19 @@ const handleMouseUp = (
     return;
   }
 
-  setMenuState(prev => ({
-    ...prev,
-    isSelectionMenuOpen: true,
-  }));
+  // selection이 있을 때, 메뉴 열기
+  if (
+    !(
+      selectionStartBlockIndex === selectionEndBlockIndex &&
+      selectionStartChildNodeIndex === selectionEndChildNodeIndex &&
+      selectionStartOffset === selectionEndOffset
+    )
+  ) {
+    setMenuState(prev => ({
+      ...prev,
+      isSelectionMenuOpen: true,
+    }));
+  }
 };
 
 export default handleMouseUp;

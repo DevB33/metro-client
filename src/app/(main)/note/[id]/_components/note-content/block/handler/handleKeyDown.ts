@@ -39,7 +39,6 @@ const focusAfterSelection = (
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
 ) => {
   let target = isBackward ? selection.end : selection.start;
-
   if (key === keyName.arrowRight) {
     target = isBackward ? selection.start : selection.end;
   }
@@ -1025,7 +1024,6 @@ const handleKeyDown = async (
                   blockRef.current[index - 1]?.childNodes[prevBlockNodeLength]?.firstChild?.textContent
                     ?.length as number,
                 );
-                console.log(range);
               }
               range.collapse(true);
 
@@ -1044,6 +1042,7 @@ const handleKeyDown = async (
     setIsTyping(false);
     setKey(Math.random());
 
+    // selection이 역방향인지 아닌지 판단
     const isBackward =
       selection.start.blockIndex > selection.end.blockIndex ||
       (selection.start.blockIndex === selection.end.blockIndex &&
@@ -1054,17 +1053,17 @@ const handleKeyDown = async (
 
     // backspace 클릭
     if (event.key === keyName.backspace) {
-      editSelectionContent('delete', event.key, selection, blockList, setBlockList, blockRef);
+      editSelectionContent('delete', event.key, selection, isBackward, blockList, setBlockList, blockRef);
     }
     // 엔터 입력
     if (event.key === keyName.enter && !event.shiftKey) {
       if (!isBackward) {
-        editSelectionContent('enter', event.key, selection, blockList, setBlockList, blockRef);
+        editSelectionContent('enter', event.key, selection, isBackward, blockList, setBlockList, blockRef);
         selection.start.blockIndex += 1;
         selection.start.childNodeIndex = 0;
         selection.start.offset = 0;
       } else {
-        editSelectionContent('enter', event.key, selection, blockList, setBlockList, blockRef);
+        editSelectionContent('enter', event.key, selection, isBackward, blockList, setBlockList, blockRef);
         selection.end.blockIndex += 1;
         selection.end.childNodeIndex = 0;
         selection.end.offset = 0;
@@ -1073,17 +1072,36 @@ const handleKeyDown = async (
     // 다른 키 입력
     else if (isInputtableKey(event.nativeEvent)) {
       if (!isBackward) {
-        editSelectionContent('write', event.key, selection, blockList, setBlockList, blockRef);
-        selection.start.offset = 1;
-        // selection 시작점의 offset이 0이라 시작노드가 다 지워질떄가 아니면 새로 생성된 노드에 focus
-        if (selection.start.offset !== 0) {
+        editSelectionContent('write', event.key, selection, isBackward, blockList, setBlockList, blockRef);
+
+        // selection start가 처음부터여서 해당 노드가 다 지워지고 새로운 노드가 생긴거면 노드 인덱스는 그대로, offset은 1
+        if (selection.start.offset === 0) {
+          // 한 줄 전체가 지워진 경우
+          if (selection.start.childNodeIndex === 0) {
+            selection.start.childNodeIndex = 0;
+          }
+          selection.start.offset = 1;
+        }
+        // selection start가 처음부터가 아니라 해당 노드가 다 지워지지 않고 새로운 노드가 생긴거면 노드 인덱스는 +1, offset은 1
+        else {
           selection.start.childNodeIndex += 1;
+          selection.start.offset = 1;
         }
       } else {
-        editSelectionContent('write', event.key, selection, blockList, setBlockList, blockRef);
-        selection.end.offset = 1;
-        if (selection.end.offset !== 0) {
+        editSelectionContent('write', event.key, selection, isBackward, blockList, setBlockList, blockRef);
+
+        // selection start가 처음부터여서 해당 노드가 다 지워지고 새로운 노드가 생긴거면 노드 인덱스는 그대로, offset은 1
+        if (selection.end.offset === 0) {
+          // 한 줄 전체가 지워진 경우
+          if (selection.start.childNodeIndex === 0) {
+            selection.end.childNodeIndex = 0;
+          }
+          selection.end.offset = 1;
+        }
+        // selection start가 처음부터가 아니라 해당 노드가 다 지워지지 않고 새로운 노드가 생긴거면 노드 인덱스는 +1, offset은 1
+        else {
           selection.end.childNodeIndex += 1;
+          selection.end.offset = 1;
         }
       }
     }
