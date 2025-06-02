@@ -15,9 +15,9 @@ const handleInput = async (
   const updatedBlockList = [...blockList];
   let target;
 
-  if (blockList[index].type === 'ol' || blockList[index].type === 'ul') {
+  if (blockList[index].type === 'OL' || blockList[index].type === 'UL') {
     target = event.currentTarget.childNodes[0]?.childNodes[0]?.childNodes[0] as HTMLElement;
-  } else if (blockList[index].type === 'quote') {
+  } else if (blockList[index].type === 'QUOTE') {
     target = event.currentTarget.childNodes[0]?.childNodes[0] as HTMLElement;
   } else {
     target = event.currentTarget.childNodes[0] as HTMLElement;

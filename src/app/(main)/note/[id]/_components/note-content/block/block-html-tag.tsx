@@ -77,7 +77,7 @@ const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag
     );
   }
 
-  if (block.type === 'h1') {
+  if (block.type === 'H1') {
     return (
       <h1
         data-placeholder={placeholder.h1}
@@ -92,7 +92,7 @@ const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag
     );
   }
 
-  if (block.type === 'h2') {
+  if (block.type === 'H2') {
     return (
       <h2
         data-placeholder={placeholder.h2}
@@ -107,7 +107,7 @@ const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag
     );
   }
 
-  if (block.type === 'h3') {
+  if (block.type === 'H3') {
     return (
       <h3
         data-placeholder={placeholder.h3}
@@ -122,7 +122,7 @@ const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag
     );
   }
 
-  if (block.type === 'ul') {
+  if (block.type === 'UL') {
     return (
       <ul>
         <li>
@@ -141,13 +141,13 @@ const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag
     );
   }
 
-  if (block.type === 'ol') {
+  if (block.type === 'OL') {
     let startNumber = 1;
 
     blockList.forEach((item, idx) => {
       if (idx >= index) return;
 
-      if (item.type === 'ol') {
+      if (item.type === 'OL') {
         startNumber += 1;
       } else {
         startNumber = 1;
@@ -172,7 +172,7 @@ const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag
     );
   }
 
-  if (block.type === 'quote') {
+  if (block.type === 'QUOTE') {
     return (
       <blockquote>
         <p
