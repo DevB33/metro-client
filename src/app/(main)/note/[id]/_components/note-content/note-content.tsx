@@ -73,7 +73,7 @@ const NoteContent = () => {
   const [key, setKey] = useState(Date.now());
   const [isTyping, setIsTyping] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [isUp, setIsUp] = useState(false);
+  const isUp = useRef(false);
   const [dragBlockIndex, setDragBlockIndex] = useState<number | null>(null);
 
   const [selection, setSelection] = useState<ISelectionPosition>({
@@ -231,6 +231,7 @@ const NoteContent = () => {
 
     return { left, top };
   };
+  const { startContainer, startOffset } = getSelectionInfo(0) || {};
 
   // selection에 변화가 있을 때, selectionMenu의 위치를 잡는 useEffect
   useEffect(() => {
@@ -378,10 +379,10 @@ const NoteContent = () => {
 
     const handleOutsideDrag = (event: MouseEvent) => {
       if (prevClientY.current < event.clientY) {
-        setIsUp(false);
+        isUp.current = false;
         prevClientY.current = event.clientY;
       } else if (prevClientY.current > event.clientY) {
-        setIsUp(true);
+        isUp.current = true;
         prevClientY.current = event.clientY;
       }
 
@@ -390,6 +391,7 @@ const NoteContent = () => {
       if (inputElementList.includes(event.target as Element)) return;
       // 외부 드래깅중이라면 window 기본 selection이 작동하지 않도록 함
       if (!outSideDragging.current) return;
+
       const windowSelection = window.getSelection();
       if (windowSelection) windowSelection.removeAllRanges();
     };
@@ -420,7 +422,6 @@ const NoteContent = () => {
     // block 버튼을 누르고 드래그 하기 전에 key를 초기화해서 에러를 가상돔과 돔 조작의 충돌을 방지하기 위한 조건문
     // key를 초기화 하면 focus도 사라져서 다시 줘야함
     if (isTyping) {
-      const { startOffset, startContainer } = getSelectionInfo(0) || {};
       const blockIndex = blockRef.current.findIndex(blockEl => blockEl && blockEl.contains(startContainer as Node));
       const parent = blockRef.current[blockIndex];
       const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
@@ -435,7 +436,9 @@ const NoteContent = () => {
       setTimeout(() => {
         const range = document.createRange();
         const targetNode = blockRef.current[blockIndex]?.childNodes[currentChildNodeIndex];
-        range.setStart(targetNode as Node, startOffset || 0);
+        if (targetNode?.nodeType === Node.TEXT_NODE) {
+          range.setStart(targetNode as Node, startOffset || 0);
+        } else range.setStart(targetNode?.firstChild as Node, startOffset || 0);
         const windowSelection = window.getSelection();
         windowSelection?.removeAllRanges();
         windowSelection?.addRange(range);
@@ -696,7 +699,6 @@ const NoteContent = () => {
               isDragging={isDragging}
               setIsDragging={setIsDragging}
               isUp={isUp}
-              setIsUp={setIsUp}
               selection={selection}
               setSelection={setSelection}
               menuState={menuState}

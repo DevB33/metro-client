@@ -54,16 +54,16 @@ const handleMouseDown = (
       if (!targetNode) return;
       if (targetNode.nodeType === Node.TEXT_NODE) {
         // 텍스트 노드일 때
-        range.setStart(targetNode, charIdx);
+        range.setStart(blockRef.current[index]?.childNodes[currentChildNodeIndex] as Node, charIdx);
       } else if (targetNode.firstChild && targetNode.firstChild.nodeType === Node.TEXT_NODE) {
         // span 같은 엘리먼트 노드에 텍스트가 있을 경우
-        range.setStart(targetNode.firstChild, charIdx);
+        range.setStart(blockRef.current[index]?.childNodes[currentChildNodeIndex].firstChild as Node, charIdx);
       }
 
       selection?.removeAllRanges();
       selection?.addRange(range);
     }
-  }, 0);
+  }, 10);
 };
 
 export default handleMouseDown;
