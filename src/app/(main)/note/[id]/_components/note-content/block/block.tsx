@@ -1,4 +1,5 @@
 import { memo, useState, useRef, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
@@ -68,8 +69,11 @@ const Block = memo(
 
     const [isDragOver, setIsDragOver] = useState(false);
 
+    const params = useParams();
+    const noteId = params.id as string;
+
     useEffect(() => {
-      prevChildNodesLength.current = blockList[index].children.length;
+      prevChildNodesLength.current = blockList[index].nodes.length;
     }, [blockList, index]);
 
     return (
@@ -84,7 +88,7 @@ const Block = memo(
         }}
         onInput={event => {
           setIsTyping(true);
-          handleInput(event, index, blockList, setBlockList, blockRef, prevChildNodesLength);
+          handleInput(event, index, blockList, blockRef, prevChildNodesLength, noteId);
         }}
         onKeyDown={event => {
           setIsTyping(true);
@@ -99,8 +103,9 @@ const Block = memo(
             menuState,
             setMenuState,
             selection,
-          );
-        }}
+            noteId,
+          )
+        }
         onMouseUp={event => {
           handleMouseUp(event, index, blockRef, blockList, selection, setMenuState);
           setIsDragging(false);
@@ -139,8 +144,8 @@ const Block = memo(
         }}
       >
         <BlockHTMLTag block={block} blockList={blockList} index={index} blockRef={blockRef}>
-          {block.children.length === 1 && block.children[0].content === '' && <br />}
-          {block.children.map(child => {
+          {block.nodes?.length === 1 && block.nodes[0].content === '' && <br />}
+          {block.nodes?.map(child => {
             if (child.type === 'br') {
               return <br key={Math.random()} />;
             }

@@ -1,7 +1,8 @@
 export interface ITextBlock {
-  id: number;
-  type: 'default' | 'h1' | 'h2' | 'h3' | 'quote' | 'ol' | 'ul';
-  children: ITextBlockChild[];
+  id: string;
+  type: 'DEFAULT' | 'h1' | 'h2' | 'h3' | 'quote' | 'ol' | 'ul';
+  nodes: ITextBlockChild[];
+  order: number;
 }
 
 export interface ITextBlockChild {

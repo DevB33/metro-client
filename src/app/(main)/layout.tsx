@@ -15,14 +15,16 @@ const MainLayout = async ({ children, modal }: Readonly<{ children: React.ReactN
     redirect('/login');
   }
 
-  const noteResponse = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/notes`, {
+  const { data: noteList } = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/notes`, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
     },
   });
 
-  const noteList = noteResponse.data;
+  console.log(noteList);
+
+  // const noteList = noteResponse.data;
 
   return (
     <SWRConfig

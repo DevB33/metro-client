@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import useSWR, { mutate } from 'swr';
 import { css } from '@/../styled-system/css';
 
 import getSelectionInfo from '@/utils/getSelectionInfo';
@@ -9,9 +11,15 @@ import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundIma
 import ISelectionPosition from '@/types/selection-position';
 import BUTTON_OFFSET from '@/constants/button-offset';
 import IMenuState from '@/types/menu-type';
+import { createBlock, getBlockList } from '@/apis/block';
 import BlockButton from './block-button';
 import Block from './block/block';
 import SelectionMenu from './selection-menu/selection-menu';
+
+const tempNoteContent = css({
+  width: '100%',
+  height: 'calc(100% - 15rem)',
+});
 
 const blockContainer = css({
   boxSizing: 'content-box',
@@ -45,11 +53,15 @@ const NoteContent = () => {
   const isSelection = useRef(false);
   const prevClientY = useRef(0);
 
+  const params = useParams();
+  const noteId = params.id as string;
+  const { data: blocks } = useSWR(`blockList-${noteId}`);
+
   const [blockList, setBlockList] = useState<ITextBlock[]>([
     {
-      id: 1,
-      type: 'default',
-      children: [
+      id: '1',
+      type: 'DEFAULT',
+      nodes: [
         {
           type: 'text',
           content: '',
@@ -78,6 +90,27 @@ const NoteContent = () => {
   });
 
   const [isBlockMenuOpen, setIsBlockMenuOpen] = useState(false);
+
+  const createFirstBlock = async () => {
+    if (blocks.length === 0) {
+      await createBlock({
+        noteId,
+        type: 'DEFAULT',
+        upperOrder: -1,
+        nodes: [
+          {
+            type: 'text',
+            content: '',
+          },
+        ],
+      });
+
+      await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+      setTimeout(() => {
+        (blockRef.current[0]?.parentNode as HTMLElement)?.focus();
+      }, 0);
+    }
+  };
 
   const OpenBlockMenu = () => {
     setIsBlockMenuOpen(true);
@@ -205,6 +238,8 @@ const NoteContent = () => {
     let left = 99999;
     let top = 0;
     let rectOffset = 0;
+
+    if (blocks.length === 0) return;
 
     // selection의 시작 블록이 끝 블록보다 인덱스가 작을 때,
     if (selection.start.blockIndex < selection.end.blockIndex) {
@@ -567,6 +602,23 @@ const NoteContent = () => {
     });
   }, [key, blockList]);
 
+  if (blocks.length === 0) {
+    return (
+      <div
+        className={tempNoteContent}
+        role="button"
+        tabIndex={0}
+        aria-label="새 블록 만들기"
+        onClick={createFirstBlock}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            createFirstBlock();
+          }
+        }}
+      />
+    );
+  }
+
   return (
     <div style={{ pointerEvents: 'none' }}>
       <div
@@ -587,7 +639,7 @@ const NoteContent = () => {
           }))
         }
       >
-        {blockList.map((block, index) => (
+        {blocks?.map((block: ITextBlock, index: number) => (
           <div
             role="button"
             tabIndex={0}
@@ -639,7 +691,7 @@ const NoteContent = () => {
               index={index}
               block={block}
               blockRef={blockRef}
-              blockList={blockList}
+              blockList={blocks}
               setBlockList={setBlockList}
               isTyping={isTyping}
               setIsTyping={setIsTyping}

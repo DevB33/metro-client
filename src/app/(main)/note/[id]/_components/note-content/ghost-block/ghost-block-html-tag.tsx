@@ -14,7 +14,7 @@ const htmltag = css({
 });
 
 const GhostBlockHTMLTag = ({ block, blockList, index, children }: IGhostBlockHTMLTag) => {
-  if (block.type === 'default') {
+  if (block.type === 'DEFAULT') {
     return <p className={htmltag}>{children}</p>;
   }
 

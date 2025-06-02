@@ -22,7 +22,7 @@ const GhostBlock = ({ ghostRef, block, blockList, index }: IGhostBlock) => {
   return (
     <div ref={ghostRef} className={container}>
       <GhostBlockHTMLTag block={block} blockList={blockList} index={index}>
-        {block.children.map((child, idx) => {
+        {block.nodes?.map((child, idx) => {
           if (child.type === 'br') {
             return <br key={idx} />;
           }

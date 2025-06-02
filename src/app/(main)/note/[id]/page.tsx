@@ -29,13 +29,14 @@ const noteContainer = css({
   width: 'auto',
   minWidth: '54.5rem',
   minHeight: '100%',
+  height: '100%',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'start',
   gap: 'tiny',
   zIndex: 3,
-  mb: '10rem',
+  // mb: '10rem',
 });
 
 const divider = css({
@@ -51,20 +52,29 @@ const Note = async ({ params }: { params: Promise<{ id: string }> }) => {
   const accessToken = cookie?.get('accessToken')?.value;
   const { id } = await params;
 
-  const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/notes/${id}`, {
+  const { data: noteMetadata } = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/notes/${id}`, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
     },
   });
 
-  const noteMetadata = response.data;
+  const { data: blockList } = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/blocks`, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    params: {
+      noteId: id,
+    },
+  });
 
   return (
     <SWRConfig
       value={{
         fallback: {
           [`noteMetadata-${id}`]: noteMetadata,
+          [`blockList-${id}`]: blockList.blocks,
         },
       }}
     >

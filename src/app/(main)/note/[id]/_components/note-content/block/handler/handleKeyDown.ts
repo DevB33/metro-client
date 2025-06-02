@@ -1,3 +1,13 @@
+import { mutate } from 'swr';
+
+import {
+  createBlock,
+  deleteBlock,
+  getBlockList,
+  updateBlockNodes,
+  updateBlocksOrder,
+  updateBlockType,
+} from '@/apis/block';
 import { ITextBlock } from '@/types/block-type';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import keyName from '@/constants/key-name';
@@ -6,18 +16,18 @@ import IMenuState from '@/types/menu-type';
 import editSelectionContent from '../../selection-menu/editSelectionContent';
 
 // 현재 블록의 맨 앞에 focus
-const focusCurrentBlock = (
-  index: number,
+const focusBlock = (
+  indexToFocus: number,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   blockList: ITextBlock[],
 ) => {
   setTimeout(() => {
-    if (blockList[index].type === 'ul' || blockList[index].type === 'ol') {
-      (blockRef.current[index]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
-    } else if (blockList[index].type === 'quote') {
-      (blockRef.current[index]?.parentNode?.parentNode as HTMLElement)?.focus();
+    if (blockList[indexToFocus].type === 'ul' || blockList[indexToFocus].type === 'ol') {
+      (blockRef.current[indexToFocus]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
+    } else if (blockList[indexToFocus].type === 'quote') {
+      (blockRef.current[indexToFocus]?.parentNode?.parentNode as HTMLElement)?.focus();
     } else {
-      (blockRef.current[index]?.parentNode as HTMLElement)?.focus();
+      (blockRef.current[indexToFocus]?.parentNode as HTMLElement)?.focus();
     }
   }, 0);
 };
@@ -64,11 +74,11 @@ const focusAfterSelection = (
   }, 0);
 };
 
-const splitBlock = (
+const splitBlock = async (
   index: number,
   blockList: ITextBlock[],
-  setBlockList: (blockList: ITextBlock[]) => void,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
+  noteId: string,
 ) => {
   const { startOffset, startContainer } = getSelectionInfo(0) || {};
   if (startOffset === undefined || startOffset === null || !startContainer) return;
@@ -217,28 +227,45 @@ const splitBlock = (
     };
   }
 
-  updatedBlockList[index].children = newBeforeBlock;
+  updatedBlockList[index].nodes = newBeforeBlock;
 
-  updatedBlockList.splice(index + 1, 0, {
-    id: Date.now(),
-    type: 'default',
-    children: newAfterBlock,
-  });
-
-  if (updatedBlockList[index + 1].children.length === 2 && updatedBlockList[index + 1].children[0].type === 'br') {
-    updatedBlockList[index + 1].children.shift();
+  if (newAfterBlock.length === 2 && newAfterBlock[0].type === 'br') {
+    newAfterBlock.shift();
   }
 
-  setBlockList(updatedBlockList);
+  updatedBlockList.splice(index + 1, 0, {
+    id: `${Date.now()}`,
+    type: 'DEFAULT',
+    nodes: newAfterBlock,
+    order: updatedBlockList[index].order + 1,
+  });
 
-  focusCurrentBlock(index + 1, blockRef, updatedBlockList);
+  // 현재 블록 업데이트
+  await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
+  // 현재 블록 이후 블록 뒤로 한칸씩 미루기
+  await updateBlocksOrder(
+    noteId,
+    updatedBlockList[index + 1].order,
+    updatedBlockList[blockList.length - 1].order,
+    updatedBlockList[index + 1].order,
+  );
+  // 현재 블록 바로 뒤에 블록 생성
+  await createBlock({
+    noteId,
+    type: 'DEFAULT',
+    upperOrder: updatedBlockList[index].order,
+    nodes: newAfterBlock,
+  });
+  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+
+  focusBlock(index + 1, blockRef, updatedBlockList);
 };
 
-const splitLine = (
+const splitLine = async (
   index: number,
   blockList: ITextBlock[],
-  setBlockList: (blockList: ITextBlock[]) => void,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
+  noteId: string,
 ) => {
   const { startOffset, startContainer } = getSelectionInfo(0) || {};
   if (startOffset === undefined || startOffset === null || !startContainer) return;
@@ -249,7 +276,7 @@ const splitLine = (
     childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
       ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
       : childNodes.indexOf(startContainer as HTMLElement);
-  const newChildren = [...blockList[index].children];
+  const newChildren = [...blockList[index].nodes];
 
   if (startContainer.nodeType === Node.TEXT_NODE) {
     const textBefore = startContainer.textContent?.substring(0, startOffset);
@@ -263,14 +290,16 @@ const splitLine = (
       ...newChildren.slice(0, currentChildNodeIndex),
       textBefore && {
         type: !isSpan ? 'text' : 'span',
-        style: {
-          fontStyle: !isSpan ? 'normal' : parentNode?.style.fontStyle || 'normal',
-          fontWeight: !isSpan ? 'regular' : parentNode?.style.fontWeight || 'regular',
-          color: !isSpan ? 'black' : parentNode?.style.color || 'black',
-          backgroundColor: !isSpan ? 'white' : parentNode?.style.backgroundColor || 'white',
-          width: 'auto',
-          height: 'auto',
-        },
+        style: isSpan
+          ? {
+              fontStyle: parentNode?.style.fontStyle,
+              fontWeight: parentNode?.style.fontWeight,
+              color: parentNode?.style.color,
+              backgroundColor: parentNode?.style.backgroundColor,
+              width: 'auto',
+              height: 'auto',
+            }
+          : null,
         content: textBefore || '',
       },
       textBefore && textAfter
@@ -280,14 +309,16 @@ const splitLine = (
         : null,
       textAfter && {
         type: !isSpan ? 'text' : 'span',
-        style: {
-          fontStyle: !isSpan ? 'normal' : parentNode?.style.fontStyle || 'normal',
-          fontWeight: !isSpan ? 'regular' : parentNode?.style.fontWeight || 'regular',
-          color: !isSpan ? 'black' : parentNode?.style.color || 'black',
-          backgroundColor: !isSpan ? 'white' : parentNode?.style.backgroundColor || 'white',
-          width: 'auto',
-          height: 'auto',
-        },
+        style: isSpan
+          ? {
+              fontStyle: parentNode?.style.fontStyle,
+              fontWeight: parentNode?.style.fontWeight,
+              color: parentNode?.style.color,
+              backgroundColor: parentNode?.style.backgroundColor,
+              width: 'auto',
+              height: 'auto',
+            }
+          : null,
         content: textAfter || '',
       },
       ...newChildren.slice(currentChildNodeIndex + 1),
@@ -316,39 +347,46 @@ const splitLine = (
     const updatedBlockList = [...blockList];
     updatedBlockList[index] = {
       ...updatedBlockList[index],
-      children: updatedChildren as ITextBlock['children'],
+      nodes: updatedChildren as ITextBlock['nodes'],
     };
 
-    setBlockList(updatedBlockList);
+    // 현재 블록 업데이트
+    await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
   } else if ((startContainer as HTMLElement).tagName === 'BR') {
     // 현재 커서 위치 한 곳이 빈 문자열일 때 → 중복 줄바꿈 로직
     // 직접 focus를 줄 때는 startContainer가 <br>로 잡힘
     const updatedBlockList = [...blockList];
-    if (updatedBlockList[index].children.length === 1 && updatedBlockList[index].children[0].content === '') {
-      updatedBlockList[index].children[0] = {
+    if (updatedBlockList[index].nodes.length === 1 && updatedBlockList[index].nodes[0].content === '') {
+      updatedBlockList[index].nodes[0] = {
         type: 'br',
       };
     }
-    updatedBlockList[index].children.splice(currentChildNodeIndex, 0, {
+    updatedBlockList[index].nodes.splice(currentChildNodeIndex, 0, {
       type: 'br',
     });
 
-    setBlockList(updatedBlockList);
+    // 현재 블록 업데이트
+    await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
   } else {
     // 현재 커서 위치 한 곳이 빈 문자열일 때 → 중복 줄바꿈 로직
     // 직접 focus를 주지 않을 때는 startContainer가 부모로 잡혀 text node와 br이 아님
     const updatedBlockList = [...blockList];
-    if (updatedBlockList[index].children.length === 1 && updatedBlockList[index].children[0].content === '') {
-      updatedBlockList[index].children[0] = {
+    if (updatedBlockList[index].nodes.length === 1 && updatedBlockList[index].nodes[0].content === '') {
+      updatedBlockList[index].nodes[0] = {
         type: 'br',
       };
     }
-    updatedBlockList[index].children.splice(startOffset, 0, {
+    updatedBlockList[index].nodes.splice(startOffset, 0, {
       type: 'br',
     });
 
-    setBlockList(updatedBlockList);
+    // 현재 블록 업데이트
+    await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
   }
+
+  // console.log(updatedBlockList[index].nodes);
+
+  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 
   // 줄 바꿈 후 focus를 바뀐줄 맨 앞에 주는 로직
   setTimeout(() => {
@@ -374,39 +412,54 @@ const splitLine = (
   }, 0);
 };
 
-const mergeBlock = (
+const mergeBlock = async (
   index: number,
   blockList: ITextBlock[],
-  setBlockList: (blockList: ITextBlock[]) => void,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
+  noteId: string,
 ) => {
   const updatedBlockList = [...blockList];
 
   const previousBlock = updatedBlockList[index - 1];
-  const previousBlockFirstChildContent = previousBlock.children[0].content;
-  const previousBlockLength = previousBlock.children.length as number;
+  const previousBlockFirstChildContent = previousBlock.nodes[0].content;
+  const previousBlockLength = previousBlock.nodes.length as number;
   const currentBlock = updatedBlockList[index];
 
   // 이전 블록의 마지막이 <br>인 상태에서 블록을 합치면 이전 블록의 <br> 제거
-  if (previousBlock.children[previousBlock.children.length - 1].type === 'br') {
-    previousBlock.children.pop();
+  if (previousBlock.nodes[previousBlock.nodes.length - 1].type === 'br') {
+    previousBlock.nodes.pop();
   }
 
-  const updatedChildren = [...previousBlock.children, ...currentBlock.children];
+  const updatedChildren = [...previousBlock.nodes, ...currentBlock.nodes];
 
-  updatedBlockList[index - 1].children = updatedChildren;
+  updatedBlockList[index - 1].nodes = updatedChildren;
   updatedBlockList.splice(index, 1);
 
   // 빈 블록 두개 합치기 후 빈 텍스트 노드가 두개 중복해서 생기면 하나 지우기
   if (
-    updatedBlockList[index - 1].children.length === 2 &&
-    updatedBlockList[index - 1].children[0].content === '' &&
-    updatedBlockList[index - 1].children[1].content === ''
+    updatedBlockList[index - 1].nodes.length === 2 &&
+    updatedBlockList[index - 1].nodes[0].content === '' &&
+    updatedBlockList[index - 1].nodes[1].content === ''
   ) {
-    updatedBlockList[index - 1].children.shift();
+    updatedBlockList[index - 1].nodes.shift();
   }
 
-  setBlockList(updatedBlockList);
+  // 현재 블록의 바로 이전 블록 업데이트
+  await updateBlockNodes(blockList[index - 1].id, updatedBlockList[index - 1].nodes);
+  // 현재 블록 삭제
+  await deleteBlock(noteId, blockList[index].order, blockList[index].order);
+  // 현재 블록 이후 블록 앞으로 한칸 씩 당기기
+  // 현재 블록이 마지막 블록이 아닐 때만 당김
+  if (index < blockList.length - 1) {
+    await updateBlocksOrder(
+      noteId,
+      blockList[index + 1].order,
+      blockList[blockList.length - 1].order,
+      blockList[index - 1].order,
+    );
+  }
+
+  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 
   // 블록을 합친 뒤 합친 블록 사이에 focus를 주는 로직
   const range = document.createRange();
@@ -417,9 +470,9 @@ const mergeBlock = (
 
       if (
         afterBlock?.childNodes[0]?.nodeName !== 'BR' &&
-        currentBlock.children.length === 1 &&
-        (currentBlock.children[0].type === 'text' || 'span') &&
-        currentBlock.children[0].content === ''
+        currentBlock.nodes.length === 1 &&
+        (currentBlock.nodes[0].type === 'text' || 'span') &&
+        currentBlock.nodes[0].content === ''
       ) {
         // 빈 블록에서 빈블록이 아닌 블록으로 합쳐질 때
         const prevChildNodesLength = afterBlock ? afterBlock.childNodes.length - 1 : 0;
@@ -453,19 +506,21 @@ const mergeBlock = (
   }, 0);
 };
 
-const mergeLine = (
+const mergeLine = async (
   index: number,
   currentChildNodeIndex: number,
   blockList: ITextBlock[],
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
-  setBlockList: (blockList: ITextBlock[]) => void,
+  noteId: string,
 ) => {
   const updatedBlockList = [...blockList];
-  const newChildren = [...blockList[index].children];
+  const newChildren = [...blockList[index].nodes];
   newChildren.splice(currentChildNodeIndex - 1, 1);
-  updatedBlockList[index] = { ...updatedBlockList[index], children: newChildren };
+  updatedBlockList[index] = { ...updatedBlockList[index], nodes: newChildren };
 
-  setBlockList(updatedBlockList);
+  // 현재 블록 업데이트
+  await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
+  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 
   // 줄이 합쳐질 때 이전 합친 줄 사이에 focus를 주는 로직
   setTimeout(() => {
@@ -531,12 +586,12 @@ const openSlashMenu = (
   }
 };
 
-const turnIntoH1 = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
-  const updatedBlockList = [...blockList];
-  updatedBlockList[index].type = 'h1';
-  updatedBlockList[index].children[0].content = (updatedBlockList[index].children[0].content as string).substring(1);
+const turnIntoH1 = async (index: number, blockList: ITextBlock[], noteId: string) => {
+  await updateBlockType(blockList[index].id, 'H1');
 
-  setBlockList(updatedBlockList);
+  // updatedBlockList[index].children[0].content = (updatedBlockList[index].children[0].content as string).substring(1);
+
+  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 };
 
 const turnIntoH2 = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
@@ -596,7 +651,7 @@ const isInputtableKey = (e: KeyboardEvent) => {
   return e.key.length === 1 || e.key === ' ';
 };
 
-const handleKeyDown = (
+const handleKeyDown = async (
   event: React.KeyboardEvent<HTMLDivElement>,
   index: number,
   blockList: ITextBlock[],
@@ -607,6 +662,7 @@ const handleKeyDown = (
   menuState: IMenuState,
   setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>,
   selection: ISelectionPosition,
+  noteId: string,
 ) => {
   // selection 없을때
   if (!menuState.isSelectionMenuOpen) {
@@ -624,7 +680,7 @@ const handleKeyDown = (
       }
       setIsTyping(false);
       setKey(Math.random());
-      splitBlock(index, blockList, setBlockList, blockRef);
+      splitBlock(index, blockList, blockRef, noteId);
     }
 
     // shift + enter 클릭
@@ -632,7 +688,7 @@ const handleKeyDown = (
       event.preventDefault();
       setIsTyping(false);
       setKey(Math.random());
-      splitLine(index, blockList, setBlockList, blockRef);
+      splitLine(index, blockList, blockRef, noteId);
     }
 
     // 일반 backspace 클릭
@@ -652,14 +708,14 @@ const handleKeyDown = (
         event.preventDefault();
 
         // default 블록이 아닐 때는 default로 변경
-        if (blockList[index].type !== 'default') {
+        if (blockList[index].type !== 'DEFAULT') {
           setIsTyping(false);
           setKey(Math.random());
 
           const updatedBlockList = [...blockList];
-          updatedBlockList[index].type = 'default';
+          updatedBlockList[index].type = 'DEFAULT';
           setBlockList(updatedBlockList);
-          focusCurrentBlock(index, blockRef, blockList);
+          focusBlock(index, blockRef, blockList);
         }
         return;
       }
@@ -672,31 +728,33 @@ const handleKeyDown = (
 
         if (startOffset === 0) {
           // 블록 합치기 로직
-          if (blockList[index].type !== 'default') {
+          if (blockList[index].type !== 'DEFAULT') {
             // default 블록이 아닐 때는 블록을 합치는 대신 블록을 default로 변경
             const updatedBlockList = [...blockList];
-            updatedBlockList[index].type = 'default';
+            updatedBlockList[index].type = 'DEFAULT';
             setBlockList(updatedBlockList);
-            focusCurrentBlock(index, blockRef, blockList);
+            focusBlock(index, blockRef, blockList);
           } else {
-            mergeBlock(index, blockList, setBlockList, blockRef);
+            mergeBlock(index, blockList, blockRef, noteId);
           }
         } else {
           // 줄 합치기 로직
           const updatedBlockList = [...blockList];
 
           if (
-            updatedBlockList[index].children[startOffset - 1].type === 'br' &&
-            (!updatedBlockList[index].children[startOffset - 2] ||
-              updatedBlockList[index].children[startOffset - 2].type !== 'br') &&
-            !updatedBlockList[index].children[startOffset + 1]
+            updatedBlockList[index].nodes[startOffset - 1].type === 'br' &&
+            (!updatedBlockList[index].nodes[startOffset - 2] ||
+              updatedBlockList[index].nodes[startOffset - 2].type !== 'br') &&
+            !updatedBlockList[index].nodes[startOffset + 1]
           ) {
-            updatedBlockList[index].children.splice(startOffset - 1, 2);
+            updatedBlockList[index].nodes.splice(startOffset - 1, 2);
           } else {
-            updatedBlockList[index].children.splice(startOffset, 1);
+            updatedBlockList[index].nodes.splice(startOffset, 1);
           }
 
-          setBlockList(updatedBlockList);
+          // 현재 블록 업데이트
+          await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
+          await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 
           // 한 줄이 다 지워진 상태에서의 줄 합치기 일때 focus를 주는 로직
           setTimeout(() => {
@@ -713,7 +771,7 @@ const handleKeyDown = (
                 newChildNodes[startOffset - 1].textContent?.length as number,
               );
             } else {
-              focusCurrentBlock(index, blockRef, blockList);
+              focusBlock(index, blockRef, blockList);
             }
             const windowSelection = window.getSelection();
 
@@ -732,21 +790,21 @@ const handleKeyDown = (
           setIsTyping(false);
           setKey(Math.random());
 
-          if (blockList[index].type !== 'default') {
+          if (blockList[index].type !== 'DEFAULT') {
             const updatedBlockList = [...blockList];
-            updatedBlockList[index].type = 'default';
+            updatedBlockList[index].type = 'DEFAULT';
             setBlockList(updatedBlockList);
-            focusCurrentBlock(index, blockRef, blockList);
+            focusBlock(index, blockRef, blockList);
           } else {
-            mergeBlock(index, blockList, setBlockList, blockRef);
+            mergeBlock(index, blockList, blockRef, noteId);
           }
         } else if (currentChildNodeIndex > 0) {
-          if (blockList[index].children[currentChildNodeIndex - 1].type === 'br') {
+          if (blockList[index].nodes[currentChildNodeIndex - 1].type === 'br') {
             event.preventDefault();
             setIsTyping(false);
             setKey(Math.random());
 
-            mergeLine(index, currentChildNodeIndex, blockList, blockRef, setBlockList);
+            mergeLine(index, currentChildNodeIndex, blockList, blockRef, noteId);
           }
         }
       }
@@ -775,8 +833,8 @@ const handleKeyDown = (
         event.preventDefault();
         setIsTyping(false);
         setKey(Math.random());
-        turnIntoH1(index, blockList, setBlockList);
-        focusCurrentBlock(index, blockRef, blockList);
+        turnIntoH1(index, blockList, noteId);
+        focusBlock(index, blockRef, blockList);
       }
 
       // h2로 전환
@@ -792,7 +850,7 @@ const handleKeyDown = (
         setIsTyping(false);
         setKey(Math.random());
         turnIntoH2(index, blockList, setBlockList);
-        focusCurrentBlock(index, blockRef, blockList);
+        focusBlock(index, blockRef, blockList);
       }
 
       // h3으로 전환
@@ -809,7 +867,7 @@ const handleKeyDown = (
         setIsTyping(false);
         setKey(Math.random());
         turnIntoH3(index, blockList, setBlockList);
-        focusCurrentBlock(index, blockRef, blockList);
+        focusBlock(index, blockRef, blockList);
       }
 
       // ul로 전환
@@ -824,7 +882,7 @@ const handleKeyDown = (
         setIsTyping(false);
         setKey(Math.random());
         turnIntoUl(index, blockList, setBlockList);
-        focusCurrentBlock(index, blockRef, blockList);
+        focusBlock(index, blockRef, blockList);
       }
 
       // ol로 전환
@@ -839,7 +897,7 @@ const handleKeyDown = (
         setIsTyping(false);
         setKey(Math.random());
         turnIntoOl(index, blockList, setBlockList, startOffset);
-        focusCurrentBlock(index, blockRef, blockList);
+        focusBlock(index, blockRef, blockList);
       }
 
       // 인용문으로 전환
@@ -854,7 +912,7 @@ const handleKeyDown = (
         setIsTyping(false);
         setKey(Math.random());
         turnIntoQuote(index, blockList, setBlockList);
-        focusCurrentBlock(index, blockRef, blockList);
+        focusBlock(index, blockRef, blockList);
       }
     }
 
@@ -884,9 +942,9 @@ const handleKeyDown = (
         event.preventDefault();
         // 현재 위치에서 y좌표만 위로 10 높은 곳에 focus
         const caret = document.caretPositionFromPoint(cursorX, rect.top - 10) as CaretPosition;
-        if (blockList[index].children.length === 1 && blockList[index].children[0].content === '') {
+        if (blockList[index].nodes.length === 1 && blockList[index].nodes[0].content === '') {
           // 빈 블록으로 갈때는 그냥 그 블록에 focus
-          focusCurrentBlock(index - 1, blockRef, blockList);
+          focusBlock(index - 1, blockRef, blockList);
         } else {
           setTimeout(() => {
             if (range) {
@@ -908,9 +966,9 @@ const handleKeyDown = (
         event.preventDefault();
         // 현재 위치에서 y좌표만 아래로 10 낮은 곳에 focus
         const caret = document.caretPositionFromPoint(cursorX, rect.bottom + 10) as CaretPosition;
-        if (blockList[index].children.length === 1 && blockList[index].children[0].content === '') {
+        if (blockList[index].nodes.length === 1 && blockList[index].nodes[0].content === '') {
           // 빈 블록으로 갈때는 그냥 그 블록에 focus
-          focusCurrentBlock(index + 1, blockRef, blockList);
+          focusBlock(index + 1, blockRef, blockList);
         } else {
           setTimeout(() => {
             if (range) {
@@ -930,11 +988,11 @@ const handleKeyDown = (
       if (
         event.key === keyName.arrowRight &&
         ((startOffset === (lastChild?.textContent?.length as number) && startContainer === lastChild) ||
-          (blockList[index].children.length === 1 && blockList[index].children[0].content === '')) &&
+          (blockList[index].nodes.length === 1 && blockList[index].nodes[0].content === '')) &&
         index < blockList.length - 1
       ) {
         event.preventDefault();
-        focusCurrentBlock(index + 1, blockRef, blockList);
+        focusBlock(index + 1, blockRef, blockList);
       }
 
       // 블록의 맨 앞에서 왼쪽 방향키 클릭하면 이전 블록으로 커서 이동
