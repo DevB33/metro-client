@@ -1,6 +1,7 @@
 import { useState, useEffect, JSX } from 'react';
 import { useParams } from 'next/navigation';
 import { css } from '@/../styled-system/css';
+import { mutate } from 'swr';
 
 import { ITextBlock } from '@/types/block-type';
 import HeadingOneIcon from '@/icons/heading-one-icon';
@@ -14,7 +15,6 @@ import ReactDOM from 'react-dom';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import IMenuState from '@/types/menu-type';
 import { createBlock, getBlockList, updateBlocksOrder, updateBlockType } from '@/apis/block';
-import { mutate } from 'swr';
 
 interface ISlashMenuProps {
   index: number;

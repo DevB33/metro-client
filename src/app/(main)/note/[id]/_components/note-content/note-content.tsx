@@ -677,13 +677,11 @@ const NoteContent = () => {
                   index={index}
                   block={block}
                   blockList={blocks}
-                  setBlockList={setBlockList}
                   blockRef={blockRef}
                   setDragBlockIndex={setDragBlockIndex}
                   setIsTyping={setIsTyping}
                   menuState={menuState}
                   setMenuState={setMenuState}
-                  setKey={setKey}
                 />
               </div>
             </div>
