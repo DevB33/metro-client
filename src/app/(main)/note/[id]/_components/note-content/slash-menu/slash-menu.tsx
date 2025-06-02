@@ -1,4 +1,5 @@
 import { useState, useEffect, JSX } from 'react';
+import { useParams } from 'next/navigation';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
@@ -12,12 +13,13 @@ import TextIcon from '@/icons/text-icon';
 import ReactDOM from 'react-dom';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import IMenuState from '@/types/menu-type';
+import { createBlock, getBlockList, updateBlocksOrder, updateBlockType } from '@/apis/block';
+import { mutate } from 'swr';
 
 interface ISlashMenuProps {
   index: number;
   blockList: ITextBlock[];
   blockRef: React.RefObject<(HTMLDivElement | null)[]>;
-  setBlockList: (blockList: ITextBlock[]) => void;
   menuState: IMenuState;
   setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>;
   openedBySlashKey: boolean;
@@ -76,28 +78,20 @@ const markdown = css({
 
 const MENU_ITEMS: {
   label: string;
-  type: 'default' | 'h1' | 'h2' | 'h3' | 'ul' | 'ol' | 'quote';
+  type: 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'UL' | 'OL' | 'QUOTE';
   icon: JSX.Element;
   markdown: string;
 }[] = [
-  { label: 'Heading 1', type: 'h1', icon: <HeadingOneIcon color="black" />, markdown: '#' },
-  { label: 'Heading 2', type: 'h2', icon: <HeadingTwoIcon color="black" />, markdown: '##' },
-  { label: 'Heading 3', type: 'h3', icon: <HeadingThreeIcon color="black" />, markdown: '###' },
-  { label: 'Bulleted List', type: 'ul', icon: <BulletedListIcon color="black" />, markdown: '-' },
-  { label: 'Numbered List', type: 'ol', icon: <NumberedListIcon color="black" />, markdown: '1.' },
-  { label: 'Quote', type: 'quote', icon: <QuoteIcon color="black" />, markdown: '|' },
-  { label: 'Text', type: 'default', icon: <TextIcon color="black" />, markdown: '' },
+  { label: 'Heading 1', type: 'H1', icon: <HeadingOneIcon color="black" />, markdown: '#' },
+  { label: 'Heading 2', type: 'H2', icon: <HeadingTwoIcon color="black" />, markdown: '##' },
+  { label: 'Heading 3', type: 'H3', icon: <HeadingThreeIcon color="black" />, markdown: '###' },
+  { label: 'Bulleted List', type: 'UL', icon: <BulletedListIcon color="black" />, markdown: '-' },
+  { label: 'Numbered List', type: 'OL', icon: <NumberedListIcon color="black" />, markdown: '1.' },
+  { label: 'Quote', type: 'QUOTE', icon: <QuoteIcon color="black" />, markdown: '|' },
+  { label: 'Text', type: 'DEFAULT', icon: <TextIcon color="black" />, markdown: '' },
 ];
 
-const SlashMenu = ({
-  index,
-  blockList,
-  blockRef,
-  setBlockList,
-  menuState,
-  setMenuState,
-  openedBySlashKey,
-}: ISlashMenuProps) => {
+const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, openedBySlashKey }: ISlashMenuProps) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const slashMenuRef = useClickOutside(() => {
     setMenuState(prev => ({
@@ -107,15 +101,28 @@ const SlashMenu = ({
     }));
   });
 
-  const makeBlock = (type: 'default' | 'h1' | 'h2' | 'h3' | 'ul' | 'ol' | 'quote') => {
-    const newBlockList = [...blockList];
-    const newBlock: ITextBlock = {
-      id: Date.now(),
+  const params = useParams();
+  const noteId = params.id as string;
+
+  const makeBlock = async (type: 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'UL' | 'OL' | 'QUOTE') => {
+    // 현재 블록이 마지막 블록이 아닐 때
+    if (index !== blockList.length - 1) {
+      // 현재 블록 이후 블록 뒤로 한칸씩 미루기
+      await updateBlocksOrder(
+        noteId,
+        blockList[index + 1].order,
+        blockList[blockList.length - 1].order,
+        blockList[index + 1].order,
+      );
+    }
+    // 현재 블록 바로 뒤에 블록 생성
+    await createBlock({
+      noteId,
       type,
-      children: [{ type: 'text', content: '' }],
-    };
-    newBlockList.splice(index + 1, 0, newBlock);
-    setBlockList(newBlockList);
+      upperOrder: blockList[index].order,
+      nodes: [{ content: '', type: 'text' }],
+    });
+    await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 
     setMenuState(prev => ({
       ...prev,
@@ -124,9 +131,9 @@ const SlashMenu = ({
     }));
 
     setTimeout(() => {
-      if (newBlockList[index + 1].type === 'ul' || newBlockList[index + 1].type === 'ol') {
+      if (type === 'UL' || type === 'OL') {
         (blockRef.current[index + 1]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
-      } else if (newBlockList[index + 1].type === 'quote') {
+      } else if (type === 'QUOTE') {
         (blockRef.current[index + 1]?.parentNode?.parentNode as HTMLElement)?.focus();
       } else {
         (blockRef.current[index + 1]?.parentNode as HTMLElement)?.focus();
@@ -134,10 +141,9 @@ const SlashMenu = ({
     }, 0);
   };
 
-  const changeBlock = (type: 'default' | 'h1' | 'h2' | 'h3' | 'ul' | 'ol' | 'quote') => {
-    const newBlockList = [...blockList];
-    newBlockList[index].type = type;
-    setBlockList(newBlockList);
+  const changeBlock = async (type: 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'UL' | 'OL' | 'QUOTE') => {
+    await updateBlockType(blockList[index].id, type);
+    await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 
     setMenuState(prev => ({
       ...prev,
@@ -146,9 +152,9 @@ const SlashMenu = ({
     }));
 
     setTimeout(() => {
-      if (blockList[index].type === 'ul' || blockList[index].type === 'ol') {
+      if (blockList[index].type === 'UL' || blockList[index].type === 'OL') {
         (blockRef.current[index]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
-      } else if (blockList[index].type === 'quote') {
+      } else if (blockList[index].type === 'QUOTE') {
         (blockRef.current[index]?.parentNode?.parentNode as HTMLElement)?.focus();
       } else {
         (blockRef.current[index]?.parentNode as HTMLElement)?.focus();
@@ -163,7 +169,7 @@ const SlashMenu = ({
       } else if (event.key === 'ArrowUp') {
         setSelectedIndex(prev => (prev - 1 + MENU_ITEMS.length) % MENU_ITEMS.length);
       } else if (event.key === 'Enter') {
-        if (blockList[index].children[0].content === '') {
+        if (blockList[index].nodes[0].content === '') {
           changeBlock(MENU_ITEMS[selectedIndex].type);
         } else {
           makeBlock(MENU_ITEMS[selectedIndex].type);
@@ -192,7 +198,7 @@ const SlashMenu = ({
               className={`${slashButton} ${selectedIndex === i ? selectedButton : ''}`}
               onClick={() => {
                 if (openedBySlashKey) {
-                  if (blockList[index].children[0].content === '') {
+                  if (blockList[index].nodes[0].content === '') {
                     changeBlock(item.type);
                   } else {
                     makeBlock(item.type);
@@ -203,7 +209,7 @@ const SlashMenu = ({
               onKeyDown={event => {
                 if (openedBySlashKey) {
                   if (event.key === 'Enter') {
-                    if (blockList[index].children[0].content === '') {
+                    if (blockList[index].nodes[0].content === '') {
                       changeBlock(item.type);
                     } else {
                       makeBlock(item.type);

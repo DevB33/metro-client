@@ -185,7 +185,6 @@ const BlockButton = ({
           index={index}
           blockList={blockList}
           blockRef={blockRef}
-          setBlockList={setBlockList}
           menuState={menuState}
           setMenuState={setMenuState}
           openedBySlashKey={openedBySlashKey}

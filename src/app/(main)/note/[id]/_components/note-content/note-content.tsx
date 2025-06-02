@@ -676,7 +676,7 @@ const NoteContent = () => {
                   CloseBlockMenu={CloseBlockMenu}
                   index={index}
                   block={block}
-                  blockList={blockList}
+                  blockList={blocks}
                   setBlockList={setBlockList}
                   blockRef={blockRef}
                   setDragBlockIndex={setDragBlockIndex}
