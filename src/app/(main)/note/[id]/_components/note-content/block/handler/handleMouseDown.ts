@@ -20,10 +20,6 @@ const handleMouseDown = (
       ? childNodes.indexOf(textNode.parentNode as HTMLElement)
       : childNodes.indexOf(textNode as HTMLElement);
 
-  // if (currentChildNodeIndex === -1) {
-  //   currentChildNodeIndex = 0;
-  // }
-
   setIsDragging(true);
   setIsTyping(false);
   setKey(Math.random());

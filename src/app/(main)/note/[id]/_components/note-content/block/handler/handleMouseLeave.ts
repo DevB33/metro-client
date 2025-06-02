@@ -35,7 +35,6 @@ const handleMouseLeave = (
   const fillBackgroundNode = (left: number, right: number, idx: number) => {
     const blockElement = blockRef.current[idx];
     const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
-    console.log('fillBackgroundNode', left, right, blockElementMarginLeft);
     if (!blockElement) return;
     fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
   };
@@ -45,7 +44,6 @@ const handleMouseLeave = (
   const parent = blockRef.current[index];
   const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
   const textLength = parent?.textContent?.length || 0;
-  console.log('isup?', isUp.current);
   // 시작 블록에서 떠날 때
   if (index === selection.start.blockIndex && index === selection.end.blockIndex) {
     let left = 99999;
@@ -126,7 +124,6 @@ const handleMouseLeave = (
       const el = blockRef.current[index];
       if (!el) return;
       el.style.backgroundImage = `none`;
-      console.log('leave up', index, 'isUp', isUp.current);
     }
 
     // 아래로 드래그 할 때
@@ -147,7 +144,6 @@ const handleMouseLeave = (
         ...prev,
         end: { ...prev.end, offset: textLength },
       }));
-      console.log('leave down', index);
     }
   }
 

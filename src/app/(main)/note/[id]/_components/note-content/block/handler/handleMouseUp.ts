@@ -48,10 +48,6 @@ const handleMouseUp = (
     offset: selectionEndOffset,
   } = fixedSelectionEnd;
 
-  console.log('selection start', selectionStartBlockIndex, selectionStartChildNodeIndex, selectionStartOffset);
-  console.log('selection end', selectionEndBlockIndex, selectionEndChildNodeIndex, selectionEndOffset);
-  console.log('---------------------');
-
   // selection.end 재설정
   const finalSelectionEndPosition = {
     blockIndex: selectionEndBlockIndex,
@@ -70,8 +66,6 @@ const handleMouseUp = (
     childNodes.indexOf(textNode as HTMLElement) === -1 && textNode?.nodeType === Node.TEXT_NODE
       ? childNodes.indexOf(textNode.parentNode as HTMLElement)
       : childNodes.indexOf(textNode as HTMLElement);
-
-  // if (currentChildNodeIndex === -1) return;
 
   if (currentChildNodeIndex !== selectionEndChildNodeIndex) {
     finalSelectionEndPosition.childNodeIndex = currentChildNodeIndex;
