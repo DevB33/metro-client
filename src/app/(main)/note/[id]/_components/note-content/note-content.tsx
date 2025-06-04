@@ -38,8 +38,6 @@ const fakeBox = css({
   transform: 'translateX(-62%)',
   height: 'var(--block-height)',
   zIndex: '1',
-  backgroundColor: 'grey',
-
   pointerEvents: 'auto',
 });
 
