@@ -38,6 +38,7 @@ const fakeBox = css({
   transform: 'translateX(-62%)',
   height: 'var(--block-height)',
   zIndex: '1',
+  backgroundColor: 'grey',
 
   pointerEvents: 'auto',
 });
@@ -550,13 +551,13 @@ const NoteContent = () => {
 
     // 아래로 드래그한 상태에서 블록을 떠날 때
     if (selection.start.blockIndex < selection.end.blockIndex) {
-      if (index === selection.end.blockIndex && isUp) {
+      if (index === selection.end.blockIndex && isUp.current) {
         const el = blockRef.current[index];
         if (!el) return;
         el.style.backgroundImage = `none`;
       }
       // 아래로 드래그 할 때
-      if (index !== selection.start.blockIndex && index === selection.end.blockIndex && !isUp) {
+      if (index !== selection.start.blockIndex && index === selection.end.blockIndex && !isUp.current) {
         let left = 99999;
         let right = 0;
         childNodes.forEach(childNode => {
@@ -574,14 +575,14 @@ const NoteContent = () => {
     // 위로 드래그한 상태에서 블록을 떠날 때
     if (selection.start.blockIndex > selection.end.blockIndex) {
       // 아래로 드래그 할 때
-      if (index !== selection.start.blockIndex && index === selection.end.blockIndex && !isUp) {
+      if (index !== selection.start.blockIndex && index === selection.end.blockIndex && !isUp.current) {
         const el = blockRef.current[index];
         if (!el) return;
         el.style.backgroundImage = `none`;
       }
 
       // 위로 드래그 할 때
-      if (index !== selection.start.blockIndex && index === selection.end.blockIndex && isUp) {
+      if (index !== selection.start.blockIndex && index === selection.end.blockIndex && isUp.current) {
         let left = 99999;
         let right = 0;
         childNodes.forEach(childNode => {
@@ -661,7 +662,7 @@ const NoteContent = () => {
               className={fakeBox}
               id={`fakeBox-${index}`}
               style={{
-                left: `-${(blockContainerRef.current[index]?.getBoundingClientRect().left as number) + 20}px`,
+                left: `${(blockContainerRef.current[index]?.getBoundingClientRect().left as number) - 20}px`,
               }}
               ref={element => {
                 fakeBoxRef.current[index] = element;
