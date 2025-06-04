@@ -49,6 +49,7 @@ const NoteContent = () => {
   const fakeBoxRef = useRef<(HTMLDivElement | null)[]>([]);
   const noteRef = useRef<HTMLDivElement | null>(null);
   const selectionMenuRef = useRef<HTMLDivElement | null>(null);
+  const selectionMenuButtonRef = useRef<(HTMLDivElement | null)[]>([]);
   const outSideDragging = useRef(false);
   const isSelection = useRef(false);
   const prevClientY = useRef(0);
@@ -372,7 +373,10 @@ const NoteContent = () => {
 
       // selectionMenu가 아닌 곳에서 Click 시 resetSelection
       if (selectionMenuRef.current) {
-        if (!selectionMenuRef.current.contains(event.target as Node)) resetSelection();
+        if (!selectionMenuButtonRef.current.some(ref => ref?.contains(event.target as Node))) return;
+        if (!selectionMenuRef.current.contains(event.target as Node)) {
+          resetSelection();
+        }
         setKey(Math.random());
       }
     };
@@ -719,6 +723,7 @@ const NoteContent = () => {
             menuState={menuState}
             setMenuState={setMenuState}
             resetSelection={resetSelection}
+            selectionMenuButtonRef={selectionMenuButtonRef}
           />
         </div>
       )}
