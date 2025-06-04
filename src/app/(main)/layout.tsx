@@ -22,8 +22,6 @@ const MainLayout = async ({ children, modal }: Readonly<{ children: React.ReactN
     },
   });
 
-  console.log(noteList);
-
   // const noteList = noteResponse.data;
 
   return (

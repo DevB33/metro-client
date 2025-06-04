@@ -5,6 +5,7 @@ import PlusIcon from '@/icons/plus-icon';
 import INotes from '@/types/note-type';
 import { createNote, getNoteList } from '@/apis/note';
 import useSWR, { mutate } from 'swr';
+import { useRouter } from 'next/navigation';
 import PageItem from './page-item';
 
 const finderCard = css({
@@ -65,6 +66,7 @@ const noteContainer = css({
 });
 
 const FinderCard = () => {
+  const router = useRouter();
   const [isHover, setIsHover] = useState(false);
 
   const [openedDropdownnoteId, setOpenedDropdownnoteId] = useState<string | null>(null);
@@ -75,6 +77,8 @@ const FinderCard = () => {
     try {
       await createNote(null);
       await mutate('noteList', getNoteList, false);
+      const noteId = await getNoteList();
+      router.push(`/note/${noteId.notes.at(-1).id}`);
     } catch (error) {
       console.log(error);
     }

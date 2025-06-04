@@ -104,8 +104,8 @@ const Block = memo(
             setMenuState,
             selection,
             noteId,
-          )
-        }
+          );
+        }}
         onMouseUp={event => {
           handleMouseUp(event, index, blockRef, blockList, selection, setSelection, setMenuState);
           setIsDragging(false);
