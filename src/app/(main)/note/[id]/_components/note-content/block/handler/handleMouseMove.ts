@@ -1,6 +1,7 @@
 import ISelectionPosition from '@/types/selection-position';
 import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundImage';
 import getSelectionInfo from '@/utils/getSelectionInfo';
+import { ITextBlock } from '@/types/block-type';
 
 const getNodeBounds = (node: Node, startOffset: number, endOffset: number) => {
   const range = document.createRange();
@@ -23,6 +24,7 @@ const handleMouseMove = (
   event: React.MouseEvent<HTMLDivElement>,
   index: number,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
+  blockList: ITextBlock[],
   isDragging: boolean,
   selection: ISelectionPosition,
   setSelection: React.Dispatch<React.SetStateAction<ISelectionPosition>>,
@@ -32,7 +34,7 @@ const handleMouseMove = (
   if (index !== selection.end.blockIndex) {
     setSelection(prev => ({
       ...prev,
-      end: { ...prev.end, blockIndex: index },
+      end: { ...prev.end, blockId: blockList[index].id, blockIndex: index },
     }));
   }
 

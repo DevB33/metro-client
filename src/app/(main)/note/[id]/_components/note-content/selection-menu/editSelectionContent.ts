@@ -1,6 +1,10 @@
 import ISelectionPosition from '@/types/selection-position';
 import { ITextBlock, ITextBlockChild } from '@/types/block-type';
 
+import { mutate } from 'swr';
+
+import { createBlock, deleteBlock, getBlockList, updateBlockNodes, updateBlocksOrder } from '@/apis/block';
+
 const defaultStyle = {
   fontWeight: 'normal',
   fontStyle: 'normal',
@@ -42,14 +46,16 @@ const splitChildren = (
         ];
 
   const firstUpdatedBlock = {
-    id: Math.random(),
+    id: block.id,
     type: block.type,
-    children: firstChildren as ITextBlock['children'],
+    nodes: firstChildren as ITextBlock['nodes'],
+    order: block.order,
   };
   const secondUpdatedBlock = {
-    id: Math.random(),
+    id: block.id,
     type: block.type,
-    children: secondChildren as ITextBlock['children'],
+    nodes: secondChildren as ITextBlock['nodes'],
+    order: block.order + 1,
   };
 
   // children이 비어있는 경우 제외하고 추가
@@ -66,8 +72,9 @@ const splitChildren = (
   return splitedBlockList;
 };
 
-const editSelectionContent = (
+const editSelectionContent = async (
   selectionAction: string,
+  noteId: string,
   key: string,
   selection: ISelectionPosition,
   isBackward: boolean,
@@ -78,18 +85,20 @@ const editSelectionContent = (
   if (!blockRef.current) return;
 
   const {
+    blockId: startBlockId,
     blockIndex: startBlockIndex,
     childNodeIndex: startNodeIndex,
     offset: startOffset,
   } = !isBackward ? selection.start : selection.end;
   const {
+    // blockId: endBlockId,
     blockIndex: endBlockIndex,
     childNodeIndex: endNodeIndex,
     offset: endOffset,
   } = !isBackward ? selection.end : selection.start;
   let newBlockList = [...blockList];
 
-  const deleteIndex = [];
+  // const deleteIndex = [];
 
   const newNode = {
     type: 'text' as 'text',
@@ -134,24 +143,24 @@ const editSelectionContent = (
         const beforeText = startNode.textContent?.slice(0, startOffset) || '';
         const afterText = startNode.textContent?.slice(endOffset) || '';
         const beforeNode = {
-          type: block.children[startNodeIndex].type,
-          style: block.children[startNodeIndex].style,
+          type: block.nodes[startNodeIndex].type,
+          style: block.nodes[startNodeIndex].style,
           content: beforeText,
         };
         const afterNode = {
-          type: block.children[startNodeIndex].type,
-          style: block.children[startNodeIndex].style,
+          type: block.nodes[startNodeIndex].type,
+          style: block.nodes[startNodeIndex].style,
           content: afterText,
         };
 
         // 한 노드 내에서 이전 텍스트와 다음 텍스트 사이에 새로운 문자 삽입
         if (selectionAction === 'write') {
           const rawChildren = [
-            ...block.children.slice(0, startNodeIndex),
+            ...block.nodes.slice(0, startNodeIndex),
             ...(beforeText ? [beforeNode] : []),
             newNode,
             ...(afterText ? [afterNode] : []),
-            ...block.children.slice(startNodeIndex + 1),
+            ...block.nodes.slice(startNodeIndex + 1),
           ];
           // 모두 지워졌을 경우, block에 다시 입력이 가능하도록 예외처리
           if (rawChildren.length === 1 && rawChildren[0].content === ' ') {
@@ -159,7 +168,10 @@ const editSelectionContent = (
           }
           const finalChildren =
             rawChildren.length > 0
-              ? rawChildren
+              ? rawChildren.map(child => ({
+                  ...child,
+                  style: child.style ?? defaultStyle,
+                }))
               : [
                   {
                     type: 'text',
@@ -170,33 +182,63 @@ const editSelectionContent = (
           const updatedBlock = {
             id: block.id,
             type: block.type,
-            children: finalChildren as ITextBlock['children'],
+            nodes: finalChildren as ITextBlock['nodes'],
+            order: block.order,
           };
-          newBlockList[index] = updatedBlock;
+          // eslint-disable-next-line no-await-in-loop
+          await updateBlockNodes(block.id, updatedBlock.nodes);
+          // eslint-disable-next-line no-await-in-loop
+          await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+          console.log('updateBlockNodes', updatedBlock);
+          // newBlockList[index] = updatedBlock;
         }
 
         // 한 노드 내에서 이전 텍스트와 다음 텍스트를 분리, selection된 부분은 list에서 제외 후 블록 분리
         if (selectionAction === 'enter') {
           const firstRawChildren = [
-            ...block.children.slice(0, startNodeIndex),
+            ...block.nodes.slice(0, startNodeIndex),
             ...(beforeText ? [beforeNode] : emptyRawChildren),
           ];
 
           const secondRawChildren = [
             ...(afterText ? [afterNode] : emptyRawChildren),
-            ...block.children.slice(startNodeIndex + 1),
+            ...block.nodes.slice(startNodeIndex + 1),
           ];
 
           newBlockList = splitChildren(firstRawChildren, secondRawChildren, block, newBlockList, index);
+          // 현재 블록 업데이트
+          // eslint-disable-next-line no-await-in-loop
+          await updateBlockNodes(newBlockList[index].id, newBlockList[index].nodes);
+
+          // 현재 블록 이후 블록 뒤로 한칸씩 미루기
+          // eslint-disable-next-line no-await-in-loop
+          await updateBlocksOrder(
+            noteId,
+            newBlockList[index + 1].order,
+            newBlockList[blockList.length - 1].order,
+            newBlockList[index + 1].order,
+          );
+
+          // 현재 블록 바로 뒤에 블록 생성
+          // eslint-disable-next-line no-await-in-loop
+          await createBlock({
+            noteId,
+            type: 'DEFAULT',
+            upperOrder: newBlockList[index].order,
+            nodes: newBlockList[index + 1].nodes,
+          });
+
+          // eslint-disable-next-line no-await-in-loop
+          await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
         }
 
         // 한 노드 내에서 이전 텍스트와 다음 텍스트를 분리, selection된 부분은 list에서 제외
         if (selectionAction === 'delete') {
           const rawChildren = [
-            ...block.children.slice(0, startNodeIndex),
+            ...block.nodes.slice(0, startNodeIndex),
             ...(beforeText ? [beforeNode] : []),
             ...(afterText ? [afterNode] : []),
-            ...block.children.slice(startNodeIndex + 1),
+            ...block.nodes.slice(startNodeIndex + 1),
           ];
 
           const finalChildren =
@@ -213,10 +255,14 @@ const editSelectionContent = (
           const updatedBlock = {
             id: block.id,
             type: block.type,
-            children: finalChildren as ITextBlock['children'],
+            nodes: finalChildren as ITextBlock['nodes'],
+            order: block.order,
           };
 
-          newBlockList[index] = updatedBlock;
+          // eslint-disable-next-line no-await-in-loop
+          await updateBlockNodes(block.id, updatedBlock.nodes);
+          // eslint-disable-next-line no-await-in-loop
+          await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
         }
       }
 
@@ -235,13 +281,13 @@ const editSelectionContent = (
 
         // 여러 노드를 selection 한 상태로 글자 입력
         if (selectionAction === 'write') {
-          let rawChildren: ITextBlock['children'] = [];
+          let rawChildren: ITextBlock['nodes'] = [];
           rawChildren = [
-            ...block.children.slice(0, selectionStartNodeIndex), // selection에 포함되지 않은 이전 노드
+            ...block.nodes.slice(0, selectionStartNodeIndex), // selection에 포함되지 않은 이전 노드
             ...(selectionBeforeText // selection에 포함된 시작 노드에서 selection 된 문자는 제거하고 befor text만 남김
               ? [
                   {
-                    ...block.children[selectionStartNodeIndex],
+                    ...block.nodes[selectionStartNodeIndex],
                     content: selectionBeforeText,
                   },
                 ]
@@ -250,12 +296,12 @@ const editSelectionContent = (
             ...(selectionAfterText // selection에 포함된 마지막 노드에서 selection 된 문자는 제거하고 befor text만 남김
               ? [
                   {
-                    ...block.children[selectionEndNodeIndex],
+                    ...block.nodes[selectionEndNodeIndex],
                     content: selectionAfterText,
                   },
                 ]
               : []),
-            ...block.children.slice(selectionEndNodeIndex + 1), // selection에 포함되지 않은 이전 노드
+            ...block.nodes.slice(selectionEndNodeIndex + 1), // selection에 포함되지 않은 이전 노드
           ];
 
           // 모두 지워졌을 경우, block에 다시 입력이 가능하도록 예외처리
@@ -277,26 +323,30 @@ const editSelectionContent = (
           const updatedBlock = {
             id: block.id,
             type: block.type,
-            children: finalChildren as ITextBlock['children'],
+            nodes: finalChildren as ITextBlock['nodes'],
+            order: block.order,
           };
 
-          newBlockList[index] = updatedBlock;
+          // eslint-disable-next-line no-await-in-loop
+          await updateBlockNodes(block.id, updatedBlock.nodes);
+          // eslint-disable-next-line no-await-in-loop
+          await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
         }
 
         // 여러 노드를 selection 한 상태로 enter 입력
         // selection 된 부분을 전부 지우고 블록 나눔
         if (selectionAction === 'enter') {
           // 위에 남아있을 firstRaw, 아래줄로 이동할 secondRaw
-          let firstRawChildren: ITextBlock['children'] = [];
-          let secondRawChildren: ITextBlock['children'] = [];
+          let firstRawChildren: ITextBlock['nodes'] = [];
+          let secondRawChildren: ITextBlock['nodes'] = [];
 
           // 윗줄에 남아있을 블록
           firstRawChildren = [
-            ...block.children.slice(0, selectionStartNodeIndex), // selection에 포함되지 않은 노드
+            ...block.nodes.slice(0, selectionStartNodeIndex), // selection에 포함되지 않은 노드
             ...(selectionBeforeText // selection에 포함된 가장 앞 노드에서 selection 되지 않은 text만 남김
               ? [
                   {
-                    ...block.children[selectionStartNodeIndex],
+                    ...block.nodes[selectionStartNodeIndex],
                     content: selectionBeforeText,
                   },
                 ]
@@ -307,28 +357,52 @@ const editSelectionContent = (
             ...(selectionAfterText
               ? [
                   {
-                    ...block.children[selectionEndNodeIndex],
+                    ...block.nodes[selectionEndNodeIndex],
                     content: selectionAfterText, // selection에 포함된 가장 뒷 노드에서 selection 되지 않은 text만 남김
                   },
                 ]
               : emptyRawChildren),
-            ...block.children.slice(selectionEndNodeIndex + 1), // selection에 포함되지 않은 노드
+            ...block.nodes.slice(selectionEndNodeIndex + 1), // selection에 포함되지 않은 노드
           ];
 
           newBlockList = splitChildren(firstRawChildren, secondRawChildren, block, newBlockList, index); // 블록 분리
+          // 현재 블록 업데이트
+          // eslint-disable-next-line no-await-in-loop
+          await updateBlockNodes(newBlockList[index].id, newBlockList[index].nodes);
+
+          // 현재 블록 이후 블록 뒤로 한칸씩 미루기
+          // eslint-disable-next-line no-await-in-loop
+          await updateBlocksOrder(
+            noteId,
+            newBlockList[index + 1].order,
+            newBlockList[blockList.length - 1].order,
+            newBlockList[index + 1].order,
+          );
+
+          // 현재 블록 바로 뒤에 블록 생성
+          // eslint-disable-next-line no-await-in-loop
+          await createBlock({
+            noteId,
+            type: 'DEFAULT',
+            upperOrder: newBlockList[index].order,
+            nodes: newBlockList[index + 1].nodes,
+          });
+
+          // eslint-disable-next-line no-await-in-loop
+          await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
         }
 
         // 여러 노드를 selection 한 상태로 backSpace 입력
         // selection 된 부분을 전부 지움
         if (selectionAction === 'delete') {
-          let rawChildren: ITextBlock['children'] = [];
+          let rawChildren: ITextBlock['nodes'] = [];
 
           rawChildren = [
-            ...block.children.slice(0, selectionStartNodeIndex), // selection에 포함되지 않은 노드
+            ...block.nodes.slice(0, selectionStartNodeIndex), // selection에 포함되지 않은 노드
             ...(selectionBeforeText
               ? [
                   {
-                    ...block.children[selectionStartNodeIndex],
+                    ...block.nodes[selectionStartNodeIndex],
                     content: selectionBeforeText, // selection에 포함된 가장 앞 노드에서 selection 되지 않은 text만 남김
                   },
                 ]
@@ -336,12 +410,12 @@ const editSelectionContent = (
             ...(selectionAfterText
               ? [
                   {
-                    ...block.children[selectionEndNodeIndex],
+                    ...block.nodes[selectionEndNodeIndex],
                     content: selectionAfterText, // selection에 포함된 가장 뒷 노드에서 selection 되지 않은 text만 남김
                   },
                 ]
               : []),
-            ...block.children.slice(selectionEndNodeIndex + 1), // selection에 포함되지 않은 노드
+            ...block.nodes.slice(selectionEndNodeIndex + 1), // selection에 포함되지 않은 노드
           ];
 
           const finalChildren =
@@ -358,10 +432,14 @@ const editSelectionContent = (
           const updatedBlock = {
             id: block.id,
             type: block.type,
-            children: finalChildren as ITextBlock['children'],
+            nodes: finalChildren as ITextBlock['nodes'],
+            order: block.order,
           };
 
-          newBlockList[index] = updatedBlock;
+          // eslint-disable-next-line no-await-in-loop
+          await updateBlockNodes(block.id, updatedBlock.nodes);
+          // eslint-disable-next-line no-await-in-loop
+          await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
         }
       }
     }
@@ -378,11 +456,11 @@ const editSelectionContent = (
         // 여러 블록 selection 상태에서 입력, enter, 삭제 시 가장 윗줄은 이전 노드 + 이전 텍스트 + 새로 입력한 값 저장
         if (selectionAction === 'write') {
           const rawChildren = [
-            ...block.children.slice(0, selectionStartNodeIndex),
+            ...block.nodes.slice(0, selectionStartNodeIndex),
             ...(selectionBeforeText
               ? [
                   {
-                    ...block.children[selectionStartNodeIndex],
+                    ...block.nodes[selectionStartNodeIndex],
                     content: selectionBeforeText,
                   },
                 ]
@@ -405,31 +483,40 @@ const editSelectionContent = (
           const updatedBlock = {
             id: block.id,
             type: block.type,
-            children: finalChildren as ITextBlock['children'],
+            nodes: finalChildren as ITextBlock['nodes'],
+            order: block.order,
           };
+
+          console.log('updatedBlock-11111', updatedBlock);
           newBlockList[startBlockIndex] = updatedBlock;
+          // eslint-disable-next-line no-await-in-loop
+          await updateBlockNodes(block.id, updatedBlock.nodes);
         }
         if (selectionAction === 'enter') {
           const firstRawChildren = [
-            ...block.children.slice(0, selectionStartNodeIndex),
+            ...block.nodes.slice(0, selectionStartNodeIndex),
             ...(selectionBeforeText
               ? [
                   {
-                    ...block.children[selectionStartNodeIndex],
+                    ...block.nodes[selectionStartNodeIndex],
                     content: selectionBeforeText,
                   },
                 ]
               : emptyRawChildren),
           ];
           newBlockList = splitChildren(firstRawChildren, [], block, newBlockList, index);
+          console.log('newBlockList-222222-index', newBlockList[index]);
+          // 현재 블록 업데이트
+          // eslint-disable-next-line no-await-in-loop
+          await updateBlockNodes(newBlockList[index].id, newBlockList[index].nodes);
         }
         if (selectionAction === 'delete') {
           const rawChildren = [
-            ...block.children.slice(0, selectionStartNodeIndex),
+            ...block.nodes.slice(0, selectionStartNodeIndex),
             ...(selectionBeforeText
               ? [
                   {
-                    ...block.children[selectionStartNodeIndex],
+                    ...block.nodes[selectionStartNodeIndex],
                     content: selectionBeforeText,
                   },
                 ]
@@ -450,17 +537,21 @@ const editSelectionContent = (
           const updatedBlock = {
             id: block.id,
             type: block.type,
-            children: finalChildren as ITextBlock['children'],
+            nodes: finalChildren as ITextBlock['nodes'],
+            order: block.order,
           };
 
-          newBlockList[index] = updatedBlock;
+          // eslint-disable-next-line no-await-in-loop
+          await updateBlockNodes(block.id, updatedBlock.nodes);
         }
       }
 
       // seleciton의 중간 블록은 어떤 action이던, 전부 제거
       if (index > startBlockIndex && index < endBlockIndex) {
         // 해당 블록 삭제
-        deleteIndex.push(index);
+        // deleteIndex.push(index);
+        // eslint-disable-next-line no-await-in-loop
+        await deleteBlock(noteId, blockList[index].order, blockList[index].order);
       }
 
       // selection의 가장 아래 블록
@@ -473,19 +564,19 @@ const editSelectionContent = (
         if (selectionAction === 'write') {
           // 가장 윗 블록 뒤에 붙이기
           const startBlock = newBlockList[startBlockIndex];
-          const startBlockChildren = startBlock.children;
+          const startBlockChildren = startBlock.nodes;
 
           const rawChildren = [
             ...startBlockChildren, // startBlockIndex에서 만들어진 block
             ...(selectionAfterText
               ? [
                   {
-                    ...block.children[selectionEndNodeIndex],
+                    ...block.nodes[selectionEndNodeIndex],
                     content: selectionAfterText,
                   },
                 ]
               : []),
-            ...block.children.slice(selectionEndNodeIndex + 1),
+            ...block.nodes.slice(selectionEndNodeIndex + 1),
           ];
           if (rawChildren.length === 1 && rawChildren[0].content === ' ') {
             rawChildren[0].content = '&nbsp;';
@@ -505,12 +596,17 @@ const editSelectionContent = (
           const updatedBlock = {
             id: block.id,
             type: block.type,
-            children: finalChildren as ITextBlock['children'],
+            nodes: finalChildren as ITextBlock['nodes'],
+            order: block.order,
           };
+          console.log('updatedBlock-33333', updatedBlock);
 
           // 첫 블록 위치에 넣고, 마지막 블록 삭제
-          newBlockList[startBlockIndex] = updatedBlock;
-          deleteIndex.push(index);
+          // newBlockList[startBlockIndex] = updatedBlock;
+          // eslint-disable-next-line no-await-in-loop
+          await updateBlockNodes(startBlockId, updatedBlock.nodes);
+          // eslint-disable-next-line no-await-in-loop
+          await deleteBlock(noteId, blockList[index].order, blockList[index].order);
         }
         // enter 시, 위 로직에서 만들어진 블록과, 이후 블록을 분리
         if (selectionAction === 'enter') {
@@ -518,33 +614,37 @@ const editSelectionContent = (
             ...(selectionAfterText
               ? [
                   {
-                    ...block.children[selectionEndNodeIndex],
+                    ...block.nodes[selectionEndNodeIndex],
                     content: selectionAfterText,
                   },
                 ]
               : emptyRawChildren),
-            ...block.children.slice(selectionEndNodeIndex + 1),
+            ...block.nodes.slice(selectionEndNodeIndex + 1),
           ];
           newBlockList = splitChildren([], secondRawChildren, block, newBlockList, index);
+
+          console.log('newBlockList-11111-index', newBlockList[index]);
+          // eslint-disable-next-line no-await-in-loop
+          await updateBlockNodes(newBlockList[index].id, newBlockList[index].nodes);
         }
 
         // 입력 시, 위 로직에서 만들어진 윗 블록에 이후 블록내용을 합쳐 마무리
         if (selectionAction === 'delete') {
           // 첫 블록 뒤에 붙이기
           const startBlock = newBlockList[startBlockIndex];
-          const startBlockChildren = startBlock.children;
+          const startBlockChildren = startBlock.nodes;
 
           const rawChildren = [
             ...startBlockChildren,
             ...(selectionAfterText
               ? [
                   {
-                    ...block.children[selectionEndNodeIndex],
+                    ...block.nodes[selectionEndNodeIndex],
                     content: selectionAfterText,
                   },
                 ]
               : []),
-            ...block.children.slice(selectionEndNodeIndex + 1),
+            ...block.nodes.slice(selectionEndNodeIndex + 1),
           ];
 
           const finalChildren =
@@ -561,23 +661,28 @@ const editSelectionContent = (
           const updatedBlock = {
             id: block.id,
             type: block.type,
-            children: finalChildren as ITextBlock['children'],
+            nodes: finalChildren as ITextBlock['nodes'],
+            order: block.order,
           };
 
           // 첫 블록 위치에 넣고, 마지막 블록 삭제
-          newBlockList[startBlockIndex] = updatedBlock;
-          deleteIndex.push(index);
+          // eslint-disable-next-line no-await-in-loop
+          await updateBlockNodes(startBlockId, updatedBlock.nodes);
+          // eslint-disable-next-line no-await-in-loop
+          await deleteBlock(noteId, blockList[index].order, blockList[index].order);
         }
       }
     }
   }
   // 블록 삭제
-  deleteIndex
-    .sort((a, b) => b - a)
-    .forEach(index => {
-      newBlockList.splice(index, 1);
-    });
+  // deleteIndex
+  //   .sort((a, b) => b - a)
+  //   .forEach(index => {
+  //     newBlockList.splice(index, 1);
+  //   });
 
+  // eslint-disable-next-line no-await-in-loop
+  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
   setBlockList(newBlockList);
 };
 
