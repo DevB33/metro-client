@@ -1,6 +1,6 @@
 export interface ITextBlock {
   id: string;
-  type: 'DEFAULT' | 'h1' | 'h2' | 'h3' | 'quote' | 'ol' | 'ul';
+  type: 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'QUOTE' | 'OL' | 'UL';
   nodes: ITextBlockChild[];
   order: number;
 }

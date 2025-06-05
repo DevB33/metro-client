@@ -676,14 +676,12 @@ const NoteContent = () => {
                   CloseBlockMenu={CloseBlockMenu}
                   index={index}
                   block={block}
-                  blockList={blockList}
-                  setBlockList={setBlockList}
+                  blockList={blocks}
                   blockRef={blockRef}
                   setDragBlockIndex={setDragBlockIndex}
                   setIsTyping={setIsTyping}
                   menuState={menuState}
                   setMenuState={setMenuState}
-                  setKey={setKey}
                 />
               </div>
             </div>

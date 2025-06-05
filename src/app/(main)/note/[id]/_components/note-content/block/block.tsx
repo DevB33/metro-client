@@ -1,10 +1,12 @@
 import { memo, useState, useRef, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import { mutate } from 'swr';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
 import ISelectionPosition from '@/types/selection-position';
 import IMenuState from '@/types/menu-type';
+import { getBlockList, updateBlocksOrder } from '@/apis/block';
 import handleInput from './handler/handleInput';
 import handleKeyDown from './handler/handleKeyDown';
 import handleMouseLeave from './handler/handleMouseLeave';
@@ -76,6 +78,19 @@ const Block = memo(
       prevChildNodesLength.current = blockList[index].nodes.length;
     }, [blockList, index]);
 
+    const changeBlockOrder = async () => {
+      setIsDragOver(false);
+
+      await updateBlocksOrder(
+        noteId,
+        blockList[dragBlockIndex as number].order,
+        blockList[dragBlockIndex as number].order,
+        blockList[index].order,
+      );
+
+      await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+    };
+
     return (
       <div
         role="textbox"
@@ -104,8 +119,8 @@ const Block = memo(
             setMenuState,
             selection,
             noteId,
-          )
-        }
+          );
+        }}
         onMouseUp={event => {
           handleMouseUp(event, index, blockRef, blockList, selection, setSelection, setMenuState);
           setIsDragging(false);
@@ -138,10 +153,7 @@ const Block = memo(
         onDragOver={event => {
           event.preventDefault();
         }}
-        onDrop={() => {
-          // TODO: 블록 순서 변경 로직
-          setIsDragOver(false);
-        }}
+        onDrop={changeBlockOrder}
       >
         <BlockHTMLTag block={block} blockList={blockList} index={index} blockRef={blockRef}>
           {block.nodes?.length === 1 && block.nodes[0].content === '' && <br />}
