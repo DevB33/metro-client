@@ -93,8 +93,8 @@ const FinderCard = () => {
         )}
       </div>
       <div className={noteContainer}>
-        {noteList?.notes.length ? (
-          noteList.notes.map((note: INotes) => (
+        {noteList?.length ? (
+          noteList.map((note: INotes) => (
             <PageItem
               key={note.id}
               note={note}
