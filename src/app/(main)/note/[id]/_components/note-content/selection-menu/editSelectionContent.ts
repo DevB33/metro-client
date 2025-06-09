@@ -189,8 +189,6 @@ const editSelectionContent = async (
           await updateBlockNodes(block.id, updatedBlock.nodes);
           // eslint-disable-next-line no-await-in-loop
           await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
-          console.log('updateBlockNodes', updatedBlock);
-          // newBlockList[index] = updatedBlock;
         }
 
         // 한 노드 내에서 이전 텍스트와 다음 텍스트를 분리, selection된 부분은 list에서 제외 후 블록 분리

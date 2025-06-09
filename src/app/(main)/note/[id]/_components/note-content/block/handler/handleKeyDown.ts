@@ -47,7 +47,6 @@ const focusAfterSelection = (
   const targetBlockNode = blockRef.current[blockIndex];
   const targetNode = targetBlockNode?.childNodes[childNodeIndex];
 
-  console.log('focusAfterSelection', target, 'targetNode', targetNode, offset);
   setTimeout(() => {
     if (targetNode) {
       const newRange = document.createRange();
@@ -383,8 +382,6 @@ const splitLine = async (
     // 현재 블록 업데이트
     await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
   }
-
-  // console.log(updatedBlockList[index].nodes);
 
   await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 
