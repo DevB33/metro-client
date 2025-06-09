@@ -1107,7 +1107,11 @@ const handleKeyDown = async (
 
     setTimeout(() => {
       mutate(`blockList-${noteId}`, getBlockList(noteId), false).then(() => {
-        focusAfterSelection(selection, isBackward, event.key, blockRef);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            focusAfterSelection(selection, isBackward, event.key, blockRef);
+          });
+        });
       });
     }, 0);
   }

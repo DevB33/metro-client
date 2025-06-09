@@ -97,7 +97,6 @@ const changeSelectionStyle = async (
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
 ) => {
   if (!blockRef.current) return;
-  console.log('blockRef', blockRef.current);
 
   // 역 드레그시 설정
   const {
@@ -132,7 +131,7 @@ const changeSelectionStyle = async (
       // 한 노드 안에서만 선택된 경우
       if (startNodeIndex === endNodeIndex) {
         const startNode = childNodes[startNodeIndex];
-        console.log('startNode', startNode);
+
         const beforeText = startNode.textContent?.slice(0, startOffset <= endOffset ? startOffset : endOffset) || '';
         const selectedText =
           startNode.textContent?.slice(
@@ -145,19 +144,18 @@ const changeSelectionStyle = async (
           style: block.nodes[startNodeIndex].style,
           content: beforeText,
         };
-        console.log('beforeNode', beforeNode);
+
         const selectedNode = {
           type: 'span',
           style: createNewStyle(type, block.nodes[startNodeIndex].style || defaultStyle),
           content: selectedText,
         };
-        console.log('selectedNode', selectedNode);
+
         const afterNode = {
           type: block.nodes[startNodeIndex].type,
           style: block.nodes[startNodeIndex].style,
           content: afterText,
         };
-        console.log('afterNode', afterNode);
 
         const updatedBlock = {
           id: block.id,
@@ -171,8 +169,6 @@ const changeSelectionStyle = async (
           ] as ITextBlock['nodes'],
           order: block.order,
         };
-
-        console.log('updatedBlock nodes', updatedBlock.nodes);
 
         updateBlock(noteId, block.id, updatedBlock.nodes);
 
@@ -189,14 +185,13 @@ const changeSelectionStyle = async (
           style: block.nodes[startNodeIndex].style,
           content: startNodeBeforeText,
         };
-        console.log('startNodeBeforeNode', startNodeBeforeNode);
+
         const startNodeSelectedNode = {
           type: 'span',
           style: createNewStyle(type, block.nodes[startNodeIndex].style || defaultStyle),
           content: startNodeSelectedText,
         };
-        console.log('startNodeSelectedNode', startNodeSelectedNode);
-        console.log('selectedNode', block.nodes.slice(startNodeIndex + 1, endNodeIndex));
+
         // 선택 끝 노드 분리
         const endNode = childNodes[endNodeIndex];
         const endNodeSelectedText = endNode.textContent?.slice(0, endOffset) || '';
@@ -206,13 +201,12 @@ const changeSelectionStyle = async (
           style: createNewStyle(type, block.nodes[endNodeIndex].style || defaultStyle),
           content: endNodeSelectedText,
         };
-        console.log('endNodeSelectedNode', endNodeSelectedNode);
+
         const endNodeAfterNode = {
           type: block.nodes[endNodeIndex].type,
           style: block.nodes[endNodeIndex].style,
           content: endNodeAfterText,
         };
-        console.log('endNodeAfterNode', endNodeAfterNode);
         // 선택 시작 노드 다음부터 끝 노드 전까지 스타일 변경
         for (let i = startNodeIndex + 1; i < endNodeIndex; i += 1) {
           block.nodes[i].style = createNewStyle(type, block.nodes[i].style || defaultStyle);
@@ -233,12 +227,7 @@ const changeSelectionStyle = async (
           ] as ITextBlock['nodes'],
           order: block.order,
         };
-        console.log('updatedBlock nodes', updatedBlock.nodes);
 
-        // // eslint-disable-next-line no-await-in-loop
-        // await updateBlockNodes(block.id, updatedBlock.nodes);
-        // // eslint-disable-next-line no-await-in-loop
-        // await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
         updateBlock(noteId, block.id, updatedBlock.nodes);
         newBlockList[index] = updatedBlock;
       }
@@ -252,9 +241,6 @@ const changeSelectionStyle = async (
         const startNode = childNodes[startNodeIndex];
         const beforeText = startNode.textContent?.slice(0, startOffset) || '';
         const afterText = startNode.textContent?.slice(startOffset) || '';
-        console.log('beforeText', beforeText);
-        console.log('afterText', afterText);
-        console.log('startnode', startNode);
         const beforeNode = {
           type: block.nodes[startNodeIndex].type,
           style: block.nodes[startNodeIndex].style,
