@@ -33,11 +33,10 @@ const blockContainer = css({
 
 const fakeBox = css({
   position: 'absolute',
-  width: '83vw',
-  left: '50%',
-  transform: 'translateX(-62%)',
+  transform: 'translateX(-30%)',
   height: 'var(--block-height)',
   zIndex: '1',
+
   pointerEvents: 'auto',
 });
 
@@ -90,6 +89,28 @@ const NoteContent = () => {
   });
 
   const [isBlockMenuOpen, setIsBlockMenuOpen] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState<number | null>(null);
+
+  useEffect(() => {
+    const sidebarEl = document.getElementById('sidebar');
+    if (!sidebarEl) return;
+
+    const observer = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        setSidebarWidth(entry.contentRect.width);
+      }
+    });
+
+    observer.observe(sidebarEl);
+    setSidebarWidth(sidebarEl.offsetWidth); // 초기값
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    console.log(window.innerWidth);
+    console.log(sidebarWidth);
+  }, [sidebarWidth]);
 
   const createFirstBlock = async () => {
     if (blocks.length === 0) {
@@ -660,7 +681,7 @@ const NoteContent = () => {
               className={fakeBox}
               id={`fakeBox-${index}`}
               style={{
-                left: `${(blockContainerRef.current[index]?.getBoundingClientRect().left as number) - 20}px`,
+                width: `${window.innerWidth - sidebarWidth}px`,
               }}
               ref={element => {
                 fakeBoxRef.current[index] = element;

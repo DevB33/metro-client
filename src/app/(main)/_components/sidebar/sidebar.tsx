@@ -46,6 +46,7 @@ const Sidebar = () => {
   return (
     <div className={sideBarContainer}>
       <div
+        id="sidebar"
         className={sideBar}
         ref={sideBarRef}
         style={{ width: `${sidebarWidth}rem`, display: isOpen ? 'flex' : 'none' }}
