@@ -1,6 +1,10 @@
 import ISelectionPosition from '@/types/selection-position';
 import { ITextBlock, IBlockStyle } from '@/types/block-type';
 
+import { mutate } from 'swr';
+
+import { getBlockList, updateBlockNodes } from '@/apis/block';
+
 const createNewStyle = (type: string, beforeStyle: IBlockStyle) => {
   if (type === 'bold') {
     return {
@@ -76,8 +80,9 @@ const defaultStyle = {
   borderRadius: '0',
 };
 
-const changeSelectionStyle = (
+const changeSelectionStyle = async (
   type: string,
+  noteId: string,
   selection: ISelectionPosition,
   blockList: ITextBlock[],
   setBlockList: (blockList: ITextBlock[]) => void,
@@ -118,6 +123,7 @@ const changeSelectionStyle = (
       // 한 노드 안에서만 선택된 경우
       if (startNodeIndex === endNodeIndex) {
         const startNode = childNodes[startNodeIndex];
+        console.log('startNode', startNode);
         const beforeText = startNode.textContent?.slice(0, startOffset <= endOffset ? startOffset : endOffset) || '';
         const selectedText =
           startNode.textContent?.slice(
@@ -126,34 +132,41 @@ const changeSelectionStyle = (
           ) || '';
         const afterText = startNode.textContent?.slice(startOffset <= endOffset ? endOffset : startOffset) || '';
         const beforeNode = {
-          type: block.children[startNodeIndex].type,
-          style: block.children[startNodeIndex].style,
+          type: block.nodes[startNodeIndex].type,
+          style: block.nodes[startNodeIndex].style,
           content: beforeText,
         };
+        console.log('beforeNode', beforeNode);
         const selectedNode = {
           type: 'span',
-          style: createNewStyle(type, block.children[startNodeIndex].style || defaultStyle),
+          style: createNewStyle(type, block.nodes[startNodeIndex].style || defaultStyle),
           content: selectedText,
         };
         const afterNode = {
-          type: block.children[startNodeIndex].type,
-          style: block.children[startNodeIndex].style,
+          type: block.nodes[startNodeIndex].type,
+          style: block.nodes[startNodeIndex].style,
           content: afterText,
         };
 
         const updatedBlock = {
           id: block.id,
           type: block.type,
-          children: [
-            ...block.children.slice(0, startNodeIndex),
+          nodes: [
+            ...block.nodes.slice(0, startNodeIndex),
             ...(beforeText ? [beforeNode] : []),
             selectedNode,
             ...(afterText ? [afterNode] : []),
-            ...block.children.slice(startNodeIndex + 1),
-          ] as ITextBlock['children'],
+            ...block.nodes.slice(startNodeIndex + 1),
+          ] as ITextBlock['nodes'],
+          order: block.order,
         };
 
-        newBlockList[index] = updatedBlock;
+        // eslint-disable-next-line no-await-in-loop
+        await updateBlockNodes(block.id, updatedBlock.nodes);
+        // eslint-disable-next-line no-await-in-loop
+        await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+
+        // newBlockList[index] = updatedBlock;
       }
       // 한 블록에서 여러 노드 선택된 경우
       else {
@@ -162,13 +175,13 @@ const changeSelectionStyle = (
         const startNodeBeforeText = startNode.textContent?.slice(0, startOffset) || '';
         const startNodeSelectedText = startNode.textContent?.slice(startOffset) || '';
         const startNodeBeforeNode = {
-          type: block.children[startNodeIndex].type,
-          style: block.children[startNodeIndex].style,
+          type: block.nodes[startNodeIndex].type,
+          style: block.nodes[startNodeIndex].style,
           content: startNodeBeforeText,
         };
         const startNodeSelectedNode = {
           type: 'span',
-          style: createNewStyle(type, block.children[startNodeIndex].style || defaultStyle),
+          style: createNewStyle(type, block.nodes[startNodeIndex].style || defaultStyle),
           content: startNodeSelectedText,
         };
         // 선택 끝 노드 분리
@@ -177,34 +190,40 @@ const changeSelectionStyle = (
         const endNodeAfterText = endNode.textContent?.slice(endOffset) || '';
         const endNodeSelectedNode = {
           type: 'span',
-          style: createNewStyle(type, block.children[endNodeIndex].style || defaultStyle),
+          style: createNewStyle(type, block.nodes[endNodeIndex].style || defaultStyle),
           content: endNodeSelectedText,
         };
         const endNodeAfterNode = {
-          type: block.children[endNodeIndex].type,
-          style: block.children[endNodeIndex].style,
+          type: block.nodes[endNodeIndex].type,
+          style: block.nodes[endNodeIndex].style,
           content: endNodeAfterText,
         };
         // 선택 시작 노드 다음부터 끝 노드 전까지 스타일 변경
         for (let i = startNodeIndex + 1; i < endNodeIndex; i += 1) {
-          block.children[i].style = createNewStyle(type, block.children[i].style || defaultStyle);
-          block.children[i].type = 'span';
+          block.nodes[i].style = createNewStyle(type, block.nodes[i].style || defaultStyle);
+          block.nodes[i].type = 'span';
         }
 
         const updatedBlock = {
           id: block.id,
           type: block.type,
-          children: [
-            ...block.children.slice(0, startNodeIndex),
+          nodes: [
+            ...block.nodes.slice(0, startNodeIndex),
             ...(startNodeBeforeText ? [startNodeBeforeNode] : []),
             startNodeSelectedNode,
-            ...block.children.slice(startNodeIndex + 1, endNodeIndex),
+            ...block.nodes.slice(startNodeIndex + 1, endNodeIndex),
             endNodeSelectedNode,
             ...(endNodeAfterText ? [endNodeAfterNode] : []),
-            ...block.children.slice(endNodeIndex + 1),
-          ] as ITextBlock['children'],
+            ...block.nodes.slice(endNodeIndex + 1),
+          ] as ITextBlock['nodes'],
+          order: block.order,
         };
-        newBlockList[index] = updatedBlock;
+
+        // eslint-disable-next-line no-await-in-loop
+        await updateBlockNodes(block.id, updatedBlock.nodes);
+        // eslint-disable-next-line no-await-in-loop
+        await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+        // newBlockList[index] = updatedBlock;
       }
     }
 
@@ -216,52 +235,65 @@ const changeSelectionStyle = (
         const startNode = childNodes[startNodeIndex];
         const beforeText = startNode.textContent?.slice(0, startOffset) || '';
         const afterText = startNode.textContent?.slice(startOffset) || '';
+        console.log('beforeText', beforeText);
+        console.log('afterText', afterText);
+        console.log('startnode', startNode);
         const beforeNode = {
-          type: block.children[startNodeIndex].type,
-          style: block.children[startNodeIndex].style,
+          type: block.nodes[startNodeIndex].type,
+          style: block.nodes[startNodeIndex].style,
           content: beforeText,
         };
         const afterNode = {
           type: 'span',
-          style: createNewStyle(type, block.children[startNodeIndex].style || defaultStyle),
+          style: createNewStyle(type, block.nodes[startNodeIndex].style || defaultStyle),
           content: afterText,
         };
 
         // 선택 시작 노드 다음부터 끝까지 스타일 변경
         for (let i = startNodeIndex + 1; i < childNodes.length; i += 1) {
-          block.children[i].style = createNewStyle(type, block.children[i].style || defaultStyle);
-          block.children[i].type = 'span';
+          block.nodes[i].style = createNewStyle(type, block.nodes[i].style || defaultStyle);
+          block.nodes[i].type = 'span';
         }
 
         const updatedBlock = {
           id: block.id,
           type: block.type,
-          children: [
-            ...block.children.slice(0, startNodeIndex),
+          nodes: [
+            ...block.nodes.slice(0, startNodeIndex),
             ...(beforeText ? [beforeNode] : []),
             afterNode,
-            ...block.children.slice(startNodeIndex + 1),
-          ] as ITextBlock['children'],
+            ...block.nodes.slice(startNodeIndex + 1),
+          ] as ITextBlock['nodes'],
+          order: block.order,
         };
 
-        newBlockList[index] = updatedBlock;
+        // eslint-disable-next-line no-await-in-loop
+        await updateBlockNodes(block.id, updatedBlock.nodes);
+        // eslint-disable-next-line no-await-in-loop
+        await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+        // newBlockList[index] = updatedBlock;
       }
 
       // 중간 블록인 경우
       if (index > startBlockIndex && index < endBlockIndex) {
         // 처음 노드부터 끝까지 스타일 변경
         for (let i = 0; i < childNodes.length; i += 1) {
-          block.children[i].style = createNewStyle(type, block.children[i].style || defaultStyle);
-          block.children[i].type = 'span';
+          block.nodes[i].style = createNewStyle(type, block.nodes[i].style || defaultStyle);
+          block.nodes[i].type = 'span';
         }
 
         const updatedBlock = {
           id: block.id,
           type: block.type,
-          children: [...block.children] as ITextBlock['children'],
+          nodes: [...block.nodes] as ITextBlock['nodes'],
+          order: block.order,
         };
 
-        newBlockList[index] = updatedBlock;
+        // eslint-disable-next-line no-await-in-loop
+        await updateBlockNodes(block.id, updatedBlock.nodes);
+        // eslint-disable-next-line no-await-in-loop
+        await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+        // newBlockList[index] = updatedBlock;
       }
 
       // 끝 블록인 경우
@@ -272,33 +304,38 @@ const changeSelectionStyle = (
         const afterText = endNode.textContent?.slice(endOffset) || '';
         const beforeNode = {
           type: 'span',
-          style: createNewStyle(type, block.children[endNodeIndex].style || defaultStyle),
+          style: createNewStyle(type, block.nodes[endNodeIndex].style || defaultStyle),
           content: beforeText,
         };
         const afterNode = {
-          type: block.children[endNodeIndex].type,
-          style: block.children[endNodeIndex].style,
+          type: block.nodes[endNodeIndex].type,
+          style: block.nodes[endNodeIndex].style,
           content: afterText,
         };
 
         // 처음 노드부터 선택 노드 전까지 스타일 변경
         for (let i = 0; i < endNodeIndex; i += 1) {
-          block.children[i].style = createNewStyle(type, block.children[i].style || defaultStyle);
-          block.children[i].type = 'span';
+          block.nodes[i].style = createNewStyle(type, block.nodes[i].style || defaultStyle);
+          block.nodes[i].type = 'span';
         }
 
         const updatedBlock = {
           id: block.id,
           type: block.type,
-          children: [
-            ...block.children.slice(0, endNodeIndex),
+          nodes: [
+            ...block.nodes.slice(0, endNodeIndex),
             beforeNode,
             ...(afterText ? [afterNode] : []),
-            ...block.children.slice(endNodeIndex + 1),
-          ] as ITextBlock['children'],
+            ...block.nodes.slice(endNodeIndex + 1),
+          ] as ITextBlock['nodes'],
+          order: block.order,
         };
 
-        newBlockList[index] = updatedBlock;
+        // eslint-disable-next-line no-await-in-loop
+        await updateBlockNodes(block.id, updatedBlock.nodes);
+        // eslint-disable-next-line no-await-in-loop
+        await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+        // newBlockList[index] = updatedBlock;
       }
     }
   }

@@ -47,13 +47,14 @@ const focusAfterSelection = (
   const targetBlockNode = blockRef.current[blockIndex];
   const targetNode = targetBlockNode?.childNodes[childNodeIndex];
 
+  console.log('focusAfterSelection', target, 'targetNode', targetNode, offset);
   setTimeout(() => {
     if (targetNode) {
       const newRange = document.createRange();
       const windowSelection = window.getSelection();
 
       if (targetNode.nodeType === Node.TEXT_NODE) {
-        newRange.setStart(targetNode, Math.min(offset, targetNode.textContent?.length ?? 0));
+        newRange.setStart(targetNode, offset);
         newRange.collapse(true);
 
         windowSelection?.removeAllRanges();
@@ -1105,7 +1106,9 @@ const handleKeyDown = async (
     }
 
     setTimeout(() => {
-      focusAfterSelection(selection, isBackward, event.key, blockRef);
+      mutate(`blockList-${noteId}`, getBlockList(noteId), false).then(() => {
+        focusAfterSelection(selection, isBackward, event.key, blockRef);
+      });
     }, 0);
   }
 };

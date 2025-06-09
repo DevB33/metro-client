@@ -14,6 +14,7 @@ import changeSelectionStyle from './changeSelectionStyle';
 
 interface ISelectionMenuProps {
   setKey: (key: number) => void;
+  noteId: string;
   selection: ISelectionPosition;
   blockList: ITextBlock[];
   setBlockList: (blockList: ITextBlock[]) => void;
@@ -64,6 +65,7 @@ const MENU_ITEMS: {
 
 const SelectionMenu = ({
   setKey,
+  noteId,
   selection,
   blockList,
   setBlockList,
@@ -81,7 +83,7 @@ const SelectionMenu = ({
   const menuHeight = 3;
 
   const changeBlock = (type: string) => {
-    changeSelectionStyle(type, selection, blockList, setBlockList, blockRef);
+    changeSelectionStyle(type, noteId, selection, blockList, setBlockList, blockRef);
 
     setMenuState(prev => ({
       ...prev,

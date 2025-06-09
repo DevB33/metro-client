@@ -259,10 +259,9 @@ const editSelectionContent = async (
             order: block.order,
           };
 
+          newBlockList[index] = updatedBlock;
           // eslint-disable-next-line no-await-in-loop
           await updateBlockNodes(block.id, updatedBlock.nodes);
-          // eslint-disable-next-line no-await-in-loop
-          await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
         }
       }
 
@@ -327,10 +326,9 @@ const editSelectionContent = async (
             order: block.order,
           };
 
+          newBlockList[index] = updatedBlock;
           // eslint-disable-next-line no-await-in-loop
           await updateBlockNodes(block.id, updatedBlock.nodes);
-          // eslint-disable-next-line no-await-in-loop
-          await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
         }
 
         // 여러 노드를 selection 한 상태로 enter 입력
@@ -387,9 +385,6 @@ const editSelectionContent = async (
             upperOrder: newBlockList[index].order,
             nodes: newBlockList[index + 1].nodes,
           });
-
-          // eslint-disable-next-line no-await-in-loop
-          await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
         }
 
         // 여러 노드를 selection 한 상태로 backSpace 입력
@@ -436,10 +431,9 @@ const editSelectionContent = async (
             order: block.order,
           };
 
+          newBlockList[index] = updatedBlock;
           // eslint-disable-next-line no-await-in-loop
           await updateBlockNodes(block.id, updatedBlock.nodes);
-          // eslint-disable-next-line no-await-in-loop
-          await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
         }
       }
     }
@@ -487,7 +481,6 @@ const editSelectionContent = async (
             order: block.order,
           };
 
-          console.log('updatedBlock-11111', updatedBlock);
           newBlockList[startBlockIndex] = updatedBlock;
           // eslint-disable-next-line no-await-in-loop
           await updateBlockNodes(block.id, updatedBlock.nodes);
@@ -505,7 +498,7 @@ const editSelectionContent = async (
               : emptyRawChildren),
           ];
           newBlockList = splitChildren(firstRawChildren, [], block, newBlockList, index);
-          console.log('newBlockList-222222-index', newBlockList[index]);
+
           // 현재 블록 업데이트
           // eslint-disable-next-line no-await-in-loop
           await updateBlockNodes(newBlockList[index].id, newBlockList[index].nodes);
@@ -541,6 +534,7 @@ const editSelectionContent = async (
             order: block.order,
           };
 
+          newBlockList[index] = updatedBlock;
           // eslint-disable-next-line no-await-in-loop
           await updateBlockNodes(block.id, updatedBlock.nodes);
         }
@@ -599,10 +593,9 @@ const editSelectionContent = async (
             nodes: finalChildren as ITextBlock['nodes'],
             order: block.order,
           };
-          console.log('updatedBlock-33333', updatedBlock);
 
           // 첫 블록 위치에 넣고, 마지막 블록 삭제
-          // newBlockList[startBlockIndex] = updatedBlock;
+          newBlockList[startBlockIndex] = updatedBlock;
           // eslint-disable-next-line no-await-in-loop
           await updateBlockNodes(startBlockId, updatedBlock.nodes);
           // eslint-disable-next-line no-await-in-loop
@@ -623,7 +616,6 @@ const editSelectionContent = async (
           ];
           newBlockList = splitChildren([], secondRawChildren, block, newBlockList, index);
 
-          console.log('newBlockList-11111-index', newBlockList[index]);
           // eslint-disable-next-line no-await-in-loop
           await updateBlockNodes(newBlockList[index].id, newBlockList[index].nodes);
         }
@@ -666,6 +658,7 @@ const editSelectionContent = async (
           };
 
           // 첫 블록 위치에 넣고, 마지막 블록 삭제
+          newBlockList[startBlockIndex] = updatedBlock;
           // eslint-disable-next-line no-await-in-loop
           await updateBlockNodes(startBlockId, updatedBlock.nodes);
           // eslint-disable-next-line no-await-in-loop
@@ -674,12 +667,6 @@ const editSelectionContent = async (
       }
     }
   }
-  // 블록 삭제
-  // deleteIndex
-  //   .sort((a, b) => b - a)
-  //   .forEach(index => {
-  //     newBlockList.splice(index, 1);
-  //   });
 
   // eslint-disable-next-line no-await-in-loop
   await mutate(`blockList-${noteId}`, getBlockList(noteId), false);

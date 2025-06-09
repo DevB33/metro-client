@@ -713,8 +713,9 @@ const NoteContent = () => {
         <div ref={selectionMenuRef}>
           <SelectionMenu
             setKey={setKey}
+            noteId={noteId}
             selection={selection}
-            blockList={blockList}
+            blockList={blocks}
             setBlockList={setBlockList}
             blockRef={blockRef}
             menuState={menuState}
