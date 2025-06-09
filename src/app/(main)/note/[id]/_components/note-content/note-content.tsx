@@ -107,11 +107,6 @@ const NoteContent = () => {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    console.log(window.innerWidth);
-    console.log(sidebarWidth);
-  }, [sidebarWidth]);
-
   const createFirstBlock = async () => {
     if (blocks.length === 0) {
       await createBlock({
