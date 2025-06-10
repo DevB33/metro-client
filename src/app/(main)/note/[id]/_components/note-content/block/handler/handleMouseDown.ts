@@ -36,9 +36,9 @@ const handleMouseDown = (
     // 빈 블록일 때 클릭 한 블록에 focus
     // block의 타입마다 blockRef의 깊이가 달라서 type에 맞게 focus
     if (blockList[index].nodes.length === 1 && blockList[index].nodes[0].content === '') {
-      if (blockList[index].type === 'ul' || blockList[index].type === 'ol') {
+      if (blockList[index].type === 'UL' || blockList[index].type === 'OL') {
         (blockRef.current[index]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
-      } else if (blockList[index].type === 'quote') {
+      } else if (blockList[index].type === 'QUOTE') {
         (blockRef.current[index]?.parentNode?.parentNode as HTMLElement)?.focus();
       } else {
         (blockRef.current[index]?.parentNode as HTMLElement)?.focus();
