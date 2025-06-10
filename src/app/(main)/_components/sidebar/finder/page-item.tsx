@@ -141,12 +141,12 @@ const NoteItem = ({ note, depth, openedDropdownnoteId, setOpenedDropdownnoteId }
     setOpenedDropdownnoteId(null);
   };
 
-  const findParentId = (nodeList: INotes[], targetId: string, parentId: string | null = null): string | null => {
-    const match = nodeList.find(node => {
-      if (node.id === targetId) return true;
+  const findParentId = (notes: INotes[], targetId: string, parentId: string | null = null): string | null => {
+    const match = notes.find(item => {
+      if (item.id === targetId) return true;
 
-      if (node.children?.length) {
-        const found = findParentId(node.children, targetId, node.id);
+      if (item.children?.length) {
+        const found = findParentId(item.children, targetId, item.id);
         if (found) {
           parentId = found;
           return true;
@@ -163,7 +163,7 @@ const NoteItem = ({ note, depth, openedDropdownnoteId, setOpenedDropdownnoteId }
     try {
       await deleteNote(note.id);
       await mutate('noteList', getNoteList, false);
-      const parentId = findParentId(noteList.notes, note.id);
+      const parentId = findParentId(noteList, note.id);
 
       if (parentId) {
         router.push(`/note/${parentId}`);

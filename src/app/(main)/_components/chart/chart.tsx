@@ -73,7 +73,7 @@ const LineChart = ({ width: totalWidth, height: totalHeight, margin = defaultMar
     name: 'WorkSpace',
     id: '',
     colorKey: 'LINE_ONE',
-    children: convertNoteListToTree(noteList.notes),
+    children: convertNoteListToTree(noteList),
   };
 
   const STORAGE_KEY = 'tree-node-colors';
