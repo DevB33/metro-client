@@ -22,9 +22,9 @@ const focusBlock = (
   blockList: ITextBlock[],
 ) => {
   setTimeout(() => {
-    if (blockList[indexToFocus].type === 'ul' || blockList[indexToFocus].type === 'ol') {
+    if (blockList[indexToFocus].type === 'UL' || blockList[indexToFocus].type === 'OL') {
       (blockRef.current[indexToFocus]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
-    } else if (blockList[indexToFocus].type === 'quote') {
+    } else if (blockList[indexToFocus].type === 'QUOTE') {
       (blockRef.current[indexToFocus]?.parentNode?.parentNode as HTMLElement)?.focus();
     } else {
       (blockRef.current[indexToFocus]?.parentNode as HTMLElement)?.focus();
@@ -584,56 +584,57 @@ const openSlashMenu = (
 };
 
 const turnIntoH1 = async (index: number, blockList: ITextBlock[], noteId: string) => {
+  const updatedBlockList = [...blockList];
+  updatedBlockList[index].nodes[0].content = (updatedBlockList[index].nodes[0].content as string).substring(1);
+  await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
   await updateBlockType(blockList[index].id, 'H1');
-
-  // updatedBlockList[index].children[0].content = (updatedBlockList[index].children[0].content as string).substring(1);
 
   await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 };
 
-const turnIntoH2 = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
+const turnIntoH2 = async (index: number, blockList: ITextBlock[], noteId: string) => {
   const updatedBlockList = [...blockList];
-  updatedBlockList[index].type = 'h2';
   updatedBlockList[index].nodes[0].content = (updatedBlockList[index].nodes[0].content as string).substring(2);
+  await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
+  await updateBlockType(blockList[index].id, 'H2');
 
-  setBlockList(updatedBlockList);
+  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 };
 
-const turnIntoH3 = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
+const turnIntoH3 = async (index: number, blockList: ITextBlock[], noteId: string) => {
   const updatedBlockList = [...blockList];
-  updatedBlockList[index].type = 'h3';
   updatedBlockList[index].nodes[0].content = (updatedBlockList[index].nodes[0].content as string).substring(3);
+  await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
+  await updateBlockType(blockList[index].id, 'H3');
 
-  setBlockList(updatedBlockList);
+  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 };
 
-const turnIntoUl = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
+const turnIntoUl = async (index: number, blockList: ITextBlock[], noteId: string) => {
   const updatedBlockList = [...blockList];
-  updatedBlockList[index].type = 'ul';
   updatedBlockList[index].nodes[0].content = (updatedBlockList[index].nodes[0].content as string).substring(1);
+  await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
+  await updateBlockType(blockList[index].id, 'UL');
 
-  setBlockList(updatedBlockList);
+  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 };
 
-const turnIntoOl = (
-  index: number,
-  blockList: ITextBlock[],
-  setBlockList: (blockList: ITextBlock[]) => void,
-  offset: number,
-) => {
+const turnIntoOl = async (index: number, blockList: ITextBlock[], noteId: string, offset: number) => {
   const updatedBlockList = [...blockList];
-  updatedBlockList[index].type = 'ol';
   updatedBlockList[index].nodes[0].content = (updatedBlockList[index].nodes[0].content as string).substring(offset);
+  await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
+  await updateBlockType(blockList[index].id, 'OL');
 
-  setBlockList(updatedBlockList);
+  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 };
 
-const turnIntoQuote = (index: number, blockList: ITextBlock[], setBlockList: (blockList: ITextBlock[]) => void) => {
+const turnIntoQuote = async (index: number, blockList: ITextBlock[], noteId: string) => {
   const updatedBlockList = [...blockList];
-  updatedBlockList[index].type = 'quote';
   updatedBlockList[index].nodes[0].content = (updatedBlockList[index].nodes[0].content as string).substring(1);
+  await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
+  await updateBlockType(blockList[index].id, 'QUOTE');
 
-  setBlockList(updatedBlockList);
+  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 };
 
 const isInputtableKey = (e: KeyboardEvent) => {
@@ -823,7 +824,7 @@ const handleKeyDown = async (
         startOffset === 1 &&
         startContainer.textContent &&
         startContainer.textContent[0] === '#' &&
-        blockList[index].type !== 'h1'
+        blockList[index].type !== 'H1'
       ) {
         event.preventDefault();
         setIsTyping(false);
@@ -839,12 +840,12 @@ const handleKeyDown = async (
         startContainer.textContent &&
         startContainer.textContent[0] === '#' &&
         startContainer.textContent[1] === '#' &&
-        blockList[index].type !== 'h2'
+        blockList[index].type !== 'H2'
       ) {
         event.preventDefault();
         setIsTyping(false);
         setKey(Math.random());
-        turnIntoH2(index, blockList, setBlockList);
+        turnIntoH2(index, blockList, noteId);
         focusBlock(index, blockRef, blockList);
       }
 
@@ -856,12 +857,12 @@ const handleKeyDown = async (
         startContainer.textContent[0] === '#' &&
         startContainer.textContent[1] === '#' &&
         startContainer.textContent[2] === '#' &&
-        blockList[index].type !== 'h3'
+        blockList[index].type !== 'H3'
       ) {
         event.preventDefault();
         setIsTyping(false);
         setKey(Math.random());
-        turnIntoH3(index, blockList, setBlockList);
+        turnIntoH3(index, blockList, noteId);
         focusBlock(index, blockRef, blockList);
       }
 
@@ -871,12 +872,12 @@ const handleKeyDown = async (
         startOffset === 1 &&
         startContainer.textContent &&
         startContainer.textContent[0] === '-' &&
-        blockList[index].type !== 'ul'
+        blockList[index].type !== 'UL'
       ) {
         event.preventDefault();
         setIsTyping(false);
         setKey(Math.random());
-        turnIntoUl(index, blockList, setBlockList);
+        turnIntoUl(index, blockList, noteId);
         focusBlock(index, blockRef, blockList);
       }
 
@@ -886,12 +887,12 @@ const handleKeyDown = async (
         startContainer.textContent &&
         startContainer.textContent[startOffset - 1] === '.' &&
         /^\d+$/.test(startContainer.textContent.slice(0, startOffset - 1)) &&
-        blockList[index].type !== 'ol'
+        blockList[index].type !== 'OL'
       ) {
         event.preventDefault();
         setIsTyping(false);
         setKey(Math.random());
-        turnIntoOl(index, blockList, setBlockList, startOffset);
+        turnIntoOl(index, blockList, noteId, startOffset);
         focusBlock(index, blockRef, blockList);
       }
 
@@ -901,12 +902,12 @@ const handleKeyDown = async (
         startOffset === 1 &&
         startContainer.textContent &&
         startContainer.textContent[0] === '|' &&
-        blockList[index].type !== 'quote'
+        blockList[index].type !== 'QUOTE'
       ) {
         event.preventDefault();
         setIsTyping(false);
         setKey(Math.random());
-        turnIntoQuote(index, blockList, setBlockList);
+        turnIntoQuote(index, blockList, noteId);
         focusBlock(index, blockRef, blockList);
       }
     }
@@ -1003,9 +1004,9 @@ const handleKeyDown = async (
 
           setTimeout(() => {
             if (range) {
-              if (blockList[index - 1].type === 'ul' || blockList[index - 1].type === 'ol') {
+              if (blockList[index - 1].type === 'UL' || blockList[index - 1].type === 'OL') {
                 (blockRef.current[index - 1]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
-              } else if (blockList[index - 1].type === 'quote') {
+              } else if (blockList[index - 1].type === 'QUOTE') {
                 (blockRef.current[index - 1]?.parentNode?.parentNode as HTMLElement)?.focus();
               } else {
                 (blockRef.current[index - 1]?.parentNode as HTMLElement)?.focus();
