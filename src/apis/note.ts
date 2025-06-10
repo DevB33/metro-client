@@ -15,7 +15,7 @@ export const getNoteList = async () => {
   const instance = await getInstance();
   const response = await instance.get(`/notes`);
 
-  return response.data;
+  return response.data.notes;
 };
 
 export const editNoteIcon = async (noteId: string, selectedIcon: string | null) => {

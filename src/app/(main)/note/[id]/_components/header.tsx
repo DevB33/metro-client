@@ -73,12 +73,12 @@ const Header = () => {
     router.push(`/note/share/${noteId}`);
   };
 
-  const findParentId = (nodeList: INotes[], targetId: string, parentId: string | null = null): string | null => {
-    const match = nodeList.find(node => {
-      if (node.id === targetId) return true;
+  const findParentId = (notes: INotes[], targetId: string, parentId: string | null = null): string | null => {
+    const match = notes.find(note => {
+      if (note.id === targetId) return true;
 
-      if (node.children?.length) {
-        const found = findParentId(node.children, targetId, node.id);
+      if (note.children?.length) {
+        const found = findParentId(note.children, targetId, note.id);
         if (found) {
           parentId = found;
           return true;
@@ -95,7 +95,7 @@ const Header = () => {
     try {
       await deleteNote(noteId);
       await mutate('noteList', getNoteList, false);
-      const parentId = findParentId(noteList.notes, noteId);
+      const parentId = findParentId(noteList, noteId);
       if (parentId) {
         router.push(`/note/${parentId}`);
       } else {
@@ -108,7 +108,8 @@ const Header = () => {
   };
 
   const handleBackButton = () => {
-    const parentId = findParentId(noteList.node, noteId);
+    console.log(noteList);
+    const parentId = findParentId(noteList, noteId);
     if (parentId) {
       router.push(`/note/${parentId}`);
     } else {

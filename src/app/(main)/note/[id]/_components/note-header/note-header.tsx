@@ -16,7 +16,7 @@ import CoverDropdown from './cover-dropdown/dropdown';
 const headerConatiner = css({
   width: '44.5rem',
   position: 'relative',
-  zIndex: 2,
+  zIndex: '20',
 });
 
 const IconContainer = css({
@@ -156,8 +156,8 @@ const NoteHeader = () => {
           handleSelectCover={handleSelectCover}
         />
         <Title noteId={noteId} />
+        <Tag noteId={noteId} />
       </div>
-      <Tag noteId={noteId} />
     </>
   );
 };
