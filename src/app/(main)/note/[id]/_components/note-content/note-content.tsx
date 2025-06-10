@@ -96,9 +96,9 @@ const NoteContent = () => {
     if (!sidebarEl) return;
 
     const observer = new ResizeObserver(entries => {
-      for (const entry of entries) {
+      entries.forEach(entry => {
         setSidebarWidth(entry.contentRect.width);
-      }
+      });
     });
 
     observer.observe(sidebarEl);
