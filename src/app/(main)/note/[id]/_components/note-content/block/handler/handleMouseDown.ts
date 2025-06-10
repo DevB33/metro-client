@@ -28,8 +28,8 @@ const handleMouseDown = (
   const charIdx = document.caretPositionFromPoint(event.clientX, event.clientY)?.offset as number;
 
   setSelection({
-    start: { blockIndex: index, childNodeIndex: currentChildNodeIndex, offset: charIdx },
-    end: { blockIndex: index, childNodeIndex: currentChildNodeIndex, offset: charIdx },
+    start: { blockId: blockList[index].id, blockIndex: index, childNodeIndex: currentChildNodeIndex, offset: charIdx },
+    end: { blockId: blockList[index].id, blockIndex: index, childNodeIndex: currentChildNodeIndex, offset: charIdx },
   });
 
   setTimeout(() => {

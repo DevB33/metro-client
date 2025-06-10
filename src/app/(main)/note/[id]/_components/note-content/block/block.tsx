@@ -120,8 +120,6 @@ const Block = memo(
               height: '80px',
               position: 'absolute',
               top: '-80px',
-              // zIndex: '10',
-
               pointerEvents: 'auto',
             }}
             onDragEnter={event => {

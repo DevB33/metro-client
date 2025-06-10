@@ -53,7 +53,7 @@ const focusAfterSelection = (
       const windowSelection = window.getSelection();
 
       if (targetNode.nodeType === Node.TEXT_NODE) {
-        newRange.setStart(targetNode, Math.min(offset, targetNode.textContent?.length ?? 0));
+        newRange.setStart(targetNode, offset);
         newRange.collapse(true);
 
         windowSelection?.removeAllRanges();
@@ -382,8 +382,6 @@ const splitLine = async (
     // 현재 블록 업데이트
     await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
   }
-
-  // console.log(updatedBlockList[index].nodes);
 
   await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 
@@ -1052,17 +1050,35 @@ const handleKeyDown = async (
 
     // backspace 클릭
     if (event.key === keyName.backspace) {
-      editSelectionContent('delete', event.key, selection, isBackward, blockList, setBlockList, blockRef);
+      await editSelectionContent('delete', noteId, event.key, selection, isBackward, blockList, setBlockList, blockRef);
     }
     // 엔터 입력
     if (event.key === keyName.enter && !event.shiftKey) {
       if (!isBackward) {
-        editSelectionContent('enter', event.key, selection, isBackward, blockList, setBlockList, blockRef);
+        await editSelectionContent(
+          'enter',
+          noteId,
+          event.key,
+          selection,
+          isBackward,
+          blockList,
+          setBlockList,
+          blockRef,
+        );
         selection.start.blockIndex += 1;
         selection.start.childNodeIndex = 0;
         selection.start.offset = 0;
       } else {
-        editSelectionContent('enter', event.key, selection, isBackward, blockList, setBlockList, blockRef);
+        await editSelectionContent(
+          'enter',
+          noteId,
+          event.key,
+          selection,
+          isBackward,
+          blockList,
+          setBlockList,
+          blockRef,
+        );
         selection.end.blockIndex += 1;
         selection.end.childNodeIndex = 0;
         selection.end.offset = 0;
@@ -1071,7 +1087,16 @@ const handleKeyDown = async (
     // 다른 키 입력
     else if (isInputtableKey(event.nativeEvent)) {
       if (!isBackward) {
-        editSelectionContent('write', event.key, selection, isBackward, blockList, setBlockList, blockRef);
+        await editSelectionContent(
+          'write',
+          noteId,
+          event.key,
+          selection,
+          isBackward,
+          blockList,
+          setBlockList,
+          blockRef,
+        );
 
         // selection start가 처음부터여서 해당 노드가 다 지워지고 새로운 노드가 생긴거면 노드 인덱스는 그대로, offset은 1
         if (selection.start.offset === 0) {
@@ -1087,7 +1112,16 @@ const handleKeyDown = async (
           selection.start.offset = 1;
         }
       } else {
-        editSelectionContent('write', event.key, selection, isBackward, blockList, setBlockList, blockRef);
+        await editSelectionContent(
+          'write',
+          noteId,
+          event.key,
+          selection,
+          isBackward,
+          blockList,
+          setBlockList,
+          blockRef,
+        );
 
         // selection start가 처음부터여서 해당 노드가 다 지워지고 새로운 노드가 생긴거면 노드 인덱스는 그대로, offset은 1
         if (selection.end.offset === 0) {
@@ -1104,6 +1138,8 @@ const handleKeyDown = async (
         }
       }
     }
+
+    await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 
     setTimeout(() => {
       focusAfterSelection(selection, isBackward, event.key, blockRef);

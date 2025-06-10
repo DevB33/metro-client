@@ -67,6 +67,7 @@ const NoteContent = () => {
           content: '',
         },
       ],
+      order: 0,
     },
   ]);
 
@@ -77,8 +78,8 @@ const NoteContent = () => {
   const [dragBlockIndex, setDragBlockIndex] = useState<number | null>(null);
 
   const [selection, setSelection] = useState<ISelectionPosition>({
-    start: { blockIndex: 0, childNodeIndex: 0, offset: 0 },
-    end: { blockIndex: 0, childNodeIndex: 0, offset: 0 },
+    start: { blockId: '', blockIndex: 0, childNodeIndex: 0, offset: 0 },
+    end: { blockId: '', blockIndex: 0, childNodeIndex: 0, offset: 0 },
   });
 
   const [menuState, setMenuState] = useState<IMenuState>({
@@ -172,11 +173,11 @@ const NoteContent = () => {
   const resetSelection = () => {
     setSelection(prev => ({
       ...prev,
-      start: { blockIndex: 0, childNodeIndex: 0, offset: 0 },
+      start: { blockId: '', blockIndex: 0, childNodeIndex: 0, offset: 0 },
     }));
     setSelection(prev => ({
       ...prev,
-      end: { blockIndex: 0, childNodeIndex: 0, offset: 0 },
+      end: { blockId: '', blockIndex: 0, childNodeIndex: 0, offset: 0 },
     }));
   };
 
@@ -451,7 +452,7 @@ const NoteContent = () => {
 
     setSelection(prev => ({
       ...prev,
-      end: { ...prev.end, blockIndex: index },
+      end: { ...prev.end, blockId: blockList[index].id, blockIndex: index },
     }));
 
     // 로컬 변수를 활용해 비동기적 함수 처리
@@ -710,8 +711,9 @@ const NoteContent = () => {
         <div ref={selectionMenuRef}>
           <SelectionMenu
             setKey={setKey}
+            noteId={noteId}
             selection={selection}
-            blockList={blockList}
+            blockList={blocks}
             setBlockList={setBlockList}
             blockRef={blockRef}
             menuState={menuState}
