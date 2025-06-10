@@ -33,9 +33,7 @@ const blockContainer = css({
 
 const fakeBox = css({
   position: 'absolute',
-  width: '100vw',
-  left: '50%',
-  transform: 'translateX(-62%)',
+  transform: 'translateX(-30%)',
   height: 'var(--block-height)',
   zIndex: '1',
 
@@ -49,6 +47,7 @@ const NoteContent = () => {
   const fakeBoxRef = useRef<(HTMLDivElement | null)[]>([]);
   const noteRef = useRef<HTMLDivElement | null>(null);
   const selectionMenuRef = useRef<HTMLDivElement | null>(null);
+  const selectionMenuButtonRef = useRef<(HTMLDivElement | null)[]>([]);
   const outSideDragging = useRef(false);
   const isSelection = useRef(false);
   const prevClientY = useRef(0);
@@ -91,6 +90,23 @@ const NoteContent = () => {
   });
 
   const [isBlockMenuOpen, setIsBlockMenuOpen] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState<number | null>(null);
+
+  useEffect(() => {
+    const sidebarEl = document.getElementById('sidebar');
+    if (!sidebarEl) return;
+
+    const observer = new ResizeObserver(entries => {
+      entries.forEach(entry => {
+        setSidebarWidth(entry.contentRect.width);
+      });
+    });
+
+    observer.observe(sidebarEl);
+    setSidebarWidth(sidebarEl.offsetWidth); // 초기값
+
+    return () => observer.disconnect();
+  }, []);
 
   const createFirstBlock = async () => {
     if (blocks.length === 0) {
@@ -373,7 +389,10 @@ const NoteContent = () => {
 
       // selectionMenu가 아닌 곳에서 Click 시 resetSelection
       if (selectionMenuRef.current) {
-        if (!selectionMenuRef.current.contains(event.target as Node)) resetSelection();
+        if (!selectionMenuButtonRef.current.some(ref => ref?.contains(event.target as Node))) return;
+        if (!selectionMenuRef.current.contains(event.target as Node)) {
+          resetSelection();
+        }
         setKey(Math.random());
       }
     };
@@ -547,13 +566,13 @@ const NoteContent = () => {
 
     // 아래로 드래그한 상태에서 블록을 떠날 때
     if (selection.start.blockIndex < selection.end.blockIndex) {
-      if (index === selection.end.blockIndex && isUp) {
+      if (index === selection.end.blockIndex && isUp.current) {
         const el = blockRef.current[index];
         if (!el) return;
         el.style.backgroundImage = `none`;
       }
       // 아래로 드래그 할 때
-      if (index !== selection.start.blockIndex && index === selection.end.blockIndex && !isUp) {
+      if (index !== selection.start.blockIndex && index === selection.end.blockIndex && !isUp.current) {
         let left = 99999;
         let right = 0;
         childNodes.forEach(childNode => {
@@ -571,14 +590,14 @@ const NoteContent = () => {
     // 위로 드래그한 상태에서 블록을 떠날 때
     if (selection.start.blockIndex > selection.end.blockIndex) {
       // 아래로 드래그 할 때
-      if (index !== selection.start.blockIndex && index === selection.end.blockIndex && !isUp) {
+      if (index !== selection.start.blockIndex && index === selection.end.blockIndex && !isUp.current) {
         const el = blockRef.current[index];
         if (!el) return;
         el.style.backgroundImage = `none`;
       }
 
       // 위로 드래그 할 때
-      if (index !== selection.start.blockIndex && index === selection.end.blockIndex && isUp) {
+      if (index !== selection.start.blockIndex && index === selection.end.blockIndex && isUp.current) {
         let left = 99999;
         let right = 0;
         childNodes.forEach(childNode => {
@@ -658,7 +677,7 @@ const NoteContent = () => {
               className={fakeBox}
               id={`fakeBox-${index}`}
               style={{
-                left: `-${(blockContainerRef.current[index]?.getBoundingClientRect().left as number) + 20}px`,
+                width: `${window.innerWidth - sidebarWidth}px`,
               }}
               ref={element => {
                 fakeBoxRef.current[index] = element;
@@ -719,6 +738,7 @@ const NoteContent = () => {
             menuState={menuState}
             setMenuState={setMenuState}
             resetSelection={resetSelection}
+            selectionMenuButtonRef={selectionMenuButtonRef}
           />
         </div>
       )}

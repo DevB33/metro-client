@@ -85,7 +85,7 @@ const SearchModal = () => {
         <SearchBar />
         <div className={searchResultContainer}>
           <div className={resultTitle}>검색 결과</div>
-          <div className={divider}></div>
+          <div className={divider} />
           <div className={searchListContainer}>
             {searchResultList.length > 0 ? (
               searchResultList.map(page => <SearchResult key={page.pageId} page={page} />)

@@ -22,6 +22,7 @@ interface ISelectionMenuProps {
   menuState: IMenuState;
   setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>;
   resetSelection: () => void;
+  selectionMenuButtonRef: React.RefObject<(HTMLDivElement | null)[]>;
 }
 
 const menu = css({
@@ -73,6 +74,7 @@ const SelectionMenu = ({
   menuState,
   setMenuState,
   resetSelection,
+  selectionMenuButtonRef,
 }: ISelectionMenuProps) => {
   const selectionMenuRef = useClickOutside(() => {
     setMenuState(prev => ({
@@ -102,13 +104,16 @@ const SelectionMenu = ({
       }}
       className={menu}
     >
-      {MENU_ITEMS.map(item => (
+      {MENU_ITEMS.map((item, index) => (
         <div
           role="button"
           tabIndex={0}
           key={item.label}
           className={slashButton}
           onClick={() => changeBlock(item.label)}
+          ref={el => {
+            selectionMenuButtonRef.current[index] = el;
+          }}
           onKeyDown={event => {
             if (event.key === 'Enter') changeBlock(item.label);
           }}
