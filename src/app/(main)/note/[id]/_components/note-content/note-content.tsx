@@ -85,12 +85,13 @@ const NoteContent = () => {
     isSlashMenuOpen: false,
     slashMenuOpenIndex: null,
     isSelectionMenuOpen: false,
+    blockButtonModalIndex: null,
     slashMenuPosition: { x: 0, y: 0 },
     selectionMenuPosition: { x: 0, y: 0 },
   });
 
   const [isBlockMenuOpen, setIsBlockMenuOpen] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState<number | null>(null);
+  const [sidebarWidth, setSidebarWidth] = useState<number>(0);
 
   useEffect(() => {
     const sidebarEl = document.getElementById('sidebar');

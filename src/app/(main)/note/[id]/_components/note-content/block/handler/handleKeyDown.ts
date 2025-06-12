@@ -660,7 +660,6 @@ const handleKeyDown = async (
   selection: ISelectionPosition,
   noteId: string,
 ) => {
-  console.log(event.key);
   // selection 없을때
   if (!menuState.isSelectionMenuOpen) {
     if (
