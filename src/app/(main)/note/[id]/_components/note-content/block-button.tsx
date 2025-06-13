@@ -145,7 +145,7 @@ const BlockButton = ({
     setIsblockButtonModalOpen(true);
     setMenuState(prev => ({
       ...prev,
-      slashMenuOpenIndex: index,
+      blockButtonModalIndex: index,
     }));
 
     OpenBlockMenu();
@@ -184,7 +184,7 @@ const BlockButton = ({
       <button type="button" className={blockBtn} onClick={handleOpen} draggable onDragStart={handleDragStart}>
         <GripVerticalIcon />
       </button>
-      {menuState.slashMenuOpenIndex === index && (
+      {menuState.blockButtonModalIndex === index && (
         <DropDown handleClose={handleClose}>
           <DropDown.Menu isOpen={isblockButtonModalOpen} top={dropdownPosition.top} left={dropdownPosition.left}>
             <DropDown.Item onClick={handleChange}>
