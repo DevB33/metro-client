@@ -70,7 +70,6 @@ const BlockButton = ({
   setMenuState,
 }: IBlockButton) => {
   const [isblockButtonModalOpen, setIsblockButtonModalOpen] = useState(false);
-
   const buttonRef = useRef<HTMLDivElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const [openedBySlashKey, setOpenedBySlashKey] = useState(true);
@@ -144,6 +143,11 @@ const BlockButton = ({
       });
     }
     setIsblockButtonModalOpen(true);
+    setMenuState(prev => ({
+      ...prev,
+      blockButtonModalIndex: index,
+    }));
+
     OpenBlockMenu();
   };
 
@@ -180,20 +184,22 @@ const BlockButton = ({
       <button type="button" className={blockBtn} onClick={handleOpen} draggable onDragStart={handleDragStart}>
         <GripVerticalIcon />
       </button>
-      <DropDown handleClose={handleClose}>
-        <DropDown.Menu isOpen={isblockButtonModalOpen} top={dropdownPosition.top} left={dropdownPosition.left}>
-          <DropDown.Item onClick={handleChange}>
-            <ArrowReapeatIcon width="16px" height="16px" />
-            전환
-          </DropDown.Item>
-          <DropDown.Item onClick={handleDelete}>
-            <div className={deleteBtn}>
-              <TrashIcon />
-              삭제하기
-            </div>
-          </DropDown.Item>
-        </DropDown.Menu>
-      </DropDown>
+      {menuState.blockButtonModalIndex === index && (
+        <DropDown handleClose={handleClose}>
+          <DropDown.Menu isOpen={isblockButtonModalOpen} top={dropdownPosition.top} left={dropdownPosition.left}>
+            <DropDown.Item onClick={handleChange}>
+              <ArrowReapeatIcon width="16px" height="16px" />
+              전환
+            </DropDown.Item>
+            <DropDown.Item onClick={handleDelete}>
+              <div className={deleteBtn}>
+                <TrashIcon />
+                삭제하기
+              </div>
+            </DropDown.Item>
+          </DropDown.Menu>
+        </DropDown>
+      )}
       {menuState.isSlashMenuOpen && menuState.slashMenuOpenIndex === index && (
         <SlashMenu
           index={index}

@@ -668,6 +668,12 @@ const handleKeyDown = async (
     ) {
       event.preventDefault();
     }
+
+    // ctrl + A 텍스트 전체 선택 기본 셀렉션 막기
+    if (event.ctrlKey && (event.key === 'a' || event.key === 'A')) {
+      event.preventDefault();
+    }
+
     // enter 클릭
     if (event.key === keyName.enter && !event.shiftKey) {
       event.preventDefault();
