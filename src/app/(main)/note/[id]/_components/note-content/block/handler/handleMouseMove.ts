@@ -63,10 +63,13 @@ const handleMouseMove = (
     const windowSelection = window.getSelection();
     if (windowSelection) windowSelection.removeAllRanges();
   }
-  setSelection(prev => ({
-    ...prev,
-    end: { ...prev.end, offset: charIdx },
-  }));
+
+  if (charIdx !== selection.end.offset) {
+    setSelection(prev => ({
+      ...prev,
+      end: { ...prev.end, offset: charIdx },
+    }));
+  }
 
   // 첫 번째 블록에서
   if (index === selection.start.blockIndex && index === selection.end.blockIndex) {
