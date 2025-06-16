@@ -260,154 +260,155 @@ const splitBlock = async (
   focusBlock(index + 1, blockRef, updatedBlockList);
 };
 
-const splitLine = async (
-  index: number,
-  blockList: ITextBlock[],
-  blockRef: React.RefObject<(HTMLDivElement | null)[]>,
-  noteId: string,
-) => {
-  const { startOffset, startContainer } = getSelectionInfo(0) || {};
-  if (startOffset === undefined || startOffset === null || !startContainer) return;
+// note : shift + enter 미완 로직
+// const splitLine = async (
+//   index: number,
+//   blockList: ITextBlock[],
+//   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
+//   noteId: string,
+// ) => {
+//   const { startOffset, startContainer } = getSelectionInfo(0) || {};
+//   if (startOffset === undefined || startOffset === null || !startContainer) return;
 
-  const parent = blockRef.current[index];
-  const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
-  const currentChildNodeIndex =
-    childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
-      ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
-      : childNodes.indexOf(startContainer as HTMLElement);
-  const newChildren = [...blockList[index].nodes];
+//   const parent = blockRef.current[index];
+//   const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+//   const currentChildNodeIndex =
+//     childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
+//       ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
+//       : childNodes.indexOf(startContainer as HTMLElement);
+//   const newChildren = [...blockList[index].nodes];
 
-  if (startContainer.nodeType === Node.TEXT_NODE) {
-    const textBefore = startContainer.textContent?.substring(0, startOffset);
-    const textAfter = startContainer.textContent?.substring(startOffset);
+//   if (startContainer.nodeType === Node.TEXT_NODE) {
+//     const textBefore = startContainer.textContent?.substring(0, startOffset);
+//     const textAfter = startContainer.textContent?.substring(startOffset);
 
-    const parentNode = startContainer.parentNode as HTMLElement;
-    const isSpan = parentNode?.tagName === 'SPAN';
+//     const parentNode = startContainer.parentNode as HTMLElement;
+//     const isSpan = parentNode?.tagName === 'SPAN';
 
-    // 줄 바꿈이 반영된 children 배열 생성
-    const updatedChildren = [
-      ...newChildren.slice(0, currentChildNodeIndex),
-      textBefore && {
-        type: !isSpan ? 'text' : 'span',
-        style: isSpan
-          ? {
-              fontStyle: parentNode?.style.fontStyle,
-              fontWeight: parentNode?.style.fontWeight,
-              color: parentNode?.style.color,
-              backgroundColor: parentNode?.style.backgroundColor,
-              width: 'auto',
-              height: 'auto',
-            }
-          : null,
-        content: textBefore || '',
-      },
-      textBefore && textAfter
-        ? {
-            type: 'br' as 'br',
-          }
-        : null,
-      textAfter && {
-        type: !isSpan ? 'text' : 'span',
-        style: isSpan
-          ? {
-              fontStyle: parentNode?.style.fontStyle,
-              fontWeight: parentNode?.style.fontWeight,
-              color: parentNode?.style.color,
-              backgroundColor: parentNode?.style.backgroundColor,
-              width: 'auto',
-              height: 'auto',
-            }
-          : null,
-        content: textAfter || '',
-      },
-      ...newChildren.slice(currentChildNodeIndex + 1),
-    ]
-      .map(child => {
-        if (child === '') {
-          return {
-            type: 'br' as 'br',
-          };
-        }
+//     // 줄 바꿈이 반영된 children 배열 생성
+//     const updatedChildren = [
+//       ...newChildren.slice(0, currentChildNodeIndex),
+//       textBefore && {
+//         type: !isSpan ? 'text' : 'span',
+//         style: isSpan
+//           ? {
+//               fontStyle: parentNode?.style.fontStyle,
+//               fontWeight: parentNode?.style.fontWeight,
+//               color: parentNode?.style.color,
+//               backgroundColor: parentNode?.style.backgroundColor,
+//               width: 'auto',
+//               height: 'auto',
+//             }
+//           : null,
+//         content: textBefore || '',
+//       },
+//       textBefore && textAfter
+//         ? {
+//             type: 'br' as 'br',
+//           }
+//         : null,
+//       textAfter && {
+//         type: !isSpan ? 'text' : 'span',
+//         style: isSpan
+//           ? {
+//               fontStyle: parentNode?.style.fontStyle,
+//               fontWeight: parentNode?.style.fontWeight,
+//               color: parentNode?.style.color,
+//               backgroundColor: parentNode?.style.backgroundColor,
+//               width: 'auto',
+//               height: 'auto',
+//             }
+//           : null,
+//         content: textAfter || '',
+//       },
+//       ...newChildren.slice(currentChildNodeIndex + 1),
+//     ]
+//       .map(child => {
+//         if (child === '') {
+//           return {
+//             type: 'br' as 'br',
+//           };
+//         }
 
-        return child;
-      })
-      .filter(child => child !== null);
+//         return child;
+//       })
+//       .filter(child => child !== null);
 
-    // 줄의 맨 마지막에서 줄바꿈을 할 떄는 <br> 태그가 하나 더 추가 되야함 ex) 줄바꿈 후 두 번째 줄이 빈 문자열일 때: ""<br><br>
-    if (
-      updatedChildren[updatedChildren.length - 1]?.type === 'br' &&
-      updatedChildren[updatedChildren.length - 2]?.type !== 'br'
-    ) {
-      updatedChildren.push({
-        type: 'br' as 'br',
-      });
-    }
+//     // 줄의 맨 마지막에서 줄바꿈을 할 떄는 <br> 태그가 하나 더 추가 되야함 ex) 줄바꿈 후 두 번째 줄이 빈 문자열일 때: ""<br><br>
+//     if (
+//       updatedChildren[updatedChildren.length - 1]?.type === 'br' &&
+//       updatedChildren[updatedChildren.length - 2]?.type !== 'br'
+//     ) {
+//       updatedChildren.push({
+//         type: 'br' as 'br',
+//       });
+//     }
 
-    const updatedBlockList = [...blockList];
-    updatedBlockList[index] = {
-      ...updatedBlockList[index],
-      nodes: updatedChildren as ITextBlock['nodes'],
-    };
+//     const updatedBlockList = [...blockList];
+//     updatedBlockList[index] = {
+//       ...updatedBlockList[index],
+//       nodes: updatedChildren as ITextBlock['nodes'],
+//     };
 
-    // 현재 블록 업데이트
-    await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
-  } else if ((startContainer as HTMLElement).tagName === 'BR') {
-    // 현재 커서 위치 한 곳이 빈 문자열일 때 → 중복 줄바꿈 로직
-    // 직접 focus를 줄 때는 startContainer가 <br>로 잡힘
-    const updatedBlockList = [...blockList];
-    if (updatedBlockList[index].nodes.length === 1 && updatedBlockList[index].nodes[0].content === '') {
-      updatedBlockList[index].nodes[0] = {
-        type: 'br',
-      };
-    }
-    updatedBlockList[index].nodes.splice(currentChildNodeIndex, 0, {
-      type: 'br',
-    });
+//     // 현재 블록 업데이트
+//     await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
+//   } else if ((startContainer as HTMLElement).tagName === 'BR') {
+//     // 현재 커서 위치 한 곳이 빈 문자열일 때 → 중복 줄바꿈 로직
+//     // 직접 focus를 줄 때는 startContainer가 <br>로 잡힘
+//     const updatedBlockList = [...blockList];
+//     if (updatedBlockList[index].nodes.length === 1 && updatedBlockList[index].nodes[0].content === '') {
+//       updatedBlockList[index].nodes[0] = {
+//         type: 'br',
+//       };
+//     }
+//     updatedBlockList[index].nodes.splice(currentChildNodeIndex, 0, {
+//       type: 'br',
+//     });
 
-    // 현재 블록 업데이트
-    await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
-  } else {
-    // 현재 커서 위치 한 곳이 빈 문자열일 때 → 중복 줄바꿈 로직
-    // 직접 focus를 주지 않을 때는 startContainer가 부모로 잡혀 text node와 br이 아님
-    const updatedBlockList = [...blockList];
-    if (updatedBlockList[index].nodes.length === 1 && updatedBlockList[index].nodes[0].content === '') {
-      updatedBlockList[index].nodes[0] = {
-        type: 'br',
-      };
-    }
-    updatedBlockList[index].nodes.splice(startOffset, 0, {
-      type: 'br',
-    });
+//     // 현재 블록 업데이트
+//     await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
+//   } else {
+//     // 현재 커서 위치 한 곳이 빈 문자열일 때 → 중복 줄바꿈 로직
+//     // 직접 focus를 주지 않을 때는 startContainer가 부모로 잡혀 text node와 br이 아님
+//     const updatedBlockList = [...blockList];
+//     if (updatedBlockList[index].nodes.length === 1 && updatedBlockList[index].nodes[0].content === '') {
+//       updatedBlockList[index].nodes[0] = {
+//         type: 'br',
+//       };
+//     }
+//     updatedBlockList[index].nodes.splice(startOffset, 0, {
+//       type: 'br',
+//     });
 
-    // 현재 블록 업데이트
-    await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
-  }
+//     // 현재 블록 업데이트
+//     await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
+//   }
 
-  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+//   await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 
-  // 줄 바꿈 후 focus를 바뀐줄 맨 앞에 주는 로직
-  setTimeout(() => {
-    const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
-    const range = document.createRange();
+//   // 줄 바꿈 후 focus를 바뀐줄 맨 앞에 주는 로직
+//   setTimeout(() => {
+//     const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
+//     const range = document.createRange();
 
-    if (
-      (currentChildNodeIndex === 0 && startOffset === 0) ||
-      (childNodes[currentChildNodeIndex - 1]?.nodeName === 'BR' && startOffset === 0)
-    ) {
-      // 줄의 맨 앞에 커서를 두고 줄바꿈 했을 때
-      range.setStart(newChildNodes[currentChildNodeIndex + 1], 0);
-    } else if (currentChildNodeIndex === -1) {
-      // 직접 focus를 주지 않은 상태에서 빈 줄에서 줄바꿈 했을 때
-      range.setStart(newChildNodes[startOffset + 1], 0);
-    } else {
-      range.setStart(newChildNodes[startOffset === 0 ? currentChildNodeIndex + 1 : currentChildNodeIndex + 2], 0);
-    }
+//     if (
+//       (currentChildNodeIndex === 0 && startOffset === 0) ||
+//       (childNodes[currentChildNodeIndex - 1]?.nodeName === 'BR' && startOffset === 0)
+//     ) {
+//       // 줄의 맨 앞에 커서를 두고 줄바꿈 했을 때
+//       range.setStart(newChildNodes[currentChildNodeIndex + 1], 0);
+//     } else if (currentChildNodeIndex === -1) {
+//       // 직접 focus를 주지 않은 상태에서 빈 줄에서 줄바꿈 했을 때
+//       range.setStart(newChildNodes[startOffset + 1], 0);
+//     } else {
+//       range.setStart(newChildNodes[startOffset === 0 ? currentChildNodeIndex + 1 : currentChildNodeIndex + 2], 0);
+//     }
 
-    const selection = window.getSelection();
-    selection?.removeAllRanges();
-    selection?.addRange(range);
-  }, 0);
-};
+//     const selection = window.getSelection();
+//     selection?.removeAllRanges();
+//     selection?.addRange(range);
+//   }, 0);
+// };
 
 const mergeBlock = async (
   index: number,
@@ -668,8 +669,8 @@ const handleKeyDown = async (
     ) {
       event.preventDefault();
     }
-    // enter 클릭
-    if (event.key === keyName.enter && !event.shiftKey) {
+    // enter 클릭 || shift + enter 클릭
+    if ((event.key === keyName.enter && !event.shiftKey) || (event.key === keyName.enter && event.shiftKey)) {
       event.preventDefault();
       if (event.nativeEvent.isComposing) {
         return;
@@ -677,14 +678,6 @@ const handleKeyDown = async (
       setIsTyping(false);
       setKey(Math.random());
       splitBlock(index, blockList, blockRef, noteId);
-    }
-
-    // shift + enter 클릭
-    if (event.key === keyName.enter && event.shiftKey) {
-      event.preventDefault();
-      setIsTyping(false);
-      setKey(Math.random());
-      splitLine(index, blockList, blockRef, noteId);
     }
 
     // 일반 backspace 클릭
