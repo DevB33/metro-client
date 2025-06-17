@@ -20,6 +20,13 @@ const getNodeBounds = (node: Node, startOffset: number, endOffset: number) => {
   return range.getBoundingClientRect();
 };
 
+const isCollapsedSelection = (selection: ISelectionPosition) => {
+  if (selection.start.blockIndex !== selection.end.blockIndex) return false;
+  if (selection.start.childNodeIndex !== selection.end.childNodeIndex) return false;
+  if (selection.start.offset !== selection.end.offset) return false;
+  return true;
+};
+
 const handleMouseMove = (
   event: React.MouseEvent<HTMLDivElement>,
   index: number,
@@ -69,6 +76,28 @@ const handleMouseMove = (
       ...prev,
       end: { ...prev.end, offset: charIdx },
     }));
+  }
+
+  if (isCollapsedSelection(selection)) {
+    const newRange = document.createRange();
+
+    if (newRange) {
+      const windowSelection = window.getSelection();
+      if (currentChildNodeIndex === -1) return;
+
+      const targetNode = blockRef.current[index]?.childNodes[currentChildNodeIndex];
+
+      if (!targetNode) return;
+      if (targetNode.nodeType === Node.TEXT_NODE) {
+        // 텍스트 노드일 때
+        newRange.setStart(blockRef.current[index]?.childNodes[currentChildNodeIndex] as Node, charIdx);
+      } else if (targetNode.firstChild && targetNode.firstChild.nodeType === Node.TEXT_NODE) {
+        // span 같은 엘리먼트 노드에 텍스트가 있을 경우
+        newRange.setStart(blockRef.current[index]?.childNodes[currentChildNodeIndex].firstChild as Node, charIdx);
+      }
+
+      windowSelection?.addRange(newRange);
+    }
   }
 
   // 첫 번째 블록에서
