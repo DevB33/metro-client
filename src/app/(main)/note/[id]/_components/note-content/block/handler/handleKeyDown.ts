@@ -410,6 +410,54 @@ const splitBlock = async (
 //   }, 0);
 // };
 
+// note : shift + enter 미완 로직
+// const mergeLine = async (
+//   index: number,
+//   currentChildNodeIndex: number,
+//   blockList: ITextBlock[],
+//   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
+//   noteId: string,
+// ) => {
+//   const updatedBlockList = [...blockList];
+//   const newChildren = [...blockList[index].nodes];
+//   newChildren.splice(currentChildNodeIndex - 1, 1);
+//   updatedBlockList[index] = { ...updatedBlockList[index], nodes: newChildren };
+
+//   // 현재 블록 업데이트
+//   await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
+//   await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+
+//   // 줄이 합쳐질 때 이전 합친 줄 사이에 focus를 주는 로직
+//   setTimeout(() => {
+//     const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
+//     const range = document.createRange();
+
+//     //  TODO: 중복 줄바꿈인 상태일 때인데 지금 이상한 상태여서 수정해야함
+//     if (newChildNodes[currentChildNodeIndex - 2]?.nodeName === 'BR' || currentChildNodeIndex === 1) {
+//       range.setStart(newChildNodes[currentChildNodeIndex - 1], 0);
+//     }
+
+//     // a줄 <br> b줄 인 상황에서 b줄에서 백스페이스를 누르면 포커스가 a줄 맨 마지막 노드의 맨 마지막 offset으로 focus
+//     // b줄의 맨 앞이 currentChildNodeIndex일 때 <br>은 currentChildNodeIndex - 1, a줄의 맨 마지막 노드는 currentChildNodeIndex - 2
+//     if (newChildNodes[currentChildNodeIndex - 2].nodeName === 'SPAN') {
+//       range.setStart(
+//         newChildNodes[currentChildNodeIndex - 2].firstChild as Node,
+//         newChildNodes[currentChildNodeIndex - 2].textContent?.length as number,
+//       );
+//     } else {
+//       range.setStart(
+//         newChildNodes[currentChildNodeIndex - 2],
+//         newChildNodes[currentChildNodeIndex - 2].textContent?.length as number,
+//       );
+//     }
+
+//     const selection = window.getSelection();
+
+//     selection?.removeAllRanges();
+//     selection?.addRange(range);
+//   }, 0);
+// };
+
 const mergeBlock = async (
   index: number,
   blockList: ITextBlock[],
@@ -501,53 +549,6 @@ const mergeBlock = async (
       selection?.removeAllRanges();
       selection?.addRange(range);
     }
-  }, 0);
-};
-
-const mergeLine = async (
-  index: number,
-  currentChildNodeIndex: number,
-  blockList: ITextBlock[],
-  blockRef: React.RefObject<(HTMLDivElement | null)[]>,
-  noteId: string,
-) => {
-  const updatedBlockList = [...blockList];
-  const newChildren = [...blockList[index].nodes];
-  newChildren.splice(currentChildNodeIndex - 1, 1);
-  updatedBlockList[index] = { ...updatedBlockList[index], nodes: newChildren };
-
-  // 현재 블록 업데이트
-  await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
-  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
-
-  // 줄이 합쳐질 때 이전 합친 줄 사이에 focus를 주는 로직
-  setTimeout(() => {
-    const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
-    const range = document.createRange();
-
-    //  TODO: 중복 줄바꿈인 상태일 때인데 지금 이상한 상태여서 수정해야함
-    if (newChildNodes[currentChildNodeIndex - 2]?.nodeName === 'BR' || currentChildNodeIndex === 1) {
-      range.setStart(newChildNodes[currentChildNodeIndex - 1], 0);
-    }
-
-    // a줄 <br> b줄 인 상황에서 b줄에서 백스페이스를 누르면 포커스가 a줄 맨 마지막 노드의 맨 마지막 offset으로 focus
-    // b줄의 맨 앞이 currentChildNodeIndex일 때 <br>은 currentChildNodeIndex - 1, a줄의 맨 마지막 노드는 currentChildNodeIndex - 2
-    if (newChildNodes[currentChildNodeIndex - 2].nodeName === 'SPAN') {
-      range.setStart(
-        newChildNodes[currentChildNodeIndex - 2].firstChild as Node,
-        newChildNodes[currentChildNodeIndex - 2].textContent?.length as number,
-      );
-    } else {
-      range.setStart(
-        newChildNodes[currentChildNodeIndex - 2],
-        newChildNodes[currentChildNodeIndex - 2].textContent?.length as number,
-      );
-    }
-
-    const selection = window.getSelection();
-
-    selection?.removeAllRanges();
-    selection?.addRange(range);
   }, 0);
 };
 
@@ -669,8 +670,21 @@ const handleKeyDown = async (
     ) {
       event.preventDefault();
     }
-    // enter 클릭 || shift + enter 클릭
-    if ((event.key === keyName.enter && !event.shiftKey) || (event.key === keyName.enter && event.shiftKey)) {
+    // enter 클릭
+    if (event.key === keyName.enter && !event.shiftKey) {
+      event.preventDefault();
+      if (event.nativeEvent.isComposing) {
+        return;
+      }
+      setIsTyping(false);
+      setKey(Math.random());
+      splitBlock(index, blockList, blockRef, noteId);
+    }
+
+    // todo : shift + Enter 로직 구현 필요
+    // note : 임시로 enter 로직과 동일하게 구현
+    // shift + enter 클릭
+    if (event.key === keyName.enter && event.shiftKey) {
       event.preventDefault();
       if (event.nativeEvent.isComposing) {
         return;
@@ -726,48 +740,50 @@ const handleKeyDown = async (
           } else {
             mergeBlock(index, blockList, blockRef, noteId);
           }
-        } else {
-          // 줄 합치기 로직
-          const updatedBlockList = [...blockList];
-
-          if (
-            updatedBlockList[index].nodes[startOffset - 1].type === 'br' &&
-            (!updatedBlockList[index].nodes[startOffset - 2] ||
-              updatedBlockList[index].nodes[startOffset - 2].type !== 'br') &&
-            !updatedBlockList[index].nodes[startOffset + 1]
-          ) {
-            updatedBlockList[index].nodes.splice(startOffset - 1, 2);
-          } else {
-            updatedBlockList[index].nodes.splice(startOffset, 1);
-          }
-
-          // 현재 블록 업데이트
-          await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
-          await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
-
-          // 한 줄이 다 지워진 상태에서의 줄 합치기 일때 focus를 주는 로직
-          setTimeout(() => {
-            const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
-            const range = document.createRange();
-
-            // 한줄이 다 지워졌을때는 startContainer가 부모로 잡히기 때문에 현재 위치를 startOffset으로 알 수 있음
-            // 따라서 줄이 지워질 때 startOffset - 1인 노드에 마지막에 focus
-            // 빈 줄이 2개만 있을 때 두 번째 줄에서 첫 번째 줄로 합치면 newChildNodes[startOffset - 1] 이 undefined가 됨
-            // 따라서 undefined일 때는 블록의 내용이 모두 지워졌을 때 이므로 현재 block에 focus
-            if (newChildNodes[startOffset - 1]) {
-              range.setStart(
-                newChildNodes[startOffset - 1],
-                newChildNodes[startOffset - 1].textContent?.length as number,
-              );
-            } else {
-              focusBlock(index, blockRef, blockList);
-            }
-            const windowSelection = window.getSelection();
-
-            windowSelection?.removeAllRanges();
-            windowSelection?.addRange(range);
-          }, 0);
         }
+        // note : 미완 shift + enter 로 생긴 줄 합치는 로직
+        // else {
+        //   // 줄 합치기 로직
+        //   const updatedBlockList = [...blockList];
+
+        //   if (
+        //     updatedBlockList[index].nodes[startOffset - 1].type === 'br' &&
+        //     (!updatedBlockList[index].nodes[startOffset - 2] ||
+        //       updatedBlockList[index].nodes[startOffset - 2].type !== 'br') &&
+        //     !updatedBlockList[index].nodes[startOffset + 1]
+        //   ) {
+        //     updatedBlockList[index].nodes.splice(startOffset - 1, 2);
+        //   } else {
+        //     updatedBlockList[index].nodes.splice(startOffset, 1);
+        //   }
+
+        //   // 현재 블록 업데이트
+        //   await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
+        //   await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+
+        //   // 한 줄이 다 지워진 상태에서의 줄 합치기 일때 focus를 주는 로직
+        //   setTimeout(() => {
+        //     const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
+        //     const range = document.createRange();
+
+        //     // 한줄이 다 지워졌을때는 startContainer가 부모로 잡히기 때문에 현재 위치를 startOffset으로 알 수 있음
+        //     // 따라서 줄이 지워질 때 startOffset - 1인 노드에 마지막에 focus
+        //     // 빈 줄이 2개만 있을 때 두 번째 줄에서 첫 번째 줄로 합치면 newChildNodes[startOffset - 1] 이 undefined가 됨
+        //     // 따라서 undefined일 때는 블록의 내용이 모두 지워졌을 때 이므로 현재 block에 focus
+        //     if (newChildNodes[startOffset - 1]) {
+        //       range.setStart(
+        //         newChildNodes[startOffset - 1],
+        //         newChildNodes[startOffset - 1].textContent?.length as number,
+        //       );
+        //     } else {
+        //       focusBlock(index, blockRef, blockList);
+        //     }
+        //     const windowSelection = window.getSelection();
+
+        //     windowSelection?.removeAllRanges();
+        //     windowSelection?.addRange(range);
+        //   }, 0);
+        // }
 
         return;
       }
@@ -787,15 +803,17 @@ const handleKeyDown = async (
           } else {
             mergeBlock(index, blockList, blockRef, noteId);
           }
-        } else if (currentChildNodeIndex > 0) {
-          if (blockList[index].nodes[currentChildNodeIndex - 1].type === 'br') {
-            event.preventDefault();
-            setIsTyping(false);
-            setKey(Math.random());
-
-            mergeLine(index, currentChildNodeIndex, blockList, blockRef, noteId);
-          }
         }
+        // note : 미완 shift + enter 로 생긴 줄 합치는 로직
+        // else if (currentChildNodeIndex > 0) {
+        //   if (blockList[index].nodes[currentChildNodeIndex - 1].type === 'br') {
+        //     event.preventDefault();
+        //     setIsTyping(false);
+        //     setKey(Math.random());
+
+        //     mergeLine(index, currentChildNodeIndex, blockList, blockRef, noteId);
+        //   }
+        // }
       }
     }
 
