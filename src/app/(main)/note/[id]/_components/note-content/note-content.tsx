@@ -34,7 +34,6 @@ const blockContainer = css({
 const fakeBox = css({
   position: 'absolute',
   transform: 'translateX(-30%)',
-  height: 'var(--block-height)',
   zIndex: '1',
 
   pointerEvents: 'auto',
