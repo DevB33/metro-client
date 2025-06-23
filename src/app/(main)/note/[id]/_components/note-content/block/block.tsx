@@ -48,6 +48,7 @@ const blockDiv = css({
   width: 'full',
   minHeight: '1.5rem',
   height: 'auto',
+  padding: '2px 0 !important',
   outline: 'none',
   overflowY: 'hidden',
   flexShrink: 0,

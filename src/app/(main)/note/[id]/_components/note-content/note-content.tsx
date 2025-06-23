@@ -34,7 +34,6 @@ const blockContainer = css({
 const fakeBox = css({
   position: 'absolute',
   transform: 'translateX(-30%)',
-  height: 'var(--block-height)',
   zIndex: '1',
 
   pointerEvents: 'auto',
@@ -471,7 +470,7 @@ const NoteContent = () => {
 
     setSelection(prev => ({
       ...prev,
-      end: { ...prev.end, blockId: blockList[index].id, blockIndex: index },
+      end: { ...prev.end, blockId: blocks[index].id, blockIndex: index },
     }));
 
     // 로컬 변수를 활용해 비동기적 함수 처리
