@@ -17,7 +17,6 @@ interface ISelectionMenuProps {
   noteId: string;
   selection: ISelectionPosition;
   blockList: ITextBlock[];
-  setBlockList: (blockList: ITextBlock[]) => void;
   blockRef: React.RefObject<(HTMLDivElement | null)[]>;
   menuState: IMenuState;
   setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>;
@@ -69,7 +68,6 @@ const SelectionMenu = ({
   noteId,
   selection,
   blockList,
-  setBlockList,
   blockRef,
   menuState,
   setMenuState,
@@ -85,7 +83,7 @@ const SelectionMenu = ({
   const menuHeight = 3;
 
   const changeBlock = (type: string) => {
-    changeSelectionStyle(type, noteId, selection, blockList, setBlockList, blockRef);
+    changeSelectionStyle(type, noteId, selection, blockList, blockRef);
 
     setMenuState(prev => ({
       ...prev,

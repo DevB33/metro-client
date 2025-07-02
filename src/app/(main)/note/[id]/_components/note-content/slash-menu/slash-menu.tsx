@@ -152,9 +152,9 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
     }));
 
     setTimeout(() => {
-      if (blockList[index].type === 'UL' || blockList[index].type === 'OL') {
+      if (type === 'UL' || type === 'OL') {
         (blockRef.current[index]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
-      } else if (blockList[index].type === 'QUOTE') {
+      } else if (type === 'QUOTE') {
         (blockRef.current[index]?.parentNode?.parentNode as HTMLElement)?.focus();
       } else {
         (blockRef.current[index]?.parentNode as HTMLElement)?.focus();
