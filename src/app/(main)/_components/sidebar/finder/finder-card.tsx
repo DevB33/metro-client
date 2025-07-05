@@ -7,6 +7,7 @@ import { createNote, getNoteList } from '@/apis/note';
 import useSWR, { mutate } from 'swr';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
+import { toastErrorMessage, toastSuccessMessage } from '@/constants/toast-message';
 import PageItem from './page-item';
 
 const finderCard = css({
@@ -79,9 +80,9 @@ const FinderCard = () => {
       const noteId = await createNote(null);
       await mutate('noteList', getNoteList, false);
       router.push(`/note/${noteId}`);
-      toast.success('문서가 생성되었습니다.');
+      toast.success(toastSuccessMessage.NoteCreate);
     } catch (error) {
-      toast.error('문서 생성에 실패하였습니다.');
+      toast.error(toastErrorMessage.NoteCreate);
     }
   };
 

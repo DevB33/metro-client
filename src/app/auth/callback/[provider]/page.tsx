@@ -3,6 +3,8 @@
 import { redirect, useParams, useSearchParams } from 'next/navigation';
 import { css } from '@/../styled-system/css';
 import { useEffect } from 'react';
+import { toastErrorMessage, toastSuccessMessage } from '@/constants/toast-message';
+import { toast } from 'react-toastify';
 
 const AuthCallback = () => {
   const searchParams = useSearchParams();
@@ -24,9 +26,10 @@ const AuthCallback = () => {
         if (response.status !== 200) {
           throw new Error('Failed to login');
         }
+        toast.success(toastSuccessMessage.Login);
       } catch (error) {
         // eslint-disable-next-line no-console
-        console.error(error);
+        toast.error(toastErrorMessage.Login);
       } finally {
         redirect('/');
       }
