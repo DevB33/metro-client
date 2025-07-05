@@ -6,6 +6,8 @@ import INotes from '@/types/note-type';
 import { createNote, getNoteList } from '@/apis/note';
 import useSWR, { mutate } from 'swr';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
+import { toastErrorMessage, toastSuccessMessage } from '@/constants/toast-message';
 import PageItem from './page-item';
 
 const finderCard = css({
@@ -75,12 +77,12 @@ const FinderCard = () => {
 
   const handleClick = async () => {
     try {
-      await createNote(null);
+      const noteId = await createNote(null);
       await mutate('noteList', getNoteList, false);
-      const noteId = await getNoteList();
-      router.push(`/note/${noteId.notes.at(-1).id}`);
+      router.push(`/note/${noteId}`);
+      toast.success(toastSuccessMessage.NoteCreate);
     } catch (error) {
-      console.log(error);
+      toast.error(toastErrorMessage.NoteCreate);
     }
   };
 

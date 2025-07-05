@@ -14,6 +14,8 @@ import { createNote, deleteNote, getNoteList } from '@/apis/note';
 import useSWR, { mutate } from 'swr';
 import TrashIcon from '@/icons/trash-icon';
 import PencilSquareIcon from '@/icons/pencil-square';
+import { toast } from 'react-toastify';
+import { toastErrorMessage, toastSuccessMessage } from '@/constants/toast-message';
 import DropDown from '../../../../../components/dropdown/dropdown';
 import EditTitleModal from './edit-title-modal';
 
@@ -170,8 +172,9 @@ const NoteItem = ({ note, depth, openedDropdownnoteId, setOpenedDropdownnoteId }
       } else {
         router.push('/');
       }
+      toast.success(toastSuccessMessage.NoteDelete);
     } catch (error) {
-      console.log(error);
+      toast.error(toastErrorMessage.NoteDelete);
     }
     closeSettingDropdown();
   };
@@ -179,10 +182,12 @@ const NoteItem = ({ note, depth, openedDropdownnoteId, setOpenedDropdownnoteId }
   const handlePlusButtonClick = async () => {
     try {
       if (!isOpen) togglenote();
-      await createNote(note.id);
+      const noteId = await createNote(note.id);
       await mutate('noteList', getNoteList, false);
+      router.push(`/note/${noteId}`);
+      toast.success(toastSuccessMessage.NoteCreate);
     } catch (error) {
-      console.log(error);
+      toast.error(toastErrorMessage.NoteCreate);
     }
   };
 
