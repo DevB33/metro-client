@@ -36,7 +36,7 @@ const MainLayout = async ({ children, modal }: Readonly<{ children: React.ReactN
         {children}
         {modal}
       </div>
-      <ToastContainer />
+      <ToastContainer autoClose="1500" />
     </SWRConfig>
   );
 };
