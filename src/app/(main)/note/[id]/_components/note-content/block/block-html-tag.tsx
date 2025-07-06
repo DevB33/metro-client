@@ -195,6 +195,9 @@ const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag
     return (
       <div
         style={{ all: 'unset', cursor: 'pointer', display: 'flex', justifyContent: 'start', gap: '2px', width: '100%' }}
+        ref={element => {
+          blockRef.current[index] = element;
+        }}
       >
         {children}
       </div>

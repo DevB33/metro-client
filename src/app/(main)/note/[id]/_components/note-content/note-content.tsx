@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import useSWR, { mutate } from 'swr';
 import { css } from '@/../styled-system/css';
@@ -174,6 +174,7 @@ const NoteContent = () => {
     const blockEl = blockRef.current[index];
     const buttonEl = blockButtonRef.current[index];
     const fakeBoxEl = fakeBoxRef.current[index];
+    console.log('---', index, blockEl, buttonEl, fakeBoxEl);
 
     // getBoundingClientRect를 통해 화면 절대 좌표를 구해 적용
     if (blockEl && buttonEl && fakeBoxEl) {
@@ -209,11 +210,14 @@ const NoteContent = () => {
           break;
       }
 
+      console.log('---updateBlockButtonPosition', index, left, top, blockType);
       buttonEl.style.position = 'fixed';
       buttonEl.style.top = `${top}px`;
       buttonEl.style.left = `${left}px`;
       buttonEl.style.display = 'flex';
       buttonEl.style.backgroundColor = 'red';
+    } else {
+      console.warn(`Block or button element not found for index ${index}`);
     }
   };
 
@@ -232,11 +236,13 @@ const NoteContent = () => {
   // FakeBox에 MouseEnter, Leave 시 BlockButton 활성화 및 숨기기
   const handleMouseEnter = (index: number) => {
     updateBlockButtonPosition(index);
+    console.log('----handleMouseEnter', index, isBlockMenuOpen);
   };
 
   const handleMouseLeave = (index: number) => {
     if (isBlockMenuOpen) return;
     blockButtonRef.current[index]?.style.setProperty('display', 'none');
+    console.log('---0-handleMouseLeave', index, isBlockMenuOpen);
   };
 
   // Selection이 활성화 되어있는지 여부를 확인하는 함수

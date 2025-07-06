@@ -63,9 +63,9 @@ const pageButton = css({
   justifyContent: 'start',
   width: 'full',
   backgroundColor: 'transparent',
-  _hover: {
-    backgroundColor: 'gray.100',
-  },
+  // _hover: {
+  //   backgroundColor: 'gray.100',
+  // },
   borderRadius: '0.25rem',
 });
 
@@ -181,10 +181,11 @@ const Block = memo(
             // onMouseDown={event =>
             //   handleMouseDown(event, blockRef, index, blockList, setIsDragging, setIsTyping, setKey, setSelection)
             // }
-            onMouseMove={event =>
-              handleMouseMove(event, index, blockRef, blockList, isDragging, selection, setSelection)
-            }
-            onMouseLeave={event => handleMouseLeave(event, index, isDragging, isUp, blockRef, selection, setSelection)}
+
+            // onMouseMove={event =>
+            //   handleMouseMove(event, index, blockRef, blockList, isDragging, selection, setSelection)
+            // }
+            // onMouseLeave={event => handleMouseLeave(event, index, isDragging, isUp, blockRef, selection, setSelection)}
             onDragEnter={event => {
               if (dragBlockIndex === index) {
                 return;
