@@ -6,7 +6,7 @@ import INotes from '@/types/note-type';
 import { createNote, getNoteList } from '@/apis/note';
 import useSWR, { mutate } from 'swr';
 import { useRouter } from 'next/navigation';
-import PageItem from './page-item';
+import NoteItem from './note-item';
 
 const finderCard = css({
   width: '100%',
@@ -68,9 +68,11 @@ const noteContainer = css({
 const FinderCard = () => {
   const router = useRouter();
   const [isHover, setIsHover] = useState(false);
-
   const [openedDropdownnoteId, setOpenedDropdownnoteId] = useState<string | null>(null);
-
+  const [draggingNoteInfo, setDraggingNoteInfo] = useState<{
+    noteId: string | null;
+    parentId: string | null;
+  } | null>(null);
   const { data: noteList } = useSWR('noteList');
 
   const handleClick = async () => {
@@ -99,12 +101,14 @@ const FinderCard = () => {
       <div className={noteContainer}>
         {noteList?.length ? (
           noteList.map((note: INotes) => (
-            <PageItem
+            <NoteItem
               key={note.id}
               note={note}
               depth={1}
               openedDropdownnoteId={openedDropdownnoteId}
               setOpenedDropdownnoteId={setOpenedDropdownnoteId}
+              draggingNoteInfo={draggingNoteInfo}
+              setDraggingNoteInfo={setDraggingNoteInfo}
             />
           ))
         ) : (

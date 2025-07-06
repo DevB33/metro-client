@@ -3,7 +3,7 @@ import getInstance from '.';
 
 export const createNote = async (parentId: string | null) => {
   const instance = await getInstance();
-  await instance.post('/notes', { parentId });
+  await instance.post('/notes/list', { parentId });
 };
 
 export const deleteNote = async (parentId: string) => {
