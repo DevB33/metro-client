@@ -70,8 +70,9 @@ const FinderCard = () => {
   const [isHover, setIsHover] = useState(false);
   const [openedDropdownnoteId, setOpenedDropdownnoteId] = useState<string | null>(null);
   const [draggingNoteInfo, setDraggingNoteInfo] = useState<{
-    noteId: string | null;
-    parentId: string | null;
+    noteId: string;
+    parentId: string;
+    order: number;
   } | null>(null);
   const { data: noteList } = useSWR('noteList');
 

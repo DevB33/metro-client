@@ -1,6 +1,6 @@
 interface INotes {
   id: string;
-  parentId: string | null;
+  parentId: string;
   order: number;
   title: string;
   icon: string;

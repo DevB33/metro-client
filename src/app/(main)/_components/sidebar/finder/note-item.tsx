@@ -2,19 +2,20 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import useSWR, { mutate } from 'swr';
 import { css } from '@/../styled-system/css';
 
+import INotes from '@/types/note-type';
+import { createNote, deleteNote, getNoteList } from '@/apis/note';
+import { getBlockList, updateBlocksOrder } from '@/apis/block';
 import PageCloseIcon from '@/icons/page-close-icon';
 import PageOpenIcon from '@/icons/page-open-icon';
 import PageIcon from '@/icons/page-icon';
 import HorizonDotIcon from '@/icons/horizon-dot-icon';
 import PlusIcon from '@/icons/plus-icon';
-import INotes from '@/types/note-type';
-import { createNote, deleteNote, getNoteList } from '@/apis/note';
-import useSWR, { mutate } from 'swr';
 import TrashIcon from '@/icons/trash-icon';
 import PencilSquareIcon from '@/icons/pencil-square';
-import DropDown from '../../../../../components/dropdown/dropdown';
+import DropDown from '@/components/dropdown/dropdown';
 import EditTitleModal from './edit-title-modal';
 
 interface INoteItem {
@@ -23,13 +24,15 @@ interface INoteItem {
   openedDropdownnoteId: string | null;
   setOpenedDropdownnoteId: React.Dispatch<React.SetStateAction<string | null>>;
   draggingNoteInfo: {
-    noteId: string | null;
-    parentId: string | null;
+    noteId: string;
+    parentId: string;
+    order: number;
   } | null;
   setDraggingNoteInfo: React.Dispatch<
     React.SetStateAction<{
-      noteId: string | null;
-      parentId: string | null;
+      noteId: string;
+      parentId: string;
+      order: number;
     } | null>
   >;
 }
@@ -229,12 +232,17 @@ const NoteItem = ({
     setOpenedDropdownnoteId(note.id);
   };
 
-  const changeNotedOrder = () => {
+  const changeNotedOrder = async () => {
     if (draggingNoteInfo?.noteId === note.id || draggingNoteInfo?.parentId !== note.parentId) {
       return;
     }
-    console.log('changeNotedOrder');
+
     setIsDragOver(false);
+
+    await updateBlocksOrder(note.parentId, draggingNoteInfo.order, draggingNoteInfo.order, note.order);
+
+    await mutate('noteList', getNoteList, false);
+    await mutate(`blockList-${note.parentId}`, getBlockList(note.parentId), false);
   };
 
   return (
@@ -254,7 +262,8 @@ const NoteItem = ({
         onDragStart={() => {
           setDraggingNoteInfo({
             noteId: note.id,
-            parentId: note.parentId || null,
+            parentId: note.parentId,
+            order: note.order,
           });
         }}
         onDragEnter={event => {
