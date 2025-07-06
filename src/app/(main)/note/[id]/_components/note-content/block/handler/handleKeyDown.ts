@@ -242,6 +242,9 @@ const splitBlock = async (
   // 현재 블록 업데이트
   await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
   // 현재 블록 이후 블록 뒤로 한칸씩 미루기
+  console.log('index', index);
+  console.log('blockList.length', blockList.length);
+  console.log('blockList', blockList);
   await updateBlocksOrder(
     noteId,
     updatedBlockList[index + 1].order,

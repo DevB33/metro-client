@@ -165,7 +165,7 @@ const EditTitleModal = ({ noteId, closeEditModal, top, left, right, bottom }: IE
     <div ref={editModalRef} className={container} style={{ top, left, right, bottom }}>
       <div className={modalContainer}>
         <div className={iconContainer} onClick={handleSelectorOpen}>
-          {noteNode?.icon ?? <PageIcon />}
+          {noteNode?.icon ?? <PageIcon color="#949491" />}
         </div>
         <input
           ref={inputRef}

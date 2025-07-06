@@ -10,11 +10,12 @@ import HeadingThreeIcon from '@/icons/heading-three-icon';
 import BulletedListIcon from '@/icons/bulleted-list-icon';
 import NumberedListIcon from '@/icons/numbered-list-icon';
 import QuoteIcon from '@/icons/quote-icon';
+import PageIcon from '@/icons/menu-page-icon';
 import TextIcon from '@/icons/text-icon';
 import ReactDOM from 'react-dom';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import IMenuState from '@/types/menu-type';
-import { createBlock, getBlockList, updateBlocksOrder, updateBlockType } from '@/apis/block';
+import { createBlock, getBlockList, updateBlocksOrder, updateBlockType, deleteBlock } from '@/apis/block';
 
 interface ISlashMenuProps {
   index: number;
@@ -78,7 +79,7 @@ const markdown = css({
 
 const MENU_ITEMS: {
   label: string;
-  type: 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'UL' | 'OL' | 'QUOTE';
+  type: 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'UL' | 'OL' | 'QUOTE' | 'PAGE';
   icon: JSX.Element;
   markdown: string;
 }[] = [
@@ -88,6 +89,7 @@ const MENU_ITEMS: {
   { label: 'Bulleted List', type: 'UL', icon: <BulletedListIcon color="black" />, markdown: '-' },
   { label: 'Numbered List', type: 'OL', icon: <NumberedListIcon color="black" />, markdown: '1.' },
   { label: 'Quote', type: 'QUOTE', icon: <QuoteIcon color="black" />, markdown: '|' },
+  { label: 'Page', type: 'PAGE', icon: <PageIcon color="black" />, markdown: '' },
   { label: 'Text', type: 'DEFAULT', icon: <TextIcon color="black" />, markdown: '' },
 ];
 
@@ -104,7 +106,7 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
   const params = useParams();
   const noteId = params.id as string;
 
-  const makeBlock = async (type: 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'UL' | 'OL' | 'QUOTE') => {
+  const makeBlock = async (type: 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'UL' | 'OL' | 'QUOTE' | 'PAGE') => {
     // 현재 블록이 마지막 블록이 아닐 때
     if (index !== blockList.length - 1) {
       // 현재 블록 이후 블록 뒤로 한칸씩 미루기
@@ -122,6 +124,17 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
       upperOrder: blockList[index].order,
       nodes: [{ content: '', type: 'text' }],
     });
+
+    // 만약 새로 생성된 페이지 블록이 마지막 블록이면, 그 다음에 빈 블록을 생성
+    if (type === 'PAGE' && index === blockList.length - 1) {
+      console.log('---last block, creating new default block');
+      await createBlock({
+        noteId,
+        type: 'DEFAULT',
+        upperOrder: blockList[index].order,
+        nodes: [{ content: '', type: 'text' }],
+      });
+    }
     await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 
     setMenuState(prev => ({
@@ -141,8 +154,28 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
     }, 0);
   };
 
-  const changeBlock = async (type: 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'UL' | 'OL' | 'QUOTE') => {
-    await updateBlockType(blockList[index].id, type);
+  const changeBlock = async (type: 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'UL' | 'OL' | 'QUOTE' | 'PAGE') => {
+    if (type === 'PAGE') {
+      // 페이지 블록은 현재 블록을 삭제하고 새 페이지 블록을 생성
+      await deleteBlock(noteId, blockList[index].order, blockList[index].order);
+      await createBlock({
+        noteId,
+        type: 'PAGE',
+        upperOrder: blockList[index].order,
+        nodes: [{ content: '', type: 'text' }],
+      });
+      // 만약 새로 생성된 페이지 블록이 마지막 블록이면, 그 다음에 빈 블록을 생성
+      if (index === blockList.length - 1) {
+        await createBlock({
+          noteId,
+          type: 'DEFAULT',
+          upperOrder: blockList[index].order,
+          nodes: [{ content: '', type: 'text' }],
+        });
+      }
+    } else {
+      await updateBlockType(blockList[index].id, type);
+    }
     await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 
     setMenuState(prev => ({
@@ -197,6 +230,7 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
               key={item.label}
               className={`${slashButton} ${selectedIndex === i ? selectedButton : ''}`}
               onClick={() => {
+                console.log('clicked', item.type);
                 if (openedBySlashKey) {
                   if (blockList[index].nodes[0].content === '') {
                     changeBlock(item.type);

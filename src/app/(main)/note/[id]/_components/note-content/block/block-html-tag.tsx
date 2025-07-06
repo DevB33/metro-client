@@ -2,6 +2,7 @@ import { cva } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
 import placeholder from '@/constants/placeholder';
+// import { useRouter } from 'next/navigation';
 
 interface IBlockTag {
   block: ITextBlock;
@@ -62,6 +63,7 @@ const placeholderStyles = cva({
 });
 
 const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag) => {
+  // const router = useRouter();
   if (block.type === 'DEFAULT') {
     return (
       <p
@@ -186,6 +188,16 @@ const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag
           {children}
         </p>
       </blockquote>
+    );
+  }
+
+  if (block.type === 'PAGE') {
+    return (
+      <div
+        style={{ all: 'unset', cursor: 'pointer', display: 'flex', justifyContent: 'start', gap: '2px', width: '100%' }}
+      >
+        {children}
+      </div>
     );
   }
 
