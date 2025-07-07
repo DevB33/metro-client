@@ -1,14 +1,14 @@
+import useSWR, { mutate } from 'swr';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
 import { css } from '@/../styled-system/css';
 
 import { useState } from 'react';
 import PlusIcon from '@/icons/plus-icon';
 import INotes from '@/types/note-type';
 import { createNote, getNoteList } from '@/apis/note';
-import useSWR, { mutate } from 'swr';
-import { useRouter } from 'next/navigation';
-import { toast } from 'react-toastify';
 import { toastErrorMessage, toastSuccessMessage } from '@/constants/toast-message';
-import PageItem from './page-item';
+import NoteItem from './note-item';
 
 const finderCard = css({
   width: '100%',
@@ -70,9 +70,12 @@ const noteContainer = css({
 const FinderCard = () => {
   const router = useRouter();
   const [isHover, setIsHover] = useState(false);
-
   const [openedDropdownnoteId, setOpenedDropdownnoteId] = useState<string | null>(null);
-
+  const [draggingNoteInfo, setDraggingNoteInfo] = useState<{
+    noteId: string;
+    parentId: string;
+    order: number;
+  } | null>(null);
   const { data: noteList } = useSWR('noteList');
 
   const handleClick = async () => {
@@ -101,12 +104,14 @@ const FinderCard = () => {
       <div className={noteContainer}>
         {noteList?.length ? (
           noteList.map((note: INotes) => (
-            <PageItem
+            <NoteItem
               key={note.id}
               note={note}
               depth={1}
               openedDropdownnoteId={openedDropdownnoteId}
               setOpenedDropdownnoteId={setOpenedDropdownnoteId}
+              draggingNoteInfo={draggingNoteInfo}
+              setDraggingNoteInfo={setDraggingNoteInfo}
             />
           ))
         ) : (

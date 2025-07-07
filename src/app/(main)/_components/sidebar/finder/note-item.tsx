@@ -2,21 +2,22 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import useSWR, { mutate } from 'swr';
+import { toast } from 'react-toastify';
 import { css } from '@/../styled-system/css';
 
+import INotes from '@/types/note-type';
+import { createNote, deleteNote, getNoteList } from '@/apis/note';
+import { getBlockList, updateBlocksOrder } from '@/apis/block';
 import PageCloseIcon from '@/icons/page-close-icon';
 import PageOpenIcon from '@/icons/page-open-icon';
 import PageIcon from '@/icons/page-icon';
 import HorizonDotIcon from '@/icons/horizon-dot-icon';
 import PlusIcon from '@/icons/plus-icon';
-import INotes from '@/types/note-type';
-import { createNote, deleteNote, getNoteList } from '@/apis/note';
-import useSWR, { mutate } from 'swr';
 import TrashIcon from '@/icons/trash-icon';
 import PencilSquareIcon from '@/icons/pencil-square';
-import { toast } from 'react-toastify';
+import DropDown from '@/components/dropdown/dropdown';
 import { toastErrorMessage, toastSuccessMessage } from '@/constants/toast-message';
-import DropDown from '../../../../../components/dropdown/dropdown';
 import EditTitleModal from './edit-title-modal';
 
 interface INoteItem {
@@ -24,6 +25,18 @@ interface INoteItem {
   depth: number;
   openedDropdownnoteId: string | null;
   setOpenedDropdownnoteId: React.Dispatch<React.SetStateAction<string | null>>;
+  draggingNoteInfo: {
+    noteId: string;
+    parentId: string;
+    order: number;
+  } | null;
+  setDraggingNoteInfo: React.Dispatch<
+    React.SetStateAction<{
+      noteId: string;
+      parentId: string;
+      order: number;
+    } | null>
+  >;
 }
 
 const noteItemContainer = css({
@@ -99,7 +112,14 @@ const noChildren = css({
   overflow: 'hidden',
 });
 
-const NoteItem = ({ note, depth, openedDropdownnoteId, setOpenedDropdownnoteId }: INoteItem) => {
+const NoteItem = ({
+  note,
+  depth,
+  openedDropdownnoteId,
+  setOpenedDropdownnoteId,
+  draggingNoteInfo,
+  setDraggingNoteInfo,
+}: INoteItem) => {
   const router = useRouter();
   const noteItemRef = useRef<HTMLDivElement>(null);
   const toggleButtoonRef = useRef<HTMLButtonElement>(null);
@@ -110,7 +130,7 @@ const NoteItem = ({ note, depth, openedDropdownnoteId, setOpenedDropdownnoteId }
   const [isHover, setIsHover] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const [editTitleModalPosition, seteditTitleModalPosition] = useState({ top: 0, left: 0 });
-
+  const [isDragOver, setIsDragOver] = useState(false);
   const { data: noteList } = useSWR('noteList');
 
   const togglenote = () => {
@@ -165,6 +185,7 @@ const NoteItem = ({ note, depth, openedDropdownnoteId, setOpenedDropdownnoteId }
     try {
       await deleteNote(note.id);
       await mutate('noteList', getNoteList, false);
+      await mutate(`blockList-${note.id}`, getBlockList(note.id), false);
       const parentId = findParentId(noteList, note.id);
 
       if (parentId) {
@@ -184,6 +205,7 @@ const NoteItem = ({ note, depth, openedDropdownnoteId, setOpenedDropdownnoteId }
       if (!isOpen) togglenote();
       const noteId = await createNote(note.id);
       await mutate('noteList', getNoteList, false);
+      await mutate(`blockList-${note.id}`, getBlockList(note.id), false);
       router.push(`/note/${noteId}`);
       toast.success(toastSuccessMessage.NoteCreate);
     } catch (error) {
@@ -217,12 +239,25 @@ const NoteItem = ({ note, depth, openedDropdownnoteId, setOpenedDropdownnoteId }
     setOpenedDropdownnoteId(note.id);
   };
 
+  const changeNotedOrder = async () => {
+    if (draggingNoteInfo?.noteId === note.id || draggingNoteInfo?.parentId !== note.parentId) {
+      return;
+    }
+
+    setIsDragOver(false);
+
+    await updateBlocksOrder(note.parentId, draggingNoteInfo.order, draggingNoteInfo.order, note.order);
+
+    await mutate('noteList', getNoteList, false);
+    await mutate(`blockList-${note.parentId}`, getBlockList(note.parentId), false);
+  };
+
   return (
     <div className={noteItemContainer}>
       <div
         className={noteItem}
         ref={noteItemRef}
-        style={{ paddingLeft: `${depth * 0.5}rem` }}
+        style={{ paddingLeft: `${depth * 0.5}rem`, borderBottom: isDragOver ? '4px solid lightblue' : 'none' }}
         onClick={opennote}
         onMouseEnter={() => setIsHover(true)}
         onMouseLeave={() => setIsHover(false)}
@@ -230,6 +265,38 @@ const NoteItem = ({ note, depth, openedDropdownnoteId, setOpenedDropdownnoteId }
         role="button"
         tabIndex={0}
         onContextMenu={contextOpenSettingDropdown}
+        draggable
+        onDragStart={() => {
+          setDraggingNoteInfo({
+            noteId: note.id,
+            parentId: note.parentId,
+            order: note.order,
+          });
+        }}
+        onDragEnter={event => {
+          if (draggingNoteInfo?.noteId === note.id || draggingNoteInfo?.parentId !== note.parentId) {
+            return;
+          }
+          event.preventDefault();
+          setIsDragOver(true);
+        }}
+        onDragLeave={event => {
+          if (draggingNoteInfo?.noteId === note.id || draggingNoteInfo?.parentId !== note.parentId) {
+            return;
+          }
+          event.preventDefault();
+          const currentTarget = event.currentTarget as HTMLElement;
+          const related = event.relatedTarget as HTMLElement | null;
+
+          if (related && currentTarget.contains(related)) {
+            return;
+          }
+          setIsDragOver(false);
+        }}
+        onDragOver={event => {
+          event.preventDefault();
+        }}
+        onDrop={changeNotedOrder}
       >
         <button type="button" ref={toggleButtoonRef} className={noteButton} onClick={togglenote}>
           {isOpen ? <PageOpenIcon color="black" /> : <PageCloseIcon color="black" />}
@@ -281,6 +348,8 @@ const NoteItem = ({ note, depth, openedDropdownnoteId, setOpenedDropdownnoteId }
                 depth={depth + 1}
                 openedDropdownnoteId={openedDropdownnoteId}
                 setOpenedDropdownnoteId={setOpenedDropdownnoteId}
+                draggingNoteInfo={draggingNoteInfo}
+                setDraggingNoteInfo={setDraggingNoteInfo}
               />
             ))}
           </div>

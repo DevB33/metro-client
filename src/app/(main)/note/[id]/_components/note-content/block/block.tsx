@@ -237,7 +237,6 @@ const Block = memo(
                 event,
                 index,
                 blockList,
-                setBlockList,
                 blockRef,
                 setIsTyping,
                 setKey,
