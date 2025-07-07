@@ -656,7 +656,6 @@ const handleKeyDown = async (
   event: React.KeyboardEvent<HTMLDivElement>,
   index: number,
   blockList: ITextBlock[],
-  setBlockList: (blockList: ITextBlock[]) => void,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   setIsTyping: (isTyping: boolean) => void,
   setKey: (key: number) => void,
@@ -724,9 +723,8 @@ const handleKeyDown = async (
           setIsTyping(false);
           setKey(Math.random());
 
-          const updatedBlockList = [...blockList];
-          updatedBlockList[index].type = 'DEFAULT';
-          setBlockList(updatedBlockList);
+          await updateBlockType(blockList[index].id, 'DEFAULT');
+          await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
           focusBlock(index, blockRef, blockList);
         }
         return;
@@ -742,9 +740,8 @@ const handleKeyDown = async (
           // 블록 합치기 로직
           if (blockList[index].type !== 'DEFAULT') {
             // default 블록이 아닐 때는 블록을 합치는 대신 블록을 default로 변경
-            const updatedBlockList = [...blockList];
-            updatedBlockList[index].type = 'DEFAULT';
-            setBlockList(updatedBlockList);
+            await updateBlockType(blockList[index].id, 'DEFAULT');
+            await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
             focusBlock(index, blockRef, blockList);
           } else {
             mergeBlock(index, blockList, blockRef, noteId);
@@ -805,9 +802,8 @@ const handleKeyDown = async (
           setKey(Math.random());
 
           if (blockList[index].type !== 'DEFAULT') {
-            const updatedBlockList = [...blockList];
-            updatedBlockList[index].type = 'DEFAULT';
-            setBlockList(updatedBlockList);
+            await updateBlockType(blockList[index].id, 'DEFAULT');
+            await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
             focusBlock(index, blockRef, blockList);
           } else {
             mergeBlock(index, blockList, blockRef, noteId);
@@ -1070,35 +1066,17 @@ const handleKeyDown = async (
 
     // backspace 클릭
     if (event.key === keyName.backspace) {
-      await editSelectionContent('delete', noteId, event.key, selection, isBackward, blockList, setBlockList, blockRef);
+      await editSelectionContent('delete', noteId, event.key, selection, isBackward, blockList, blockRef);
     }
     // 엔터 입력
     if (event.key === keyName.enter && !event.shiftKey) {
       if (!isBackward) {
-        await editSelectionContent(
-          'enter',
-          noteId,
-          event.key,
-          selection,
-          isBackward,
-          blockList,
-          setBlockList,
-          blockRef,
-        );
+        await editSelectionContent('enter', noteId, event.key, selection, isBackward, blockList, blockRef);
         selection.start.blockIndex += 1;
         selection.start.childNodeIndex = 0;
         selection.start.offset = 0;
       } else {
-        await editSelectionContent(
-          'enter',
-          noteId,
-          event.key,
-          selection,
-          isBackward,
-          blockList,
-          setBlockList,
-          blockRef,
-        );
+        await editSelectionContent('enter', noteId, event.key, selection, isBackward, blockList, blockRef);
         selection.end.blockIndex += 1;
         selection.end.childNodeIndex = 0;
         selection.end.offset = 0;
@@ -1107,16 +1085,7 @@ const handleKeyDown = async (
     // 다른 키 입력
     else if (isInputtableKey(event.nativeEvent)) {
       if (!isBackward) {
-        await editSelectionContent(
-          'write',
-          noteId,
-          event.key,
-          selection,
-          isBackward,
-          blockList,
-          setBlockList,
-          blockRef,
-        );
+        await editSelectionContent('write', noteId, event.key, selection, isBackward, blockList, blockRef);
 
         // selection start가 처음부터여서 해당 노드가 다 지워지고 새로운 노드가 생긴거면 노드 인덱스는 그대로, offset은 1
         if (selection.start.offset === 0) {
@@ -1132,16 +1101,7 @@ const handleKeyDown = async (
           selection.start.offset = 1;
         }
       } else {
-        await editSelectionContent(
-          'write',
-          noteId,
-          event.key,
-          selection,
-          isBackward,
-          blockList,
-          setBlockList,
-          blockRef,
-        );
+        await editSelectionContent('write', noteId, event.key, selection, isBackward, blockList, blockRef);
 
         // selection start가 처음부터여서 해당 노드가 다 지워지고 새로운 노드가 생긴거면 노드 인덱스는 그대로, offset은 1
         if (selection.end.offset === 0) {

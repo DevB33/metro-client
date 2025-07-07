@@ -79,7 +79,6 @@ const editSelectionContent = async (
   selection: ISelectionPosition,
   isBackward: boolean,
   blockList: ITextBlock[],
-  setBlockList: (blockList: ITextBlock[]) => void,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
 ) => {
   if (!blockRef.current) return;
@@ -668,7 +667,6 @@ const editSelectionContent = async (
 
   // eslint-disable-next-line no-await-in-loop
   await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
-  setBlockList(newBlockList);
 };
 
 export default editSelectionContent;

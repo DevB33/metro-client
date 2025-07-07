@@ -37,7 +37,7 @@ const placeholderStyles = cva({
       h1: {
         '.parent:focus-within &': {
           '&[data-empty=true]::before': {
-            left: '5rem',
+            left: '0.5rem',
             fontSize: 'lg',
           },
         },
@@ -45,7 +45,7 @@ const placeholderStyles = cva({
       h2: {
         '.parent:focus-within &': {
           '&[data-empty=true]::before': {
-            left: '5rem',
+            left: '0.5rem',
             fontSize: '1.5rem',
           },
         },
@@ -53,7 +53,7 @@ const placeholderStyles = cva({
       h3: {
         '.parent:focus-within &': {
           '&[data-empty=true]::before': {
-            left: '5rem',
+            left: '0.5rem',
             fontSize: '1.25rem',
           },
         },

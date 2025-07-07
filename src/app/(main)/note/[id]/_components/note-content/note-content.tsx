@@ -55,6 +55,7 @@ const NoteContent = () => {
   const noteId = params.id as string;
   const { data: blocks } = useSWR(`blockList-${noteId}`);
 
+
   // page 블록 있으면 page 정보 가져오는 로직
   const [noteDetails, setNoteDetails] = useState<Record<string, any>>({});
 
@@ -85,19 +86,6 @@ const NoteContent = () => {
     fetchPageNotes();
   }, [blocks]);
 
-  const [blockList, setBlockList] = useState<ITextBlock[]>([
-    {
-      id: '1',
-      type: 'DEFAULT',
-      nodes: [
-        {
-          type: 'text',
-          content: '',
-        },
-      ],
-      order: 0,
-    },
-  ]);
 
   const [key, setKey] = useState(Date.now());
   const [isTyping, setIsTyping] = useState(false);
@@ -649,7 +637,7 @@ const NoteContent = () => {
         }
       }
     });
-  }, [key, blockList]);
+  }, [key, blocks]);
 
   if (blocks.length === 0) {
     return (
@@ -739,7 +727,6 @@ const NoteContent = () => {
               block={block}
               blockRef={blockRef}
               blockList={blocks}
-              setBlockList={setBlockList}
               isTyping={isTyping}
               setIsTyping={setIsTyping}
               setKey={setKey}
@@ -763,7 +750,6 @@ const NoteContent = () => {
             noteId={noteId}
             selection={selection}
             blockList={blocks}
-            setBlockList={setBlockList}
             blockRef={blockRef}
             menuState={menuState}
             setMenuState={setMenuState}

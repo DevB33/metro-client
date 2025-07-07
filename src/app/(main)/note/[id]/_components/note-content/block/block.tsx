@@ -21,7 +21,6 @@ interface IBlockComponent {
   index: number;
   blockRef: React.RefObject<(HTMLDivElement | null)[]>;
   blockList: ITextBlock[];
-  setBlockList: (blockList: ITextBlock[]) => void;
   isTyping: boolean;
   setIsTyping: React.Dispatch<React.SetStateAction<boolean>>;
   setKey: React.Dispatch<React.SetStateAction<number>>;
@@ -82,7 +81,6 @@ const Block = memo(
     index,
     blockRef,
     blockList,
-    setBlockList,
     isTyping: _isTyping,
     setIsTyping,
     setKey,
@@ -156,6 +154,7 @@ const Block = memo(
             onDrop={changeBlockOrderToFirst}
           />
         )}
+
         {block.type === 'PAGE' ? (
           <div
             role="textbox"
