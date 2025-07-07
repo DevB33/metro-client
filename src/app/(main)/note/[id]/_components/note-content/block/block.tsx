@@ -164,10 +164,10 @@ const Block = memo(
               borderBottom: isDragOver ? '4px solid lightblue' : 'none',
               borderTop: isDragFirst ? '4px solid lightblue' : 'none',
             }}
-            onClick={() => {
-              router.push(`/note/${block.nodes[0].content}`);
-              // Navigate to the page block when clicked or Enter key is pressed
-            }}
+            // onClick={() => {
+            //   router.push(`/note/${block.nodes[0].content}`);
+            //   // Navigate to the page block when clicked or Enter key is pressed
+            // }}
             onKeyDown={event => {
               if (event.key === 'Enter') {
                 router.push(`/note/${block.nodes[0].content}`);
@@ -177,9 +177,10 @@ const Block = memo(
               handleMouseUp(event, index, blockRef, blockList, selection, setSelection, setMenuState);
               setIsDragging(false);
             }}
-            onMouseDown={event =>
-              handleMouseDown(event, blockRef, index, blockList, setIsDragging, setIsTyping, setKey, setSelection)
-            }
+            onMouseDown={event => {
+              router.push(`/note/${block.nodes[0].content}`);
+              handleMouseDown(event, blockRef, index, blockList, setIsDragging, setIsTyping, setKey, setSelection);
+            }}
             onMouseMove={event =>
               handleMouseMove(event, index, blockRef, blockList, isDragging, selection, setSelection)
             }
@@ -237,7 +238,6 @@ const Block = memo(
                 event,
                 index,
                 blockList,
-                setBlockList,
                 blockRef,
                 setIsTyping,
                 setKey,

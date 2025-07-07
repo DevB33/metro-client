@@ -171,7 +171,7 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
         await createBlock({
           noteId,
           type: 'DEFAULT',
-          upperOrder: blockList[index].order,
+          upperOrder: blockList[index].order + 1,
           nodes: [{ content: '', type: 'text' }],
         });
       }
@@ -179,6 +179,7 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
       await updateBlockType(blockList[index].id, type);
     }
     await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+    await mutate('noteList', getNoteList, false);
 
     setMenuState(prev => ({
       ...prev,

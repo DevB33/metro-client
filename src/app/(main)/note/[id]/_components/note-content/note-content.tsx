@@ -55,12 +55,11 @@ const NoteContent = () => {
   const noteId = params.id as string;
   const { data: blocks } = useSWR(`blockList-${noteId}`);
 
-
   // page 블록 있으면 page 정보 가져오는 로직
   const [noteDetails, setNoteDetails] = useState<Record<string, any>>({});
 
   useEffect(() => {
-    if (!blocks) return;
+    if (blocks.length === 0) return;
 
     const fetchPageNotes = async () => {
       const pageBlocks: ITextBlock[] = blocks.filter((block: ITextBlock): block is ITextBlock => block.type === 'PAGE');
@@ -83,9 +82,21 @@ const NoteContent = () => {
       setNoteDetails(results);
     };
 
+    (async () => {
+      // 만약 새로 생성된 페이지 블록이 마지막 블록이면, 그 다음에 빈 블록을 생성
+      if (blocks[blocks.length - 1].type === 'PAGE') {
+        await createBlock({
+          noteId,
+          type: 'DEFAULT',
+          upperOrder: blocks[blocks.length - 1].order + 1,
+          nodes: [{ content: '', type: 'text' }],
+        });
+        await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+      }
+    })();
+
     fetchPageNotes();
   }, [blocks]);
-
 
   const [key, setKey] = useState(Date.now());
   const [isTyping, setIsTyping] = useState(false);
