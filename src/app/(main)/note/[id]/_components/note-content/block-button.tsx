@@ -9,6 +9,7 @@ import DropDown from '@/components/dropdown/dropdown';
 import TrashIcon from '@/icons/trash-icon';
 import ArrowReapeatIcon from '@/icons/arrow-repeat-icon';
 import { ITextBlock } from '@/types/block-type';
+import { getNoteList } from '@/apis/note';
 import IMenuState from '@/types/menu-type';
 import { createBlock, deleteBlock, getBlockList, updateBlocksOrder } from '@/apis/block';
 import SlashMenu from './slash-menu/slash-menu';
@@ -103,6 +104,7 @@ const BlockButton = ({
     }
 
     await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+    await mutate('noteList', getNoteList, false);
   };
 
   const handleCreateBlockButton = async (blockIndex: number) => {

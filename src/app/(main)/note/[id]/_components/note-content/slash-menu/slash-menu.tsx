@@ -179,6 +179,7 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
       await updateBlockType(blockList[index].id, type);
     }
     await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+    await mutate('noteList', getNoteList, false);
 
     setMenuState(prev => ({
       ...prev,
