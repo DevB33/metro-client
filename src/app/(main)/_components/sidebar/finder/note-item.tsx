@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import useSWR, { mutate } from 'swr';
+import { toast } from 'react-toastify';
 import { css } from '@/../styled-system/css';
 
 import INotes from '@/types/note-type';
@@ -16,6 +17,7 @@ import PlusIcon from '@/icons/plus-icon';
 import TrashIcon from '@/icons/trash-icon';
 import PencilSquareIcon from '@/icons/pencil-square';
 import DropDown from '@/components/dropdown/dropdown';
+import { toastErrorMessage, toastSuccessMessage } from '@/constants/toast-message';
 import EditTitleModal from './edit-title-modal';
 
 interface INoteItem {
@@ -190,8 +192,9 @@ const NoteItem = ({
       } else {
         router.push('/');
       }
+      toast.success(toastSuccessMessage.NoteDelete);
     } catch (error) {
-      console.log(error);
+      toast.error(toastErrorMessage.NoteDelete);
     }
     closeSettingDropdown();
   };
@@ -199,10 +202,12 @@ const NoteItem = ({
   const handlePlusButtonClick = async () => {
     try {
       if (!isOpen) togglenote();
-      await createNote(note.id);
+      const noteId = await createNote(note.id);
       await mutate('noteList', getNoteList, false);
+      router.push(`/note/${noteId}`);
+      toast.success(toastSuccessMessage.NoteCreate);
     } catch (error) {
-      console.log(error);
+      toast.error(toastErrorMessage.NoteCreate);
     }
   };
 
@@ -294,7 +299,7 @@ const NoteItem = ({
         <button type="button" ref={toggleButtoonRef} className={noteButton} onClick={togglenote}>
           {isOpen ? <PageOpenIcon color="black" /> : <PageCloseIcon color="black" />}
         </button>
-        <div className={noteIcon}>{note.icon ? `${note.icon}` : <PageIcon />}</div>
+        <div className={noteIcon}>{note.icon ? `${note.icon}` : <PageIcon color="#949491" />}</div>
         <div className={noteTitle}>{note.title === null || note.title === '' ? '새 페이지' : note.title}</div>
         {isHover && (
           <div className={noteButtonContainer}>

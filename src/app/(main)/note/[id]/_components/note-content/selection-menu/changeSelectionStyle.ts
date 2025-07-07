@@ -93,7 +93,6 @@ const changeSelectionStyle = async (
   noteId: string,
   selection: ISelectionPosition,
   blockList: ITextBlock[],
-  setBlockList: (blockList: ITextBlock[]) => void,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
 ) => {
   if (!blockRef.current) return;
@@ -333,7 +332,6 @@ const changeSelectionStyle = async (
       }
     }
   }
-  setBlockList(newBlockList);
 };
 
 export default changeSelectionStyle;

@@ -1,9 +1,19 @@
 export interface ITextBlock {
   id: string;
-  type: 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'QUOTE' | 'OL' | 'UL';
+  type: 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'QUOTE' | 'OL' | 'UL' | 'PAGE';
   nodes: ITextBlockChild[];
   order: number;
 }
+
+// export interface IPageBlock {
+//   id: string;
+//   type: 'PAGE';
+//   parentId: string;
+//   noteId: string;
+//   noteTitle: string;
+//   order: number;
+//   nodes: ITextBlockChild[];
+// }
 
 export interface ITextBlockChild {
   type: 'text' | 'span' | 'br';

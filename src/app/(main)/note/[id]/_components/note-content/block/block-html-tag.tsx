@@ -2,6 +2,7 @@ import { cva } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
 import placeholder from '@/constants/placeholder';
+// import { useRouter } from 'next/navigation';
 
 interface IBlockTag {
   block: ITextBlock;
@@ -36,7 +37,7 @@ const placeholderStyles = cva({
       h1: {
         '.parent:focus-within &': {
           '&[data-empty=true]::before': {
-            left: '5rem',
+            left: '0.5rem',
             fontSize: 'lg',
           },
         },
@@ -44,7 +45,7 @@ const placeholderStyles = cva({
       h2: {
         '.parent:focus-within &': {
           '&[data-empty=true]::before': {
-            left: '5rem',
+            left: '0.5rem',
             fontSize: '1.5rem',
           },
         },
@@ -52,7 +53,7 @@ const placeholderStyles = cva({
       h3: {
         '.parent:focus-within &': {
           '&[data-empty=true]::before': {
-            left: '5rem',
+            left: '0.5rem',
             fontSize: '1.25rem',
           },
         },
@@ -62,6 +63,7 @@ const placeholderStyles = cva({
 });
 
 const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag) => {
+  // const router = useRouter();
   if (block.type === 'DEFAULT') {
     return (
       <p
@@ -186,6 +188,19 @@ const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag
           {children}
         </p>
       </blockquote>
+    );
+  }
+
+  if (block.type === 'PAGE') {
+    return (
+      <div
+        style={{ all: 'unset', cursor: 'pointer', display: 'flex', justifyContent: 'start', gap: '2px', width: '100%' }}
+        ref={element => {
+          blockRef.current[index] = element;
+        }}
+      >
+        {children}
+      </div>
     );
   }
 

@@ -11,6 +11,8 @@ import TrashIcon from '@/icons/trash-icon';
 import useSWR, { mutate } from 'swr';
 import { deleteNote, getNoteList } from '@/apis/note';
 import INotes from '@/types/note-type';
+import { toast } from 'react-toastify';
+import { toastErrorMessage, toastSuccessMessage } from '@/constants/toast-message';
 
 const headerConatiner = css({
   boxSizing: 'border-box',
@@ -101,19 +103,15 @@ const Header = () => {
       } else {
         router.push('/');
       }
+      toast.success(toastSuccessMessage.NoteDelete);
     } catch (error) {
-      console.log(error);
+      toast.error(toastErrorMessage.NoteDelete);
     }
     closeSettingDropdown();
   };
 
   const handleBackButton = () => {
-    const parentId = findParentId(noteList, noteId);
-    if (parentId) {
-      router.push(`/note/${parentId}`);
-    } else {
-      router.push('/');
-    }
+    router.back();
   };
 
   return (
