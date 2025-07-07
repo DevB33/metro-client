@@ -205,6 +205,7 @@ const NoteItem = ({
       if (!isOpen) togglenote();
       const noteId = await createNote(note.id);
       await mutate('noteList', getNoteList, false);
+      await mutate(`blockList-${note.id}`, getBlockList(note.id), false);
       router.push(`/note/${noteId}`);
       toast.success(toastSuccessMessage.NoteCreate);
     } catch (error) {
