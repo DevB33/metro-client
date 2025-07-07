@@ -171,7 +171,7 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
         await createBlock({
           noteId,
           type: 'DEFAULT',
-          upperOrder: blockList[index].order,
+          upperOrder: blockList[index].order + 1,
           nodes: [{ content: '', type: 'text' }],
         });
       }

@@ -185,6 +185,7 @@ const NoteItem = ({
     try {
       await deleteNote(note.id);
       await mutate('noteList', getNoteList, false);
+      await mutate(`blockList-${note.id}`, getBlockList(note.id), false);
       const parentId = findParentId(noteList, note.id);
 
       if (parentId) {

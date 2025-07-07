@@ -96,6 +96,8 @@ const Block = memo(
   }: IBlockComponent) => {
     const prevChildNodesLength = useRef(0);
 
+    console.log(blockList);
+
     const [isDragOver, setIsDragOver] = useState(false);
     const [isDragFirst, setIsDragFirst] = useState(false);
 
@@ -237,7 +239,6 @@ const Block = memo(
                 event,
                 index,
                 blockList,
-                setBlockList,
                 blockRef,
                 setIsTyping,
                 setKey,
