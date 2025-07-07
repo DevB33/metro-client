@@ -55,11 +55,9 @@ const NoteContent = () => {
   const noteId = params.id as string;
   const { data: blocks } = useSWR(`blockList-${noteId}`);
 
-  console.log('blocks', blocks);
-
   // page 블록 있으면 page 정보 가져오는 로직
   const [noteDetails, setNoteDetails] = useState<Record<string, any>>({});
-  console.log('noteDetails', noteDetails);
+
   useEffect(() => {
     if (!blocks) return;
 
@@ -76,7 +74,7 @@ const NoteContent = () => {
               results[id] = data;
             }
           } catch (error) {
-            console.error('Error fetching page note:', error);
+            console.error('Error fetching page Detail:', error);
           }
         }),
       );
@@ -174,7 +172,6 @@ const NoteContent = () => {
     const blockEl = blockRef.current[index];
     const buttonEl = blockButtonRef.current[index];
     const fakeBoxEl = fakeBoxRef.current[index];
-    console.log('---', index, blockEl, buttonEl, fakeBoxEl);
 
     // getBoundingClientRect를 통해 화면 절대 좌표를 구해 적용
     if (blockEl && buttonEl && fakeBoxEl) {
@@ -209,15 +206,11 @@ const NoteContent = () => {
           top = BUTTON_OFFSET.default.top;
           break;
       }
-
-      console.log('---updateBlockButtonPosition', index, left, top, blockType);
       buttonEl.style.position = 'fixed';
       buttonEl.style.top = `${top}px`;
       buttonEl.style.left = `${left}px`;
       buttonEl.style.display = 'flex';
       buttonEl.style.backgroundColor = 'red';
-    } else {
-      console.warn(`Block or button element not found for index ${index}`);
     }
   };
 
@@ -236,13 +229,11 @@ const NoteContent = () => {
   // FakeBox에 MouseEnter, Leave 시 BlockButton 활성화 및 숨기기
   const handleMouseEnter = (index: number) => {
     updateBlockButtonPosition(index);
-    console.log('----handleMouseEnter', index, isBlockMenuOpen);
   };
 
   const handleMouseLeave = (index: number) => {
     if (isBlockMenuOpen) return;
     blockButtonRef.current[index]?.style.setProperty('display', 'none');
-    console.log('---0-handleMouseLeave', index, isBlockMenuOpen);
   };
 
   // Selection이 활성화 되어있는지 여부를 확인하는 함수

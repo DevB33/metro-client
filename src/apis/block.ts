@@ -18,7 +18,6 @@ export const createBlock = async (body: {
   upperOrder: number;
   nodes: ITextBlockChild[];
 }) => {
-  console.log('Creating block with body:', body);
   if (body.type === 'PAGE') {
     const instance = await getInstance();
     const newPage = {
@@ -26,11 +25,9 @@ export const createBlock = async (body: {
       upperOrder: body.upperOrder,
     };
     await instance.post(`/notes`, JSON.stringify(newPage));
-    console.log('Page created successfully');
   } else {
     const instance = await getInstance();
     await instance.post(`/blocks`, JSON.stringify(body));
-    console.log('Block created successfully');
   }
 };
 

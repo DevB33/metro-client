@@ -16,6 +16,7 @@ import ReactDOM from 'react-dom';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import IMenuState from '@/types/menu-type';
 import { createBlock, getBlockList, updateBlocksOrder, updateBlockType, deleteBlock } from '@/apis/block';
+import { getNoteList } from '@/apis/note';
 
 interface ISlashMenuProps {
   index: number;
@@ -127,15 +128,16 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
 
     // 만약 새로 생성된 페이지 블록이 마지막 블록이면, 그 다음에 빈 블록을 생성
     if (type === 'PAGE' && index === blockList.length - 1) {
-      console.log('---last block, creating new default block');
       await createBlock({
         noteId,
         type: 'DEFAULT',
-        upperOrder: blockList[index].order,
+        upperOrder: blockList[index].order + 1,
         nodes: [{ content: '', type: 'text' }],
       });
     }
+
     await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+    await mutate('noteList', getNoteList, false);
 
     setMenuState(prev => ({
       ...prev,
@@ -230,7 +232,6 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
               key={item.label}
               className={`${slashButton} ${selectedIndex === i ? selectedButton : ''}`}
               onClick={() => {
-                console.log('clicked', item.type);
                 if (openedBySlashKey) {
                   if (blockList[index].nodes[0].content === '') {
                     changeBlock(item.type);
