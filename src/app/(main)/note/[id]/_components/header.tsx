@@ -111,12 +111,7 @@ const Header = () => {
   };
 
   const handleBackButton = () => {
-    const parentId = findParentId(noteList, noteId);
-    if (parentId) {
-      router.push(`/note/${parentId}`);
-    } else {
-      router.push('/');
-    }
+    router.back();
   };
 
   return (
