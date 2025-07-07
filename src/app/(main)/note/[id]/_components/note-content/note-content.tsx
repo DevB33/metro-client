@@ -11,7 +11,7 @@ import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundIma
 import ISelectionPosition from '@/types/selection-position';
 import BUTTON_OFFSET from '@/constants/button-offset';
 import IMenuState from '@/types/menu-type';
-import { createBlock, getBlockList } from '@/apis/block';
+import { createBlock, getBlockList, getNoteDetail } from '@/apis/block';
 import BlockButton from './block-button';
 import Block from './block/block';
 import SelectionMenu from './selection-menu/selection-menu';
@@ -54,6 +54,38 @@ const NoteContent = () => {
   const params = useParams();
   const noteId = params.id as string;
   const { data: blocks } = useSWR(`blockList-${noteId}`);
+
+
+  // page 블록 있으면 page 정보 가져오는 로직
+  const [noteDetails, setNoteDetails] = useState<Record<string, any>>({});
+
+  useEffect(() => {
+    if (!blocks) return;
+
+    const fetchPageNotes = async () => {
+      const pageBlocks: ITextBlock[] = blocks.filter((block: ITextBlock): block is ITextBlock => block.type === 'PAGE');
+      const results: Record<string, any> = {};
+
+      await Promise.all(
+        pageBlocks.map(async block => {
+          try {
+            const id = block.nodes[0]?.content;
+            if (id) {
+              const data = await getNoteDetail(id);
+              results[id] = data;
+            }
+          } catch (error) {
+            console.error('Error fetching page Detail:', error);
+          }
+        }),
+      );
+
+      setNoteDetails(results);
+    };
+
+    fetchPageNotes();
+  }, [blocks]);
+
 
   const [key, setKey] = useState(Date.now());
   const [isTyping, setIsTyping] = useState(false);
@@ -162,7 +194,6 @@ const NoteContent = () => {
           top = BUTTON_OFFSET.default.top;
           break;
       }
-
       buttonEl.style.position = 'fixed';
       buttonEl.style.top = `${top}px`;
       buttonEl.style.left = `${left}px`;
@@ -707,6 +738,7 @@ const NoteContent = () => {
               menuState={menuState}
               setMenuState={setMenuState}
               dragBlockIndex={dragBlockIndex}
+              noteDetails={noteDetails}
             />
           </div>
         ))}

@@ -234,7 +234,7 @@ const NoteItem = ({ note, depth, openedDropdownnoteId, setOpenedDropdownnoteId }
         <button type="button" ref={toggleButtoonRef} className={noteButton} onClick={togglenote}>
           {isOpen ? <PageOpenIcon color="black" /> : <PageCloseIcon color="black" />}
         </button>
-        <div className={noteIcon}>{note.icon ? `${note.icon}` : <PageIcon />}</div>
+        <div className={noteIcon}>{note.icon ? `${note.icon}` : <PageIcon color="#949491" />}</div>
         <div className={noteTitle}>{note.title === null || note.title === '' ? '새 페이지' : note.title}</div>
         {isHover && (
           <div className={noteButtonContainer}>

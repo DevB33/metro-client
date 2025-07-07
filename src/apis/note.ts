@@ -4,8 +4,8 @@ import getInstance from '.';
 export const createNote = async (parentId: string | null) => {
   const instance = await getInstance();
   const response = await instance.post('/notes/list', { parentId });
-
   return response.data.id;
+
 };
 
 export const deleteNote = async (parentId: string) => {

@@ -18,8 +18,17 @@ export const createBlock = async (body: {
   upperOrder: number;
   nodes: ITextBlockChild[];
 }) => {
-  const instance = await getInstance();
-  await instance.post(`/blocks`, JSON.stringify(body));
+  if (body.type === 'PAGE') {
+    const instance = await getInstance();
+    const newPage = {
+      parentId: body.noteId,
+      upperOrder: body.upperOrder,
+    };
+    await instance.post(`/notes`, JSON.stringify(newPage));
+  } else {
+    const instance = await getInstance();
+    await instance.post(`/blocks`, JSON.stringify(body));
+  }
 };
 
 export const updateBlockNodes = async (blockId: string, nodes: ITextBlockChild[]) => {
@@ -35,6 +44,12 @@ export const updateBlockType = async (blockId: string, type: string) => {
 export const updateBlocksOrder = async (noteId: string, startOrder: number, endOrder: number, upperOrder: number) => {
   const instance = await getInstance();
   await instance.patch(`/blocks/order`, JSON.stringify({ noteId, startOrder, endOrder, upperOrder }));
+};
+
+export const getNoteDetail = async (noteId: string) => {
+  const instance = await getInstance();
+  const response = await instance.get(`/notes/${noteId}`);
+  return response.data;
 };
 
 export const deleteBlock = async (noteId: string, startOrder: number, endOrder: number) => {

@@ -43,7 +43,7 @@ const pagePath = css({
 const SearchBar = ({ page }: { page: IPageType }) => {
   return (
     <div className={searchBar}>
-      <div className={pageIcon}>{page.icon ? `${page.icon}` : <PageIcon />}</div>
+      <div className={pageIcon}>{page.icon ? `${page.icon}` : <PageIcon color="#949491" />}</div>
       <div className={pageTitle}>{page.title}</div>
       <div className={pagePath}>note/경로/note</div>
     </div>
