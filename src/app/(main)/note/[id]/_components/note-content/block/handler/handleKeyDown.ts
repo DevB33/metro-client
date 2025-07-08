@@ -969,7 +969,6 @@ const handleKeyDown = async (
         }
         // 현재 위치에서 y좌표만 위로 10 높은 곳에 focus
         const top = blockList[index].type === 'QUOTE' ? 25 : 15;
-        console.log(rect.top - top - pageBlockHeight);
         const caret = document.caretPositionFromPoint(cursorX, rect.top - top - pageBlockHeight) as CaretPosition;
 
         if (blockList[index - 1].nodes.length === 1 && blockList[index - 1].nodes[0].content === '') {
@@ -1071,7 +1070,6 @@ const handleKeyDown = async (
               }
 
               const windowSelection = window.getSelection();
-              console.log(prevBlockLastChild);
               if (prevBlockLastChild?.nodeType === Node.TEXT_NODE || prevBlockLastChild?.nodeType === 1)
                 range?.setStart(prevBlockLastChild as Node, prevBlockLastChild?.textContent?.length as number);
               else {

@@ -163,7 +163,6 @@ const NoteContent = () => {
     });
 
     await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
-    console.log(blockRef.current[blocks.length]);
     setTimeout(() => {
       (blockRef.current[blocks.length]?.parentNode as HTMLElement)?.focus();
     }, 0);
