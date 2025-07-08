@@ -1068,7 +1068,8 @@ const handleKeyDown = async (
               }
 
               const windowSelection = window.getSelection();
-              if (prevBlockLastChild?.nodeType === Node.TEXT_NODE)
+              console.log(prevBlockLastChild);
+              if (prevBlockLastChild?.nodeType === Node.TEXT_NODE || prevBlockLastChild?.nodeType === 1)
                 range?.setStart(prevBlockLastChild as Node, prevBlockLastChild?.textContent?.length as number);
               else {
                 range?.setStart(
