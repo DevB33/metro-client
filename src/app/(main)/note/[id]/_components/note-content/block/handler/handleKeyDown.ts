@@ -951,15 +951,18 @@ const handleKeyDown = async (
       if (event.key === keyName.arrowUp && index > 0) {
         event.preventDefault();
 
-        if (blockList[index - 1]?.type === 'PAGE') {
-          const pageBlockElement = blockRef.current[index - 1];
+        let currentIndex = index - 1;
+
+        while (currentIndex >= 0 && blockList[currentIndex]?.type === 'PAGE') {
+          const pageBlockElement = blockRef.current[currentIndex];
           if (pageBlockElement) {
             const pageBlockRect = pageBlockElement.getBoundingClientRect();
-            pageBlockHeight = pageBlockRect.height + 25;
+            pageBlockHeight += pageBlockRect.height + 25;
           }
+          currentIndex -= 1;
         }
         // 현재 위치에서 y좌표만 위로 10 높은 곳에 focus
-        const caret = document.caretPositionFromPoint(cursorX, rect.top - 10 - pageBlockHeight) as CaretPosition;
+        const caret = document.caretPositionFromPoint(cursorX, rect.top - 12 - pageBlockHeight) as CaretPosition;
 
         if (blockList[index].nodes.length === 1 && blockList[index].nodes[0].content === '') {
           // 빈 블록으로 갈때는 그냥 그 블록에 focus
@@ -983,12 +986,15 @@ const handleKeyDown = async (
       // 다음 블록으로 커서 이동
       if (event.key === keyName.arrowDown && index < blockList.length - 1) {
         event.preventDefault();
-        if (blockList[index + 1]?.type === 'PAGE') {
-          const pageBlockElement = blockRef.current[index + 1];
+        let currentIndex = index + 1;
+
+        while (blockList[currentIndex] && blockList[currentIndex]?.type === 'PAGE') {
+          const pageBlockElement = blockRef.current[currentIndex];
           if (pageBlockElement) {
             const pageBlockRect = pageBlockElement.getBoundingClientRect();
-            pageBlockHeight = pageBlockRect.height + 25;
+            pageBlockHeight += pageBlockRect.height + 25;
           }
+          currentIndex += 1;
         }
         // 현재 위치에서 y좌표만 아래로 10 낮은 곳에 focus
         const caret = document.caretPositionFromPoint(cursorX, rect.bottom + 10 + pageBlockHeight) as CaretPosition;
@@ -1020,7 +1026,7 @@ const handleKeyDown = async (
         let targetIndex = index + 1;
 
         // 다음 블록이 페이지 블록이라면 한칸 더 이동
-        if (blockList[targetIndex]?.type === 'PAGE' && targetIndex > 0) {
+        while (blockList[targetIndex] && blockList[targetIndex]?.type === 'PAGE') {
           targetIndex += 1;
         }
 
@@ -1039,7 +1045,7 @@ const handleKeyDown = async (
           let targetIndex = index - 1;
 
           // 다음 블록이 페이지 블록이라면 한칸 더 이동
-          if (blockList[targetIndex]?.type === 'PAGE' && targetIndex > 0) {
+          while (targetIndex >= 0 && blockList[targetIndex]?.type === 'PAGE') {
             targetIndex -= 1;
           }
           const prevBlockNodeLength = (blockRef.current[targetIndex]?.childNodes.length as number) - 1;
