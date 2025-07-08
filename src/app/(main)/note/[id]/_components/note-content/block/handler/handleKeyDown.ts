@@ -945,12 +945,22 @@ const handleKeyDown = async (
       const cursorX = rect?.left;
       const firstChild = blockRef.current[index]?.childNodes[0];
       const lastChild = blockRef.current[index]?.childNodes[(blockRef.current[index]?.childNodes.length as number) - 1];
+      let pageBlockHeight = 0;
 
       // 이전 블록으로 커서 이동
       if (event.key === keyName.arrowUp && index > 0) {
         event.preventDefault();
+
+        if (blockList[index - 1]?.type === 'PAGE') {
+          const pageBlockElement = blockRef.current[index - 1];
+          if (pageBlockElement) {
+            const pageBlockRect = pageBlockElement.getBoundingClientRect();
+            pageBlockHeight = pageBlockRect.height + 25;
+          }
+        }
         // 현재 위치에서 y좌표만 위로 10 높은 곳에 focus
-        const caret = document.caretPositionFromPoint(cursorX, rect.top - 10) as CaretPosition;
+        const caret = document.caretPositionFromPoint(cursorX, rect.top - 10 - pageBlockHeight) as CaretPosition;
+
         if (blockList[index].nodes.length === 1 && blockList[index].nodes[0].content === '') {
           // 빈 블록으로 갈때는 그냥 그 블록에 focus
           focusBlock(index - 1, blockRef, blockList);
@@ -973,8 +983,15 @@ const handleKeyDown = async (
       // 다음 블록으로 커서 이동
       if (event.key === keyName.arrowDown && index < blockList.length - 1) {
         event.preventDefault();
+        if (blockList[index + 1]?.type === 'PAGE') {
+          const pageBlockElement = blockRef.current[index + 1];
+          if (pageBlockElement) {
+            const pageBlockRect = pageBlockElement.getBoundingClientRect();
+            pageBlockHeight = pageBlockRect.height + 25;
+          }
+        }
         // 현재 위치에서 y좌표만 아래로 10 낮은 곳에 focus
-        const caret = document.caretPositionFromPoint(cursorX, rect.bottom + 10) as CaretPosition;
+        const caret = document.caretPositionFromPoint(cursorX, rect.bottom + 10 + pageBlockHeight) as CaretPosition;
         if (blockList[index].nodes.length === 1 && blockList[index].nodes[0].content === '') {
           // 빈 블록으로 갈때는 그냥 그 블록에 focus
           focusBlock(index + 1, blockRef, blockList);
@@ -1000,8 +1017,15 @@ const handleKeyDown = async (
           (blockList[index].nodes.length === 1 && blockList[index].nodes[0].content === '')) &&
         index < blockList.length - 1
       ) {
+        let targetIndex = index + 1;
+
+        // 다음 블록이 페이지 블록이라면 한칸 더 이동
+        if (blockList[targetIndex]?.type === 'PAGE' && targetIndex > 0) {
+          targetIndex += 1;
+        }
+
         event.preventDefault();
-        focusBlock(index + 1, blockRef, blockList);
+        focusBlock(targetIndex, blockRef, blockList);
       }
 
       // 블록의 맨 앞에서 왼쪽 방향키 클릭하면 이전 블록으로 커서 이동
@@ -1012,17 +1036,23 @@ const handleKeyDown = async (
             (blockList[index].nodes.length === 1 && blockList[index].nodes[0].content === '')) &&
           index > 0
         ) {
-          const prevBlockNodeLength = (blockRef.current[index - 1]?.childNodes.length as number) - 1;
-          const prevBlockLastChild = blockRef.current[index - 1]?.childNodes[prevBlockNodeLength];
+          let targetIndex = index - 1;
+
+          // 다음 블록이 페이지 블록이라면 한칸 더 이동
+          if (blockList[targetIndex]?.type === 'PAGE' && targetIndex > 0) {
+            targetIndex -= 1;
+          }
+          const prevBlockNodeLength = (blockRef.current[targetIndex]?.childNodes.length as number) - 1;
+          const prevBlockLastChild = blockRef.current[targetIndex]?.childNodes[prevBlockNodeLength];
 
           setTimeout(() => {
             if (range) {
-              if (blockList[index - 1].type === 'UL' || blockList[index - 1].type === 'OL') {
-                (blockRef.current[index - 1]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
-              } else if (blockList[index - 1].type === 'QUOTE') {
-                (blockRef.current[index - 1]?.parentNode?.parentNode as HTMLElement)?.focus();
+              if (blockList[targetIndex].type === 'UL' || blockList[targetIndex].type === 'OL') {
+                (blockRef.current[targetIndex]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
+              } else if (blockList[targetIndex].type === 'QUOTE') {
+                (blockRef.current[targetIndex]?.parentNode?.parentNode as HTMLElement)?.focus();
               } else {
-                (blockRef.current[index - 1]?.parentNode as HTMLElement)?.focus();
+                (blockRef.current[targetIndex]?.parentNode as HTMLElement)?.focus();
               }
 
               const windowSelection = window.getSelection();
@@ -1030,8 +1060,8 @@ const handleKeyDown = async (
                 range?.setStart(prevBlockLastChild as Node, prevBlockLastChild?.textContent?.length as number);
               else {
                 range?.setStart(
-                  blockRef.current[index - 1]?.childNodes[prevBlockNodeLength]?.firstChild as Node,
-                  blockRef.current[index - 1]?.childNodes[prevBlockNodeLength]?.firstChild?.textContent
+                  blockRef.current[targetIndex]?.childNodes[prevBlockNodeLength]?.firstChild as Node,
+                  blockRef.current[targetIndex]?.childNodes[prevBlockNodeLength]?.firstChild?.textContent
                     ?.length as number,
                 );
               }
