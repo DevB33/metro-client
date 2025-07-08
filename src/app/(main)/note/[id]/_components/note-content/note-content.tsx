@@ -40,8 +40,7 @@ const fakeBox = css({
 });
 
 const bottomEmptyContianer = css({
-  width: '100%',
-  height: '100%',
+  flex: 1,
 });
 
 const NoteContent = () => {
@@ -686,7 +685,7 @@ const NoteContent = () => {
   }
 
   return (
-    <div style={{ height: 'calc(100% - 15rem)' }}>
+    <div style={{ height: 'calc(100% - 15rem)', display: 'flex', flexDirection: 'column' }}>
       <div
         role="button"
         tabIndex={0}
