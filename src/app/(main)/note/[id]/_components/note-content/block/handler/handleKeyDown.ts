@@ -941,7 +941,13 @@ const handleKeyDown = async (
       event.key === keyName.arrowRight
     ) {
       const { range, startOffset, startContainer } = getSelectionInfo(0) || {};
-      const rect = range?.getBoundingClientRect() as DOMRect;
+      let rect = range?.getBoundingClientRect() as DOMRect;
+      if ((rect?.width === 0 && rect?.height === 0) || !rect) {
+        const fallbackRect = blockRef.current[index]?.getBoundingClientRect();
+        if (fallbackRect) {
+          rect = fallbackRect;
+        }
+      }
       const cursorX = rect?.left;
       const firstChild = blockRef.current[index]?.childNodes[0];
       const lastChild = blockRef.current[index]?.childNodes[(blockRef.current[index]?.childNodes.length as number) - 1];
@@ -957,14 +963,14 @@ const handleKeyDown = async (
           const pageBlockElement = blockRef.current[currentIndex];
           if (pageBlockElement) {
             const pageBlockRect = pageBlockElement.getBoundingClientRect();
-            pageBlockHeight += pageBlockRect.height + 25;
+            pageBlockHeight += pageBlockRect.height + 15;
           }
           currentIndex -= 1;
         }
         // 현재 위치에서 y좌표만 위로 10 높은 곳에 focus
-        const caret = document.caretPositionFromPoint(cursorX, rect.top - 12 - pageBlockHeight) as CaretPosition;
+        const caret = document.caretPositionFromPoint(cursorX, rect.top - 10 - pageBlockHeight) as CaretPosition;
 
-        if (blockList[index].nodes.length === 1 && blockList[index].nodes[0].content === '') {
+        if (blockList[index - 1].nodes.length === 1 && blockList[index - 1].nodes[0].content === '') {
           // 빈 블록으로 갈때는 그냥 그 블록에 focus
           focusBlock(index - 1, blockRef, blockList);
         } else {
@@ -992,13 +998,13 @@ const handleKeyDown = async (
           const pageBlockElement = blockRef.current[currentIndex];
           if (pageBlockElement) {
             const pageBlockRect = pageBlockElement.getBoundingClientRect();
-            pageBlockHeight += pageBlockRect.height + 25;
+            pageBlockHeight += pageBlockRect.height + 15;
           }
           currentIndex += 1;
         }
         // 현재 위치에서 y좌표만 아래로 10 낮은 곳에 focus
         const caret = document.caretPositionFromPoint(cursorX, rect.bottom + 10 + pageBlockHeight) as CaretPosition;
-        if (blockList[index].nodes.length === 1 && blockList[index].nodes[0].content === '') {
+        if (blockList[index + 1].nodes.length === 1 && blockList[index + 1].nodes[0].content === '') {
           // 빈 블록으로 갈때는 그냥 그 블록에 focus
           focusBlock(index + 1, blockRef, blockList);
         } else {

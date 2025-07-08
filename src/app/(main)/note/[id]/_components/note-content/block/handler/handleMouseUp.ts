@@ -13,7 +13,7 @@ const handleMouseUp = (
   setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>,
 ) => {
   if (!blockRef.current || blockRef.current.length === 0) return;
-
+  console.log(blockRef.current[index].getBoundingClientRect());
   // 아래에서 위로 드래그하면 start의 childNoeIndex가 -1 인 경우
   const fixedSelectionStart =
     selection.start.childNodeIndex === -1
