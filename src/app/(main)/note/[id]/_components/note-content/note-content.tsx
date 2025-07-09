@@ -528,6 +528,9 @@ const NoteContent = () => {
           right = Math.max(right, rect.right);
         }
       });
+      // 만약 이 블록의 타입이 page이면 칠하지 않음
+      if (blocks[index].type === 'PAGE') return;
+      // 페이지 블록이 아니면 배경 칠하기
       fillBackgroundNode(left, right, index);
     }
 
@@ -538,6 +541,9 @@ const NoteContent = () => {
         left = Math.min(left, rect.left);
         right = Math.max(right, rect.right);
       });
+      // 만약 이 블록의 타입이 page이면 칠하지 않음
+      if (blocks[index].type === 'PAGE') return;
+      // 페이지 블록이 아니면 배경 칠하기
       fillBackgroundNode(left, right, index);
     }
 
@@ -555,6 +561,9 @@ const NoteContent = () => {
           }));
         }
       });
+      // 만약 이 블록의 타입이 page이면 칠하지 않음
+      if (blocks[index].type === 'PAGE') return;
+      // 페이지 블록이 아니면 배경 칠하기
       fillBackgroundNode(left, right, index);
     }
   };
@@ -608,6 +617,9 @@ const NoteContent = () => {
           left = Math.min(left, rect.left);
           right = Math.max(right, rect.right);
         });
+        // 만약 이 블록의 타입이 page이면 칠하지 않음
+        if (blocks[index].type === 'PAGE') return;
+        // 페이지 블록이 아니면 배경 칠하기
         fillBackgroundNode(left, right, index);
         setSelection(prev => ({
           ...prev,
@@ -633,6 +645,9 @@ const NoteContent = () => {
           left = Math.min(left, rect.left);
           right = Math.max(right, rect.right);
         });
+        // 만약 이 블록의 타입이 page이면 칠하지 않음
+        if (blocks[index].type === 'PAGE') return;
+        // 페이지 블록이 아니면 배경 칠하기
         fillBackgroundNode(left, right, index);
       }
     }
