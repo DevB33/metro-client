@@ -189,10 +189,12 @@ const BlockButton = ({
       {menuState.blockButtonModalIndex === index && (
         <DropDown handleClose={handleClose}>
           <DropDown.Menu isOpen={isblockButtonModalOpen} top={dropdownPosition.top} left={dropdownPosition.left}>
-            <DropDown.Item onClick={handleChange}>
-              <ArrowReapeatIcon width="16px" height="16px" />
-              전환
-            </DropDown.Item>
+            {block.type !== 'PAGE' && (
+              <DropDown.Item onClick={handleChange}>
+                <ArrowReapeatIcon width="16px" height="16px" />
+                전환
+              </DropDown.Item>
+            )}
             <DropDown.Item onClick={handleDelete}>
               <div className={deleteBtn}>
                 <TrashIcon />

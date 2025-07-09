@@ -7,6 +7,7 @@ import { ITextBlock } from '@/types/block-type';
 import ISelectionPosition from '@/types/selection-position';
 import IMenuState from '@/types/menu-type';
 import { getBlockList, updateBlocksOrder } from '@/apis/block';
+import { getNoteList } from '@/apis/note';
 import PageIcon from '@/icons/page-icon';
 import handleInput from './handler/handleInput';
 import handleKeyDown from './handler/handleKeyDown';
@@ -117,6 +118,7 @@ const Block = memo(
       );
 
       await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+      await mutate('noteList', getNoteList, false);
     };
 
     const changeBlockOrderToFirst = async () => {
@@ -129,6 +131,7 @@ const Block = memo(
       );
 
       await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+      await mutate('noteList', getNoteList, false);
     };
     const router = useRouter();
     return (
