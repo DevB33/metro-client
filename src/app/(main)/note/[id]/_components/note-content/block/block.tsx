@@ -7,6 +7,7 @@ import { ITextBlock } from '@/types/block-type';
 import ISelectionPosition from '@/types/selection-position';
 import IMenuState from '@/types/menu-type';
 import { getBlockList, updateBlocksOrder } from '@/apis/block';
+import { getNoteList } from '@/apis/note';
 import PageIcon from '@/icons/page-icon';
 import handleInput from './handler/handleInput';
 import handleKeyDown from './handler/handleKeyDown';
@@ -117,6 +118,7 @@ const Block = memo(
       );
 
       await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+      await mutate('noteList', getNoteList, false);
     };
 
     const changeBlockOrderToFirst = async () => {
@@ -129,6 +131,7 @@ const Block = memo(
       );
 
       await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+      await mutate('noteList', getNoteList, false);
     };
     const router = useRouter();
     return (
@@ -184,7 +187,9 @@ const Block = memo(
             onMouseMove={event =>
               handleMouseMove(event, index, blockRef, blockList, isDragging, selection, setSelection)
             }
-            onMouseLeave={event => handleMouseLeave(event, index, isDragging, isUp, blockRef, selection, setSelection)}
+            onMouseLeave={event =>
+              handleMouseLeave(event, index, blockList, isDragging, isUp, blockRef, selection, setSelection)
+            }
             onDragEnter={event => {
               if (dragBlockIndex === index) {
                 return;
@@ -257,7 +262,9 @@ const Block = memo(
             onMouseMove={event =>
               handleMouseMove(event, index, blockRef, blockList, isDragging, selection, setSelection)
             }
-            onMouseLeave={event => handleMouseLeave(event, index, isDragging, isUp, blockRef, selection, setSelection)}
+            onMouseLeave={event =>
+              handleMouseLeave(event, index, blockList, isDragging, isUp, blockRef, selection, setSelection)
+            }
             onDragEnter={event => {
               if (dragBlockIndex === index) {
                 return;

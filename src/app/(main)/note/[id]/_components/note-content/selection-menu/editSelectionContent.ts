@@ -3,6 +3,7 @@ import { ITextBlock, ITextBlockChild } from '@/types/block-type';
 
 import { mutate } from 'swr';
 
+import { getNoteList } from '@/apis/note';
 import { createBlock, deleteBlock, getBlockList, updateBlockNodes, updateBlocksOrder } from '@/apis/block';
 
 const defaultStyle = {
@@ -90,14 +91,11 @@ const editSelectionContent = async (
     offset: startOffset,
   } = !isBackward ? selection.start : selection.end;
   const {
-    // blockId: endBlockId,
     blockIndex: endBlockIndex,
     childNodeIndex: endNodeIndex,
     offset: endOffset,
   } = !isBackward ? selection.end : selection.start;
   let newBlockList = [...blockList];
-
-  // const deleteIndex = [];
 
   const newNode = {
     type: 'text' as 'text',
@@ -667,6 +665,7 @@ const editSelectionContent = async (
 
   // eslint-disable-next-line no-await-in-loop
   await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+  await mutate('noteList', getNoteList, false);
 };
 
 export default editSelectionContent;

@@ -112,6 +112,10 @@ const handleMouseMove = (
       const blockElement = blockRef.current[index];
       const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
       if (!blockElement) return;
+
+      // 만약 이 블록의 타입이 page이면 칠하지 않음
+      if (blockList[index].type === 'PAGE') return;
+      // 페이지 블록이 아니면 배경 칠하기
       fillHTMLElementBackgroundImage(
         blockElement,
         rect.left - blockElementMarginLeft,
@@ -148,6 +152,9 @@ const handleMouseMove = (
       const blockElement = blockRef.current[index];
       const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
       if (!blockElement) return;
+      // 만약 이 블록의 타입이 page이면 칠하지 않음
+      if (blockList[index].type === 'PAGE') return;
+      // 페이지 블록이 아니면 배경 칠하기
       fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
     }
     // 오른쪽으로 드래그
@@ -183,6 +190,9 @@ const handleMouseMove = (
       const blockElement = blockRef.current[index];
       const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
       if (!blockElement) return;
+      // 만약 이 블록의 타입이 page이면 칠하지 않음
+      if (blockList[index].type === 'PAGE') return;
+      // 페이지 블록이 아니면 배경 칠하기
       fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
     }
   }
@@ -211,6 +221,9 @@ const handleMouseMove = (
       const blockElement = blockRef.current[index];
       const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
       if (!blockElement) return;
+      // 만약 이 블록의 타입이 page이면 칠하지 않음
+      if (blockList[index].type === 'PAGE') return;
+      // 페이지 블록이 아니면 배경 칠하기
       fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
     }
 
@@ -236,6 +249,9 @@ const handleMouseMove = (
       const blockElement = blockRef.current[index];
       const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
       if (!blockElement) return;
+      // 만약 이 블록의 타입이 page이면 칠하지 않음
+      if (blockList[index].type === 'PAGE') return;
+      // 페이지 블록이 아니면 배경 칠하기
       fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
     }
   }
