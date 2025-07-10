@@ -76,6 +76,7 @@ const FinderCard = () => {
     parentId: string;
     order: number;
   } | null>(null);
+  const [isDragFirst, setIsDragFirst] = useState(false);
   const { data: noteList } = useSWR('noteList');
 
   const handleClick = async () => {
@@ -103,7 +104,7 @@ const FinderCard = () => {
       </div>
       <div className={noteContainer}>
         {noteList?.length ? (
-          noteList.map((note: INotes) => (
+          noteList.map((note: INotes, index: number) => (
             <NoteItem
               key={note.id}
               note={note}
@@ -112,6 +113,9 @@ const FinderCard = () => {
               setOpenedDropdownnoteId={setOpenedDropdownnoteId}
               draggingNoteInfo={draggingNoteInfo}
               setDraggingNoteInfo={setDraggingNoteInfo}
+              isDragFirst={isDragFirst}
+              setIsDragFirst={setIsDragFirst}
+              index={index}
             />
           ))
         ) : (
