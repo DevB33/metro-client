@@ -39,6 +39,10 @@ const fakeBox = css({
   pointerEvents: 'auto',
 });
 
+const bottomEmptyContianer = css({
+  flex: 1,
+});
+
 const NoteContent = () => {
   const blockContainerRef = useRef<(HTMLDivElement | null)[]>([]);
   const blockButtonRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -59,7 +63,7 @@ const NoteContent = () => {
   const [noteDetails, setNoteDetails] = useState<Record<string, any>>({});
 
   useEffect(() => {
-    if (blocks.length === 0) return;
+    if (!blocks) return;
 
     const fetchPageNotes = async () => {
       const pageBlocks: ITextBlock[] = blocks.filter((block: ITextBlock): block is ITextBlock => block.type === 'PAGE');
@@ -81,19 +85,6 @@ const NoteContent = () => {
 
       setNoteDetails(results);
     };
-
-    (async () => {
-      // 만약 새로 생성된 페이지 블록이 마지막 블록이면, 그 다음에 빈 블록을 생성
-      if (blocks[blocks.length - 1].type === 'PAGE') {
-        await createBlock({
-          noteId,
-          type: 'DEFAULT',
-          upperOrder: blocks[blocks.length - 1].order + 1,
-          nodes: [{ content: '', type: 'text' }],
-        });
-        await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
-      }
-    })();
 
     fetchPageNotes();
   }, [blocks]);
@@ -155,6 +146,31 @@ const NoteContent = () => {
       setTimeout(() => {
         (blockRef.current[0]?.parentNode as HTMLElement)?.focus();
       }, 0);
+    }
+  };
+
+  const createEmptyBlock = async () => {
+    await createBlock({
+      noteId,
+      type: 'DEFAULT',
+      upperOrder: blocks[blocks.length - 1].order,
+      nodes: [
+        {
+          type: 'text',
+          content: '',
+        },
+      ],
+    });
+
+    await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+    setTimeout(() => {
+      (blockRef.current[blocks.length]?.parentNode as HTMLElement)?.focus();
+    }, 0);
+  };
+
+  const handleEmptyBottomClick = () => {
+    if (blocks[blocks.length - 1].type === 'PAGE') {
+      createEmptyBlock();
     }
   };
 
@@ -668,7 +684,7 @@ const NoteContent = () => {
   }
 
   return (
-    <div style={{ pointerEvents: 'none' }}>
+    <div style={{ height: 'calc(100% - 15rem)', display: 'flex', flexDirection: 'column' }}>
       <div
         role="button"
         tabIndex={0}
@@ -754,6 +770,7 @@ const NoteContent = () => {
           </div>
         ))}
       </div>
+      <div className={bottomEmptyContianer} onClick={handleEmptyBottomClick} />
       {menuState.isSelectionMenuOpen && (
         <div ref={selectionMenuRef}>
           <SelectionMenu

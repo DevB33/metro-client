@@ -176,7 +176,7 @@ const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag
 
   if (block.type === 'QUOTE') {
     return (
-      <blockquote>
+      <blockquote style={{ margin: '0' }}>
         <p
           data-placeholder={placeholder.quote}
           data-empty={`${block.nodes.length === 1 && block.nodes[0].content === ''}`}
