@@ -14,6 +14,36 @@ const handleMouseUp = (
 ) => {
   if (!blockRef.current || blockRef.current.length === 0) return;
 
+  // 만약 현재 블록의 타입이 PAGE이면, 페이지 버튼 클릭 이벤트로 처리
+  if (blockList[index].type === 'PAGE') {
+    // 만약 selection.start가 현재 블록의 인덱스보다 클 경우 (아래에서 위로 드래그) : 현재 블록 아래 블록 맨 앞을 selection end 로 설정
+    if (selection.start.blockIndex > index) {
+      setSelection(prev => ({
+        ...prev,
+        end: { blockId: blockList[index + 1].id, blockIndex: index + 1, childNodeIndex: 0, offset: 0 },
+      }));
+    }
+
+    // 만약 selection.start가 현재 블록의 인덱스보다 작을 경우 (위에서 아래로 드래그) : 현재 블록 위 블록 맨 뒤를 selection end 로 설정
+    if (selection.start.blockIndex < index) {
+      setSelection(prev => ({
+        ...prev,
+        end: {
+          blockId: blockList[index - 1].id,
+          blockIndex: index - 1,
+          childNodeIndex: blockList[index - 1].nodes.length - 1,
+          offset: blockList[index - 1].nodes[blockList[index - 1].nodes.length - 1].content?.length || 0,
+        },
+      }));
+    }
+
+    setMenuState(prev => ({
+      ...prev,
+      isSelectionMenuOpen: true,
+    }));
+    return;
+  }
+
   // 아래에서 위로 드래그하면 start의 childNoeIndex가 -1 인 경우
   const fixedSelectionStart =
     selection.start.childNodeIndex === -1
