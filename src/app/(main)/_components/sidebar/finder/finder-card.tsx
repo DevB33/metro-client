@@ -78,6 +78,7 @@ const FinderCard = () => {
   } | null>(null);
   const [isDragFirst, setIsDragFirst] = useState(false);
   const { data: noteList } = useSWR('noteList');
+  const { data: userInfo } = useSWR(`userInfo`);
 
   const handleClick = async () => {
     try {
@@ -93,7 +94,7 @@ const FinderCard = () => {
   return (
     <div className={finderCard}>
       <div className={noteItem} onMouseEnter={() => setIsHover(true)} onMouseLeave={() => setIsHover(false)}>
-        기원 님의 workspace
+        {userInfo?.name} 님의 workspace
         {isHover && (
           <div className={noteButtonContainer}>
             <button type="button" className={noteButton} onClick={handleClick}>
