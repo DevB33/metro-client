@@ -1,3 +1,5 @@
+import Image from 'next/image';
+import useSWR from 'swr';
 import { css } from '@/../styled-system/css';
 
 import SettingButton from './setting-button';
@@ -34,13 +36,19 @@ const profileImg = css({
 });
 
 const ProfileCard = () => {
-  const name = '기원';
+  const { data: userInfo } = useSWR(`userInfo`);
 
   return (
     <div className={profileCard}>
       <div className={profileInfo}>
-        <div className={profileImg} />
-        {name}님의 METRO
+        <Image
+          src={userInfo?.avatar}
+          alt={`${userInfo.name}의 프로필 이미지`}
+          className={profileImg}
+          width={32}
+          height={32}
+        />
+        {userInfo.name}님의 METRO
       </div>
       <SettingButton />
     </div>
