@@ -1,8 +1,39 @@
 'use client';
 
-import SettingIcon from '@/icons/setting-icon';
 import { useRouter } from 'next/navigation';
 import { css } from '@/../styled-system/css';
+
+import LogoutIcon from '@/icons/logout-icon';
+
+const SettingButton = () => {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.status !== 200) {
+        throw new Error('Failed to logout');
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      router.push('/login');
+    }
+  };
+
+  return (
+    <button className={buttonContainer} type="button" onClick={handleLogout}>
+      <LogoutIcon />
+    </button>
+  );
+};
 
 const buttonContainer = css({
   width: '1.4rem',
@@ -17,19 +48,5 @@ const buttonContainer = css({
     backgroundColor: 'gray',
   },
 });
-
-const SettingButton = () => {
-  const router = useRouter();
-
-  const openSettings = () => {
-    router.push('/setting-modal');
-  };
-
-  return (
-    <button className={buttonContainer} type="button" onClick={openSettings}>
-      <SettingIcon color="gray" />
-    </button>
-  );
-};
 
 export default SettingButton;

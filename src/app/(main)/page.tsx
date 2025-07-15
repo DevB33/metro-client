@@ -1,6 +1,8 @@
 'use client';
 
+import useSWR from 'swr';
 import { css } from '@/../styled-system/css';
+
 import ResponseWrapper from './_components/chart/responsiveWrapper';
 
 const homePage = css({
@@ -23,9 +25,11 @@ const visualContainer = css({
 });
 
 const Home = () => {
+  const { data: userInfo } = useSWR(`userInfo`);
+
   return (
     <div className={homePage}>
-      <div className={welcomeBanner}>김기원 님, 안녕하세요.</div>
+      <div className={welcomeBanner}>{userInfo?.name} 님, 안녕하세요.</div>
       <div className={visualContainer}>
         <ResponseWrapper />
       </div>
