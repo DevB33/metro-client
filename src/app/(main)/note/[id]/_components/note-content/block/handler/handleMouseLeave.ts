@@ -1,5 +1,6 @@
 import ISelectionPosition from '@/types/selection-position';
 import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundImage';
+import { ITextBlock } from '@/types/block-type';
 
 const getNodeBounds = (node: Node, startOffset: number, endOffset: number) => {
   const range = document.createRange();
@@ -22,6 +23,7 @@ const getNodeBounds = (node: Node, startOffset: number, endOffset: number) => {
 const handleMouseLeave = (
   event: React.MouseEvent<HTMLDivElement>,
   index: number,
+  blockList: ITextBlock[],
   isDragging: boolean,
   isUp: React.RefObject<boolean>,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
@@ -85,6 +87,9 @@ const handleMouseLeave = (
         ...prev,
         end: { ...prev.end, offset: textLength },
       }));
+      // 만약 이 블록의 타입이 page이면 칠하지 않음
+      if (blockList[index].type === 'PAGE') return;
+      // 페이지 블록이 아니면 배경 칠하기
       fillBackgroundNode(left, right, index);
     }
 
@@ -111,6 +116,9 @@ const handleMouseLeave = (
       }));
     }
 
+    // 만약 이 블록의 타입이 page이면 칠하지 않음
+    if (blockList[index].type === 'PAGE') return;
+    // 페이지 블록이 아니면 배경 칠하기
     fillBackgroundNode(left, right, index);
   }
 
@@ -139,11 +147,15 @@ const handleMouseLeave = (
           }));
         }
       });
-      fillBackgroundNode(left, right, index);
+
       setSelection(prev => ({
         ...prev,
         end: { ...prev.end, offset: textLength },
       }));
+      // 만약 이 블록의 타입이 page이면 칠하지 않음
+      if (blockList[index].type === 'PAGE') return;
+      // 페이지 블록이 아니면 배경 칠하기
+      fillBackgroundNode(left, right, index);
     }
   }
 
@@ -165,11 +177,15 @@ const handleMouseLeave = (
         left = Math.min(left, rect.left);
         right = Math.max(right, rect.right);
       });
-      fillBackgroundNode(left, right, index);
+
       setSelection(prev => ({
         ...prev,
         end: { ...prev.end, childNodeIndex: 0, offset: 0 },
       }));
+      // 만약 이 블록의 타입이 page이면 칠하지 않음
+      if (blockList[index].type === 'PAGE') return;
+      // 페이지 블록이 아니면 배경 칠하기
+      fillBackgroundNode(left, right, index);
     }
   }
 };

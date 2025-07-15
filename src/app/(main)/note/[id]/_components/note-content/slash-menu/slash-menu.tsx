@@ -163,18 +163,9 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
       await createBlock({
         noteId,
         type: 'PAGE',
-        upperOrder: blockList[index].order,
+        upperOrder: blockList[index - 1].order,
         nodes: [{ content: '', type: 'text' }],
       });
-      // 만약 새로 생성된 페이지 블록이 마지막 블록이면, 그 다음에 빈 블록을 생성
-      if (index === blockList.length - 1) {
-        await createBlock({
-          noteId,
-          type: 'DEFAULT',
-          upperOrder: blockList[index].order + 1,
-          nodes: [{ content: '', type: 'text' }],
-        });
-      }
     } else {
       await updateBlockType(blockList[index].id, type);
     }

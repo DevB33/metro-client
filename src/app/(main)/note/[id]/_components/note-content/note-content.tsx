@@ -326,7 +326,7 @@ const NoteContent = () => {
       top = Math.max(top, newTop);
     }
 
-    // selection의 시작 블록이 끝 블록보다 인덱스가 같을 때,
+    // selection의 시작 블록이 끝 블록과 인덱스가 같을 때,
     if (selection.start.blockIndex === selection.end.blockIndex) {
       // selection의 시작 블록이 끝 블록보다 node 인덱스가 작을 때,
       if (selection.start.childNodeIndex < selection.end.childNodeIndex) {
@@ -544,6 +544,9 @@ const NoteContent = () => {
           right = Math.max(right, rect.right);
         }
       });
+      // 만약 이 블록의 타입이 page이면 칠하지 않음
+      if (blocks[index].type === 'PAGE') return;
+      // 페이지 블록이 아니면 배경 칠하기
       fillBackgroundNode(left, right, index);
     }
 
@@ -554,6 +557,9 @@ const NoteContent = () => {
         left = Math.min(left, rect.left);
         right = Math.max(right, rect.right);
       });
+      // 만약 이 블록의 타입이 page이면 칠하지 않음
+      if (blocks[index].type === 'PAGE') return;
+      // 페이지 블록이 아니면 배경 칠하기
       fillBackgroundNode(left, right, index);
     }
 
@@ -571,6 +577,9 @@ const NoteContent = () => {
           }));
         }
       });
+      // 만약 이 블록의 타입이 page이면 칠하지 않음
+      if (blocks[index].type === 'PAGE') return;
+      // 페이지 블록이 아니면 배경 칠하기
       fillBackgroundNode(left, right, index);
     }
   };
@@ -604,6 +613,9 @@ const NoteContent = () => {
           left = Math.min(left, rect.left);
           right = Math.max(rect.right);
         });
+        // 만약 이 블록의 타입이 page이면 칠하지 않음
+        if (blocks[index].type === 'PAGE') return;
+        // 페이지 블록이 아니면 배경 칠하기
         fillBackgroundNode(left, right, index);
       }
     }
@@ -624,6 +636,9 @@ const NoteContent = () => {
           left = Math.min(left, rect.left);
           right = Math.max(right, rect.right);
         });
+        // 만약 이 블록의 타입이 page이면 칠하지 않음
+        if (blocks[index].type === 'PAGE') return;
+        // 페이지 블록이 아니면 배경 칠하기
         fillBackgroundNode(left, right, index);
         setSelection(prev => ({
           ...prev,
@@ -649,6 +664,9 @@ const NoteContent = () => {
           left = Math.min(left, rect.left);
           right = Math.max(right, rect.right);
         });
+        // 만약 이 블록의 타입이 page이면 칠하지 않음
+        if (blocks[index].type === 'PAGE') return;
+        // 페이지 블록이 아니면 배경 칠하기
         fillBackgroundNode(left, right, index);
       }
     }
