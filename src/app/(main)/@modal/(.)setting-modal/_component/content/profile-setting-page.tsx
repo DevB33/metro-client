@@ -1,5 +1,8 @@
-import { css, cva } from '@/../styled-system/css';
+import { useState } from 'react';
 import { redirect } from 'next/navigation';
+import useSWR from 'swr';
+import { css, cva } from '@/../styled-system/css';
+import Image from 'next/image';
 
 const container = css({
   width: '100%',
@@ -105,6 +108,9 @@ const description = css({
 });
 
 const ProfileSettingPage = () => {
+  const { data: userInfo } = useSWR(`userInfo`);
+  const [name, setName] = useState(userInfo?.name || '');
+
   const handleLogout = async () => {
     try {
       const response = await fetch('/api/auth/logout', {
@@ -133,12 +139,17 @@ const ProfileSettingPage = () => {
       </div>
       <div className={profileContainer}>
         <div className={profileImageContainer}>
-          <div className={profileImage} />
+          <Image src={userInfo?.avatar} alt="Profile Image" className={profileImage} width={96} height={96} />
           <div className={imageText}>사진 추가</div>
         </div>
         <div className={profileSettingContainer}>
           <div className={title}>이름 설정</div>
-          <input className={profileSettingInput} />
+          <input
+            placeholder={userInfo?.name}
+            value={name}
+            onChange={event => setName(event.target.value)}
+            className={profileSettingInput}
+          />
         </div>
       </div>
       <div className={titleContainer}>

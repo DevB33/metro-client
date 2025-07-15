@@ -26,6 +26,9 @@ const profileInfo = css({
   alignItems: 'center',
   flexDirection: 'row',
   gap: 'tiny',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 });
 
 const profileImg = css({
@@ -33,6 +36,12 @@ const profileImg = css({
   height: '2rem',
   backgroundColor: 'gray',
   borderRadius: '50%',
+});
+
+const profileName = css({
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 });
 
 const ProfileCard = () => {
@@ -48,7 +57,7 @@ const ProfileCard = () => {
           width={32}
           height={32}
         />
-        {userInfo.name}님의 METRO
+        <div className={profileName}>{userInfo.name}님의 METRO</div>
       </div>
       <SettingButton />
     </div>

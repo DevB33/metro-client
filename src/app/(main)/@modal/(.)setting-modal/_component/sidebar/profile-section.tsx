@@ -1,3 +1,5 @@
+import Image from 'next/image';
+import useSWR from 'swr';
 import { css } from '@/../styled-system/css';
 
 const profileContainer = css({
@@ -19,13 +21,18 @@ const profileImage = css({
 
 const profileName = css({
   fontSize: 'md',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 });
 
 const ProfileSection = () => {
+  const { data: userInfo } = useSWR(`userInfo`);
+
   return (
     <div className={profileContainer}>
-      <div className={profileImage} />
-      <div className={profileName}>기원님의 Metro</div>
+      <Image src={userInfo?.avatar} alt="Profile Image" className={profileImage} width={32} height={32} />
+      <div className={profileName}>{userInfo?.name}님의 Metro</div>
     </div>
   );
 };

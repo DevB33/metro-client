@@ -1,12 +1,11 @@
 import { css } from '@/../styled-system/css';
 
-import SearchButton from './search-button';
 import HomeButton from './home-button';
 
 const menuCard = css({
   width: '100%',
   height: 'auto',
-  minHeight: '6.5rem',
+  minHeight: '4rem',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
@@ -24,7 +23,6 @@ const menuCard = css({
 const SideMenuCard = () => {
   return (
     <div className={menuCard}>
-      <SearchButton />
       <HomeButton />
     </div>
   );

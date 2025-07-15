@@ -23,6 +23,12 @@ const finderCard = css({
   boxShadow: 'sidebar',
 });
 
+const noteTitle = css({
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+});
+
 const noteItem = css({
   display: 'flex',
   flexDirection: 'row',
@@ -94,7 +100,7 @@ const FinderCard = () => {
   return (
     <div className={finderCard}>
       <div className={noteItem} onMouseEnter={() => setIsHover(true)} onMouseLeave={() => setIsHover(false)}>
-        {userInfo?.name} 님의 workspace
+        <div className={noteTitle}>{userInfo?.name} 님의 workspace</div>
         {isHover && (
           <div className={noteButtonContainer}>
             <button type="button" className={noteButton} onClick={handleClick}>
