@@ -37,6 +37,9 @@ interface INoteItem {
       order: number;
     } | null>
   >;
+  isDragFirst: boolean;
+  setIsDragFirst: React.Dispatch<React.SetStateAction<boolean>>;
+  index: number;
 }
 
 const noteItemContainer = css({
@@ -119,6 +122,9 @@ const NoteItem = ({
   setOpenedDropdownnoteId,
   draggingNoteInfo,
   setDraggingNoteInfo,
+  isDragFirst,
+  setIsDragFirst,
+  index,
 }: INoteItem) => {
   const router = useRouter();
   const noteItemRef = useRef<HTMLDivElement>(null);
@@ -252,12 +258,28 @@ const NoteItem = ({
     await mutate(`blockList-${note.parentId}`, getBlockList(note.parentId), false);
   };
 
+  const changeBlockOrderToFirst = async () => {
+    if (!draggingNoteInfo) {
+      return;
+    }
+    setIsDragFirst(false);
+    await updateBlocksOrder(note.id, draggingNoteInfo.order, draggingNoteInfo.order, -1);
+
+    await mutate('noteList', getNoteList, false);
+    await mutate(`blockList-${note.id}`, getBlockList(note.id), false);
+  };
+
   return (
     <div className={noteItemContainer}>
       <div
         className={noteItem}
         ref={noteItemRef}
-        style={{ paddingLeft: `${depth * 0.5}rem`, borderBottom: isDragOver ? '4px solid lightblue' : 'none' }}
+        style={{
+          paddingLeft: `${depth * 0.5}rem`,
+          borderBottom: isDragOver ? '4px solid lightblue' : 'none',
+          borderTop:
+            isDragFirst && draggingNoteInfo?.parentId === note.parentId && index === 0 ? '4px solid lightblue' : 'none',
+        }}
         onClick={opennote}
         onMouseEnter={() => setIsHover(true)}
         onMouseLeave={() => setIsHover(false)}
@@ -274,16 +296,19 @@ const NoteItem = ({
           });
         }}
         onDragEnter={event => {
+          if (draggingNoteInfo?.parentId === note.id) {
+            setIsDragFirst(true);
+            return;
+          }
+
           if (draggingNoteInfo?.noteId === note.id || draggingNoteInfo?.parentId !== note.parentId) {
             return;
           }
+
           event.preventDefault();
           setIsDragOver(true);
         }}
         onDragLeave={event => {
-          if (draggingNoteInfo?.noteId === note.id || draggingNoteInfo?.parentId !== note.parentId) {
-            return;
-          }
           event.preventDefault();
           const currentTarget = event.currentTarget as HTMLElement;
           const related = event.relatedTarget as HTMLElement | null;
@@ -291,12 +316,27 @@ const NoteItem = ({
           if (related && currentTarget.contains(related)) {
             return;
           }
+          if (isDragFirst) {
+            setIsDragFirst(false);
+            return;
+          }
+          if (draggingNoteInfo?.noteId === note.id || draggingNoteInfo?.parentId !== note.parentId) {
+            return;
+          }
+
           setIsDragOver(false);
         }}
         onDragOver={event => {
           event.preventDefault();
         }}
-        onDrop={changeNotedOrder}
+        onDrop={() => {
+          if (isDragFirst) {
+            changeBlockOrderToFirst();
+            return;
+          }
+
+          changeNotedOrder();
+        }}
       >
         <button type="button" ref={toggleButtoonRef} className={noteButton} onClick={togglenote}>
           {isOpen ? <PageOpenIcon color="black" /> : <PageCloseIcon color="black" />}
@@ -341,7 +381,7 @@ const NoteItem = ({
       {isOpen &&
         (note.children.length ? (
           <div className={noteChildren}>
-            {note.children.map(child => (
+            {note.children.map((child, idx) => (
               <NoteItem
                 key={child.id}
                 note={child}
@@ -350,6 +390,9 @@ const NoteItem = ({
                 setOpenedDropdownnoteId={setOpenedDropdownnoteId}
                 draggingNoteInfo={draggingNoteInfo}
                 setDraggingNoteInfo={setDraggingNoteInfo}
+                isDragFirst={isDragFirst}
+                setIsDragFirst={setIsDragFirst}
+                index={idx}
               />
             ))}
           </div>
