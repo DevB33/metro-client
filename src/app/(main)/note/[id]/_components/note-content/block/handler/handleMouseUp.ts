@@ -18,21 +18,31 @@ const handleMouseUp = (
   if (blockList[index].type === 'PAGE') {
     // 만약 selection.start가 현재 블록의 인덱스보다 클 경우 (아래에서 위로 드래그) : 현재 블록 아래 블록 맨 앞을 selection end 로 설정
     if (selection.start.blockIndex > index) {
+      let nextindex = index + 1;
+      while (blockList[nextindex].type === 'PAGE') {
+        nextindex += 1;
+      }
+
       setSelection(prev => ({
         ...prev,
-        end: { blockId: blockList[index + 1].id, blockIndex: index + 1, childNodeIndex: 0, offset: 0 },
+        end: { blockId: blockList[nextindex].id, blockIndex: nextindex, childNodeIndex: 0, offset: 0 },
       }));
     }
 
     // 만약 selection.start가 현재 블록의 인덱스보다 작을 경우 (위에서 아래로 드래그) : 현재 블록 위 블록 맨 뒤를 selection end 로 설정
     if (selection.start.blockIndex < index) {
+      let nextindex = index - 1;
+      while (blockList[nextindex].type === 'PAGE' && nextindex > 0) {
+        nextindex -= 1;
+      }
+
       setSelection(prev => ({
         ...prev,
         end: {
-          blockId: blockList[index - 1].id,
-          blockIndex: index - 1,
-          childNodeIndex: blockList[index - 1].nodes.length - 1,
-          offset: blockList[index - 1].nodes[blockList[index - 1].nodes.length - 1].content?.length || 0,
+          blockId: blockList[nextindex].id,
+          blockIndex: nextindex,
+          childNodeIndex: blockList[nextindex].nodes.length - 1,
+          offset: blockList[nextindex].nodes[blockList[nextindex].nodes.length - 1].content?.length || 0,
         },
       }));
     }
