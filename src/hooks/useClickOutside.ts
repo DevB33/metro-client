@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react';
 
-export const useClickOutside = (callback: () => void) => {
+const useClickOutside = (callback: () => void) => {
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
         callback();
       }
     };
@@ -19,21 +19,23 @@ export const useClickOutside = (callback: () => void) => {
   return ref;
 };
 
-export const useMouseUpOutside = (callback: () => void) => {
-  const ref = useRef<HTMLDivElement | null>(null);
+export default useClickOutside;
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        callback();
-      }
-    };
+// export const useMouseUpOutside = (callback: () => void) => {
+//   const ref = useRef<HTMLDivElement | null>(null);
 
-    document.addEventListener('mouseup', handleClickOutside);
-    return () => {
-      document.removeEventListener('mouseup', handleClickOutside);
-    };
-  }, [callback]);
+//   useEffect(() => {
+//     const handleClickOutside = (e: MouseEvent) => {
+//       if (ref.current && !ref.current.contains(e.target as Node)) {
+//         callback();
+//       }
+//     };
 
-  return ref;
-};
+//     document.addEventListener('mouseup', handleClickOutside);
+//     return () => {
+//       document.removeEventListener('mouseup', handleClickOutside);
+//     };
+//   }, [callback]);
+
+//   return ref;
+// };

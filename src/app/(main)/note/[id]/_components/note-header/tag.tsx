@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import ITagType from '@/types/tag-type';
 import LineColor from '@/constants/line-color';
 import keyName from '@/constants/key-name';
-import { useClickOutside } from '@/hooks/useClickOutside';
+import useClickOutside from '@/hooks/useClickOutside';
 import useSWR, { mutate } from 'swr';
 import { editNoteTags, getNoteInfo, getNoteList } from '@/apis/note';
 import TagBox from './tag-box';

@@ -6,6 +6,43 @@ import KakaoLoginButton from './_components/kakao-login-button';
 import NaverLoginButton from './_components/naver-login-button';
 import GoogleLoginButton from './_components/google-login-button';
 
+const Login = async () => {
+  const cookie = await cookies();
+  const isLogin = cookie.has('accessToken');
+
+  if (isLogin) {
+    redirect('/');
+  }
+
+  return (
+    <div className={container}>
+      <div className={colorBoxContainer}>
+        <div className={colorBox({ color: 'lineOne' })} />
+        <div className={colorBox({ color: 'lineTwo' })} />
+        <div className={colorBox({ color: 'lineThree' })} />
+        <div className={colorBox({ color: 'lineFour' })} />
+        <div className={colorBox({ color: 'lineFive' })} />
+        <div className={colorBox({ color: 'lineSix' })} />
+      </div>
+      <div className={title}>METRO</div>
+      <div className={buttonContainer}>
+        <KakaoLoginButton />
+        <NaverLoginButton />
+        <GoogleLoginButton />
+      </div>
+      <div className={policy}>
+        <button type="button" className={policyButton}>
+          이용약관
+        </button>{' '}
+        <div>|</div>{' '}
+        <button type="button" className={policyButton}>
+          개인정보 보호 정책
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const container = css({
   display: 'flex',
   flexDirection: 'column',
@@ -63,42 +100,5 @@ const policyButton = css({
   color: 'gray',
   cursor: 'pointer',
 });
-
-const Login = async () => {
-  const cookie = await cookies();
-  const isLogin = cookie.has('accessToken');
-
-  if (isLogin) {
-    redirect('/');
-  }
-
-  return (
-    <div className={container}>
-      <div className={colorBoxContainer}>
-        <div className={colorBox({ color: 'lineOne' })} />
-        <div className={colorBox({ color: 'lineTwo' })} />
-        <div className={colorBox({ color: 'lineThree' })} />
-        <div className={colorBox({ color: 'lineFour' })} />
-        <div className={colorBox({ color: 'lineFive' })} />
-        <div className={colorBox({ color: 'lineSix' })} />
-      </div>
-      <div className={title}>METRO</div>
-      <div className={buttonContainer}>
-        <KakaoLoginButton />
-        <NaverLoginButton />
-        <GoogleLoginButton />
-      </div>
-      <div className={policy}>
-        <button type="button" className={policyButton}>
-          이용약관
-        </button>{' '}
-        <div>|</div>{' '}
-        <button type="button" className={policyButton}>
-          개인정보 보호 정책
-        </button>
-      </div>
-    </div>
-  );
-};
 
 export default Login;
