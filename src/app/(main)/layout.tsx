@@ -1,10 +1,9 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { css } from '@/../styled-system/css';
-
 import { SWRConfig } from 'swr';
 import axios from 'axios';
-import { ToastContainer } from 'react-toastify';
+
 import Sidebar from './_components/sidebar/sidebar';
 
 const MainLayout = async ({ children, modal }: Readonly<{ children: React.ReactNode; modal: React.ReactNode }>) => {
@@ -44,7 +43,6 @@ const MainLayout = async ({ children, modal }: Readonly<{ children: React.ReactN
         {children}
         {modal}
       </div>
-      <ToastContainer autoClose="1500" />
     </SWRConfig>
   );
 };
