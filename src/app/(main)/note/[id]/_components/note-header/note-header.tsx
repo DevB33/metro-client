@@ -6,6 +6,7 @@ import { useClickOutside } from '@/hooks/useClickOutside';
 import useSWR, { mutate } from 'swr';
 import { useParams } from 'next/navigation';
 import { editNoteCover, editNoteIcon, getNoteInfo, getNoteList } from '@/apis/note';
+import SWR_KEYS from '@/constants/swr-keys';
 import IconSelector from './icon-selector';
 import Tag from './tag';
 import Title from './title';
@@ -60,10 +61,10 @@ const NoteHeader = () => {
   const params = useParams();
   const noteId = params.id as string;
 
-  const { data } = useSWR(`noteMetadata-${noteId}`);
+  const { data } = useSWR(SWR_KEYS.noteMetadata(noteId));
 
   useEffect(() => {
-    mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId));
+    mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId));
   }, []);
 
   const handleMouseEnter = () => {
@@ -76,8 +77,8 @@ const NoteHeader = () => {
 
   const handleSelectIcon = async (selectedIcon: string | null) => {
     await editNoteIcon(noteId, selectedIcon);
-    await mutate('noteList', getNoteList, false);
-    await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId));
+    await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+    await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId));
   };
 
   const handleSelectorOpen = () => {
@@ -98,14 +99,14 @@ const NoteHeader = () => {
 
   const handleSelectCover = async (selectedColor: string) => {
     await editNoteCover(noteId, selectedColor);
-    await mutate('noteList', getNoteList, false);
-    await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
+    await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+    await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId), false);
   };
 
   const deleteCover = async () => {
     await editNoteCover(noteId, null);
-    await mutate('noteList', getNoteList, false);
-    await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
+    await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+    await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId), false);
   };
 
   const iconSelectorRef = useClickOutside(handleSelectorClose);

@@ -5,6 +5,7 @@ import { mutate } from 'swr';
 
 import { getNoteList } from '@/apis/note';
 import { createBlock, deleteBlock, getBlockList, updateBlockNodes, updateBlocksOrder } from '@/apis/block';
+import SWR_KEYS from '@/constants/swr-keys';
 
 const defaultStyle = {
   fontWeight: 'normal',
@@ -185,7 +186,7 @@ const editSelectionContent = async (
           // eslint-disable-next-line no-await-in-loop
           await updateBlockNodes(block.id, updatedBlock.nodes);
           // eslint-disable-next-line no-await-in-loop
-          await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+          await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
         }
 
         // 한 노드 내에서 이전 텍스트와 다음 텍스트를 분리, selection된 부분은 list에서 제외 후 블록 분리
@@ -224,7 +225,7 @@ const editSelectionContent = async (
           });
 
           // eslint-disable-next-line no-await-in-loop
-          await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+          await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
         }
 
         // 한 노드 내에서 이전 텍스트와 다음 텍스트를 분리, selection된 부분은 list에서 제외
@@ -664,8 +665,8 @@ const editSelectionContent = async (
   }
 
   // eslint-disable-next-line no-await-in-loop
-  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
-  await mutate('noteList', getNoteList, false);
+  await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+  await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
 };
 
 export default editSelectionContent;

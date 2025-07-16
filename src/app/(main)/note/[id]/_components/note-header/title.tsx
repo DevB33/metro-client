@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 import useSWR, { mutate } from 'swr';
 import { editNoteTitle, getNoteInfo, getNoteList } from '@/apis/note';
+import SWR_KEYS from '@/constants/swr-keys';
 
 interface ITitle {
   noteId: string;
@@ -27,7 +28,7 @@ const titleFont = css({
 });
 
 const Title = ({ noteId }: ITitle) => {
-  const { data } = useSWR(`noteMetadata-${noteId}`);
+  const { data } = useSWR(SWR_KEYS.noteMetadata(noteId));
 
   const [value, setValue] = useState(data.title);
   const isHovered = useRef(false);
@@ -45,7 +46,7 @@ const Title = ({ noteId }: ITitle) => {
 
     debounceTimer.current = setTimeout(async () => {
       await editNoteTitle(noteId, value);
-      await mutate('noteList', getNoteList, false);
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
     }, 100);
 
     return () => {

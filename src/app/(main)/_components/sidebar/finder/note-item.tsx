@@ -18,6 +18,7 @@ import TrashIcon from '@/icons/trash-icon';
 import PencilSquareIcon from '@/icons/pencil-square';
 import DropDown from '@/components/dropdown/dropdown';
 import { toastErrorMessage, toastSuccessMessage } from '@/constants/toast-message';
+import SWR_KEYS from '@/constants/swr-keys';
 import EditTitleModal from './edit-title-modal';
 
 interface INoteItem {
@@ -137,7 +138,7 @@ const NoteItem = ({
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const [editTitleModalPosition, seteditTitleModalPosition] = useState({ top: 0, left: 0 });
   const [isDragOver, setIsDragOver] = useState(false);
-  const { data: noteList } = useSWR('noteList');
+  const { data: noteList } = useSWR(SWR_KEYS.NOTE_LIST);
 
   const togglenote = () => {
     setIsOpen(!isOpen);
@@ -190,8 +191,8 @@ const NoteItem = ({
   const handleDeleteButtonClick = async () => {
     try {
       await deleteNote(note.id);
-      await mutate('noteList', getNoteList, false);
-      await mutate(`blockList-${note.id}`, getBlockList(note.id), false);
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+      await mutate(SWR_KEYS.blockList(note.id), getBlockList(note.id), false);
       const parentId = findParentId(noteList, note.id);
 
       if (parentId) {
@@ -210,8 +211,8 @@ const NoteItem = ({
     try {
       if (!isOpen) togglenote();
       const noteId = await createNote(note.id);
-      await mutate('noteList', getNoteList, false);
-      await mutate(`blockList-${note.id}`, getBlockList(note.id), false);
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+      await mutate(SWR_KEYS.blockList(note.id), getBlockList(note.id), false);
       router.push(`/note/${noteId}`);
       toast.success(toastSuccessMessage.NoteCreate);
     } catch (error) {
@@ -254,8 +255,8 @@ const NoteItem = ({
 
     await updateBlocksOrder(note.parentId, draggingNoteInfo.order, draggingNoteInfo.order, note.order);
 
-    await mutate('noteList', getNoteList, false);
-    await mutate(`blockList-${note.parentId}`, getBlockList(note.parentId), false);
+    await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+    await mutate(SWR_KEYS.blockList(note.parentId), getBlockList(note.parentId), false);
   };
 
   const changeBlockOrderToFirst = async () => {
@@ -265,8 +266,8 @@ const NoteItem = ({
     setIsDragFirst(false);
     await updateBlocksOrder(note.id, draggingNoteInfo.order, draggingNoteInfo.order, -1);
 
-    await mutate('noteList', getNoteList, false);
-    await mutate(`blockList-${note.id}`, getBlockList(note.id), false);
+    await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+    await mutate(SWR_KEYS.blockList(note.id), getBlockList(note.id), false);
   };
 
   return (

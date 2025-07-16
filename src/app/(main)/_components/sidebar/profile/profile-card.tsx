@@ -2,6 +2,7 @@ import Image from 'next/image';
 import useSWR from 'swr';
 import { css } from '@/../styled-system/css';
 
+import SWR_KEYS from '@/constants/swr-keys';
 import SettingButton from './setting-button';
 
 const profileCard = css({
@@ -45,7 +46,7 @@ const profileName = css({
 });
 
 const ProfileCard = () => {
-  const { data: userInfo } = useSWR(`userInfo`);
+  const { data: userInfo } = useSWR(SWR_KEYS.USER_INFO);
 
   return (
     <div className={profileCard}>

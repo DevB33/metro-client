@@ -8,6 +8,7 @@ import PlusIcon from '@/icons/plus-icon';
 import INotes from '@/types/note-type';
 import { createNote, getNoteList } from '@/apis/note';
 import { toastErrorMessage, toastSuccessMessage } from '@/constants/toast-message';
+import SWR_KEYS from '@/constants/swr-keys';
 import NoteItem from './note-item';
 
 const finderCard = css({
@@ -83,13 +84,13 @@ const FinderCard = () => {
     order: number;
   } | null>(null);
   const [isDragFirst, setIsDragFirst] = useState(false);
-  const { data: noteList } = useSWR('noteList');
-  const { data: userInfo } = useSWR(`userInfo`);
+  const { data: noteList } = useSWR(SWR_KEYS.NOTE_LIST);
+  const { data: userInfo } = useSWR(SWR_KEYS.USER_INFO);
 
   const handleClick = async () => {
     try {
       const noteId = await createNote(null);
-      await mutate('noteList', getNoteList, false);
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
       router.push(`/note/${noteId}`);
       toast.success(toastSuccessMessage.NoteCreate);
     } catch (error) {

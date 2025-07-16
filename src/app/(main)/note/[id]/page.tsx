@@ -3,6 +3,7 @@ import { css } from '@/../styled-system/css';
 import axios from 'axios';
 import { cookies } from 'next/headers';
 import { SWRConfig } from 'swr';
+import SWR_KEYS from '@/constants/swr-keys';
 import Header from './_components/header';
 import NoteHeader from './_components/note-header/note-header';
 import NoteConent from './_components/note-content/note-content';
@@ -73,8 +74,8 @@ const Note = async ({ params }: { params: Promise<{ id: string }> }) => {
     <SWRConfig
       value={{
         fallback: {
-          [`noteMetadata-${id}`]: noteMetadata,
-          [`blockList-${id}`]: blockList.blocks,
+          [SWR_KEYS.noteMetadata(id)]: noteMetadata,
+          [SWR_KEYS.blockList(id)]: blockList.blocks,
         },
       }}
     >

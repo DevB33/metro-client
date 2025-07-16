@@ -12,6 +12,7 @@ import ISelectionPosition from '@/types/selection-position';
 import BUTTON_OFFSET from '@/constants/button-offset';
 import IMenuState from '@/types/menu-type';
 import { createBlock, getBlockList, getNoteDetail } from '@/apis/block';
+import SWR_KEYS from '@/constants/swr-keys';
 import BlockButton from './block-button';
 import Block from './block/block';
 import SelectionMenu from './selection-menu/selection-menu';
@@ -57,7 +58,7 @@ const NoteContent = () => {
 
   const params = useParams();
   const noteId = params.id as string;
-  const { data: blocks } = useSWR(`blockList-${noteId}`);
+  const { data: blocks } = useSWR(SWR_KEYS.blockList(noteId));
 
   // page 블록 있으면 page 정보 가져오는 로직
   const [noteDetails, setNoteDetails] = useState<Record<string, any>>({});
@@ -142,7 +143,7 @@ const NoteContent = () => {
         ],
       });
 
-      await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+      await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
       setTimeout(() => {
         (blockRef.current[0]?.parentNode as HTMLElement)?.focus();
       }, 0);
@@ -162,7 +163,7 @@ const NoteContent = () => {
       ],
     });
 
-    await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+    await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
     setTimeout(() => {
       (blockRef.current[blocks.length]?.parentNode as HTMLElement)?.focus();
     }, 0);

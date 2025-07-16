@@ -2,6 +2,7 @@ import { css } from '@/../styled-system/css';
 import { getNoteList, editNoteIcon, editNoteTitle, getNoteInfo } from '@/apis/note';
 import IconSelector from '@/app/(main)/note/[id]/_components/note-header/icon-selector';
 import keyName from '@/constants/key-name';
+import SWR_KEYS from '@/constants/swr-keys';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import PageIcon from '@/icons/page-icon';
 import INote from '@/types/note-type';
@@ -70,7 +71,7 @@ const IconSelectorContainer = css({
 });
 
 const EditTitleModal = ({ noteId, closeEditModal, top, left, right, bottom }: IEditTitleModal) => {
-  const { data } = useSWR(`noteList`);
+  const { data } = useSWR(SWR_KEYS.NOTE_LIST);
 
   const [value, setValue] = useState('');
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
@@ -125,8 +126,8 @@ const EditTitleModal = ({ noteId, closeEditModal, top, left, right, bottom }: IE
 
     debounceTimer.current = setTimeout(async () => {
       await editNoteTitle(noteId, value);
-      await mutate('noteList', getNoteList, false);
-      await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+      await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId), false);
     }, 100);
 
     return () => {
@@ -140,8 +141,8 @@ const EditTitleModal = ({ noteId, closeEditModal, top, left, right, bottom }: IE
 
   const handleSelectIcon = async (selectedIcon: string | null) => {
     await editNoteIcon(noteId, selectedIcon);
-    await mutate('noteList', getNoteList, false);
-    await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId));
+    await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+    await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId));
   };
 
   const handleSelectorOpen = () => {

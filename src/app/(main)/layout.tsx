@@ -4,6 +4,7 @@ import { css } from '@/../styled-system/css';
 import { SWRConfig } from 'swr';
 import axios from 'axios';
 
+import SWR_KEYS from '@/constants/swr-keys';
 import Sidebar from './_components/sidebar/sidebar';
 
 const MainLayout = async ({ children, modal }: Readonly<{ children: React.ReactNode; modal: React.ReactNode }>) => {
@@ -33,8 +34,8 @@ const MainLayout = async ({ children, modal }: Readonly<{ children: React.ReactN
     <SWRConfig
       value={{
         fallback: {
-          [`noteList`]: data.notes,
-          [`userInfo`]: userInfo,
+          [SWR_KEYS.NOTE_LIST]: data.notes,
+          [SWR_KEYS.USER_INFO]: userInfo,
         },
       }}
     >

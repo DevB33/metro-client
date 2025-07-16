@@ -4,6 +4,7 @@ import { ITextBlock, IBlockStyle } from '@/types/block-type';
 import { mutate } from 'swr';
 
 import { getBlockList, updateBlockNodes } from '@/apis/block';
+import SWR_KEYS from '@/constants/swr-keys';
 
 const createNewStyle = (type: string, beforeStyle: IBlockStyle) => {
   if (type === 'bold') {
@@ -85,7 +86,7 @@ const updateBlock = async (noteId: string, blockId: string, updatedNodes: ITextB
   // eslint-disable-next-line no-await-in-loop
   await updateBlockNodes(blockId, cleanedNodes);
   // eslint-disable-next-line no-await-in-loop
-  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+  await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
 };
 
 const changeSelectionStyle = async (

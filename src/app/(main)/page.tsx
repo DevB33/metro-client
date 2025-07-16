@@ -4,6 +4,7 @@ import useSWR from 'swr';
 import { css } from '@/../styled-system/css';
 
 import { ToastContainer } from 'react-toastify';
+import SWR_KEYS from '@/constants/swr-keys';
 import ResponseWrapper from './_components/chart/responsiveWrapper';
 
 const container = css({
@@ -26,7 +27,7 @@ const chartContainer = css({
 });
 
 const Home = () => {
-  const { data: userInfo } = useSWR(`userInfo`);
+  const { data: userInfo } = useSWR(SWR_KEYS.USER_INFO);
 
   return (
     <div className={container}>

@@ -7,6 +7,7 @@ import keyName from '@/constants/key-name';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import useSWR, { mutate } from 'swr';
 import { editNoteTags, getNoteInfo, getNoteList } from '@/apis/note';
+import SWR_KEYS from '@/constants/swr-keys';
 import TagBox from './tag-box';
 
 interface ITag {
@@ -70,7 +71,7 @@ const tagInput = css({
 });
 
 const Tag = ({ noteId }: ITag) => {
-  const { data = { tags: [] } } = useSWR<{ tags: ITagType[] }>(`noteMetadata-${noteId}`);
+  const { data = { tags: [] } } = useSWR<{ tags: ITagType[] }>(SWR_KEYS.noteMetadata(noteId));
 
   const tagList = data.tags;
 
@@ -116,8 +117,8 @@ const Tag = ({ noteId }: ITag) => {
       }
 
       await editNoteTags(noteId, [...tagList, { name: inputValue.trim(), color: getRandomColor() }]);
-      await mutate('noteList', getNoteList, false);
-      await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+      await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId), false);
 
       setIsEditing(false);
     }
@@ -128,8 +129,8 @@ const Tag = ({ noteId }: ITag) => {
       noteId,
       tagList.filter(tag => tag.name !== tagToDelete),
     );
-    await mutate('noteList', getNoteList, false);
-    await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
+    await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+    await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId), false);
   };
 
   return (
