@@ -9,6 +9,7 @@ import LineColor from '@/constants/line-color';
 import useSWR from 'swr';
 import { Zoom } from '@visx/zoom';
 import { useRouter } from 'next/navigation';
+
 import SWR_KEYS from '@/constants/swr-keys';
 import LinkControls from './LinkControls';
 import getLinkComponent from './getLinkComponent';
