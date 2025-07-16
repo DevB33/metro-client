@@ -346,7 +346,7 @@ const NoteContent = () => {
     }));
     // selection이 활성화 되어 있는지 확인
     isSelectionActive();
-  }, [selection]);
+  }, [selection, blocks.length]);
 
   // 각 menu들 초기화
   useEffect(() => {
@@ -762,7 +762,19 @@ const NoteContent = () => {
           </div>
         ))}
       </div>
-      <div className={bottomEmptyContianer} onClick={handleEmptyBottomClick} />
+      <div
+        role="button"
+        tabIndex={0}
+        className={bottomEmptyContianer}
+        onClick={handleEmptyBottomClick}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            handleEmptyBottomClick();
+          }
+        }}
+      >
+        d
+      </div>
       {menuState.isSelectionMenuOpen && (
         <div ref={selectionMenuRef}>
           <SelectionMenu

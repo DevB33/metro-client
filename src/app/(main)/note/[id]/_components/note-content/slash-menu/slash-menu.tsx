@@ -1,4 +1,4 @@
-import { useState, useEffect, JSX } from 'react';
+import { useState, useEffect, useCallback, JSX } from 'react';
 import ReactDOM from 'react-dom';
 import { useParams } from 'next/navigation';
 import { mutate } from 'swr';
@@ -72,87 +72,98 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
   const params = useParams();
   const noteId = params.id as string;
 
-  const makeBlock = async (type: 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'UL' | 'OL' | 'QUOTE' | 'PAGE') => {
-    // 현재 블록이 마지막 블록이 아닐 때
-    if (index !== blockList.length - 1) {
-      // 현재 블록 이후 블록 뒤로 한칸씩 미루기
-      await updateBlocksOrder(
-        noteId,
-        blockList[index + 1].order,
-        blockList[blockList.length - 1].order,
-        blockList[index + 1].order,
-      );
-    }
-    // 현재 블록 바로 뒤에 블록 생성
-    await createBlock({
-      noteId,
-      type,
-      upperOrder: blockList[index].order,
-      nodes: [{ content: '', type: 'text' }],
-    });
+  const makeBlock = useCallback(
+    async (type: 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'UL' | 'OL' | 'QUOTE' | 'PAGE') => {
+      if (index !== blockList.length - 1) {
+        await updateBlocksOrder(
+          noteId,
+          blockList[index + 1].order,
+          blockList[blockList.length - 1].order,
+          blockList[index + 1].order,
+        );
+      }
 
-    // 만약 새로 생성된 페이지 블록이 마지막 블록이면, 그 다음에 빈 블록을 생성
-    if (type === 'PAGE' && index === blockList.length - 1) {
       await createBlock({
         noteId,
-        type: 'DEFAULT',
-        upperOrder: blockList[index].order + 1,
+        type,
+        upperOrder: blockList[index].order,
         nodes: [{ content: '', type: 'text' }],
       });
-    }
 
-    await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
-    await mutate('noteList', getNoteList, false);
-
-    setMenuState(prev => ({
-      ...prev,
-      isSlashMenuOpen: false,
-      slashMenuOpenIndex: null,
-    }));
-
-    setTimeout(() => {
-      if (type === 'UL' || type === 'OL') {
-        (blockRef.current[index + 1]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
-      } else if (type === 'QUOTE') {
-        (blockRef.current[index + 1]?.parentNode?.parentNode as HTMLElement)?.focus();
-      } else {
-        (blockRef.current[index + 1]?.parentNode as HTMLElement)?.focus();
+      if (type === 'PAGE' && index === blockList.length - 1) {
+        await createBlock({
+          noteId,
+          type: 'DEFAULT',
+          upperOrder: blockList[index].order + 1,
+          nodes: [{ content: '', type: 'text' }],
+        });
       }
-    }, 0);
-  };
 
-  const changeBlock = async (type: 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'UL' | 'OL' | 'QUOTE' | 'PAGE') => {
-    if (type === 'PAGE') {
-      // 페이지 블록은 현재 블록을 삭제하고 새 페이지 블록을 생성
-      await deleteBlock(noteId, blockList[index].order, blockList[index].order);
-      await createBlock({
-        noteId,
-        type: 'PAGE',
-        upperOrder: blockList[index - 1].order,
-        nodes: [{ content: '', type: 'text' }],
-      });
-    } else {
-      await updateBlockType(blockList[index].id, type);
-    }
-    await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
-    await mutate('noteList', getNoteList, false);
+      await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+      await mutate('noteList', getNoteList, false);
 
-    setMenuState(prev => ({
-      ...prev,
-      isSlashMenuOpen: false,
-      slashMenuOpenIndex: null,
-    }));
+      setMenuState(prev => ({
+        ...prev,
+        isSlashMenuOpen: false,
+        slashMenuOpenIndex: null,
+      }));
 
-    setTimeout(() => {
-      if (type === 'UL' || type === 'OL') {
-        (blockRef.current[index]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
-      } else if (type === 'QUOTE') {
-        (blockRef.current[index]?.parentNode?.parentNode as HTMLElement)?.focus();
+      setTimeout(() => {
+        const parent1 = blockRef.current[index + 1]?.parentNode as HTMLElement;
+        const parent2 = parent1?.parentNode as HTMLElement;
+        const parent3 = parent2?.parentNode as HTMLElement;
+
+        if (type === 'UL' || type === 'OL') {
+          parent3?.focus();
+        } else if (type === 'QUOTE') {
+          parent2?.focus();
+        } else {
+          parent1?.focus();
+        }
+      }, 0);
+    },
+    [noteId, blockList, index, blockRef, setMenuState],
+  );
+
+  const changeBlock = useCallback(
+    async (type: 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'UL' | 'OL' | 'QUOTE' | 'PAGE') => {
+      if (type === 'PAGE') {
+        await deleteBlock(noteId, blockList[index].order, blockList[index].order);
+        await createBlock({
+          noteId,
+          type: 'PAGE',
+          upperOrder: blockList[index - 1].order,
+          nodes: [{ content: '', type: 'text' }],
+        });
       } else {
-        (blockRef.current[index]?.parentNode as HTMLElement)?.focus();
+        await updateBlockType(blockList[index].id, type);
       }
-    }, 0);
-  };
+
+      await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+      await mutate('noteList', getNoteList, false);
+
+      setMenuState(prev => ({
+        ...prev,
+        isSlashMenuOpen: false,
+        slashMenuOpenIndex: null,
+      }));
+
+      setTimeout(() => {
+        const parent1 = blockRef.current[index]?.parentNode as HTMLElement;
+        const parent2 = parent1?.parentNode as HTMLElement;
+        const parent3 = parent2?.parentNode as HTMLElement;
+
+        if (type === 'UL' || type === 'OL') {
+          parent3?.focus();
+        } else if (type === 'QUOTE') {
+          parent2?.focus();
+        } else {
+          parent1?.focus();
+        }
+      }, 0);
+    },
+    [noteId, blockList, index, blockRef, setMenuState],
+  );
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -172,7 +183,7 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
     // TODO: 이벤트 리스너를 document말고 다른곳에 달기
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIndex, index, blockList, menuState.isSlashMenuOpen]);
+  }, [selectedIndex, index, blockList, menuState.isSlashMenuOpen, changeBlock, makeBlock]);
 
   return menuState.isSlashMenuOpen && menuState.slashMenuOpenIndex === index
     ? ReactDOM.createPortal(
