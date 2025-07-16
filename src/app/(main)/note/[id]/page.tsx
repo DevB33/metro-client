@@ -1,52 +1,12 @@
 import { css } from '@/../styled-system/css';
-
 import axios from 'axios';
 import { cookies } from 'next/headers';
 import { SWRConfig } from 'swr';
+
 import SWR_KEYS from '@/constants/swr-keys';
 import Header from './_components/header';
 import NoteHeader from './_components/note-header/note-header';
 import NoteConent from './_components/note-content/note-content';
-
-const container = css({
-  position: 'relative',
-  width: '100%',
-  height: '100vh',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyItems: 'start',
-  overflowX: 'scroll',
-});
-
-const contentContainer = css({
-  width: '100%',
-  height: '100%',
-  overflowY: 'scroll',
-});
-
-const noteContainer = css({
-  position: 'relative',
-  width: 'auto',
-  minWidth: '54.5rem',
-  minHeight: '100%',
-  height: '100%',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'start',
-  gap: 'tiny',
-  zIndex: 3,
-  // mb: '10rem',
-});
-
-const divider = css({
-  backgroundColor: 'gray',
-  width: '44.5rem',
-  height: '.5px',
-  borderRadius: '1rem',
-  mb: 'small',
-});
 
 const Note = async ({ params }: { params: Promise<{ id: string }> }) => {
   const cookie = await cookies();
@@ -92,5 +52,44 @@ const Note = async ({ params }: { params: Promise<{ id: string }> }) => {
     </SWRConfig>
   );
 };
+
+const container = css({
+  position: 'relative',
+  width: '100%',
+  height: '100vh',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyItems: 'start',
+  overflowX: 'scroll',
+});
+
+const contentContainer = css({
+  width: '100%',
+  height: '100%',
+  overflowY: 'scroll',
+});
+
+const noteContainer = css({
+  position: 'relative',
+  width: 'auto',
+  minWidth: '54.5rem',
+  minHeight: '100%',
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'start',
+  gap: 'tiny',
+  zIndex: 3,
+});
+
+const divider = css({
+  backgroundColor: 'gray',
+  width: '44.5rem',
+  height: '.5px',
+  borderRadius: '1rem',
+  mb: 'small',
+});
 
 export default Note;

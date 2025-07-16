@@ -7,7 +7,41 @@ interface INoteCoverProps {
   cover: string;
 }
 
-const coverContainer = css({
+const NoteCover = ({ handleCoverModalOpen, deleteCover, cover }: INoteCoverProps) => {
+  const [isHover, setIsHover] = useState(false);
+
+  const handleMouseEnter = () => {
+    setIsHover(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHover(false);
+  };
+
+  return (
+    <div
+      className={contianer}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      style={{ backgroundColor: cover }}
+    >
+      <div className={innerContainer}>
+        {isHover && (
+          <div className={buttonContainer}>
+            <div className={leftButton} onClick={handleCoverModalOpen}>
+              커버변경
+            </div>
+            <div className={rightButton} onClick={deleteCover}>
+              커버제거
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const contianer = css({
   position: 'relative',
   display: 'flex',
   justifyContent: 'center',
@@ -44,7 +78,7 @@ const buttonContainer = css({
   userSelect: 'none',
 });
 
-const firstButton = css({
+const leftButton = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -53,45 +87,11 @@ const firstButton = css({
   borderColor: 'lightGray',
 });
 
-const secondButton = css({
+const rightButton = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   width: '3.75rem',
 });
-
-const NoteCover = ({ handleCoverModalOpen, deleteCover, cover }: INoteCoverProps) => {
-  const [isHover, setIsHover] = useState(false);
-
-  const handleMouseEnter = () => {
-    setIsHover(true);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHover(false);
-  };
-
-  return (
-    <div
-      className={coverContainer}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      style={{ backgroundColor: cover }}
-    >
-      <div className={innerContainer}>
-        {isHover && (
-          <div className={buttonContainer}>
-            <div className={firstButton} onClick={handleCoverModalOpen}>
-              커버변경
-            </div>
-            <div className={secondButton} onClick={deleteCover}>
-              커버제거
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
 
 export default NoteCover;

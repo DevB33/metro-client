@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { css } from '@/../styled-system/css';
-import { useClickOutside } from '@/hooks/useClickOutside';
 import useSWR, { mutate } from 'swr';
 import { useParams } from 'next/navigation';
+
+import { useClickOutside } from '@/hooks/useClickOutside';
 import { editNoteCover, editNoteIcon, getNoteInfo, getNoteList } from '@/apis/note';
 import SWR_KEYS from '@/constants/swr-keys';
 import IconSelector from './icon-selector';
@@ -12,45 +13,7 @@ import Tag from './tag';
 import Title from './title';
 import HoverMenu from './hover-menu';
 import NoteCover from './note-cover';
-import CoverDropdown from './cover-dropdown/dropdown';
-
-const headerConatiner = css({
-  width: '44.5rem',
-  position: 'relative',
-  zIndex: '20',
-});
-
-const IconContainer = css({
-  position: 'absolute',
-  width: '5.5rem',
-  height: '5.5rem',
-  fontSize: 'xl',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  cursor: 'pointer',
-  userSelect: 'none',
-  borderRadius: '0.5rem',
-  mb: 'tiny',
-
-  _hover: {
-    backgroundColor: 'lightGray',
-  },
-});
-
-const IconSelectorContainer = css({
-  position: 'absolute',
-  zIndex: '9999',
-});
-
-const IconMargin = css({
-  height: '6rem',
-  width: '100%',
-});
-
-const noIcon = css({
-  height: '3rem',
-});
+import CoverModal from './cover-modal/cover-modal';
 
 const NoteHeader = () => {
   const [isHover, setIsHover] = useState(false);
@@ -118,7 +81,7 @@ const NoteHeader = () => {
         <NoteCover cover={data.cover} handleCoverModalOpen={handleCoverModalOpen} deleteCover={deleteCover} />
       )}
       {isCoverModalOpen && (
-        <CoverDropdown handleSelectCover={handleSelectCover} handleCoverModalClose={handleCoverModalClose} />
+        <CoverModal handleSelectCover={handleSelectCover} handleCoverModalClose={handleCoverModalClose} />
       )}
 
       <div
@@ -162,5 +125,43 @@ const NoteHeader = () => {
     </>
   );
 };
+
+const headerConatiner = css({
+  width: '44.5rem',
+  position: 'relative',
+  zIndex: '20',
+});
+
+const IconContainer = css({
+  position: 'absolute',
+  width: '5.5rem',
+  height: '5.5rem',
+  fontSize: 'xl',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  cursor: 'pointer',
+  userSelect: 'none',
+  borderRadius: '0.5rem',
+  mb: 'tiny',
+
+  _hover: {
+    backgroundColor: 'lightGray',
+  },
+});
+
+const IconSelectorContainer = css({
+  position: 'absolute',
+  zIndex: '9999',
+});
+
+const IconMargin = css({
+  height: '6rem',
+  width: '100%',
+});
+
+const noIcon = css({
+  height: '3rem',
+});
 
 export default NoteHeader;

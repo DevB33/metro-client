@@ -1,74 +1,19 @@
 import { css } from '@/../styled-system/css';
-import TagIcon from '@/icons/tag-icon';
 import { useEffect, useRef, useState } from 'react';
+import useSWR, { mutate } from 'swr';
+
+import { useClickOutside } from '@/hooks/useClickOutside';
+import { editNoteTags, getNoteInfo, getNoteList } from '@/apis/note';
 import ITagType from '@/types/tag-type';
 import LineColor from '@/constants/line-color';
 import keyName from '@/constants/key-name';
-import { useClickOutside } from '@/hooks/useClickOutside';
-import useSWR, { mutate } from 'swr';
-import { editNoteTags, getNoteInfo, getNoteList } from '@/apis/note';
 import SWR_KEYS from '@/constants/swr-keys';
+import TagIcon from '@/icons/tag-icon';
 import TagBox from './tag-box';
 
 interface ITag {
   noteId: string;
 }
-
-const tagContainer = css({
-  minHeight: '2rem',
-  height: 'auto',
-  width: '44.5rem',
-  display: 'flex',
-  flexDirection: 'row',
-  alignItems: 'start',
-  justifyContent: 'start',
-  gap: 'small',
-  userSelect: 'none',
-});
-
-const typeContainer = css({
-  minHeight: '2.5rem',
-  display: 'flex',
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'start',
-  width: '10rem',
-  height: 'auto',
-  borderRadius: '0.2rem',
-  px: 'tiny',
-  gap: 'tiny',
-  color: 'grey',
-  cursor: 'pointer',
-
-  _hover: {
-    backgroundColor: 'lightGray',
-  },
-});
-const tagBoxContainer = css({
-  minHeight: '2.5rem',
-  height: 'auto',
-  width: '100%',
-  maxWidth: '35rem',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'start',
-  gap: 'tiny',
-  cursor: 'pointer',
-  padding: 'tiny',
-  borderRadius: '0.2rem',
-  color: 'grey',
-  flexWrap: 'wrap',
-
-  _hover: {
-    backgroundColor: 'lightGray',
-  },
-});
-
-const tagInput = css({
-  outline: 'none',
-  flex: '1',
-  color: 'black',
-});
 
 const Tag = ({ noteId }: ITag) => {
   const { data = { tags: [] } } = useSWR<{ tags: ITagType[] }>(SWR_KEYS.noteMetadata(noteId));
@@ -78,6 +23,7 @@ const Tag = ({ noteId }: ITag) => {
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // LineColor 중 랜덤한 색을 리턴해주는 함수
   const getRandomColor = (): keyof typeof LineColor => {
     const colorKeys = Object.keys(LineColor) as Array<keyof typeof LineColor>;
     const randomIndex = Math.floor(Math.random() * colorKeys.length);
@@ -134,7 +80,7 @@ const Tag = ({ noteId }: ITag) => {
   };
 
   return (
-    <div className={tagContainer} ref={tagRef}>
+    <div className={container} ref={tagRef}>
       <div className={typeContainer}>
         <TagIcon />
         태그
@@ -165,5 +111,61 @@ const Tag = ({ noteId }: ITag) => {
     </div>
   );
 };
+
+const container = css({
+  minHeight: '2rem',
+  height: 'auto',
+  width: '44.5rem',
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'start',
+  justifyContent: 'start',
+  gap: 'small',
+  userSelect: 'none',
+});
+
+const typeContainer = css({
+  minHeight: '2.5rem',
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'start',
+  width: '10rem',
+  height: 'auto',
+  borderRadius: '0.2rem',
+  px: 'tiny',
+  gap: 'tiny',
+  color: 'grey',
+  cursor: 'pointer',
+
+  _hover: {
+    backgroundColor: 'lightGray',
+  },
+});
+const tagBoxContainer = css({
+  minHeight: '2.5rem',
+  height: 'auto',
+  width: '100%',
+  maxWidth: '35rem',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'start',
+  gap: 'tiny',
+  cursor: 'pointer',
+  padding: 'tiny',
+  borderRadius: '0.2rem',
+  color: 'grey',
+  flexWrap: 'wrap',
+
+  _hover: {
+    backgroundColor: 'lightGray',
+  },
+});
+
+const tagInput = css({
+  outline: 'none',
+  flex: '1',
+  color: 'black',
+});
 
 export default Tag;
