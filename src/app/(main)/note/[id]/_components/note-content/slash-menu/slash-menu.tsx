@@ -1,9 +1,13 @@
 import { useState, useEffect, JSX } from 'react';
+import ReactDOM from 'react-dom';
 import { useParams } from 'next/navigation';
-import { css } from '@/../styled-system/css';
 import { mutate } from 'swr';
+import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
+import IMenuState from '@/types/menu-type';
+import { createBlock, getBlockList, updateBlocksOrder, updateBlockType, deleteBlock } from '@/apis/block';
+import { getNoteList } from '@/apis/note';
 import HeadingOneIcon from '@/icons/heading-one-icon';
 import HeadingTwoIcon from '@/icons/heading-two-icon';
 import HeadingThreeIcon from '@/icons/heading-three-icon';
@@ -12,11 +16,7 @@ import NumberedListIcon from '@/icons/numbered-list-icon';
 import QuoteIcon from '@/icons/quote-icon';
 import PageIcon from '@/icons/menu-page-icon';
 import TextIcon from '@/icons/text-icon';
-import ReactDOM from 'react-dom';
 import { useClickOutside } from '@/hooks/useClickOutside';
-import IMenuState from '@/types/menu-type';
-import { createBlock, getBlockList, updateBlocksOrder, updateBlockType, deleteBlock } from '@/apis/block';
-import { getNoteList } from '@/apis/note';
 
 interface ISlashMenuProps {
   index: number;
@@ -41,41 +41,6 @@ const menu = css({
   fontSize: 'md',
   padding: 'tiny',
   zIndex: '1000',
-});
-
-const menuTitle = css({
-  fontSize: '.8rem',
-  fontWeight: 'bold',
-  color: 'gray',
-});
-
-const slashButton = css({
-  width: '100%',
-  height: '2rem',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  borderRadius: '.3rem',
-  px: 'tiny',
-  gap: 'tiny',
-  cursor: 'pointer',
-});
-
-const selectedButton = css({
-  backgroundColor: 'lightgray',
-});
-
-const buttonName = css({
-  display: 'flex',
-  flexDirection: 'row',
-  justifyContent: 'start',
-  alignItems: 'center',
-  width: '100%',
-});
-
-const markdown = css({
-  fontSize: '.9rem',
-  color: 'grey',
 });
 
 const MENU_ITEMS: {
@@ -257,5 +222,40 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
       )
     : null;
 };
+
+const menuTitle = css({
+  fontSize: '.8rem',
+  fontWeight: 'bold',
+  color: 'gray',
+});
+
+const slashButton = css({
+  width: '100%',
+  height: '2rem',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  borderRadius: '.3rem',
+  px: 'tiny',
+  gap: 'tiny',
+  cursor: 'pointer',
+});
+
+const selectedButton = css({
+  backgroundColor: 'lightgray',
+});
+
+const buttonName = css({
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'start',
+  alignItems: 'center',
+  width: '100%',
+});
+
+const markdown = css({
+  fontSize: '.9rem',
+  color: 'grey',
+});
 
 export default SlashMenu;

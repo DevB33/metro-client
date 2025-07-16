@@ -10,14 +10,6 @@ interface IGhostBlock {
   index: number;
 }
 
-const container = css({
-  position: 'absolute',
-  top: '-9999px',
-  left: '-9999px',
-  padding: '8px 16px',
-  borderRadius: '4px',
-});
-
 const GhostBlock = ({ ghostRef, block, blockList, index }: IGhostBlock) => {
   return (
     <div ref={ghostRef} className={container}>
@@ -41,5 +33,13 @@ const GhostBlock = ({ ghostRef, block, blockList, index }: IGhostBlock) => {
     </div>
   );
 };
+
+const container = css({
+  position: 'absolute',
+  top: '-9999px',
+  left: '-9999px',
+  padding: '8px 16px',
+  borderRadius: '4px',
+});
 
 export default GhostBlock;

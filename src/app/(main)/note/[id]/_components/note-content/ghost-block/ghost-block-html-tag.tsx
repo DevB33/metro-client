@@ -9,10 +9,6 @@ interface IGhostBlockHTMLTag {
   children: React.ReactNode[];
 }
 
-const htmltag = css({
-  opacity: '0.4',
-});
-
 const GhostBlockHTMLTag = ({ block, blockList, index, children }: IGhostBlockHTMLTag) => {
   if (block.type === 'DEFAULT') {
     return <p className={htmltag}>{children}</p>;
@@ -72,5 +68,9 @@ const GhostBlockHTMLTag = ({ block, blockList, index, children }: IGhostBlockHTM
 
   return null;
 };
+
+const htmltag = css({
+  opacity: '0.4',
+});
 
 export default GhostBlockHTMLTag;

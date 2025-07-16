@@ -12,10 +12,10 @@ import PageIcon from '@/icons/page-icon';
 import handleInput from './handler/handleInput';
 import handleKeyDown from './handler/handleKeyDown';
 import handleMouseLeave from './handler/handleMouseLeave';
-import BlockHTMLTag from './block-html-tag';
 import handleMouseDown from './handler/handleMouseDown';
 import handleMouseMove from './handler/handleMouseMove';
 import handleMouseUp from './handler/handleMouseUp';
+import BlockHTMLTag from './block-html-tag';
 
 interface IBlockComponent {
   block: ITextBlock;
@@ -35,46 +35,6 @@ interface IBlockComponent {
   dragBlockIndex: number | null;
   noteDetails: any;
 }
-
-const container = css({
-  position: 'relative',
-  width: 'full',
-  minHeight: '1.5rem',
-  height: 'auto',
-  zIndex: '10',
-});
-
-const blockDiv = css({
-  pointerEvents: 'auto',
-  boxSizing: 'border-box',
-  width: 'full',
-  minHeight: '1.5rem',
-  height: 'auto',
-  padding: '2px 0 !important',
-  outline: 'none',
-  overflowY: 'hidden',
-  flexShrink: 0,
-  userSelect: 'none',
-  '--block-height': 'auto',
-});
-
-const pageButton = css({
-  display: 'flex',
-  justifyContent: 'start',
-  width: 'full',
-  backgroundColor: 'transparent',
-  _hover: {
-    backgroundColor: 'gray.200',
-  },
-  borderRadius: '0.25rem',
-});
-
-const pageTitle = css({
-  color: 'gray.600',
-  textDecoration: 'underline',
-  fontWeight: 'bold',
-  width: '100%',
-});
 
 const Block = memo(
   ({
@@ -310,5 +270,45 @@ const Block = memo(
   },
   (_prevProps, nextProps) => nextProps.isTyping,
 );
+
+const container = css({
+  position: 'relative',
+  width: 'full',
+  minHeight: '1.5rem',
+  height: 'auto',
+  zIndex: '10',
+});
+
+const blockDiv = css({
+  pointerEvents: 'auto',
+  boxSizing: 'border-box',
+  width: 'full',
+  minHeight: '1.5rem',
+  height: 'auto',
+  padding: '2px 0 !important',
+  outline: 'none',
+  overflowY: 'hidden',
+  flexShrink: 0,
+  userSelect: 'none',
+  '--block-height': 'auto',
+});
+
+const pageButton = css({
+  display: 'flex',
+  justifyContent: 'start',
+  width: 'full',
+  backgroundColor: 'transparent',
+  _hover: {
+    backgroundColor: 'gray.200',
+  },
+  borderRadius: '0.25rem',
+});
+
+const pageTitle = css({
+  color: 'gray.600',
+  textDecoration: 'underline',
+  fontWeight: 'bold',
+  width: '100%',
+});
 
 export default Block;

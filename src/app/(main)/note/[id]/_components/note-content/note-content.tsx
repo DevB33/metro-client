@@ -5,43 +5,16 @@ import { useParams } from 'next/navigation';
 import useSWR, { mutate } from 'swr';
 import { css } from '@/../styled-system/css';
 
-import getSelectionInfo from '@/utils/getSelectionInfo';
 import { ITextBlock } from '@/types/block-type';
-import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundImage';
 import ISelectionPosition from '@/types/selection-position';
-import BUTTON_OFFSET from '@/constants/button-offset';
 import IMenuState from '@/types/menu-type';
+import getSelectionInfo from '@/utils/getSelectionInfo';
+import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundImage';
 import { createBlock, getBlockList, getNoteDetail } from '@/apis/block';
+import BUTTON_OFFSET from '@/constants/button-offset';
 import BlockButton from './block-button';
 import Block from './block/block';
 import SelectionMenu from './selection-menu/selection-menu';
-
-const tempNoteContent = css({
-  width: '100%',
-  height: 'calc(100% - 15rem)',
-});
-
-const blockContainer = css({
-  boxSizing: 'content-box',
-  position: 'relative',
-  width: '44.5rem',
-  display: 'flex',
-  flexDirection: 'row',
-  px: '5rem',
-  mb: '0.5rem',
-});
-
-const fakeBox = css({
-  position: 'absolute',
-  transform: 'translateX(-30%)',
-  zIndex: '1',
-
-  pointerEvents: 'auto',
-});
-
-const bottomEmptyContianer = css({
-  flex: 1,
-});
 
 const NoteContent = () => {
   const blockContainerRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -78,6 +51,7 @@ const NoteContent = () => {
               results[id] = data;
             }
           } catch (error) {
+            // eslint-disable-next-line no-console
             console.error('Error fetching page Detail:', error);
           }
         }),
@@ -807,5 +781,32 @@ const NoteContent = () => {
     </div>
   );
 };
+
+const tempNoteContent = css({
+  width: '100%',
+  height: 'calc(100% - 15rem)',
+});
+
+const blockContainer = css({
+  boxSizing: 'content-box',
+  position: 'relative',
+  width: '44.5rem',
+  display: 'flex',
+  flexDirection: 'row',
+  px: '5rem',
+  mb: '0.5rem',
+});
+
+const fakeBox = css({
+  position: 'absolute',
+  transform: 'translateX(-30%)',
+  zIndex: '1',
+
+  pointerEvents: 'auto',
+});
+
+const bottomEmptyContianer = css({
+  flex: 1,
+});
 
 export default NoteContent;

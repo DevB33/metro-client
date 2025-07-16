@@ -1,15 +1,15 @@
+import { JSX } from 'react';
 import { css } from '@/../styled-system/css';
 
-import ISelectionPosition from '@/types/selection-position';
 import { ITextBlock } from '@/types/block-type';
+import ISelectionPosition from '@/types/selection-position';
+import IMenuState from '@/types/menu-type';
 import BoldIcon from '@/icons/bold-icon';
 import ItalicIcon from '@/icons/italic-icon';
 import UnderlineIcon from '@/icons/underline-icon';
 import LineThroughIcon from '@/icons/line-through-icon';
 import CodeblockIcon from '@/icons/codeblock-icon';
-import { JSX } from 'react';
 import { useClickOutside } from '@/hooks/useClickOutside';
-import IMenuState from '@/types/menu-type';
 import changeSelectionStyle from './changeSelectionStyle';
 
 interface ISelectionMenuProps {
@@ -23,34 +23,6 @@ interface ISelectionMenuProps {
   resetSelection: () => void;
   selectionMenuButtonRef: React.RefObject<(HTMLDivElement | null)[]>;
 }
-
-const menu = css({
-  position: 'fixed',
-  width: 'auto',
-  height: 'auto',
-  display: 'flex',
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  background: 'white',
-  border: '1px solid lightgray',
-  borderRadius: '.3rem',
-  boxShadow: 'dropDown',
-  fontSize: 'md',
-  padding: '.3rem',
-  zIndex: 1000,
-  pointerEvents: 'auto',
-});
-
-const slashButton = css({
-  width: '1.5rem',
-  height: '1.5rem',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderRadius: '.3rem',
-  cursor: 'pointer',
-  backgroundColor: { base: 'none', _hover: 'lightgray' },
-});
 
 const MENU_ITEMS: {
   label: string;
@@ -122,5 +94,33 @@ const SelectionMenu = ({
     </div>
   );
 };
+
+const menu = css({
+  position: 'fixed',
+  width: 'auto',
+  height: 'auto',
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  background: 'white',
+  border: '1px solid lightgray',
+  borderRadius: '.3rem',
+  boxShadow: 'dropDown',
+  fontSize: 'md',
+  padding: '.3rem',
+  zIndex: 1000,
+  pointerEvents: 'auto',
+});
+
+const slashButton = css({
+  width: '1.5rem',
+  height: '1.5rem',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: '.3rem',
+  cursor: 'pointer',
+  backgroundColor: { base: 'none', _hover: 'lightgray' },
+});
 
 export default SelectionMenu;

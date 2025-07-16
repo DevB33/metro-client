@@ -1,8 +1,7 @@
-import ISelectionPosition from '@/types/selection-position';
-import { ITextBlock, IBlockStyle } from '@/types/block-type';
-
 import { mutate } from 'swr';
 
+import ISelectionPosition from '@/types/selection-position';
+import { ITextBlock, IBlockStyle } from '@/types/block-type';
 import { getBlockList, updateBlockNodes } from '@/apis/block';
 
 const createNewStyle = (type: string, beforeStyle: IBlockStyle) => {

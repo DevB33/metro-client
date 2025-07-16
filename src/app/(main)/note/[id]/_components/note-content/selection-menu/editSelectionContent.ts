@@ -1,8 +1,7 @@
-import ISelectionPosition from '@/types/selection-position';
-import { ITextBlock, ITextBlockChild } from '@/types/block-type';
-
 import { mutate } from 'swr';
 
+import ISelectionPosition from '@/types/selection-position';
+import { ITextBlock, ITextBlockChild } from '@/types/block-type';
 import { getNoteList } from '@/apis/note';
 import { createBlock, deleteBlock, getBlockList, updateBlockNodes, updateBlocksOrder } from '@/apis/block';
 

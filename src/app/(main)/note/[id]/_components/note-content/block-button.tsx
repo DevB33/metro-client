@@ -1,17 +1,17 @@
 import { useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { css } from '@/../styled-system/css';
 import { mutate } from 'swr';
+import { css } from '@/../styled-system/css';
 
+import { ITextBlock } from '@/types/block-type';
+import IMenuState from '@/types/menu-type';
+import { getNoteList } from '@/apis/note';
+import { createBlock, deleteBlock, getBlockList, updateBlocksOrder } from '@/apis/block';
 import PlusIcon from '@/icons/plus-icon';
 import GripVerticalIcon from '@/icons/grip-vertical-icon';
-import DropDown from '@/components/dropdown/dropdown';
 import TrashIcon from '@/icons/trash-icon';
 import ArrowReapeatIcon from '@/icons/arrow-repeat-icon';
-import { ITextBlock } from '@/types/block-type';
-import { getNoteList } from '@/apis/note';
-import IMenuState from '@/types/menu-type';
-import { createBlock, deleteBlock, getBlockList, updateBlocksOrder } from '@/apis/block';
+import DropDown from '@/components/dropdown/dropdown';
 import SlashMenu from './slash-menu/slash-menu';
 import GhostBlock from './ghost-block/ghost-block';
 
@@ -27,36 +27,6 @@ interface IBlockButton {
   menuState: IMenuState;
   setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>;
 }
-
-const blockBtnContainer = css({
-  position: 'absolute',
-  top: '50%',
-  transform: 'translateY(-50%)',
-  display: 'flex',
-  flexDirection: 'row',
-});
-
-const blockBtn = css({
-  width: '1.5em',
-  height: '1.5rem',
-  padding: '0.2rem',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderRadius: '0.5rem',
-  cursor: 'pointer',
-
-  _hover: {
-    backgroundColor: '#F1F1F0',
-  },
-});
-
-const deleteBtn = css({
-  display: 'flex',
-  flexDirection: 'row',
-  color: 'red',
-  gap: '0.25rem',
-});
 
 const BlockButton = ({
   OpenBlockMenu,
@@ -217,5 +187,35 @@ const BlockButton = ({
     </div>
   );
 };
+
+const blockBtnContainer = css({
+  position: 'absolute',
+  top: '50%',
+  transform: 'translateY(-50%)',
+  display: 'flex',
+  flexDirection: 'row',
+});
+
+const blockBtn = css({
+  width: '1.5em',
+  height: '1.5rem',
+  padding: '0.2rem',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: '0.5rem',
+  cursor: 'pointer',
+
+  _hover: {
+    backgroundColor: '#F1F1F0',
+  },
+});
+
+const deleteBtn = css({
+  display: 'flex',
+  flexDirection: 'row',
+  color: 'red',
+  gap: '0.25rem',
+});
 
 export default BlockButton;

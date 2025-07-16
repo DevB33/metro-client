@@ -2,7 +2,6 @@ import { cva } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
 import placeholder from '@/constants/placeholder';
-// import { useRouter } from 'next/navigation';
 
 interface IBlockTag {
   block: ITextBlock;
@@ -12,58 +11,7 @@ interface IBlockTag {
   children: React.ReactNode[];
 }
 
-const placeholderStyles = cva({
-  base: {
-    position: 'relative',
-    '.parent:focus-within &': {
-      '&[data-empty=true]::before': {
-        position: 'absolute',
-        top: '0',
-        color: 'gray',
-        pointerEvents: 'none',
-        content: 'attr(data-placeholder)',
-      },
-    },
-  },
-  variants: {
-    tag: {
-      p: {
-        '.parent:focus-within &': {
-          '&[data-empty=true]::before': {
-            fontSize: 'md',
-          },
-        },
-      },
-      h1: {
-        '.parent:focus-within &': {
-          '&[data-empty=true]::before': {
-            left: '0.5rem',
-            fontSize: 'lg',
-          },
-        },
-      },
-      h2: {
-        '.parent:focus-within &': {
-          '&[data-empty=true]::before': {
-            left: '0.5rem',
-            fontSize: '1.5rem',
-          },
-        },
-      },
-      h3: {
-        '.parent:focus-within &': {
-          '&[data-empty=true]::before': {
-            left: '0.5rem',
-            fontSize: '1.25rem',
-          },
-        },
-      },
-    },
-  },
-});
-
 const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag) => {
-  // const router = useRouter();
   if (block.type === 'DEFAULT') {
     return (
       <p
@@ -206,5 +154,55 @@ const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag
 
   return null;
 };
+
+const placeholderStyles = cva({
+  base: {
+    position: 'relative',
+    '.parent:focus-within &': {
+      '&[data-empty=true]::before': {
+        position: 'absolute',
+        top: '0',
+        color: 'gray',
+        pointerEvents: 'none',
+        content: 'attr(data-placeholder)',
+      },
+    },
+  },
+  variants: {
+    tag: {
+      p: {
+        '.parent:focus-within &': {
+          '&[data-empty=true]::before': {
+            fontSize: 'md',
+          },
+        },
+      },
+      h1: {
+        '.parent:focus-within &': {
+          '&[data-empty=true]::before': {
+            left: '0.5rem',
+            fontSize: 'lg',
+          },
+        },
+      },
+      h2: {
+        '.parent:focus-within &': {
+          '&[data-empty=true]::before': {
+            left: '0.5rem',
+            fontSize: '1.5rem',
+          },
+        },
+      },
+      h3: {
+        '.parent:focus-within &': {
+          '&[data-empty=true]::before': {
+            left: '0.5rem',
+            fontSize: '1.25rem',
+          },
+        },
+      },
+    },
+  },
+});
 
 export default BlockHTMLTag;
