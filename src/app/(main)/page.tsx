@@ -2,7 +2,6 @@
 
 import useSWR from 'swr';
 import { css } from '@/../styled-system/css';
-import { ToastContainer } from 'react-toastify';
 
 import SWR_KEYS from '@/constants/swr-keys';
 import ResponseWrapper from './_components/chart/responsiveWrapper';
@@ -12,7 +11,6 @@ const Home = () => {
 
   return (
     <div className={container}>
-      <ToastContainer autoClose={1500} />
       <div className={welcomeBanner}>{userInfo?.name} 님, 안녕하세요.</div>
       <div className={chartContainer}>
         <ResponseWrapper />
