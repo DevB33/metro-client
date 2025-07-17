@@ -28,12 +28,12 @@ const NoteCover = ({ handleCoverModalOpen, deleteCover, cover }: INoteCoverProps
       <div className={innerContainer}>
         {isHover && (
           <div className={buttonContainer}>
-            <div className={leftButton} onClick={handleCoverModalOpen}>
+            <button type="button" className={leftButton} onClick={handleCoverModalOpen}>
               커버변경
-            </div>
-            <div className={rightButton} onClick={deleteCover}>
+            </button>
+            <button type="button" className={rightButton} onClick={deleteCover}>
               커버제거
-            </div>
+            </button>
           </div>
         )}
       </div>
