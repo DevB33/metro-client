@@ -95,7 +95,7 @@ const handleInput = async (
   }
 
   await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
-  await mutate(SWR_KEYS.NOTE_LIST, getBlockList(noteId), false);
+  await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
 
   prevChildNodesLength.current = childNodes.length;
 };
