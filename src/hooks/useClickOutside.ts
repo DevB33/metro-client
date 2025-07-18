@@ -20,22 +20,3 @@ const useClickOutside = (callback: () => void) => {
 };
 
 export default useClickOutside;
-
-// export const useMouseUpOutside = (callback: () => void) => {
-//   const ref = useRef<HTMLDivElement | null>(null);
-
-//   useEffect(() => {
-//     const handleClickOutside = (e: MouseEvent) => {
-//       if (ref.current && !ref.current.contains(e.target as Node)) {
-//         callback();
-//       }
-//     };
-
-//     document.addEventListener('mouseup', handleClickOutside);
-//     return () => {
-//       document.removeEventListener('mouseup', handleClickOutside);
-//     };
-//   }, [callback]);
-
-//   return ref;
-// };
