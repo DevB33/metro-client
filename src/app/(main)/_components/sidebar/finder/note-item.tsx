@@ -6,8 +6,7 @@ import useSWR, { mutate } from 'swr';
 import { toast } from 'react-toastify';
 import { css } from '@/../styled-system/css';
 
-import { createNote, deleteNote, getNoteList } from '@/apis/note';
-import { getBlockList, updateBlocksOrder } from '@/apis/block';
+import { createNote, deleteNote, getNoteList } from '@/apis/client/note';
 import INotes from '@/types/note-type';
 import { toastErrorMessage, toastSuccessMessage } from '@/constants/toast-message';
 import SWR_KEYS from '@/constants/swr-keys';
@@ -19,6 +18,7 @@ import PlusIcon from '@/icons/plus-icon';
 import TrashIcon from '@/icons/trash-icon';
 import PencilSquareIcon from '@/icons/pencil-square';
 import DropDown from '@/components/dropdown/dropdown';
+import { getBlockList, updateBlocksOrder } from '@/apis/client/block';
 import EditTitleModal from './edit-title-modal';
 
 interface INoteItem {

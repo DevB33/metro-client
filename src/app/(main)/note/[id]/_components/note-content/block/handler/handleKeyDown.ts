@@ -7,7 +7,7 @@ import {
   updateBlockNodes,
   updateBlocksOrder,
   updateBlockType,
-} from '@/apis/block';
+} from '@/apis/client/block';
 import { ITextBlock } from '@/types/block-type';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import keyName from '@/constants/key-name';

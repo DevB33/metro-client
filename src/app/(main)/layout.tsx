@@ -2,40 +2,26 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { css } from '@/../styled-system/css';
 import { SWRConfig } from 'swr';
-import axios from 'axios';
 
 import SWR_KEYS from '@/constants/swr-keys';
+import { getNoteList } from '@/apis/server/note';
+import getUserInfo from '@/apis/server/users';
 import Sidebar from './_components/sidebar/sidebar';
 
 const MainLayout = async ({ children, modal }: Readonly<{ children: React.ReactNode; modal: React.ReactNode }>) => {
-  const cookie = await cookies();
-  const isLogin = cookie.has('accessToken');
-  const accessToken = cookie?.get('accessToken')?.value;
-
-  if (!isLogin) {
+  if (!(await cookies()).has('accessToken')) {
     redirect('/login');
   }
 
-  const { data } = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/notes`, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-
-  const { data: userInfo } = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/members`, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  const data = await getNoteList();
+  const userData = await getUserInfo();
 
   return (
     <SWRConfig
       value={{
         fallback: {
           [SWR_KEYS.NOTE_LIST]: data.notes,
-          [SWR_KEYS.USER_INFO]: userInfo,
+          [SWR_KEYS.USER_INFO]: userData,
         },
       }}
     >

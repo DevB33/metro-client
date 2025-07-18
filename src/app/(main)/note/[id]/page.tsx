@@ -1,34 +1,18 @@
 import { css } from '@/../styled-system/css';
-import axios from 'axios';
-import { cookies } from 'next/headers';
 import { SWRConfig } from 'swr';
 
 import SWR_KEYS from '@/constants/swr-keys';
+import { getNoteInfo } from '@/apis/server/note';
+import getBlockList from '@/apis/server/block';
 import Header from './_components/header';
 import NoteHeader from './_components/note-header/note-header';
 import NoteConent from './_components/note-content/note-content';
 
 const Note = async ({ params }: { params: Promise<{ id: string }> }) => {
-  const cookie = await cookies();
-  const accessToken = cookie?.get('accessToken')?.value;
   const { id } = await params;
 
-  const { data: noteMetadata } = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/notes/${id}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-
-  const { data: blockList } = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/blocks`, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    },
-    params: {
-      noteId: id,
-    },
-  });
+  const noteMetadata = await getNoteInfo(id);
+  const blockList = await getBlockList(id);
 
   return (
     <SWRConfig

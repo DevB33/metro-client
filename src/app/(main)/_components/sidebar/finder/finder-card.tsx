@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { css } from '@/../styled-system/css';
 import { useState } from 'react';
 
-import { createNote, getNoteList } from '@/apis/note';
+import { createNote, getNoteList } from '@/apis/client/note';
 import INotes from '@/types/note-type';
 import { toastErrorMessage, toastSuccessMessage } from '@/constants/toast-message';
 import SWR_KEYS from '@/constants/swr-keys';

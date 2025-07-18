@@ -6,7 +6,7 @@ import { css } from '@/../styled-system/css';
 import { toast } from 'react-toastify';
 import useSWR, { mutate } from 'swr';
 
-import { deleteNote, getNoteList } from '@/apis/note';
+import { deleteNote, getNoteList } from '@/apis/client/note';
 import INotes from '@/types/note-type';
 import { toastErrorMessage, toastSuccessMessage } from '@/constants/toast-message';
 import SWR_KEYS from '@/constants/swr-keys';

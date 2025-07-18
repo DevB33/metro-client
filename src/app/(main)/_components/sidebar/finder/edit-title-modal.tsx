@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import useSWR, { mutate } from 'swr';
 
-import { getNoteList, editNoteIcon, editNoteTitle, getNoteInfo } from '@/apis/note';
+import { getNoteList, editNoteIcon, editNoteTitle, getNoteInfo } from '@/apis/client/note';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import INote from '@/types/note-type';
 import keyName from '@/constants/key-name';

@@ -6,7 +6,7 @@ import useSWR, { mutate } from 'swr';
 import { useParams } from 'next/navigation';
 
 import { useClickOutside } from '@/hooks/useClickOutside';
-import { editNoteCover, editNoteIcon, getNoteInfo, getNoteList } from '@/apis/note';
+import { editNoteCover, editNoteIcon, getNoteInfo, getNoteList } from '@/apis/client/note';
 import SWR_KEYS from '@/constants/swr-keys';
 import IconSelector from './icon-selector';
 import Tag from './tag';

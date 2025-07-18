@@ -11,7 +11,7 @@ import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundIma
 import ISelectionPosition from '@/types/selection-position';
 import BUTTON_OFFSET from '@/constants/button-offset';
 import IMenuState from '@/types/menu-type';
-import { createBlock, getBlockList, getNoteDetail } from '@/apis/block';
+import { createBlock, getBlockList, getNoteDetail } from '@/apis/client/block';
 import SWR_KEYS from '@/constants/swr-keys';
 import BlockButton from './block-button';
 import Block from './block/block';

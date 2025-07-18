@@ -1,8 +1,6 @@
 import { css } from '@/../styled-system/css';
 
-import axios from 'axios';
-import { cookies } from 'next/headers';
-
+import { getNoteInfo } from '@/apis/server/note';
 import Header from './_components/header';
 import Content from './_components/content';
 
@@ -17,18 +15,9 @@ const container = css({
 });
 
 const SharedNote = async ({ params }: { params: Promise<{ id: string }> }) => {
-  const cookie = await cookies();
-  const accessToken = cookie?.get('accessToken')?.value;
   const { id } = await params;
 
-  const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/notes/${id}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-
-  const noteData = response.data;
+  const noteData = await getNoteInfo(id);
 
   return (
     <div className={container}>

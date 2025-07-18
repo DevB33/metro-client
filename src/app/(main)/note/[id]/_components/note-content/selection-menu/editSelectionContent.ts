@@ -3,8 +3,8 @@ import { ITextBlock, ITextBlockChild } from '@/types/block-type';
 
 import { mutate } from 'swr';
 
-import { getNoteList } from '@/apis/note';
-import { createBlock, deleteBlock, getBlockList, updateBlockNodes, updateBlocksOrder } from '@/apis/block';
+import { getNoteList } from '@/apis/client/note';
+import { createBlock, deleteBlock, getBlockList, updateBlockNodes, updateBlocksOrder } from '@/apis/client/block';
 import SWR_KEYS from '@/constants/swr-keys';
 
 const defaultStyle = {

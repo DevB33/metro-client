@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import useSWR, { mutate } from 'swr';
 
 import { useClickOutside } from '@/hooks/useClickOutside';
-import { editNoteTags, getNoteInfo, getNoteList } from '@/apis/note';
+import { editNoteTags, getNoteInfo, getNoteList } from '@/apis/client/note';
 import ITagType from '@/types/tag-type';
 import LineColor from '@/constants/line-color';
 import keyName from '@/constants/key-name';

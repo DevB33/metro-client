@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 import useSWR, { mutate } from 'swr';
 
-import { editNoteTitle, getNoteInfo, getNoteList } from '@/apis/note';
+import { editNoteTitle, getNoteInfo, getNoteList } from '@/apis/client/note';
 import SWR_KEYS from '@/constants/swr-keys';
 
 interface ITitle {

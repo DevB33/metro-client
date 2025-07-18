@@ -3,7 +3,7 @@ import { ITextBlock, IBlockStyle } from '@/types/block-type';
 
 import { mutate } from 'swr';
 
-import { getBlockList, updateBlockNodes } from '@/apis/block';
+import { getBlockList, updateBlockNodes } from '@/apis/client/block';
 import SWR_KEYS from '@/constants/swr-keys';
 
 const createNewStyle = (type: string, beforeStyle: IBlockStyle) => {

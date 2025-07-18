@@ -1,6 +1,6 @@
 import { mutate } from 'swr';
 
-import { getBlockList, updateBlockNodes } from '@/apis/block';
+import { getBlockList, updateBlockNodes } from '@/apis/client/block';
 import { ITextBlock } from '@/types/block-type';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import SWR_KEYS from '@/constants/swr-keys';

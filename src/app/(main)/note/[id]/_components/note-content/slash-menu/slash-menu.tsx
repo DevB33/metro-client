@@ -15,8 +15,8 @@ import TextIcon from '@/icons/text-icon';
 import ReactDOM from 'react-dom';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import IMenuState from '@/types/menu-type';
-import { createBlock, getBlockList, updateBlocksOrder, updateBlockType, deleteBlock } from '@/apis/block';
-import { getNoteList } from '@/apis/note';
+import { createBlock, getBlockList, updateBlocksOrder, updateBlockType, deleteBlock } from '@/apis/client/block';
+import { getNoteList } from '@/apis/client/note';
 import SWR_KEYS from '@/constants/swr-keys';
 
 interface ISlashMenuProps {
