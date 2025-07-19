@@ -2,9 +2,30 @@ import Image from 'next/image';
 import useSWR from 'swr';
 import { css } from '@/../styled-system/css';
 
+import SWR_KEYS from '@/constants/swr-keys';
 import SettingButton from './setting-button';
 
-const profileCard = css({
+const ProfileCard = () => {
+  const { data: userInfo } = useSWR(SWR_KEYS.USER_INFO);
+
+  return (
+    <div className={container}>
+      <div className={profileContainer}>
+        <Image
+          src={userInfo?.avatar}
+          alt={`${userInfo.name}의 프로필 이미지`}
+          className={profileImg}
+          width={32}
+          height={32}
+        />
+        <div className={profileName}>{userInfo.name}님의 METRO</div>
+      </div>
+      <SettingButton />
+    </div>
+  );
+};
+
+const container = css({
   width: '100%',
   height: '4rem',
   minHeight: '4rem',
@@ -21,7 +42,7 @@ const profileCard = css({
   overflow: 'hidden',
 });
 
-const profileInfo = css({
+const profileContainer = css({
   display: 'flex',
   alignItems: 'center',
   flexDirection: 'row',
@@ -43,25 +64,5 @@ const profileName = css({
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
 });
-
-const ProfileCard = () => {
-  const { data: userInfo } = useSWR(`userInfo`);
-
-  return (
-    <div className={profileCard}>
-      <div className={profileInfo}>
-        <Image
-          src={userInfo?.avatar}
-          alt={`${userInfo.name}의 프로필 이미지`}
-          className={profileImg}
-          width={32}
-          height={32}
-        />
-        <div className={profileName}>{userInfo.name}님의 METRO</div>
-      </div>
-      <SettingButton />
-    </div>
-  );
-};
 
 export default ProfileCard;

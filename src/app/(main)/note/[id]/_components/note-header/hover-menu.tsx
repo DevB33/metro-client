@@ -1,4 +1,5 @@
 import { css } from '@/../styled-system/css';
+
 import ImageIcon from '@/icons/image-icon';
 import SmileIcon from '@/icons/smile-icon';
 
@@ -11,7 +12,51 @@ interface IHoverMenuProps {
   handleSelectCover: (color: string) => void;
 }
 
-const hoverMenuContainer = css({
+const HoverMenu = ({
+  icon,
+  cover,
+  isHover,
+  handleSelectorOpen,
+  handleSelectIcon,
+  handleSelectCover,
+}: IHoverMenuProps) => {
+  const handleClick = () => {
+    handleSelectIcon('🍎');
+    handleSelectorOpen();
+  };
+
+  const handleCoverButtonClick = () => {
+    handleSelectCover('#cc99ff');
+  };
+
+  return (
+    <div className={container}>
+      {isHover && (
+        <>
+          {!icon ? (
+            <button type="button" className={hoverMenu} onClick={handleClick}>
+              <SmileIcon />
+              아이콘 추가
+            </button>
+          ) : (
+            <button type="button" className={hoverMenu} onClick={() => handleSelectIcon(null)}>
+              <SmileIcon />
+              아이콘 제거
+            </button>
+          )}
+          {!cover && (
+            <button type="button" className={hoverMenu} onClick={handleCoverButtonClick}>
+              <ImageIcon />
+              커버 추가
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
+const container = css({
   display: 'flex',
   flexDirection: 'row',
   height: '2.5rem',
@@ -40,49 +85,5 @@ const hoverMenu = css({
     backgroundColor: 'lightGray',
   },
 });
-
-const HoverMenu = ({
-  icon,
-  cover,
-  isHover,
-  handleSelectorOpen,
-  handleSelectIcon,
-  handleSelectCover,
-}: IHoverMenuProps) => {
-  const handleClick = () => {
-    handleSelectIcon('🍎');
-    handleSelectorOpen();
-  };
-
-  const handleCoverButtonClick = () => {
-    handleSelectCover('#cc99ff');
-  };
-
-  return (
-    <div className={hoverMenuContainer}>
-      {isHover && (
-        <>
-          {!icon ? (
-            <button type="button" className={hoverMenu} onClick={handleClick}>
-              <SmileIcon />
-              아이콘 추가
-            </button>
-          ) : (
-            <button type="button" className={hoverMenu} onClick={() => handleSelectIcon(null)}>
-              <SmileIcon />
-              아이콘 제거
-            </button>
-          )}
-          {!cover && (
-            <button type="button" className={hoverMenu} onClick={handleCoverButtonClick}>
-              <ImageIcon />
-              커버 추가
-            </button>
-          )}
-        </>
-      )}
-    </div>
-  );
-};
 
 export default HoverMenu;

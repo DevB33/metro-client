@@ -1,7 +1,22 @@
 import { css } from '@/../styled-system/css';
+import { useRouter } from 'next/navigation';
 
 import HomeIcon from '@/icons/home-icon';
-import { useRouter } from 'next/navigation';
+
+const HomeButton = () => {
+  const router = useRouter();
+
+  const goToHomepage = () => {
+    router.push(`/`);
+  };
+
+  return (
+    <button type="button" className={menuButton} onClick={goToHomepage}>
+      <HomeIcon color="black" />
+      Home
+    </button>
+  );
+};
 
 const menuButton = css({
   height: '2rem',
@@ -17,20 +32,5 @@ const menuButton = css({
   transition: '0.2s',
   cursor: 'pointer',
 });
-
-const HomeButton = () => {
-  const router = useRouter();
-
-  const goToHomepage = () => {
-    router.push(`/`);
-  };
-
-  return (
-    <div className={menuButton} onClick={goToHomepage}>
-      <HomeIcon color="black" />
-      Home
-    </div>
-  );
-};
 
 export default HomeButton;

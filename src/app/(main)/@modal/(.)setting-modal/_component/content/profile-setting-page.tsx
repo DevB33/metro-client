@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import useSWR from 'swr';
 import { css, cva } from '@/../styled-system/css';
 import Image from 'next/image';
+import SWR_KEYS from '@/constants/swr-keys';
 
 const container = css({
   width: '100%',
@@ -108,7 +109,7 @@ const description = css({
 });
 
 const ProfileSettingPage = () => {
-  const { data: userInfo } = useSWR(`userInfo`);
+  const { data: userInfo } = useSWR(SWR_KEYS.USER_INFO);
   const [name, setName] = useState(userInfo?.name || '');
 
   const handleLogout = async () => {

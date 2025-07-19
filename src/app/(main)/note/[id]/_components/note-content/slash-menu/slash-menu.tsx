@@ -15,8 +15,9 @@ import TextIcon from '@/icons/text-icon';
 import ReactDOM from 'react-dom';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import IMenuState from '@/types/menu-type';
-import { createBlock, getBlockList, updateBlocksOrder, updateBlockType, deleteBlock } from '@/apis/block';
-import { getNoteList } from '@/apis/note';
+import { createBlock, getBlockList, updateBlocksOrder, updateBlockType, deleteBlock } from '@/apis/client/block';
+import { getNoteList } from '@/apis/client/note';
+import SWR_KEYS from '@/constants/swr-keys';
 
 interface ISlashMenuProps {
   index: number;
@@ -136,8 +137,8 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
       });
     }
 
-    await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
-    await mutate('noteList', getNoteList, false);
+    await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+    await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
 
     setMenuState(prev => ({
       ...prev,
@@ -169,8 +170,8 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
     } else {
       await updateBlockType(blockList[index].id, type);
     }
-    await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
-    await mutate('noteList', getNoteList, false);
+    await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+    await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
 
     setMenuState(prev => ({
       ...prev,

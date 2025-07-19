@@ -6,25 +6,6 @@ import { css } from '@/../styled-system/css';
 import SidebarOpenIcon from '@/icons/sidebar-open-icon';
 import SidebarCloseIcon from '@/icons/sidebar-close-icon';
 
-const dragHandle = css({
-  minWidth: '.2rem',
-  width: { base: '.2rem', _hover: '1.5rem' },
-  height: 'auto',
-  my: '1.5rem',
-  cursor: 'col-resize',
-  borderRadius: '0 10px 10px 0 ',
-  backgroundColor: { base: 'none', _hover: 'lightgray' },
-  transition: '0.3s',
-});
-
-const foldButton = css({
-  opacity: { base: 0.3, _hover: 1 },
-  transition: '0.3s',
-  cursor: 'pointer',
-  position: 'relative',
-  left: `0px`,
-});
-
 const SideBarResizeHandle = ({
   sideBarRef,
   isOpen,
@@ -81,18 +62,15 @@ const SideBarResizeHandle = ({
 
   return (
     <div
-      role="button"
-      tabIndex={0}
+      role="presentation"
       className={dragHandle}
       onMouseDown={handleMouseDown}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onKeyDown={handleMouseLeave}
     >
       {isHover && (
-        <div
-          role="button"
-          tabIndex={0}
+        <button
+          type="button"
           className={foldButton}
           style={{
             top: `${mousePosition.y - 50}px`,
@@ -101,10 +79,29 @@ const SideBarResizeHandle = ({
           onKeyDown={handleFold}
         >
           {isOpen ? <SidebarCloseIcon color="black" /> : <SidebarOpenIcon color="black" />}
-        </div>
+        </button>
       )}
     </div>
   );
 };
+
+const dragHandle = css({
+  minWidth: '.2rem',
+  width: { base: '.2rem', _hover: '1.5rem' },
+  height: 'auto',
+  my: '1.5rem',
+  cursor: 'col-resize',
+  borderRadius: '0 10px 10px 0 ',
+  backgroundColor: { base: 'none', _hover: 'lightgray' },
+  transition: '0.3s',
+});
+
+const foldButton = css({
+  opacity: { base: 0.3, _hover: 1 },
+  transition: '0.3s',
+  cursor: 'pointer',
+  position: 'relative',
+  left: `0px`,
+});
 
 export default SideBarResizeHandle;

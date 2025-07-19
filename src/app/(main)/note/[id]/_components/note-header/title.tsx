@@ -1,33 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 import useSWR, { mutate } from 'swr';
-import { editNoteTitle, getNoteInfo, getNoteList } from '@/apis/note';
+
+import { editNoteTitle, getNoteInfo, getNoteList } from '@/apis/client/note';
+import SWR_KEYS from '@/constants/swr-keys';
 
 interface ITitle {
   noteId: string;
 }
 
-const titleFont = css({
-  fontSize: 'lg',
-  fontWeight: 'bold',
-  width: '100%',
-  wordBreak: 'break-all',
-  resize: 'none',
-  overflowY: 'auto',
-  minHeight: '48px',
-  maxHeight: '110px',
-  lineHeight: '1.5',
-  padding: '8px',
-  border: 'none',
-  outline: 'none',
-  textOverflow: 'ellipsis',
-  '&::placeholder': {
-    color: 'lightgray',
-  },
-});
-
 const Title = ({ noteId }: ITitle) => {
-  const { data } = useSWR(`noteMetadata-${noteId}`);
+  const { data } = useSWR(SWR_KEYS.noteMetadata(noteId));
 
   const [value, setValue] = useState(data.title);
   const isHovered = useRef(false);
@@ -45,7 +28,7 @@ const Title = ({ noteId }: ITitle) => {
 
     debounceTimer.current = setTimeout(async () => {
       await editNoteTitle(noteId, value);
-      await mutate('noteList', getNoteList, false);
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
     }, 100);
 
     return () => {
@@ -96,7 +79,7 @@ const Title = ({ noteId }: ITitle) => {
   return (
     <textarea
       ref={textareaRef}
-      className={titleFont}
+      className={title}
       placeholder="새 페이지"
       rows={1}
       value={value || ''}
@@ -112,5 +95,24 @@ const Title = ({ noteId }: ITitle) => {
     />
   );
 };
+
+const title = css({
+  fontSize: 'lg',
+  fontWeight: 'bold',
+  width: '100%',
+  wordBreak: 'break-all',
+  resize: 'none',
+  overflowY: 'auto',
+  minHeight: '48px',
+  maxHeight: '110px',
+  lineHeight: '1.5',
+  padding: '8px',
+  border: 'none',
+  outline: 'none',
+  textOverflow: 'ellipsis',
+  '&::placeholder': {
+    color: 'lightgray',
+  },
+});
 
 export default Title;

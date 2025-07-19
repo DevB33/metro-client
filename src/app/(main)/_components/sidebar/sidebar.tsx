@@ -9,7 +9,40 @@ import SideMenuCard from './side-menu/side-menu-card';
 import FinderCard from './finder/finder-card';
 import SideBarResizeHandle from './sidebar-resize-handle';
 
-const sideBarContainer = css({
+const Sidebar = () => {
+  const savedWidth = localStorage.getItem('sidebarWidth');
+  const startWidth = 17;
+  const sidebarWidth = savedWidth ? parseFloat(savedWidth) : startWidth;
+  const sideBarRef = useRef<HTMLDivElement>(null);
+  const [isOpen, setIsOpen] = useState(true);
+  const pathname = usePathname();
+
+  if (pathname.startsWith('/note/share')) {
+    return null;
+  }
+
+  return (
+    <div className={container}>
+      <div
+        id="sidebar"
+        className={sideBar}
+        ref={sideBarRef}
+        style={{ width: `${sidebarWidth}rem`, display: isOpen ? 'flex' : 'none' }}
+      >
+        <ProfileCard />
+        <SideMenuCard />
+        <FinderCard />
+      </div>
+      <SideBarResizeHandle
+        sideBarRef={sideBarRef as React.RefObject<HTMLDivElement>}
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+      />
+    </div>
+  );
+};
+
+const container = css({
   display: 'flex',
   width: 'auto',
   height: '100vh',
@@ -30,38 +63,5 @@ const sideBar = css({
   backgroundColor: 'white',
   transition: '0.3s',
 });
-
-const Sidebar = () => {
-  const savedWidth = localStorage.getItem('sidebarWidth');
-  const startWidth = 17;
-  const sidebarWidth = savedWidth ? parseFloat(savedWidth) : startWidth;
-  const sideBarRef = useRef<HTMLDivElement>(null);
-  const [isOpen, setIsOpen] = useState(true);
-  const pathname = usePathname();
-
-  if (pathname.startsWith('/note/share')) {
-    return null;
-  }
-
-  return (
-    <div className={sideBarContainer}>
-      <div
-        id="sidebar"
-        className={sideBar}
-        ref={sideBarRef}
-        style={{ width: `${sidebarWidth}rem`, display: isOpen ? 'flex' : 'none' }}
-      >
-        <ProfileCard />
-        <SideMenuCard />
-        <FinderCard />
-      </div>
-      <SideBarResizeHandle
-        sideBarRef={sideBarRef as React.RefObject<HTMLDivElement>}
-        isOpen={isOpen}
-        setIsOpen={setIsOpen}
-      />
-    </div>
-  );
-};
 
 export default Sidebar;

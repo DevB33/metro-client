@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 
 import { Noto_Sans_KR } from 'next/font/google';
 import './styles/globals.css';
+import { ToastContainer } from 'react-toastify';
 
 export const metadata: Metadata = {
   title: 'Metro',
@@ -18,7 +19,10 @@ const RootLayout = async ({
 }>) => {
   return (
     <html lang="ko">
-      <body className={notoSans.className}>{children}</body>
+      <body className={notoSans.className}>
+        <ToastContainer autoClose={1500} />
+        {children}
+      </body>
     </html>
   );
 };
