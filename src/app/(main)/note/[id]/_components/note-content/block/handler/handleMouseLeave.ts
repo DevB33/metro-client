@@ -41,7 +41,7 @@ const handleMouseLeave = (
     fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
   };
 
-  const fakeBox = document.getElementById(`fakeBox-${index}`);
+  const fakeBlock = document.getElementById(`fakeBlock-${index}`);
 
   const parent = blockRef.current[index];
   const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
@@ -51,8 +51,8 @@ const handleMouseLeave = (
     let left = 99999;
     let right = 0;
 
-    // fakeBox로 떠날 때, position 변화 x
-    if (event.relatedTarget instanceof HTMLElement && fakeBox?.contains(event.relatedTarget)) {
+    // fakeBlock로 떠날 때, position 변화 x
+    if (event.relatedTarget instanceof HTMLElement && fakeBlock?.contains(event.relatedTarget)) {
       return;
     }
 

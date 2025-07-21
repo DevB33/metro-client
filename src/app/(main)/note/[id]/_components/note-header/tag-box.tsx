@@ -1,10 +1,10 @@
 import { css, cva } from '@/../styled-system/css';
 
-import LineColor from '@/constants/line-color';
+import LINE_COLOR from '@/constants/line-color';
 
 interface ITagBox {
   tagName: string;
-  color: keyof typeof LineColor;
+  color: keyof typeof LINE_COLOR;
   isEditing: boolean;
   onDelete: (tagName: string) => void;
 }

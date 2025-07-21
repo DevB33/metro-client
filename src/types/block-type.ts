@@ -1,19 +1,11 @@
+export type TBlockType = 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'UL' | 'OL' | 'QUOTE' | 'PAGE';
+
 export interface ITextBlock {
   id: string;
-  type: 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'QUOTE' | 'OL' | 'UL' | 'PAGE';
+  type: TBlockType;
   nodes: ITextBlockChild[];
   order: number;
 }
-
-// export interface IPageBlock {
-//   id: string;
-//   type: 'PAGE';
-//   parentId: string;
-//   noteId: string;
-//   noteTitle: string;
-//   order: number;
-//   nodes: ITextBlockChild[];
-// }
 
 export interface ITextBlockChild {
   type: 'text' | 'span' | 'br';

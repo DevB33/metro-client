@@ -8,8 +8,8 @@ import useSWR, { mutate } from 'swr';
 
 import { deleteNote, getNoteList } from '@/apis/client/note';
 import INotes from '@/types/note-type';
-import { toastErrorMessage, toastSuccessMessage } from '@/constants/toast-message';
 import SWR_KEYS from '@/constants/swr-keys';
+import { TOAST_ERRORMESSAGE, TOAST_SUCCESSMESSAGE } from '@/constants/toast-message';
 import LeftArrowIcon from '@/icons/left-arrow-icon';
 import HorizonDotIcon from '@/icons/horizon-dot-icon';
 import TrashIcon from '@/icons/trash-icon';
@@ -71,9 +71,9 @@ const Header = () => {
       } else {
         router.push('/');
       }
-      toast.success(toastSuccessMessage.NoteDelete);
+      toast.success(TOAST_SUCCESSMESSAGE.NoteDelete);
     } catch (error) {
-      toast.error(toastErrorMessage.NoteDelete);
+      toast.error(TOAST_ERRORMESSAGE.NoteDelete);
     }
     closeSettingDropdown();
   };

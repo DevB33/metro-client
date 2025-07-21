@@ -2,13 +2,13 @@ import { css } from '@/../styled-system/css';
 import { useEffect, useRef, useState } from 'react';
 import useSWR, { mutate } from 'swr';
 
-import { useClickOutside } from '@/hooks/useClickOutside';
 import { editNoteTags, getNoteInfo, getNoteList } from '@/apis/client/note';
 import ITagType from '@/types/tag-type';
-import LineColor from '@/constants/line-color';
-import keyName from '@/constants/key-name';
+import LINE_COLOR from '@/constants/line-color';
+import KEY_NAME from '@/constants/key-name';
 import SWR_KEYS from '@/constants/swr-keys';
 import TagIcon from '@/icons/tag-icon';
+import useClickOutside from '@/hooks/useClickOutside';
 import TagBox from './tag-box';
 
 interface ITag {
@@ -24,8 +24,8 @@ const Tag = ({ noteId }: ITag) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // LineColor 중 랜덤한 색을 리턴해주는 함수
-  const getRandomColor = (): keyof typeof LineColor => {
-    const colorKeys = Object.keys(LineColor) as Array<keyof typeof LineColor>;
+  const getRandomColor = (): keyof typeof LINE_COLOR => {
+    const colorKeys = Object.keys(LINE_COLOR) as Array<keyof typeof LINE_COLOR>;
     const randomIndex = Math.floor(Math.random() * colorKeys.length);
     return colorKeys[randomIndex];
   };
@@ -50,7 +50,7 @@ const Tag = ({ noteId }: ITag) => {
     const inputValue = e.currentTarget.value;
     const isDuplicate = tagList.some(tag => tag.name === inputValue);
 
-    if (e.key === keyName.enter) {
+    if (e.key === KEY_NAME.enter) {
       if (e.nativeEvent.isComposing) {
         return;
       }
@@ -91,7 +91,7 @@ const Tag = ({ noteId }: ITag) => {
         className={tagBoxContainer}
         onClick={startEditing}
         onKeyDown={e => {
-          if (e.key === keyName.enter) {
+          if (e.key === KEY_NAME.enter) {
             startEditing();
           }
         }}

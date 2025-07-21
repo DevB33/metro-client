@@ -7,9 +7,10 @@ import { toast } from 'react-toastify';
 import { css } from '@/../styled-system/css';
 
 import { createNote, deleteNote, getNoteList } from '@/apis/client/note';
+import { getBlockList, updateBlocksOrder } from '@/apis/client/block';
 import INotes from '@/types/note-type';
-import { toastErrorMessage, toastSuccessMessage } from '@/constants/toast-message';
 import SWR_KEYS from '@/constants/swr-keys';
+import { TOAST_ERRORMESSAGE, TOAST_SUCCESSMESSAGE } from '@/constants/toast-message';
 import PageCloseIcon from '@/icons/page-close-icon';
 import PageOpenIcon from '@/icons/page-open-icon';
 import PageIcon from '@/icons/page-icon';
@@ -18,7 +19,6 @@ import PlusIcon from '@/icons/plus-icon';
 import TrashIcon from '@/icons/trash-icon';
 import PencilSquareIcon from '@/icons/pencil-square';
 import DropDown from '@/components/dropdown/dropdown';
-import { getBlockList, updateBlocksOrder } from '@/apis/client/block';
 import EditTitleModal from './edit-title-modal';
 
 interface INoteItem {
@@ -127,9 +127,9 @@ const NoteItem = ({
       } else {
         router.push('/');
       }
-      toast.success(toastSuccessMessage.NoteDelete);
+      toast.success(TOAST_SUCCESSMESSAGE.NoteDelete);
     } catch (error) {
-      toast.error(toastErrorMessage.NoteDelete);
+      toast.error(TOAST_ERRORMESSAGE.NoteDelete);
     }
     closeSettingDropdown();
   };
@@ -141,9 +141,9 @@ const NoteItem = ({
       await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
       await mutate(SWR_KEYS.blockList(note.id), getBlockList(note.id), false);
       router.push(`/note/${noteId}`);
-      toast.success(toastSuccessMessage.NoteCreate);
+      toast.success(TOAST_SUCCESSMESSAGE.NoteCreate);
     } catch (error) {
-      toast.error(toastErrorMessage.NoteCreate);
+      toast.error(TOAST_ERRORMESSAGE.NoteCreate);
     }
   };
 

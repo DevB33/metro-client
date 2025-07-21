@@ -6,9 +6,9 @@ import { useState } from 'react';
 
 import { createNote, getNoteList } from '@/apis/client/note';
 import INotes from '@/types/note-type';
-import { toastErrorMessage, toastSuccessMessage } from '@/constants/toast-message';
 import SWR_KEYS from '@/constants/swr-keys';
 import PlusIcon from '@/icons/plus-icon';
+import { TOAST_ERRORMESSAGE, TOAST_SUCCESSMESSAGE } from '@/constants/toast-message';
 import NoteItem from './note-item';
 
 const FinderCard = () => {
@@ -29,9 +29,9 @@ const FinderCard = () => {
       const noteId = await createNote(null);
       await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
       router.push(`/note/${noteId}`);
-      toast.success(toastSuccessMessage.NoteCreate);
+      toast.success(TOAST_SUCCESSMESSAGE.NoteCreate);
     } catch (error) {
-      toast.error(toastErrorMessage.NoteCreate);
+      toast.error(TOAST_ERRORMESSAGE.NoteCreate);
     }
   };
 

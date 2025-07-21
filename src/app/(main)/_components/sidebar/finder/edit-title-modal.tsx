@@ -1,12 +1,12 @@
-import { css } from '@/../styled-system/css';
 import { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import useSWR, { mutate } from 'swr';
+import { css } from '@/../styled-system/css';
 
 import { getNoteList, editNoteIcon, editNoteTitle, getNoteInfo } from '@/apis/client/note';
-import { useClickOutside } from '@/hooks/useClickOutside';
+import useClickOutside from '@/hooks/useClickOutside';
 import INote from '@/types/note-type';
-import keyName from '@/constants/key-name';
+import KEY_NAME from '@/constants/key-name';
 import SWR_KEYS from '@/constants/swr-keys';
 import PageIcon from '@/icons/page-icon';
 import IconSelector from '@/app/(main)/note/[id]/_components/note-header/icon-selector';
@@ -104,7 +104,7 @@ const EditTitleModal = ({ noteId, closeEditModal, top, left, right, bottom }: IE
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === keyName.enter) {
+    if (event.key === KEY_NAME.enter) {
       event.preventDefault();
       closeEditModal();
     }

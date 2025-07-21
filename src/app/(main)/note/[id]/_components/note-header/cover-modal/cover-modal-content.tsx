@@ -1,6 +1,5 @@
 import { css } from '@/../styled-system/css';
-
-import colorCategories from '@/constants/cover-color';
+import COLOR_CATEGORIES from '@/constants/cover-color';
 
 interface ICoverModalContentProps {
   handleSelectCover: (color: string) => void;
@@ -15,7 +14,7 @@ const CoverModalContent = ({ handleSelectCover, handleCoverModalClose }: ICoverM
 
   return (
     <div className={container}>
-      {colorCategories.map(category => (
+      {COLOR_CATEGORIES.map(category => (
         <div key={category.title}>
           <div className={imageCategory}>{category.title}</div>
           <div className={imageContainer}>

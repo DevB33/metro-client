@@ -1,12 +1,20 @@
 import { ReactNode } from 'react';
 import { css } from '@/../styled-system/css';
 
+const DropDownItem = ({ children, onClick }: IDropDownItemProps) => {
+  return (
+    <button className={container} onClick={onClick} type="button">
+      <div className={hoverContainer}>{children}</div>
+    </button>
+  );
+};
+
 interface IDropDownItemProps {
   children: ReactNode;
   onClick?: () => void;
 }
 
-const dropdownItemContainer = css({
+const container = css({
   display: 'flex',
   flexDirection: 'row',
   gap: 'tiny',
@@ -33,13 +41,5 @@ const hoverContainer = css({
     backgroundColor: 'lightGray',
   },
 });
-
-const DropDownItem = ({ children, onClick }: IDropDownItemProps) => {
-  return (
-    <div className={dropdownItemContainer} onClick={onClick}>
-      <div className={hoverContainer}>{children}</div>
-    </div>
-  );
-};
 
 export default DropDownItem;

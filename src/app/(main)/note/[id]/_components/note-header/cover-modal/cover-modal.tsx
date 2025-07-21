@@ -1,6 +1,6 @@
 import { css } from '@/../styled-system/css';
 
-import { useClickOutside } from '@/hooks/useClickOutside';
+import useClickOutside from '@/hooks/useClickOutside';
 import CoverModalHeader from './cover-modal-header';
 import CoverModalContent from './cover-modal-content';
 

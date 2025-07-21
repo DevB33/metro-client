@@ -1,7 +1,7 @@
 import { css, cva } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
-import LineColor from '@/constants/line-color';
+import LINE_COLOR from '@/constants/line-color';
 import TagIcon from '@/icons/tag-icon';
 
 interface IHeader {
@@ -144,7 +144,7 @@ const Header = ({ noteData }: IHeader) => {
           <div className={tagBoxContainer}>
             {noteData.tags.length !== 0 ? (
               noteData.tags.map(tag => (
-                <div key={tag.name} className={tagBox({ color: tag.color as keyof typeof LineColor })}>
+                <div key={tag.name} className={tagBox({ color: tag.color as keyof typeof LINE_COLOR })}>
                   {tag.name}
                 </div>
               ))
