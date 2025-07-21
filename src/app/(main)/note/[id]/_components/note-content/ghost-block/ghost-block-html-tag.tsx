@@ -9,10 +9,6 @@ interface IGhostBlockHTMLTag {
   children: React.ReactNode[];
 }
 
-const htmltag = css({
-  opacity: '0.4',
-});
-
 const GhostBlockHTMLTag = ({ block, blockList, index, children }: IGhostBlockHTMLTag) => {
   if (block.type === 'DEFAULT') {
     return <p className={htmltag}>{children}</p>;
@@ -44,11 +40,14 @@ const GhostBlockHTMLTag = ({ block, blockList, index, children }: IGhostBlockHTM
     let startNumber = 1;
 
     blockList.forEach((item, idx) => {
+      // 현재 블록 이후 블록은 볼 필요가 없어서 return
       if (idx >= index) return;
 
+      // 현재 블록이 OL 타입이고, 이전 블록이 OL 타입이면 startNumber를 증가시킴
       if (item.type === 'OL') {
         startNumber += 1;
       } else {
+        // 현재 블록이 OL 타입이 아니면 startNumber를 1로 초기화
         startNumber = 1;
       }
     });
@@ -70,7 +69,13 @@ const GhostBlockHTMLTag = ({ block, blockList, index, children }: IGhostBlockHTM
     );
   }
 
+  // TODO: 페이지 블록 추가
+
   return null;
 };
+
+const htmltag = css({
+  opacity: '0.4',
+});
 
 export default GhostBlockHTMLTag;

@@ -1,7 +1,7 @@
 import { css } from '@/../styled-system/css';
 import { getNoteList, editNoteIcon, editNoteTitle, getNoteInfo } from '@/apis/note';
 import IconSelector from '@/app/(main)/note/[id]/_components/note-header/icon-selector';
-import keyName from '@/constants/key-name';
+import KEY_NAME from '@/constants/key-name';
 import useClickOutside from '@/hooks/useClickOutside';
 import PageIcon from '@/icons/page-icon';
 import INote from '@/types/note-type';
@@ -153,7 +153,7 @@ const EditTitleModal = ({ noteId, closeEditModal, top, left, right, bottom }: IE
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === keyName.enter) {
+    if (event.key === KEY_NAME.enter) {
       event.preventDefault();
       closeEditModal();
     }

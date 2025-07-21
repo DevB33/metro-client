@@ -1,4 +1,4 @@
-const colorCategories = [
+const COLOR_CATEGORIES = [
   {
     title: '레드 계열',
     colors: [
@@ -86,4 +86,4 @@ const colorCategories = [
   },
 ];
 
-export default colorCategories;
+export default COLOR_CATEGORIES;

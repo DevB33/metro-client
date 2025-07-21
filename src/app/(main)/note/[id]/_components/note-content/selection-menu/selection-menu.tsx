@@ -1,15 +1,10 @@
 import { css } from '@/../styled-system/css';
 
-import ISelectionPosition from '@/types/selection-position';
 import { ITextBlock } from '@/types/block-type';
-import BoldIcon from '@/icons/bold-icon';
-import ItalicIcon from '@/icons/italic-icon';
-import UnderlineIcon from '@/icons/underline-icon';
-import LineThroughIcon from '@/icons/line-through-icon';
-import CodeblockIcon from '@/icons/codeblock-icon';
-import { JSX } from 'react';
-import useClickOutside from '@/hooks/useClickOutside';
+import ISelectionPosition from '@/types/selection-position';
 import IMenuState from '@/types/menu-type';
+import { SELECTION_MENU_ITEMS } from '@/constants/menu-items';
+import useClickOutside from '@/hooks/useClickOutside';
 import changeSelectionStyle from './changeSelectionStyle';
 
 interface ISelectionMenuProps {
@@ -24,7 +19,68 @@ interface ISelectionMenuProps {
   selectionMenuButtonRef: React.RefObject<(HTMLDivElement | null)[]>;
 }
 
-const menu = css({
+const MENU_HEIGHT = 3;
+
+const SelectionMenu = ({
+  setKey,
+  noteId,
+  selection,
+  blockList,
+  blockRef,
+  menuState,
+  setMenuState,
+  resetSelection,
+  selectionMenuButtonRef,
+}: ISelectionMenuProps) => {
+  const selectionMenuRef = useClickOutside(() => {
+    setMenuState(prev => ({
+      ...prev,
+      isSelectionMenuOpen: false,
+    }));
+  });
+
+  const changeBlock = (type: string) => {
+    changeSelectionStyle(type, noteId, selection, blockList, blockRef);
+
+    setMenuState(prev => ({
+      ...prev,
+      isSelectionMenuOpen: false,
+    }));
+    resetSelection();
+    setKey(Math.random());
+  };
+
+  return (
+    <div
+      ref={selectionMenuRef}
+      style={{
+        top: `calc(${menuState.selectionMenuPosition.y}px - ${MENU_HEIGHT}rem)`,
+        left: menuState.selectionMenuPosition.x,
+      }}
+      className={container}
+    >
+      {SELECTION_MENU_ITEMS.map((item, index) => (
+        <div
+          role="button"
+          tabIndex={0}
+          key={item.label}
+          className={slashButton}
+          onClick={() => changeBlock(item.label)}
+          ref={el => {
+            selectionMenuButtonRef.current[index] = el;
+          }}
+          onKeyDown={event => {
+            if (event.key === 'Enter') changeBlock(item.label);
+          }}
+        >
+          {item.icon}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const container = css({
   position: 'fixed',
   width: 'auto',
   height: 'auto',
@@ -51,76 +107,5 @@ const slashButton = css({
   cursor: 'pointer',
   backgroundColor: { base: 'none', _hover: 'lightgray' },
 });
-
-const MENU_ITEMS: {
-  label: string;
-  icon: JSX.Element;
-}[] = [
-  { label: 'bold', icon: <BoldIcon color="black" /> },
-  { label: 'italic', icon: <ItalicIcon color="black" /> },
-  { label: 'underline', icon: <UnderlineIcon color="black" /> },
-  { label: 'line-through', icon: <LineThroughIcon color="black" /> },
-  { label: 'codeblock', icon: <CodeblockIcon color="black" /> },
-];
-
-const SelectionMenu = ({
-  setKey,
-  noteId,
-  selection,
-  blockList,
-  blockRef,
-  menuState,
-  setMenuState,
-  resetSelection,
-  selectionMenuButtonRef,
-}: ISelectionMenuProps) => {
-  const selectionMenuRef = useClickOutside(() => {
-    setMenuState(prev => ({
-      ...prev,
-      isSelectionMenuOpen: false,
-    }));
-  });
-  const menuHeight = 3;
-
-  const changeBlock = (type: string) => {
-    changeSelectionStyle(type, noteId, selection, blockList, blockRef);
-
-    setMenuState(prev => ({
-      ...prev,
-      isSelectionMenuOpen: false,
-    }));
-    resetSelection();
-    setKey(Math.random());
-  };
-
-  return (
-    <div
-      ref={selectionMenuRef}
-      style={{
-        top: `calc(${menuState.selectionMenuPosition.y}px - ${menuHeight}rem)`,
-        left: menuState.selectionMenuPosition.x,
-      }}
-      className={menu}
-    >
-      {MENU_ITEMS.map((item, index) => (
-        <div
-          role="button"
-          tabIndex={0}
-          key={item.label}
-          className={slashButton}
-          onClick={() => changeBlock(item.label)}
-          ref={el => {
-            selectionMenuButtonRef.current[index] = el;
-          }}
-          onKeyDown={event => {
-            if (event.key === 'Enter') changeBlock(item.label);
-          }}
-        >
-          {item.icon}
-        </div>
-      ))}
-    </div>
-  );
-};
 
 export default SelectionMenu;

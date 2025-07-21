@@ -5,14 +5,14 @@ import { Group } from '@visx/group';
 import { hierarchy, Tree } from '@visx/hierarchy';
 import { LinearGradient } from '@visx/gradient';
 import { pointRadial } from 'd3-shape';
-import LineColor from '@/constants/line-color';
+import LINE_COLOR from '@/constants/line-color';
 import useSWR from 'swr';
 import { Zoom } from '@visx/zoom';
 import { useRouter } from 'next/navigation';
 import LinkControls from './LinkControls';
 import getLinkComponent from './getLinkComponent';
 
-const colorMap: Record<keyof typeof LineColor, string> = {
+const colorMap: Record<keyof typeof LINE_COLOR, string> = {
   LINE_ONE: '#034983',
   LINE_TWO: '#01A140',
   LINE_THREE: '#EE6C0D',
@@ -24,7 +24,7 @@ const colorMap: Record<keyof typeof LineColor, string> = {
 interface ITreeNode {
   name: string;
   id: string;
-  colorKey: keyof typeof LineColor;
+  colorKey: keyof typeof LINE_COLOR;
   children?: ITreeNode[];
 }
 
@@ -78,7 +78,7 @@ const LineChart = ({ width: totalWidth, height: totalHeight, margin = defaultMar
 
   const STORAGE_KEY = 'tree-node-colors';
 
-  const getStoredColors = (): Record<string, keyof typeof LineColor> => {
+  const getStoredColors = (): Record<string, keyof typeof LINE_COLOR> => {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return {};
     try {
@@ -88,7 +88,7 @@ const LineChart = ({ width: totalWidth, height: totalHeight, margin = defaultMar
     }
   };
 
-  const saveColorsToStorage = (colors: Record<string, keyof typeof LineColor>) => {
+  const saveColorsToStorage = (colors: Record<string, keyof typeof LINE_COLOR>) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(colors));
   };
 
@@ -99,9 +99,9 @@ const LineChart = ({ width: totalWidth, height: totalHeight, margin = defaultMar
 
   const assignColorRecursively = (
     node: any,
-    parentColorKey?: keyof typeof LineColor,
-    colorMapFromStorage?: Record<string, keyof typeof LineColor>,
-    colorMapToStore?: Record<string, keyof typeof LineColor>,
+    parentColorKey?: keyof typeof LINE_COLOR,
+    colorMapFromStorage?: Record<string, keyof typeof LINE_COLOR>,
+    colorMapToStore?: Record<string, keyof typeof LINE_COLOR>,
   ) => {
     const nodeId = node.data.id;
 
@@ -109,7 +109,7 @@ const LineChart = ({ width: totalWidth, height: totalHeight, margin = defaultMar
       node.data.colorKey = colorMapFromStorage[nodeId];
     } else if (node.depth === 0) node.data.colorKey = 'LINE_ONE';
     else if (node.depth === 1) {
-      const colorKeys = Object.keys(LineColor) as (keyof typeof LineColor)[];
+      const colorKeys = Object.keys(LINE_COLOR) as (keyof typeof LINE_COLOR)[];
       const randomKey = colorKeys[Math.floor(Math.random() * colorKeys.length)];
       node.data.colorKey = randomKey;
       colorMapToStore![nodeId] = randomKey;
@@ -145,7 +145,7 @@ const LineChart = ({ width: totalWidth, height: totalHeight, margin = defaultMar
   const LinkComponent = getLinkComponent({ layout, linkType, orientation });
 
   const storedColors = getStoredColors();
-  const newColors: Record<string, keyof typeof LineColor> = {};
+  const newColors: Record<string, keyof typeof LINE_COLOR> = {};
 
   const root = hierarchy(treeData, d => d.children);
   assignColorRecursively(root, undefined, storedColors, newColors);

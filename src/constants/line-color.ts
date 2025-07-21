@@ -1,4 +1,4 @@
-const LineColor = {
+const LINE_COLOR = {
   LINE_ONE: 'LINE_ONE',
   LINE_TWO: 'LINE_TWO',
   LINE_THREE: 'LINE_THREE',
@@ -7,4 +7,4 @@ const LineColor = {
   LINE_SIX: 'LINE_SIX',
 };
 
-export default LineColor;
+export default LINE_COLOR;

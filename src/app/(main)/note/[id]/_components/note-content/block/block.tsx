@@ -4,6 +4,7 @@ import { mutate } from 'swr';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
+import INotes from '@/types/note-type';
 import ISelectionPosition from '@/types/selection-position';
 import IMenuState from '@/types/menu-type';
 import { getBlockList, updateBlocksOrder } from '@/apis/block';
@@ -12,10 +13,10 @@ import PageIcon from '@/icons/page-icon';
 import handleInput from './handler/handleInput';
 import handleKeyDown from './handler/handleKeyDown';
 import handleMouseLeave from './handler/handleMouseLeave';
-import BlockHTMLTag from './block-html-tag';
 import handleMouseDown from './handler/handleMouseDown';
 import handleMouseMove from './handler/handleMouseMove';
 import handleMouseUp from './handler/handleMouseUp';
+import BlockHTMLTag from './block-html-tag';
 
 interface IBlockComponent {
   block: ITextBlock;
@@ -33,48 +34,8 @@ interface IBlockComponent {
   menuState: IMenuState;
   setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>;
   dragBlockIndex: number | null;
-  noteDetails: any;
+  noteDetails: Record<string, INotes>;
 }
-
-const container = css({
-  position: 'relative',
-  width: 'full',
-  minHeight: '1.5rem',
-  height: 'auto',
-  zIndex: '10',
-});
-
-const blockDiv = css({
-  pointerEvents: 'auto',
-  boxSizing: 'border-box',
-  width: 'full',
-  minHeight: '1.5rem',
-  height: 'auto',
-  padding: '2px 0 !important',
-  outline: 'none',
-  overflowY: 'hidden',
-  flexShrink: 0,
-  userSelect: 'none',
-  '--block-height': 'auto',
-});
-
-const pageButton = css({
-  display: 'flex',
-  justifyContent: 'start',
-  width: 'full',
-  backgroundColor: 'transparent',
-  _hover: {
-    backgroundColor: 'gray.200',
-  },
-  borderRadius: '0.25rem',
-});
-
-const pageTitle = css({
-  color: 'gray.600',
-  textDecoration: 'underline',
-  fontWeight: 'bold',
-  width: '100%',
-});
 
 const Block = memo(
   ({
@@ -95,13 +56,14 @@ const Block = memo(
     isUp,
     noteDetails,
   }: IBlockComponent) => {
+    const router = useRouter();
+    const params = useParams();
+    const noteId = params.id as string;
+
     const prevChildNodesLength = useRef(0);
 
     const [isDragOver, setIsDragOver] = useState(false);
     const [isDragFirst, setIsDragFirst] = useState(false);
-
-    const params = useParams();
-    const noteId = params.id as string;
 
     useEffect(() => {
       prevChildNodesLength.current = blockList[index].nodes.length;
@@ -133,32 +95,31 @@ const Block = memo(
       await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
       await mutate('noteList', getNoteList, false);
     };
-    const router = useRouter();
-    return (
-      <div className={container}>
-        {index === 0 && (
-          <div
-            style={{
-              width: '100%',
-              height: '80px',
-              position: 'absolute',
-              top: '-80px',
-              pointerEvents: 'auto',
-            }}
-            onDragEnter={event => {
-              event.preventDefault();
-              if (dragBlockIndex !== 0) {
-                setIsDragFirst(true);
-                setIsDragOver(false);
-              }
-            }}
-            onDragLeave={() => setIsDragFirst(false)}
-            onDragOver={event => event.preventDefault()}
-            onDrop={changeBlockOrderToFirst}
-          />
-        )}
 
-        {block.type === 'PAGE' ? (
+    if (block.type === 'PAGE') {
+      return (
+        <div className={container}>
+          {index === 0 && (
+            <div
+              style={{
+                width: '100%',
+                height: '80px',
+                position: 'absolute',
+                top: '-80px',
+                pointerEvents: 'auto',
+              }}
+              onDragEnter={event => {
+                event.preventDefault();
+                if (dragBlockIndex !== 0) {
+                  setIsDragFirst(true);
+                  setIsDragOver(false);
+                }
+              }}
+              onDragLeave={() => setIsDragFirst(false)}
+              onDragOver={event => event.preventDefault()}
+              onDrop={changeBlockOrderToFirst}
+            />
+          )}
           <div
             role="textbox"
             tabIndex={0}
@@ -217,98 +178,162 @@ const Block = memo(
               </span>
             </BlockHTMLTag>
           </div>
-        ) : (
+        </div>
+      );
+    }
+
+    return (
+      <div className={container}>
+        {index === 0 && (
           <div
-            role="textbox"
-            tabIndex={0}
-            contentEditable
-            suppressContentEditableWarning
-            className={`parent ${blockDiv}`}
             style={{
-              borderBottom: isDragOver ? '4px solid lightblue' : 'none',
-              borderTop: isDragFirst ? '4px solid lightblue' : 'none',
+              width: '100%',
+              height: '80px',
+              position: 'absolute',
+              top: '-80px',
+              pointerEvents: 'auto',
             }}
-            onInput={event => {
-              setIsTyping(true);
-              handleInput(event, index, blockList, blockRef, prevChildNodesLength, noteId);
-            }}
-            onKeyDown={event => {
-              setIsTyping(true);
-              handleKeyDown(
-                event,
-                index,
-                blockList,
-                blockRef,
-                setIsTyping,
-                setKey,
-                menuState,
-                setMenuState,
-                selection,
-                noteId,
-              );
-            }}
-            onMouseUp={event => {
-              handleMouseUp(event, index, blockRef, blockList, selection, setSelection, setMenuState);
-              setIsDragging(false);
-            }}
-            onMouseDown={event =>
-              handleMouseDown(event, blockRef, index, blockList, setIsDragging, setIsTyping, setKey, setSelection)
-            }
-            onMouseMove={event =>
-              handleMouseMove(event, index, blockRef, blockList, isDragging, selection, setSelection)
-            }
-            onMouseLeave={event =>
-              handleMouseLeave(event, index, blockList, isDragging, isUp, blockRef, selection, setSelection)
-            }
             onDragEnter={event => {
-              if (dragBlockIndex === index) {
-                return;
-              }
               event.preventDefault();
-              setIsDragOver(true);
-            }}
-            onDragLeave={event => {
-              if (dragBlockIndex === index) {
-                return;
+              if (dragBlockIndex !== 0) {
+                setIsDragFirst(true);
+                setIsDragOver(false);
               }
-              event.preventDefault();
-              const currentTarget = event.currentTarget as HTMLElement;
-              const related = event.relatedTarget as HTMLElement | null;
-
-              if (related && currentTarget.contains(related)) {
-                return;
-              }
-              setIsDragOver(false);
             }}
-            onDragOver={event => {
-              event.preventDefault();
-            }}
-            onDrop={changeBlockOrder}
-          >
-            <BlockHTMLTag block={block} blockList={blockList} index={index} blockRef={blockRef}>
-              {block.nodes?.length === 1 && block.nodes[0].content === '' && <br />}
-              {block.nodes?.map(child => {
-                if (child.type === 'br') {
-                  return <br key={Math.random()} />;
-                }
-
-                if (child.type === 'text' || child.content === '') {
-                  return child.content;
-                }
-
-                return (
-                  <span key={Math.random()} style={child.style}>
-                    {child.content}
-                  </span>
-                );
-              })}
-            </BlockHTMLTag>
-          </div>
+            onDragLeave={() => setIsDragFirst(false)}
+            onDragOver={event => event.preventDefault()}
+            onDrop={changeBlockOrderToFirst}
+          />
         )}
+
+        <div
+          role="textbox"
+          tabIndex={0}
+          contentEditable
+          suppressContentEditableWarning
+          className={`parent ${blockDiv}`}
+          style={{
+            borderBottom: isDragOver ? '4px solid lightblue' : 'none',
+            borderTop: isDragFirst ? '4px solid lightblue' : 'none',
+          }}
+          onInput={event => {
+            setIsTyping(true);
+            handleInput(event, index, blockList, blockRef, prevChildNodesLength, noteId);
+          }}
+          onKeyDown={event => {
+            setIsTyping(true);
+            handleKeyDown(
+              event,
+              index,
+              blockList,
+              blockRef,
+              setIsTyping,
+              setKey,
+              menuState,
+              setMenuState,
+              selection,
+              noteId,
+            );
+          }}
+          onMouseUp={event => {
+            handleMouseUp(event, index, blockRef, blockList, selection, setSelection, setMenuState);
+            setIsDragging(false);
+          }}
+          onMouseDown={event =>
+            handleMouseDown(event, blockRef, index, blockList, setIsDragging, setIsTyping, setKey, setSelection)
+          }
+          onMouseMove={event => handleMouseMove(event, index, blockRef, blockList, isDragging, selection, setSelection)}
+          onMouseLeave={event =>
+            handleMouseLeave(event, index, blockList, isDragging, isUp, blockRef, selection, setSelection)
+          }
+          onDragEnter={event => {
+            if (dragBlockIndex === index) {
+              return;
+            }
+            event.preventDefault();
+            setIsDragOver(true);
+          }}
+          onDragLeave={event => {
+            if (dragBlockIndex === index) {
+              return;
+            }
+            event.preventDefault();
+            const currentTarget = event.currentTarget as HTMLElement;
+            const related = event.relatedTarget as HTMLElement | null;
+
+            if (related && currentTarget.contains(related)) {
+              return;
+            }
+            setIsDragOver(false);
+          }}
+          onDragOver={event => {
+            event.preventDefault();
+          }}
+          onDrop={changeBlockOrder}
+        >
+          <BlockHTMLTag block={block} blockList={blockList} index={index} blockRef={blockRef}>
+            {block.nodes?.length === 1 && block.nodes[0].content === '' && <br />}
+            {block.nodes?.map(child => {
+              if (child.type === 'br') {
+                return <br key={Math.random()} />;
+              }
+
+              if (child.type === 'text' || child.content === '') {
+                return child.content;
+              }
+
+              return (
+                <span key={Math.random()} style={child.style}>
+                  {child.content}
+                </span>
+              );
+            })}
+          </BlockHTMLTag>
+        </div>
       </div>
     );
   },
   (_prevProps, nextProps) => nextProps.isTyping,
 );
+
+const container = css({
+  position: 'relative',
+  width: 'full',
+  minHeight: '1.5rem',
+  height: 'auto',
+  zIndex: '10',
+});
+
+const blockDiv = css({
+  pointerEvents: 'auto',
+  boxSizing: 'border-box',
+  width: 'full',
+  minHeight: '1.5rem',
+  height: 'auto',
+  padding: '2px 0 !important',
+  outline: 'none',
+  overflowY: 'hidden',
+  flexShrink: 0,
+  userSelect: 'none',
+  '--block-height': 'auto',
+});
+
+const pageButton = css({
+  display: 'flex',
+  justifyContent: 'start',
+  width: 'full',
+  backgroundColor: 'transparent',
+  _hover: {
+    backgroundColor: 'gray.200',
+  },
+  borderRadius: '0.25rem',
+});
+
+const pageTitle = css({
+  color: 'gray.600',
+  textDecoration: 'underline',
+  fontWeight: 'bold',
+  width: '100%',
+});
 
 export default Block;

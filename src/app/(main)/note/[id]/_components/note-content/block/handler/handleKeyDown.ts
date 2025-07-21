@@ -9,10 +9,10 @@ import {
   updateBlockType,
 } from '@/apis/block';
 import { ITextBlock } from '@/types/block-type';
-import getSelectionInfo from '@/utils/getSelectionInfo';
-import keyName from '@/constants/key-name';
 import ISelectionPosition from '@/types/selection-position';
 import IMenuState from '@/types/menu-type';
+import getSelectionInfo from '@/utils/getSelectionInfo';
+import KEY_NAME from '@/constants/key-name';
 import editSelectionContent from '../../selection-menu/editSelectionContent';
 
 // 현재 블록의 맨 앞에 focus
@@ -39,7 +39,7 @@ const focusAfterSelection = (
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
 ) => {
   let target = isBackward ? selection.end : selection.start;
-  if (key === keyName.arrowRight) {
+  if (key === KEY_NAME.arrowRight) {
     target = isBackward ? selection.start : selection.end;
   }
 
@@ -676,7 +676,7 @@ const handleKeyDown = async (
     }
 
     // enter 클릭
-    if (event.key === keyName.enter && !event.shiftKey) {
+    if (event.key === KEY_NAME.enter && !event.shiftKey) {
       event.preventDefault();
       if (event.nativeEvent.isComposing) {
         return;
@@ -689,7 +689,7 @@ const handleKeyDown = async (
     // todo : shift + Enter 로직 구현 필요
     // note : 임시로 enter 로직과 동일하게 구현
     // shift + enter 클릭
-    if (event.key === keyName.enter && event.shiftKey) {
+    if (event.key === KEY_NAME.enter && event.shiftKey) {
       event.preventDefault();
       if (event.nativeEvent.isComposing) {
         return;
@@ -700,7 +700,7 @@ const handleKeyDown = async (
     }
 
     // 일반 backspace 클릭
-    if (event.key === keyName.backspace && !menuState.isSelectionMenuOpen) {
+    if (event.key === KEY_NAME.backspace && !menuState.isSelectionMenuOpen) {
       const { startOffset, startContainer } = getSelectionInfo(0) || {};
       if (startOffset === undefined || startOffset === null || !startContainer) return;
 
@@ -820,7 +820,7 @@ const handleKeyDown = async (
     }
 
     // space 클릭
-    if (event.key === keyName.space) {
+    if (event.key === KEY_NAME.space) {
       const { startOffset, startContainer } = getSelectionInfo(0) || {};
       if (startOffset === undefined || startOffset === null || !startContainer) return;
 
@@ -926,7 +926,7 @@ const handleKeyDown = async (
     }
 
     // slash 클릭
-    if (event.key === keyName.slash) {
+    if (event.key === KEY_NAME.slash) {
       event.preventDefault();
       setIsTyping(false);
       setKey(Math.random());
@@ -935,10 +935,10 @@ const handleKeyDown = async (
 
     // 방향키 클릭
     if (
-      event.key === keyName.arrowUp ||
-      event.key === keyName.arrowDown ||
-      event.key === keyName.arrowLeft ||
-      event.key === keyName.arrowRight
+      event.key === KEY_NAME.arrowUp ||
+      event.key === KEY_NAME.arrowDown ||
+      event.key === KEY_NAME.arrowLeft ||
+      event.key === KEY_NAME.arrowRight
     ) {
       const { range, startOffset, startContainer } = getSelectionInfo(0) || {};
       let rect = range?.getBoundingClientRect() as DOMRect;
@@ -954,7 +954,7 @@ const handleKeyDown = async (
       let pageBlockHeight = 0;
 
       // 이전 블록으로 커서 이동
-      if (event.key === keyName.arrowUp && index > 0) {
+      if (event.key === KEY_NAME.arrowUp && index > 0) {
         event.preventDefault();
 
         let currentIndex = index - 1;
@@ -990,7 +990,7 @@ const handleKeyDown = async (
       }
 
       // 다음 블록으로 커서 이동
-      if (event.key === keyName.arrowDown && index < blockList.length - 1) {
+      if (event.key === KEY_NAME.arrowDown && index < blockList.length - 1) {
         event.preventDefault();
         let currentIndex = index + 1;
 
@@ -1025,7 +1025,7 @@ const handleKeyDown = async (
 
       // 블록의 맨 끝에서 오른쪽 방향키 클릭하면 다음 블록으로 커서 이동
       if (
-        event.key === keyName.arrowRight &&
+        event.key === KEY_NAME.arrowRight &&
         ((startOffset === (lastChild?.textContent?.length as number) && startContainer === lastChild) ||
           (blockList[index].nodes.length === 1 && blockList[index].nodes[0].content === '')) &&
         index < blockList.length - 1
@@ -1042,7 +1042,7 @@ const handleKeyDown = async (
       }
 
       // 블록의 맨 앞에서 왼쪽 방향키 클릭하면 이전 블록으로 커서 이동
-      if (event.key === keyName.arrowLeft) {
+      if (event.key === KEY_NAME.arrowLeft) {
         if (
           ((startOffset === 0 && startContainer === firstChild) ||
             (startOffset === 0 && startContainer?.firstChild?.firstChild === firstChild?.firstChild) ||
@@ -1105,11 +1105,11 @@ const handleKeyDown = async (
         selection.start.offset > selection.end.offset);
 
     // backspace 클릭
-    if (event.key === keyName.backspace) {
+    if (event.key === KEY_NAME.backspace) {
       await editSelectionContent('delete', noteId, event.key, selection, isBackward, blockList, blockRef);
     }
     // 엔터 입력
-    if (event.key === keyName.enter && !event.shiftKey) {
+    if (event.key === KEY_NAME.enter && !event.shiftKey) {
       if (!isBackward) {
         await editSelectionContent('enter', noteId, event.key, selection, isBackward, blockList, blockRef);
         selection.start.blockIndex += 1;

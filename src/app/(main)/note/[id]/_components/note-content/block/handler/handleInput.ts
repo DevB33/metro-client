@@ -1,7 +1,7 @@
 import { mutate } from 'swr';
 
-import { getBlockList, updateBlockNodes } from '@/apis/block';
 import { ITextBlock } from '@/types/block-type';
+import { getBlockList, updateBlockNodes } from '@/apis/block';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 
 const handleInput = async (

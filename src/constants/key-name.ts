@@ -1,4 +1,4 @@
-const keyName = {
+const KEY_NAME = {
   enter: 'Enter',
   backspace: 'Backspace',
   slash: '/',
@@ -9,4 +9,4 @@ const keyName = {
   arrowDown: 'ArrowDown',
 };
 
-export default keyName;
+export default KEY_NAME;

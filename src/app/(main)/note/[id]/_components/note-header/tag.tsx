@@ -2,8 +2,8 @@ import { css } from '@/../styled-system/css';
 import TagIcon from '@/icons/tag-icon';
 import { useEffect, useRef, useState } from 'react';
 import ITagType from '@/types/tag-type';
-import LineColor from '@/constants/line-color';
-import keyName from '@/constants/key-name';
+import LINE_COLOR from '@/constants/line-color';
+import KEY_NAME from '@/constants/key-name';
 import useClickOutside from '@/hooks/useClickOutside';
 import useSWR, { mutate } from 'swr';
 import { editNoteTags, getNoteInfo, getNoteList } from '@/apis/note';
@@ -77,8 +77,8 @@ const Tag = ({ noteId }: ITag) => {
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const getRandomColor = (): keyof typeof LineColor => {
-    const colorKeys = Object.keys(LineColor) as Array<keyof typeof LineColor>;
+  const getRandomColor = (): keyof typeof LINE_COLOR => {
+    const colorKeys = Object.keys(LINE_COLOR) as Array<keyof typeof LINE_COLOR>;
     const randomIndex = Math.floor(Math.random() * colorKeys.length);
     return colorKeys[randomIndex];
   };
@@ -99,18 +99,18 @@ const Tag = ({ noteId }: ITag) => {
     }
   }, [isEditing]);
 
-  const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const inputValue = e.currentTarget.value;
+  const handleKeyDown = async (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const inputValue = event.currentTarget.value;
     const isDuplicate = tagList.some(tag => tag.name === inputValue);
 
-    if (e.key === keyName.enter) {
-      if (e.nativeEvent.isComposing) {
+    if (event.key === KEY_NAME.enter) {
+      if (event.nativeEvent.isComposing) {
         return;
       }
 
       if (isDuplicate || inputValue.trim() === '') {
         inputRef.current?.blur();
-        e.currentTarget.value = '';
+        event.currentTarget.value = '';
         setIsEditing(false);
         return;
       }
@@ -143,8 +143,8 @@ const Tag = ({ noteId }: ITag) => {
         tabIndex={0}
         className={tagBoxContainer}
         onClick={startEditing}
-        onKeyDown={e => {
-          if (e.key === keyName.enter) {
+        onKeyDown={event => {
+          if (event.key === KEY_NAME.enter) {
             startEditing();
           }
         }}

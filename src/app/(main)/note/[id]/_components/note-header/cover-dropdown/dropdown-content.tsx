@@ -1,5 +1,5 @@
 import { css } from '@/../styled-system/css';
-import colorCategories from '@/constants/cover-color';
+import COLOR_CATEGORIES from '@/constants/cover-color';
 
 interface ICoverDropdownContentProps {
   handleSelectCover: (color: string) => void;
@@ -47,7 +47,7 @@ const DropdownContent = ({ handleSelectCover, handleCoverModalClose }: ICoverDro
 
   return (
     <div className={dropDownContentContainer}>
-      {colorCategories.map(category => (
+      {COLOR_CATEGORIES.map(category => (
         <div key={category.title}>
           <div className={imageDescription}>{category.title}</div>
           <div className={imageContainer}>

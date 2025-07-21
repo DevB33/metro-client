@@ -1,7 +1,7 @@
+import { ITextBlock } from '@/types/block-type';
 import ISelectionPosition from '@/types/selection-position';
 import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundImage';
 import getSelectionInfo from '@/utils/getSelectionInfo';
-import { ITextBlock } from '@/types/block-type';
 
 const getNodeBounds = (node: Node, startOffset: number, endOffset: number) => {
   const range = document.createRange();

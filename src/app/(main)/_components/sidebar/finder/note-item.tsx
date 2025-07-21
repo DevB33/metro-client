@@ -17,7 +17,7 @@ import PlusIcon from '@/icons/plus-icon';
 import TrashIcon from '@/icons/trash-icon';
 import PencilSquareIcon from '@/icons/pencil-square';
 import DropDown from '@/components/dropdown/dropdown';
-import { toastErrorMessage, toastSuccessMessage } from '@/constants/toast-message';
+import { TOAST_ERRORMESSAGE, TOAST_SUCCESSMESSAGE } from '@/constants/toast-message';
 import EditTitleModal from './edit-title-modal';
 
 interface INoteItem {
@@ -199,9 +199,9 @@ const NoteItem = ({
       } else {
         router.push('/');
       }
-      toast.success(toastSuccessMessage.NoteDelete);
+      toast.success(TOAST_SUCCESSMESSAGE.NoteDelete);
     } catch (error) {
-      toast.error(toastErrorMessage.NoteDelete);
+      toast.error(TOAST_ERRORMESSAGE.NoteDelete);
     }
     closeSettingDropdown();
   };
@@ -213,9 +213,9 @@ const NoteItem = ({
       await mutate('noteList', getNoteList, false);
       await mutate(`blockList-${note.id}`, getBlockList(note.id), false);
       router.push(`/note/${noteId}`);
-      toast.success(toastSuccessMessage.NoteCreate);
+      toast.success(TOAST_SUCCESSMESSAGE.NoteCreate);
     } catch (error) {
-      toast.error(toastErrorMessage.NoteCreate);
+      toast.error(TOAST_ERRORMESSAGE.NoteCreate);
     }
   };
 

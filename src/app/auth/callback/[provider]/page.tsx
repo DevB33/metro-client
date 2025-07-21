@@ -1,11 +1,11 @@
 'use client';
 
-import { css } from '@/../styled-system/css';
 import { useEffect } from 'react';
 import { redirect, useParams, useSearchParams } from 'next/navigation';
-
 import { toast } from 'react-toastify';
-import { toastErrorMessage, toastSuccessMessage } from '@/constants/toast-message';
+import { css } from '@/../styled-system/css';
+
+import { TOAST_ERRORMESSAGE, TOAST_SUCCESSMESSAGE } from '@/constants/toast-message';
 
 const AuthCallback = () => {
   const searchParams = useSearchParams();
@@ -27,10 +27,10 @@ const AuthCallback = () => {
         if (response.status !== 200) {
           throw new Error('Failed to login');
         }
-        toast.success(toastSuccessMessage.Login);
+        toast.success(TOAST_SUCCESSMESSAGE.Login);
       } catch (error) {
         // eslint-disable-next-line no-console
-        toast.error(toastErrorMessage.Login);
+        toast.error(TOAST_ERRORMESSAGE.Login);
       } finally {
         redirect('/');
       }
