@@ -18,11 +18,6 @@ const Title = ({ noteId }: ITitle) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
-  const getNewTitle = async () => {
-    const newTitle = await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
-    setValue(newTitle.title);
-  };
-
   useEffect(() => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
@@ -37,8 +32,13 @@ const Title = ({ noteId }: ITitle) => {
   }, [value, noteId]);
 
   useEffect(() => {
+    const getNewTitle = async () => {
+      const newTitle = await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
+      setValue(newTitle.title);
+    };
+
     getNewTitle();
-  }, []);
+  }, [noteId]);
 
   useEffect(() => {
     setValue(data.title);

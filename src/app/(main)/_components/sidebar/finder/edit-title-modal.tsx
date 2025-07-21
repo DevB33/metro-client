@@ -51,6 +51,7 @@ const EditTitleModal = ({ noteId, closeEditModal, top, left, right, bottom }: IE
   useEffect(() => {
     const foundNote = findNote(data, noteId);
     setNoteNode(foundNote);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
   useEffect(() => {
@@ -69,6 +70,7 @@ const EditTitleModal = ({ noteId, closeEditModal, top, left, right, bottom }: IE
         inputRef.current.select();
       }
     }, 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
