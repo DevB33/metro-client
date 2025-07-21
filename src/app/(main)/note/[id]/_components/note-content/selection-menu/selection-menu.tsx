@@ -8,7 +8,7 @@ import UnderlineIcon from '@/icons/underline-icon';
 import LineThroughIcon from '@/icons/line-through-icon';
 import CodeblockIcon from '@/icons/codeblock-icon';
 import { JSX } from 'react';
-import { useClickOutside } from '@/hooks/useClickOutside';
+import useClickOutside from '@/hooks/useClickOutside';
 import IMenuState from '@/types/menu-type';
 import changeSelectionStyle from './changeSelectionStyle';
 

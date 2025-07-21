@@ -13,7 +13,7 @@ import QuoteIcon from '@/icons/quote-icon';
 import PageIcon from '@/icons/menu-page-icon';
 import TextIcon from '@/icons/text-icon';
 import ReactDOM from 'react-dom';
-import { useClickOutside } from '@/hooks/useClickOutside';
+import useClickOutside from '@/hooks/useClickOutside';
 import IMenuState from '@/types/menu-type';
 import { createBlock, getBlockList, updateBlocksOrder, updateBlockType, deleteBlock } from '@/apis/block';
 import { getNoteList } from '@/apis/note';
