@@ -1,6 +1,6 @@
 import getInstance from '.';
 
-export const getUserInfo = async () => {
+const getUserInfo = async () => {
   const instance = await getInstance();
   const response = await instance.get(`/members`);
 
