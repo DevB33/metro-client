@@ -1,19 +1,118 @@
 import { css } from '@/../styled-system/css';
-import TagIcon from '@/icons/tag-icon';
 import { useEffect, useRef, useState } from 'react';
+import useSWR, { mutate } from 'swr';
+
+import { editNoteTags, getNoteInfo, getNoteList } from '@/apis/client/note';
 import ITagType from '@/types/tag-type';
 import LINE_COLOR from '@/constants/line-color';
 import KEY_NAME from '@/constants/key-name';
+import SWR_KEYS from '@/constants/swr-keys';
+import TagIcon from '@/icons/tag-icon';
 import useClickOutside from '@/hooks/useClickOutside';
-import useSWR, { mutate } from 'swr';
-import { editNoteTags, getNoteInfo, getNoteList } from '@/apis/note';
 import TagBox from './tag-box';
 
 interface ITag {
   noteId: string;
 }
 
-const tagContainer = css({
+const Tag = ({ noteId }: ITag) => {
+  const { data = { tags: [] } } = useSWR<{ tags: ITagType[] }>(SWR_KEYS.noteMetadata(noteId));
+
+  const tagList = data.tags;
+
+  const [isEditing, setIsEditing] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // LineColor 중 랜덤한 색을 리턴해주는 함수
+  const getRandomColor = (): keyof typeof LINE_COLOR => {
+    const colorKeys = Object.keys(LINE_COLOR) as Array<keyof typeof LINE_COLOR>;
+    const randomIndex = Math.floor(Math.random() * colorKeys.length);
+    return colorKeys[randomIndex];
+  };
+
+  const startEditing = () => {
+    setIsEditing(true);
+  };
+
+  const endEditing = () => {
+    setIsEditing(false);
+  };
+
+  const tagRef = useClickOutside(endEditing);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isEditing]);
+
+  const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const inputValue = e.currentTarget.value;
+    const isDuplicate = tagList.some(tag => tag.name === inputValue);
+
+    if (e.key === KEY_NAME.enter) {
+      if (e.nativeEvent.isComposing) {
+        return;
+      }
+
+      if (isDuplicate || inputValue.trim() === '') {
+        inputRef.current?.blur();
+        e.currentTarget.value = '';
+        setIsEditing(false);
+        return;
+      }
+
+      await editNoteTags(noteId, [...tagList, { name: inputValue.trim(), color: getRandomColor() }]);
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+      await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId), false);
+
+      setIsEditing(false);
+    }
+  };
+
+  const handleTagDelete = async (tagToDelete: string) => {
+    await editNoteTags(
+      noteId,
+      tagList.filter(tag => tag.name !== tagToDelete),
+    );
+    await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+    await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId), false);
+  };
+
+  return (
+    <div className={container} ref={tagRef}>
+      <div className={typeContainer}>
+        <TagIcon />
+        태그
+      </div>
+      <div
+        role="button"
+        tabIndex={0}
+        className={tagBoxContainer}
+        onClick={startEditing}
+        onKeyDown={e => {
+          if (e.key === KEY_NAME.enter) {
+            startEditing();
+          }
+        }}
+      >
+        {tagList.map(tag => (
+          <TagBox
+            key={tag.name}
+            isEditing={isEditing}
+            tagName={tag.name}
+            color={tag.color}
+            onDelete={handleTagDelete}
+          />
+        ))}
+        {isEditing && <input className={tagInput} ref={inputRef} onKeyDown={handleKeyDown} />}
+        {!isEditing && tagList.length === 0 && <>비어있음</>}
+      </div>
+    </div>
+  );
+};
+
+const container = css({
   minHeight: '2rem',
   height: 'auto',
   width: '44.5rem',
@@ -68,101 +167,5 @@ const tagInput = css({
   flex: '1',
   color: 'black',
 });
-
-const Tag = ({ noteId }: ITag) => {
-  const { data = { tags: [] } } = useSWR<{ tags: ITagType[] }>(`noteMetadata-${noteId}`);
-
-  const tagList = data.tags;
-
-  const [isEditing, setIsEditing] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const getRandomColor = (): keyof typeof LINE_COLOR => {
-    const colorKeys = Object.keys(LINE_COLOR) as Array<keyof typeof LINE_COLOR>;
-    const randomIndex = Math.floor(Math.random() * colorKeys.length);
-    return colorKeys[randomIndex];
-  };
-
-  const startEditing = () => {
-    setIsEditing(true);
-  };
-
-  const endEditing = () => {
-    setIsEditing(false);
-  };
-
-  const tagRef = useClickOutside(endEditing);
-
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isEditing]);
-
-  const handleKeyDown = async (event: React.KeyboardEvent<HTMLInputElement>) => {
-    const inputValue = event.currentTarget.value;
-    const isDuplicate = tagList.some(tag => tag.name === inputValue);
-
-    if (event.key === KEY_NAME.enter) {
-      if (event.nativeEvent.isComposing) {
-        return;
-      }
-
-      if (isDuplicate || inputValue.trim() === '') {
-        inputRef.current?.blur();
-        event.currentTarget.value = '';
-        setIsEditing(false);
-        return;
-      }
-
-      await editNoteTags(noteId, [...tagList, { name: inputValue.trim(), color: getRandomColor() }]);
-      await mutate('noteList', getNoteList, false);
-      await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
-
-      setIsEditing(false);
-    }
-  };
-
-  const handleTagDelete = async (tagToDelete: string) => {
-    await editNoteTags(
-      noteId,
-      tagList.filter(tag => tag.name !== tagToDelete),
-    );
-    await mutate('noteList', getNoteList, false);
-    await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
-  };
-
-  return (
-    <div className={tagContainer} ref={tagRef}>
-      <div className={typeContainer}>
-        <TagIcon />
-        태그
-      </div>
-      <div
-        role="button"
-        tabIndex={0}
-        className={tagBoxContainer}
-        onClick={startEditing}
-        onKeyDown={event => {
-          if (event.key === KEY_NAME.enter) {
-            startEditing();
-          }
-        }}
-      >
-        {tagList.map(tag => (
-          <TagBox
-            key={tag.name}
-            isEditing={isEditing}
-            tagName={tag.name}
-            color={tag.color}
-            onDelete={handleTagDelete}
-          />
-        ))}
-        {isEditing && <input className={tagInput} ref={inputRef} onKeyDown={handleKeyDown} />}
-        {!isEditing && tagList.length === 0 && <>비어있음</>}
-      </div>
-    </div>
-  );
-};
 
 export default Tag;

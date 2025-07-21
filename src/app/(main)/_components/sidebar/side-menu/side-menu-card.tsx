@@ -2,6 +2,14 @@ import { css } from '@/../styled-system/css';
 
 import HomeButton from './home-button';
 
+const SideMenuCard = () => {
+  return (
+    <div className={menuCard}>
+      <HomeButton />
+    </div>
+  );
+};
+
 const menuCard = css({
   width: '100%',
   height: 'auto',
@@ -19,13 +27,5 @@ const menuCard = css({
   boxShadow: 'sidebar',
   overflow: 'hidden',
 });
-
-const SideMenuCard = () => {
-  return (
-    <div className={menuCard}>
-      <HomeButton />
-    </div>
-  );
-};
 
 export default SideMenuCard;

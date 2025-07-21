@@ -2,12 +2,8 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
-import LineChart from './chart';
 
-const wrapperContainer = css({
-  width: '100%',
-  height: '100%',
-});
+import LineChart from './chart';
 
 const ResponseWrapper = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -33,10 +29,15 @@ const ResponseWrapper = () => {
   }, []);
 
   return (
-    <div className={wrapperContainer} ref={containerRef}>
+    <div className={container} ref={containerRef}>
       {parentWidth > 0 && parentHeight > 0 && <LineChart width={parentWidth} height={parentHeight} />}
     </div>
   );
 };
+
+const container = css({
+  width: '100%',
+  height: '100%',
+});
 
 export default ResponseWrapper;

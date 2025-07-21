@@ -1,6 +1,10 @@
 import { css } from '@/../styled-system/css';
 
-const dropDownHeaderContainer = css({
+const CoverModalHeader = () => {
+  return <div className={container}>갤러리</div>;
+};
+
+const container = css({
   px: 'small',
   py: 'tiny',
   borderBottom: '1px solid',
@@ -11,8 +15,4 @@ const dropDownHeaderContainer = css({
   color: 'grey',
 });
 
-const DropdownHeader = () => {
-  return <div className={dropDownHeaderContainer}>갤러리</div>;
-};
-
-export default DropdownHeader;
+export default CoverModalHeader;

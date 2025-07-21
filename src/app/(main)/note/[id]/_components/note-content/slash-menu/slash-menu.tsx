@@ -6,8 +6,9 @@ import { css } from '@/../styled-system/css';
 
 import { TBlockType, ITextBlock } from '@/types/block-type';
 import IMenuState from '@/types/menu-type';
-import { createBlock, getBlockList, updateBlocksOrder, updateBlockType, deleteBlock } from '@/apis/block';
-import { getNoteList } from '@/apis/note';
+import { createBlock, getBlockList, updateBlocksOrder, updateBlockType, deleteBlock } from '@/apis/client/block';
+import { getNoteList } from '@/apis/client/note';
+import SWR_KEYS from '@/constants/swr-keys';
 import { SLASH_MENU_ITEMS } from '@/constants/menu-items';
 import useClickOutside from '@/hooks/useClickOutside';
 
@@ -60,8 +61,8 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
         });
       }
 
-      await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
-      await mutate('noteList', getNoteList, false);
+      await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
 
       setMenuState(prev => ({
         ...prev,
@@ -100,8 +101,8 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
         await updateBlockType(blockList[index].id, type);
       }
 
-      await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
-      await mutate('noteList', getNoteList, false);
+      await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
 
       setMenuState(prev => ({
         ...prev,

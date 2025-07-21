@@ -1,8 +1,9 @@
 import { mutate } from 'swr';
 
+import { getBlockList, updateBlockNodes } from '@/apis/client/block';
 import { ITextBlock } from '@/types/block-type';
-import { getBlockList, updateBlockNodes } from '@/apis/block';
 import getSelectionInfo from '@/utils/getSelectionInfo';
+import SWR_KEYS from '@/constants/swr-keys';
 
 const handleInput = async (
   event: React.FormEvent<HTMLDivElement>,
@@ -94,7 +95,7 @@ const handleInput = async (
   }
 
   await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
-  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+  await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
 
   prevChildNodesLength.current = childNodes.length;
 };

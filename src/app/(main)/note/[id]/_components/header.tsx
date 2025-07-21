@@ -3,49 +3,17 @@
 import { useRef, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { css } from '@/../styled-system/css';
+import { toast } from 'react-toastify';
+import useSWR, { mutate } from 'swr';
 
+import { deleteNote, getNoteList } from '@/apis/client/note';
+import INotes from '@/types/note-type';
+import SWR_KEYS from '@/constants/swr-keys';
+import { TOAST_ERRORMESSAGE, TOAST_SUCCESSMESSAGE } from '@/constants/toast-message';
 import LeftArrowIcon from '@/icons/left-arrow-icon';
 import HorizonDotIcon from '@/icons/horizon-dot-icon';
-import DropDown from '@/components/dropdown/dropdown';
 import TrashIcon from '@/icons/trash-icon';
-import useSWR, { mutate } from 'swr';
-import { deleteNote, getNoteList } from '@/apis/note';
-import INotes from '@/types/note-type';
-import { toast } from 'react-toastify';
-import { TOAST_ERRORMESSAGE, TOAST_SUCCESSMESSAGE } from '@/constants/toast-message';
-
-const headerConatiner = css({
-  boxSizing: 'border-box',
-  width: '100%',
-  paddingTop: 'small',
-  px: 'small',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  userSelect: 'none',
-});
-
-const leftItemsConatiner = css({
-  display: 'flex',
-  gap: 'small',
-});
-
-const rightItemsConatiner = css({
-  display: 'flex',
-  gap: 'small',
-});
-
-const shareButton = css({
-  cursor: 'pointer',
-});
-
-const dropDownButton = css({
-  cursor: 'pointer',
-});
-
-const backButton = css({
-  cursor: 'pointer',
-});
+import DropDown from '@/components/dropdown/dropdown';
 
 const Header = () => {
   const router = useRouter();
@@ -55,7 +23,7 @@ const Header = () => {
   const [dropdownMenuPosition, setDropdownMenuPosition] = useState({ x: 0, y: 0 });
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const { data: noteList } = useSWR('noteList');
+  const { data: noteList } = useSWR(SWR_KEYS.NOTE_LIST);
 
   const openSettingDropdown = () => {
     const rect = buttonRef.current?.getBoundingClientRect();
@@ -96,7 +64,7 @@ const Header = () => {
   const handleDeleteButtonClick = async () => {
     try {
       await deleteNote(noteId);
-      await mutate('noteList', getNoteList, false);
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
       const parentId = findParentId(noteList, noteId);
       if (parentId) {
         router.push(`/note/${parentId}`);
@@ -115,7 +83,7 @@ const Header = () => {
   };
 
   return (
-    <div className={headerConatiner}>
+    <div className={container}>
       <div className={leftItemsConatiner}>
         <button type="button" className={backButton} onClick={handleBackButton}>
           <LeftArrowIcon />
@@ -140,5 +108,38 @@ const Header = () => {
     </div>
   );
 };
+
+const container = css({
+  boxSizing: 'border-box',
+  width: '100%',
+  paddingTop: 'small',
+  px: 'small',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  userSelect: 'none',
+});
+
+const leftItemsConatiner = css({
+  display: 'flex',
+  gap: 'small',
+});
+
+const rightItemsConatiner = css({
+  display: 'flex',
+  gap: 'small',
+});
+
+const shareButton = css({
+  cursor: 'pointer',
+});
+
+const dropDownButton = css({
+  cursor: 'pointer',
+});
+
+const backButton = css({
+  cursor: 'pointer',
+});
 
 export default Header;

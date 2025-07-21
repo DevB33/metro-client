@@ -7,10 +7,11 @@ import {
   updateBlockNodes,
   updateBlocksOrder,
   updateBlockType,
-} from '@/apis/block';
+} from '@/apis/client/block';
 import { ITextBlock } from '@/types/block-type';
 import ISelectionPosition from '@/types/selection-position';
 import IMenuState from '@/types/menu-type';
+import SWR_KEYS from '@/constants/swr-keys';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import KEY_NAME from '@/constants/key-name';
 import editSelectionContent from '../../selection-menu/editSelectionContent';
@@ -255,7 +256,7 @@ const splitBlock = async (
     upperOrder: updatedBlockList[index].order,
     nodes: newAfterBlock,
   });
-  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+  await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
 
   focusBlock(index + 1, blockRef, updatedBlockList);
 };
@@ -384,7 +385,7 @@ const splitBlock = async (
 //     await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
 //   }
 
-//   await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+//   await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
 
 //   // 줄 바꿈 후 focus를 바뀐줄 맨 앞에 주는 로직
 //   setTimeout(() => {
@@ -425,7 +426,7 @@ const splitBlock = async (
 
 //   // 현재 블록 업데이트
 //   await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
-//   await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+//   await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
 
 //   // 줄이 합쳐질 때 이전 합친 줄 사이에 focus를 주는 로직
 //   setTimeout(() => {
@@ -505,7 +506,7 @@ const mergeBlock = async (
     );
   }
 
-  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+  await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
 
   // 블록을 합친 뒤 합친 블록 사이에 focus를 주는 로직
   const range = document.createRange();
@@ -591,7 +592,7 @@ const turnIntoH1 = async (index: number, blockList: ITextBlock[], noteId: string
   await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
   await updateBlockType(blockList[index].id, 'H1');
 
-  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+  await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
 };
 
 const turnIntoH2 = async (index: number, blockList: ITextBlock[], noteId: string) => {
@@ -600,7 +601,7 @@ const turnIntoH2 = async (index: number, blockList: ITextBlock[], noteId: string
   await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
   await updateBlockType(blockList[index].id, 'H2');
 
-  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+  await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
 };
 
 const turnIntoH3 = async (index: number, blockList: ITextBlock[], noteId: string) => {
@@ -609,7 +610,7 @@ const turnIntoH3 = async (index: number, blockList: ITextBlock[], noteId: string
   await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
   await updateBlockType(blockList[index].id, 'H3');
 
-  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+  await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
 };
 
 const turnIntoUl = async (index: number, blockList: ITextBlock[], noteId: string) => {
@@ -618,7 +619,7 @@ const turnIntoUl = async (index: number, blockList: ITextBlock[], noteId: string
   await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
   await updateBlockType(blockList[index].id, 'UL');
 
-  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+  await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
 };
 
 const turnIntoOl = async (index: number, blockList: ITextBlock[], noteId: string, offset: number) => {
@@ -627,7 +628,7 @@ const turnIntoOl = async (index: number, blockList: ITextBlock[], noteId: string
   await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
   await updateBlockType(blockList[index].id, 'OL');
 
-  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+  await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
 };
 
 const turnIntoQuote = async (index: number, blockList: ITextBlock[], noteId: string) => {
@@ -636,7 +637,7 @@ const turnIntoQuote = async (index: number, blockList: ITextBlock[], noteId: str
   await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
   await updateBlockType(blockList[index].id, 'QUOTE');
 
-  await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+  await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
 };
 
 const isInputtableKey = (e: KeyboardEvent) => {
@@ -721,7 +722,7 @@ const handleKeyDown = async (
           setKey(Math.random());
 
           await updateBlockType(blockList[index].id, 'DEFAULT');
-          await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+          await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
           focusBlock(index, blockRef, blockList);
         }
         return;
@@ -738,7 +739,7 @@ const handleKeyDown = async (
           if (blockList[index].type !== 'DEFAULT') {
             // default 블록이 아닐 때는 블록을 합치는 대신 블록을 default로 변경
             await updateBlockType(blockList[index].id, 'DEFAULT');
-            await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+            await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
             focusBlock(index, blockRef, blockList);
           } else {
             mergeBlock(index, blockList, blockRef, noteId);
@@ -762,7 +763,7 @@ const handleKeyDown = async (
 
         //   // 현재 블록 업데이트
         //   await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
-        //   await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+        //   await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
 
         //   // 한 줄이 다 지워진 상태에서의 줄 합치기 일때 focus를 주는 로직
         //   setTimeout(() => {
@@ -800,7 +801,7 @@ const handleKeyDown = async (
 
           if (blockList[index].type !== 'DEFAULT') {
             await updateBlockType(blockList[index].id, 'DEFAULT');
-            await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+            await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
             focusBlock(index, blockRef, blockList);
           } else {
             mergeBlock(index, blockList, blockRef, noteId);
@@ -1159,7 +1160,7 @@ const handleKeyDown = async (
       }
     }
 
-    await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+    await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
 
     setTimeout(() => {
       focusAfterSelection(selection, isBackward, event.key, blockRef);

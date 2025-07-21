@@ -9,6 +9,8 @@ import LINE_COLOR from '@/constants/line-color';
 import useSWR from 'swr';
 import { Zoom } from '@visx/zoom';
 import { useRouter } from 'next/navigation';
+
+import SWR_KEYS from '@/constants/swr-keys';
 import LinkControls from './LinkControls';
 import getLinkComponent from './getLinkComponent';
 
@@ -58,7 +60,7 @@ const LineChart = ({ width: totalWidth, height: totalHeight, margin = defaultMar
 
   const router = useRouter();
 
-  const { data: noteList } = useSWR('noteList');
+  const { data: noteList } = useSWR(SWR_KEYS.NOTE_LIST);
 
   const convertNoteListToTree = (notes: any[]): ITreeNode[] => {
     return notes.map(note => ({

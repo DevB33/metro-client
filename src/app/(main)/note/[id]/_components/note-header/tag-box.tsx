@@ -1,4 +1,5 @@
 import { css, cva } from '@/../styled-system/css';
+
 import LINE_COLOR from '@/constants/line-color';
 
 interface ITagBox {
@@ -7,6 +8,19 @@ interface ITagBox {
   isEditing: boolean;
   onDelete: (tagName: string) => void;
 }
+
+const TagBox = ({ tagName, color, isEditing, onDelete }: ITagBox) => {
+  return (
+    <div className={tagBox({ color })}>
+      <div className={tagNameContainer}>{tagName}</div>
+      {isEditing && (
+        <button type="button" className={deleteButton} onClick={() => onDelete(tagName)}>
+          x
+        </button>
+      )}
+    </div>
+  );
+};
 
 const tagBox = cva({
   base: {
@@ -50,18 +64,5 @@ const deleteButton = css({
   pb: '0.1rem',
   cursor: 'pointer',
 });
-
-const TagBox = ({ tagName, color, isEditing, onDelete }: ITagBox) => {
-  return (
-    <div className={tagBox({ color })}>
-      <div className={tagNameContainer}>{tagName}</div>
-      {isEditing && (
-        <button type="button" className={deleteButton} onClick={() => onDelete(tagName)}>
-          x
-        </button>
-      )}
-    </div>
-  );
-};
 
 export default TagBox;

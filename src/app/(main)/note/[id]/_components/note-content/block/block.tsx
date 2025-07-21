@@ -7,9 +7,10 @@ import { ITextBlock } from '@/types/block-type';
 import INotes from '@/types/note-type';
 import ISelectionPosition from '@/types/selection-position';
 import IMenuState from '@/types/menu-type';
-import { getBlockList, updateBlocksOrder } from '@/apis/block';
-import { getNoteList } from '@/apis/note';
+import { getBlockList, updateBlocksOrder } from '@/apis/client/block';
+import { getNoteList } from '@/apis/client/note';
 import PageIcon from '@/icons/page-icon';
+import SWR_KEYS from '@/constants/swr-keys';
 import handleInput from './handler/handleInput';
 import handleKeyDown from './handler/handleKeyDown';
 import handleMouseLeave from './handler/handleMouseLeave';
@@ -79,8 +80,8 @@ const Block = memo(
         blockList[index].order,
       );
 
-      await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
-      await mutate('noteList', getNoteList, false);
+      await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
     };
 
     const changeBlockOrderToFirst = async () => {
@@ -92,8 +93,8 @@ const Block = memo(
         -1,
       );
 
-      await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
-      await mutate('noteList', getNoteList, false);
+      await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
     };
 
     if (block.type === 'PAGE') {

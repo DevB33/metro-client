@@ -3,14 +3,15 @@ import { useParams } from 'next/navigation';
 import { mutate } from 'swr';
 import { css } from '@/../styled-system/css';
 
+import { createBlock, deleteBlock, getBlockList, updateBlocksOrder } from '@/apis/client/block';
+import { getNoteList } from '@/apis/client/note';
 import { ITextBlock } from '@/types/block-type';
 import IMenuState from '@/types/menu-type';
-import { getNoteList } from '@/apis/note';
-import { createBlock, deleteBlock, getBlockList, updateBlocksOrder } from '@/apis/block';
 import PlusIcon from '@/icons/plus-icon';
 import GripVerticalIcon from '@/icons/grip-vertical-icon';
 import TrashIcon from '@/icons/trash-icon';
 import ArrowReapeatIcon from '@/icons/arrow-repeat-icon';
+import SWR_KEYS from '@/constants/swr-keys';
 import DropDown from '@/components/dropdown/dropdown';
 import SlashMenu from './slash-menu/slash-menu';
 import GhostBlock from './ghost-block/ghost-block';
@@ -71,8 +72,8 @@ const BlockButton = ({
       );
     }
 
-    await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
-    await mutate('noteList', getNoteList, false);
+    await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+    await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
   };
 
   const handleCreateBlockButton = async (blockIndex: number) => {
@@ -92,7 +93,7 @@ const BlockButton = ({
       upperOrder: blockList[index].order,
       nodes: [{ content: '', type: 'text' }],
     });
-    await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
+    await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
 
     setTimeout(() => {
       (blockRef.current[blockIndex + 1]?.parentNode as HTMLElement)?.focus();
