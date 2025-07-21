@@ -1,16 +1,17 @@
 'use client';
 
-import { redirect, useParams, useSearchParams } from 'next/navigation';
-import { css } from '@/../styled-system/css';
 import { useEffect } from 'react';
-import { TOAST_ERRORMESSAGE, TOAST_SUCCESSMESSAGE } from '@/constants/toast-message';
+import { redirect, useParams, useSearchParams } from 'next/navigation';
 import { toast } from 'react-toastify';
+import { css } from '@/../styled-system/css';
+
+import { TOAST_ERRORMESSAGE, TOAST_SUCCESSMESSAGE } from '@/constants/toast-message';
 
 const AuthCallback = () => {
   const searchParams = useSearchParams();
+  const { provider } = useParams();
   const code = searchParams.get('code');
   const state = searchParams.get('state');
-  const { provider } = useParams();
 
   useEffect(() => {
     (async () => {

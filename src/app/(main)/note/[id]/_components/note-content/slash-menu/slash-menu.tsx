@@ -9,7 +9,7 @@ import IMenuState from '@/types/menu-type';
 import { createBlock, getBlockList, updateBlocksOrder, updateBlockType, deleteBlock } from '@/apis/block';
 import { getNoteList } from '@/apis/note';
 import { SLASH_MENU_ITEMS } from '@/constants/menu-items';
-import { useClickOutside } from '@/hooks/useClickOutside';
+import useClickOutside from '@/hooks/useClickOutside';
 
 interface ISlashMenuProps {
   index: number;

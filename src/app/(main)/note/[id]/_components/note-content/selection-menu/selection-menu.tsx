@@ -4,7 +4,7 @@ import { ITextBlock } from '@/types/block-type';
 import ISelectionPosition from '@/types/selection-position';
 import IMenuState from '@/types/menu-type';
 import { SELECTION_MENU_ITEMS } from '@/constants/menu-items';
-import { useClickOutside } from '@/hooks/useClickOutside';
+import useClickOutside from '@/hooks/useClickOutside';
 import changeSelectionStyle from './changeSelectionStyle';
 
 interface ISelectionMenuProps {
