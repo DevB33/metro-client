@@ -1,89 +1,14 @@
 import { mutate } from 'swr';
 
 import ISelectionPosition from '@/types/selection-position';
-import { ITextBlock, IBlockStyle } from '@/types/block-type';
+import { ITextBlock } from '@/types/block-type';
 import { getBlockList, updateBlockNodes } from '@/apis/block';
-
-const createNewStyle = (type: string, beforeStyle: IBlockStyle) => {
-  if (type === 'bold') {
-    return {
-      fontWeight: beforeStyle.fontWeight === 'bold' ? 'normal' : 'bold',
-      fontStyle: beforeStyle.fontStyle,
-      textDecoration: beforeStyle.textDecoration,
-      color: beforeStyle.color,
-      backgroundColor: beforeStyle.backgroundColor,
-      width: beforeStyle.width,
-      height: beforeStyle.height,
-      borderRadius: beforeStyle.borderRadius,
-    };
-  }
-  if (type === 'italic') {
-    return {
-      fontWeight: beforeStyle.fontWeight,
-      fontStyle: beforeStyle.fontStyle === 'italic' ? 'normal' : 'italic',
-      textDecoration: beforeStyle.textDecoration,
-      color: beforeStyle.color,
-      backgroundColor: beforeStyle.backgroundColor,
-      width: beforeStyle.width,
-      height: beforeStyle.height,
-      borderRadius: beforeStyle.borderRadius,
-    };
-  }
-  if (type === 'underline') {
-    return {
-      fontWeight: beforeStyle.fontWeight,
-      fontStyle: beforeStyle.fontStyle,
-      textDecoration: beforeStyle.textDecoration === 'underline' ? 'none' : 'underline',
-      color: beforeStyle.color,
-      backgroundColor: beforeStyle.backgroundColor,
-      width: beforeStyle.width,
-      height: beforeStyle.height,
-      borderRadius: beforeStyle.borderRadius,
-    };
-  }
-  if (type === 'line-through') {
-    return {
-      fontWeight: beforeStyle.fontWeight,
-      fontStyle: beforeStyle.fontStyle,
-      textDecoration: beforeStyle.textDecoration === 'line-through' ? 'none' : 'line-through',
-      color: beforeStyle.color,
-      backgroundColor: beforeStyle.backgroundColor,
-      width: beforeStyle.width,
-      height: beforeStyle.height,
-      borderRadius: beforeStyle.borderRadius,
-    };
-  }
-  if (type === 'codeblock') {
-    return {
-      fontWeight: beforeStyle.fontWeight,
-      fontStyle: beforeStyle.fontStyle,
-      textDecoration: beforeStyle.textDecoration,
-      color: beforeStyle.color === 'red' ? 'black' : 'red',
-      backgroundColor:
-        beforeStyle.backgroundColor === 'rgba(161, 161, 161, 0.5)' ? 'transparent' : 'rgba(161, 161, 161, 0.5)',
-      width: beforeStyle.width,
-      height: beforeStyle.height,
-      borderRadius: beforeStyle.borderRadius,
-    };
-  }
-};
-
-const defaultStyle = {
-  fontWeight: 'normal',
-  fontStyle: 'normal',
-  textDecoration: 'none',
-  color: '#000000',
-  backgroundColor: 'transparent',
-  width: 'auto',
-  height: 'auto',
-  borderRadius: '0',
-};
+import DEFAULT_STYLE from '@/constants/child-node-style';
+import createNewStyle from '@/utils/createNewStyle';
 
 const updateBlock = async (noteId: string, blockId: string, updatedNodes: ITextBlock['nodes']) => {
   const cleanedNodes = updatedNodes.filter(node => node.content !== '');
-  // eslint-disable-next-line no-await-in-loop
   await updateBlockNodes(blockId, cleanedNodes);
-  // eslint-disable-next-line no-await-in-loop
   await mutate(`blockList-${noteId}`, getBlockList(noteId), false);
 };
 
@@ -147,7 +72,7 @@ const changeSelectionStyle = async (
 
           const selectedNode = {
             type: 'span',
-            style: createNewStyle(type, block.nodes[startNodeIndex].style || defaultStyle),
+            style: createNewStyle(type, block.nodes[startNodeIndex].style || DEFAULT_STYLE),
             content: selectedText,
           };
 
@@ -188,7 +113,7 @@ const changeSelectionStyle = async (
 
           const startNodeSelectedNode = {
             type: 'span',
-            style: createNewStyle(type, block.nodes[startNodeIndex].style || defaultStyle),
+            style: createNewStyle(type, block.nodes[startNodeIndex].style || DEFAULT_STYLE),
             content: startNodeSelectedText,
           };
 
@@ -198,7 +123,7 @@ const changeSelectionStyle = async (
           const endNodeAfterText = endNode.textContent?.slice(endOffset) || '';
           const endNodeSelectedNode = {
             type: 'span',
-            style: createNewStyle(type, block.nodes[endNodeIndex].style || defaultStyle),
+            style: createNewStyle(type, block.nodes[endNodeIndex].style || DEFAULT_STYLE),
             content: endNodeSelectedText,
           };
 
@@ -209,7 +134,7 @@ const changeSelectionStyle = async (
           };
           // 선택 시작 노드 다음부터 끝 노드 전까지 스타일 변경
           for (let i = startNodeIndex + 1; i < endNodeIndex; i += 1) {
-            block.nodes[i].style = createNewStyle(type, block.nodes[i].style || defaultStyle);
+            block.nodes[i].style = createNewStyle(type, block.nodes[i].style || DEFAULT_STYLE);
             block.nodes[i].type = 'span';
           }
 
@@ -248,13 +173,13 @@ const changeSelectionStyle = async (
           };
           const afterNode = {
             type: 'span',
-            style: createNewStyle(type, block.nodes[startNodeIndex].style || defaultStyle),
+            style: createNewStyle(type, block.nodes[startNodeIndex].style || DEFAULT_STYLE),
             content: afterText,
           };
 
           // 선택 시작 노드 다음부터 끝까지 스타일 변경
           for (let i = startNodeIndex + 1; i < childNodes.length; i += 1) {
-            block.nodes[i].style = createNewStyle(type, block.nodes[i].style || defaultStyle);
+            block.nodes[i].style = createNewStyle(type, block.nodes[i].style || DEFAULT_STYLE);
             block.nodes[i].type = 'span';
           }
 
@@ -278,7 +203,7 @@ const changeSelectionStyle = async (
         if (index > startBlockIndex && index < endBlockIndex) {
           // 처음 노드부터 끝까지 스타일 변경
           for (let i = 0; i < childNodes.length; i += 1) {
-            block.nodes[i].style = createNewStyle(type, block.nodes[i].style || defaultStyle);
+            block.nodes[i].style = createNewStyle(type, block.nodes[i].style || DEFAULT_STYLE);
             block.nodes[i].type = 'span';
           }
 
@@ -301,7 +226,7 @@ const changeSelectionStyle = async (
           const afterText = endNode.textContent?.slice(endOffset) || '';
           const beforeNode = {
             type: 'span',
-            style: createNewStyle(type, block.nodes[endNodeIndex].style || defaultStyle),
+            style: createNewStyle(type, block.nodes[endNodeIndex].style || DEFAULT_STYLE),
             content: beforeText,
           };
           const afterNode = {
@@ -312,7 +237,7 @@ const changeSelectionStyle = async (
 
           // 처음 노드부터 선택 노드 전까지 스타일 변경
           for (let i = 0; i < endNodeIndex; i += 1) {
-            block.nodes[i].style = createNewStyle(type, block.nodes[i].style || defaultStyle);
+            block.nodes[i].style = createNewStyle(type, block.nodes[i].style || DEFAULT_STYLE);
             block.nodes[i].type = 'span';
           }
 

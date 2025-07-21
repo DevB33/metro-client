@@ -3,7 +3,7 @@
 import { redirect, useParams, useSearchParams } from 'next/navigation';
 import { css } from '@/../styled-system/css';
 import { useEffect } from 'react';
-import { toastErrorMessage, toastSuccessMessage } from '@/constants/toast-message';
+import { TOAST_ERRORMESSAGE, TOAST_SUCCESSMESSAGE } from '@/constants/toast-message';
 import { toast } from 'react-toastify';
 
 const AuthCallback = () => {
@@ -26,10 +26,10 @@ const AuthCallback = () => {
         if (response.status !== 200) {
           throw new Error('Failed to login');
         }
-        toast.success(toastSuccessMessage.Login);
+        toast.success(TOAST_SUCCESSMESSAGE.Login);
       } catch (error) {
         // eslint-disable-next-line no-console
-        toast.error(toastErrorMessage.Login);
+        toast.error(TOAST_ERRORMESSAGE.Login);
       } finally {
         redirect('/');
       }

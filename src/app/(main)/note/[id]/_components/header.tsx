@@ -12,7 +12,7 @@ import useSWR, { mutate } from 'swr';
 import { deleteNote, getNoteList } from '@/apis/note';
 import INotes from '@/types/note-type';
 import { toast } from 'react-toastify';
-import { toastErrorMessage, toastSuccessMessage } from '@/constants/toast-message';
+import { TOAST_ERRORMESSAGE, TOAST_SUCCESSMESSAGE } from '@/constants/toast-message';
 
 const headerConatiner = css({
   boxSizing: 'border-box',
@@ -103,9 +103,9 @@ const Header = () => {
       } else {
         router.push('/');
       }
-      toast.success(toastSuccessMessage.NoteDelete);
+      toast.success(TOAST_SUCCESSMESSAGE.NoteDelete);
     } catch (error) {
-      toast.error(toastErrorMessage.NoteDelete);
+      toast.error(TOAST_ERRORMESSAGE.NoteDelete);
     }
     closeSettingDropdown();
   };

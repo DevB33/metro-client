@@ -1,13 +1,13 @@
-const toastSuccessMessage = {
+const TOAST_SUCCESSMESSAGE = {
   NoteCreate: '노트가 생성되었습니다.',
   NoteDelete: '노트가 삭제되었습니다.',
   Login: '로그인에 성공하였습니다.',
 };
 
-const toastErrorMessage = {
+const TOAST_ERRORMESSAGE = {
   NoteCreate: '노트 생성이 실패하였습니다.',
   NoteDelete: '노트 삭제에 실패하였습니다.',
   Login: '로그인에 실패하였습니다.',
 };
 
-export { toastSuccessMessage, toastErrorMessage };
+export { TOAST_SUCCESSMESSAGE, TOAST_ERRORMESSAGE };

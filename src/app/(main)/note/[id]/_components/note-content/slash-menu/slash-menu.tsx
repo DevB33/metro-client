@@ -1,21 +1,14 @@
-import { useState, useEffect, useCallback, JSX } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { useParams } from 'next/navigation';
 import { mutate } from 'swr';
 import { css } from '@/../styled-system/css';
 
-import { ITextBlock } from '@/types/block-type';
+import { TBlockType, ITextBlock } from '@/types/block-type';
 import IMenuState from '@/types/menu-type';
 import { createBlock, getBlockList, updateBlocksOrder, updateBlockType, deleteBlock } from '@/apis/block';
 import { getNoteList } from '@/apis/note';
-import HeadingOneIcon from '@/icons/heading-one-icon';
-import HeadingTwoIcon from '@/icons/heading-two-icon';
-import HeadingThreeIcon from '@/icons/heading-three-icon';
-import BulletedListIcon from '@/icons/bulleted-list-icon';
-import NumberedListIcon from '@/icons/numbered-list-icon';
-import QuoteIcon from '@/icons/quote-icon';
-import PageIcon from '@/icons/menu-page-icon';
-import TextIcon from '@/icons/text-icon';
+import { SLASH_MENU_ITEMS } from '@/constants/menu-items';
 import { useClickOutside } from '@/hooks/useClickOutside';
 
 interface ISlashMenuProps {
@@ -27,39 +20,10 @@ interface ISlashMenuProps {
   openedBySlashKey: boolean;
 }
 
-const menu = css({
-  position: 'fixed',
-  width: '17rem',
-  height: '17rem',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'space-between',
-  background: 'white',
-  border: '1px solid lightgray',
-  borderRadius: '.3rem',
-  boxShadow: 'dropDown',
-  fontSize: 'md',
-  padding: 'tiny',
-  zIndex: '1000',
-});
-
-const MENU_ITEMS: {
-  label: string;
-  type: 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'UL' | 'OL' | 'QUOTE' | 'PAGE';
-  icon: JSX.Element;
-  markdown: string;
-}[] = [
-  { label: 'Heading 1', type: 'H1', icon: <HeadingOneIcon color="black" />, markdown: '#' },
-  { label: 'Heading 2', type: 'H2', icon: <HeadingTwoIcon color="black" />, markdown: '##' },
-  { label: 'Heading 3', type: 'H3', icon: <HeadingThreeIcon color="black" />, markdown: '###' },
-  { label: 'Bulleted List', type: 'UL', icon: <BulletedListIcon color="black" />, markdown: '-' },
-  { label: 'Numbered List', type: 'OL', icon: <NumberedListIcon color="black" />, markdown: '1.' },
-  { label: 'Quote', type: 'QUOTE', icon: <QuoteIcon color="black" />, markdown: '|' },
-  { label: 'Page', type: 'PAGE', icon: <PageIcon color="black" />, markdown: '' },
-  { label: 'Text', type: 'DEFAULT', icon: <TextIcon color="black" />, markdown: '' },
-];
-
 const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, openedBySlashKey }: ISlashMenuProps) => {
+  const params = useParams();
+  const noteId = params.id as string;
+
   const [selectedIndex, setSelectedIndex] = useState(0);
   const slashMenuRef = useClickOutside(() => {
     setMenuState(prev => ({
@@ -69,11 +33,8 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
     }));
   });
 
-  const params = useParams();
-  const noteId = params.id as string;
-
   const makeBlock = useCallback(
-    async (type: 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'UL' | 'OL' | 'QUOTE' | 'PAGE') => {
+    async (type: TBlockType) => {
       if (index !== blockList.length - 1) {
         await updateBlocksOrder(
           noteId,
@@ -126,7 +87,7 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
   );
 
   const changeBlock = useCallback(
-    async (type: 'DEFAULT' | 'H1' | 'H2' | 'H3' | 'UL' | 'OL' | 'QUOTE' | 'PAGE') => {
+    async (type: TBlockType) => {
       if (type === 'PAGE') {
         await deleteBlock(noteId, blockList[index].order, blockList[index].order);
         await createBlock({
@@ -168,14 +129,14 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'ArrowDown') {
-        setSelectedIndex(prev => (prev + 1) % MENU_ITEMS.length);
+        setSelectedIndex(prev => (prev + 1) % SLASH_MENU_ITEMS.length);
       } else if (event.key === 'ArrowUp') {
-        setSelectedIndex(prev => (prev - 1 + MENU_ITEMS.length) % MENU_ITEMS.length);
+        setSelectedIndex(prev => (prev - 1 + SLASH_MENU_ITEMS.length) % SLASH_MENU_ITEMS.length);
       } else if (event.key === 'Enter') {
         if (blockList[index].nodes[0].content === '') {
-          changeBlock(MENU_ITEMS[selectedIndex].type);
+          changeBlock(SLASH_MENU_ITEMS[selectedIndex].type);
         } else {
-          makeBlock(MENU_ITEMS[selectedIndex].type);
+          makeBlock(SLASH_MENU_ITEMS[selectedIndex].type);
         }
       }
     };
@@ -185,54 +146,72 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [selectedIndex, index, blockList, menuState.isSlashMenuOpen, changeBlock, makeBlock]);
 
-  return menuState.isSlashMenuOpen && menuState.slashMenuOpenIndex === index
-    ? ReactDOM.createPortal(
+  if (!menuState.isSlashMenuOpen || menuState.slashMenuOpenIndex !== index) {
+    return null;
+  }
+
+  return ReactDOM.createPortal(
+    <div
+      style={{ top: menuState.slashMenuPosition.y, left: menuState.slashMenuPosition.x }}
+      className={container}
+      ref={slashMenuRef}
+    >
+      <div className={menuTitle}>blocks</div>
+      {SLASH_MENU_ITEMS.map((item, i) => (
         <div
-          style={{ top: menuState.slashMenuPosition.y, left: menuState.slashMenuPosition.x }}
-          className={menu}
-          ref={slashMenuRef}
+          tabIndex={0}
+          role="button"
+          key={item.label}
+          className={`${slashButton} ${selectedIndex === i ? selectedButton : ''}`}
+          onClick={() => {
+            if (openedBySlashKey) {
+              if (blockList[index].nodes[0].content === '') {
+                changeBlock(item.type);
+              } else {
+                makeBlock(item.type);
+              }
+            } else changeBlock(item.type);
+          }}
+          onMouseEnter={() => setSelectedIndex(i)}
+          onKeyDown={event => {
+            if (openedBySlashKey) {
+              if (event.key === 'Enter') {
+                if (blockList[index].nodes[0].content === '') {
+                  changeBlock(item.type);
+                } else {
+                  makeBlock(item.type);
+                }
+              }
+            } else changeBlock(item.type);
+          }}
         >
-          <div className={menuTitle}>blocks</div>
-          {MENU_ITEMS.map((item, i) => (
-            <div
-              tabIndex={0}
-              role="button"
-              key={item.label}
-              className={`${slashButton} ${selectedIndex === i ? selectedButton : ''}`}
-              onClick={() => {
-                if (openedBySlashKey) {
-                  if (blockList[index].nodes[0].content === '') {
-                    changeBlock(item.type);
-                  } else {
-                    makeBlock(item.type);
-                  }
-                } else changeBlock(item.type);
-              }}
-              onMouseEnter={() => setSelectedIndex(i)}
-              onKeyDown={event => {
-                if (openedBySlashKey) {
-                  if (event.key === 'Enter') {
-                    if (blockList[index].nodes[0].content === '') {
-                      changeBlock(item.type);
-                    } else {
-                      makeBlock(item.type);
-                    }
-                  }
-                } else changeBlock(item.type);
-              }}
-            >
-              <div className={buttonName}>
-                {item.icon}
-                {item.label}
-              </div>
-              <div className={markdown}>{item.markdown}</div>
-            </div>
-          ))}
-        </div>,
-        document.body,
-      )
-    : null;
+          <div className={buttonName}>
+            {item.icon}
+            {item.label}
+          </div>
+          <div className={markdown}>{item.markdown}</div>
+        </div>
+      ))}
+    </div>,
+    document.body,
+  );
 };
+
+const container = css({
+  position: 'fixed',
+  width: '17rem',
+  height: '17rem',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
+  background: 'white',
+  border: '1px solid lightgray',
+  borderRadius: '.3rem',
+  boxShadow: 'dropDown',
+  fontSize: 'md',
+  padding: 'tiny',
+  zIndex: '1000',
+});
 
 const menuTitle = css({
   fontSize: '.8rem',

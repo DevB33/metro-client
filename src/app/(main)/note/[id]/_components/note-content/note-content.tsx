@@ -6,6 +6,7 @@ import useSWR, { mutate } from 'swr';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
+import INotes from '@/types/note-type';
 import ISelectionPosition from '@/types/selection-position';
 import IMenuState from '@/types/menu-type';
 import getSelectionInfo from '@/utils/getSelectionInfo';
@@ -17,30 +18,51 @@ import Block from './block/block';
 import SelectionMenu from './selection-menu/selection-menu';
 
 const NoteContent = () => {
+  const params = useParams();
+  const noteId = params.id as string;
   const blockContainerRef = useRef<(HTMLDivElement | null)[]>([]);
   const blockButtonRef = useRef<(HTMLDivElement | null)[]>([]);
   const blockRef = useRef<(HTMLDivElement | null)[]>([]);
-  const fakeBoxRef = useRef<(HTMLDivElement | null)[]>([]);
+  const fakeBlockRef = useRef<(HTMLDivElement | null)[]>([]);
   const noteRef = useRef<HTMLDivElement | null>(null);
   const selectionMenuRef = useRef<HTMLDivElement | null>(null);
   const selectionMenuButtonRef = useRef<(HTMLDivElement | null)[]>([]);
   const outSideDragging = useRef(false);
   const isSelection = useRef(false);
   const prevClientY = useRef(0);
+  const isUp = useRef(false);
 
-  const params = useParams();
-  const noteId = params.id as string;
   const { data: blocks } = useSWR(`blockList-${noteId}`);
 
+  const [key, setKey] = useState(Date.now());
+  const [isTyping, setIsTyping] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragBlockIndex, setDragBlockIndex] = useState<number | null>(null);
+  const [selection, setSelection] = useState<ISelectionPosition>({
+    start: { blockId: '', blockIndex: 0, childNodeIndex: 0, offset: 0 },
+    end: { blockId: '', blockIndex: 0, childNodeIndex: 0, offset: 0 },
+  });
+  const [menuState, setMenuState] = useState<IMenuState>({
+    isSlashMenuOpen: false,
+    slashMenuOpenIndex: null,
+    isSelectionMenuOpen: false,
+    blockButtonModalIndex: null,
+    slashMenuPosition: { x: 0, y: 0 },
+    selectionMenuPosition: { x: 0, y: 0 },
+  });
+  const [isBlockMenuOpen, setIsBlockMenuOpen] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState<number>(0);
+
   // page 블록 있으면 page 정보 가져오는 로직
-  const [noteDetails, setNoteDetails] = useState<Record<string, any>>({});
+  // refactor: swr 사용으로 로직 변경, getNoteDetail 대신 getNoteInfo 사용
+  const [noteDetails, setNoteDetails] = useState<Record<string, INotes>>({});
 
   useEffect(() => {
     if (!blocks) return;
 
     const fetchPageNotes = async () => {
       const pageBlocks: ITextBlock[] = blocks.filter((block: ITextBlock): block is ITextBlock => block.type === 'PAGE');
-      const results: Record<string, any> = {};
+      const results: Record<string, INotes> = {};
 
       await Promise.all(
         pageBlocks.map(async block => {
@@ -63,29 +85,7 @@ const NoteContent = () => {
     fetchPageNotes();
   }, [blocks]);
 
-  const [key, setKey] = useState(Date.now());
-  const [isTyping, setIsTyping] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const isUp = useRef(false);
-  const [dragBlockIndex, setDragBlockIndex] = useState<number | null>(null);
-
-  const [selection, setSelection] = useState<ISelectionPosition>({
-    start: { blockId: '', blockIndex: 0, childNodeIndex: 0, offset: 0 },
-    end: { blockId: '', blockIndex: 0, childNodeIndex: 0, offset: 0 },
-  });
-
-  const [menuState, setMenuState] = useState<IMenuState>({
-    isSlashMenuOpen: false,
-    slashMenuOpenIndex: null,
-    isSelectionMenuOpen: false,
-    blockButtonModalIndex: null,
-    slashMenuPosition: { x: 0, y: 0 },
-    selectionMenuPosition: { x: 0, y: 0 },
-  });
-
-  const [isBlockMenuOpen, setIsBlockMenuOpen] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState<number>(0);
-
+  // 사이드 바 너비를 감지해 저장하는 observer를 선언하는 useEffect
   useEffect(() => {
     const sidebarEl = document.getElementById('sidebar');
     if (!sidebarEl) return;
@@ -102,6 +102,7 @@ const NoteContent = () => {
     return () => observer.disconnect();
   }, []);
 
+  // 맨 처음 블록을 생성하는 함수
   const createFirstBlock = async () => {
     if (blocks.length === 0) {
       await createBlock({
@@ -123,7 +124,8 @@ const NoteContent = () => {
     }
   };
 
-  const createEmptyBlock = async () => {
+  // 맨 마지막에 빈 블록을 생성하는 함수
+  const createLastBlock = async () => {
     await createBlock({
       noteId,
       type: 'DEFAULT',
@@ -142,30 +144,31 @@ const NoteContent = () => {
     }, 0);
   };
 
+  // 하단에 빈 블록을 클릭했을 때 동작하는 함수
   const handleEmptyBottomClick = () => {
     if (blocks[blocks.length - 1].type === 'PAGE') {
-      createEmptyBlock();
+      createLastBlock();
     }
   };
 
-  const OpenBlockMenu = () => {
+  const openBlockMenu = () => {
     setIsBlockMenuOpen(true);
   };
 
-  const CloseBlockMenu = () => {
+  const closeBlockMenu = () => {
     setIsBlockMenuOpen(false);
   };
 
-  // blockButton의 위치를 계산해 style에 적용하는 함수
-  const updateBlockButtonPosition = (index: number) => {
+  // blockButton의 위치를 계산해 화면에 보여주는 함수
+  const showBlockButtonPosition = (index: number) => {
     const blockEl = blockRef.current[index];
     const buttonEl = blockButtonRef.current[index];
-    const fakeBoxEl = fakeBoxRef.current[index];
+    const fakeBlockEl = fakeBlockRef.current[index];
 
     // getBoundingClientRect를 통해 화면 절대 좌표를 구해 적용
-    if (blockEl && buttonEl && fakeBoxEl) {
+    if (blockEl && buttonEl && fakeBlockEl) {
       const blockRect = blockEl.getBoundingClientRect();
-      const containerRect = fakeBoxEl.getBoundingClientRect();
+      const containerRect = fakeBlockEl.getBoundingClientRect();
       const offsetLeft = blockRect.left - containerRect.left;
       const blockType = blockEl.getAttribute('data-placeholder');
 
@@ -215,22 +218,14 @@ const NoteContent = () => {
     }));
   };
 
-  // FakeBox에 MouseEnter, Leave 시 BlockButton 활성화 및 숨기기
+  // FakeBlock에 MouseEnter, Leave 시 BlockButton 활성화 및 숨기기
   const handleMouseEnter = (index: number) => {
-    updateBlockButtonPosition(index);
+    showBlockButtonPosition(index);
   };
 
   const handleMouseLeave = (index: number) => {
     if (isBlockMenuOpen) return;
     blockButtonRef.current[index]?.style.setProperty('display', 'none');
-  };
-
-  // Selection이 활성화 되어있는지 여부를 확인하는 함수
-  const isSelectionActive = () => {
-    const { blockIndex: startBlock, childNodeIndex: startChild, offset: startOffset } = selection.start;
-    const { blockIndex: endBlock, childNodeIndex: endChild, offset: endOffset } = selection.end;
-    if (startBlock !== endBlock || startChild !== endChild || startOffset !== endOffset) isSelection.current = true;
-    else isSelection.current = false;
   };
 
   // node의 시작점과 끝점까지 범위의 위치를 계산하는 함수
@@ -250,29 +245,36 @@ const NoteContent = () => {
     return range.getBoundingClientRect();
   };
 
-  // selection의 범위를 구하는 함수
-  const getBoundsForSelection = (blockIndex: number, childNodeIndex: number, offset: number) => {
-    const parent = blockRef.current[blockIndex];
-    const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
-    let left = Infinity;
-    let top = -Infinity;
-
-    childNodes.forEach((childNode, index) => {
-      if (index !== childNodeIndex) return;
-      const rect = getNodeBounds(childNode as Node, offset, offset);
-      left = Math.min(left, rect.left);
-      top = Math.max(top, rect.top);
-    });
-
-    return { left, top };
-  };
-  const { startContainer, startOffset } = getSelectionInfo(0) || {};
-
   // selection에 변화가 있을 때, selectionMenu의 위치를 잡는 useEffect
   useEffect(() => {
     let left = 99999;
     let top = 0;
     let rectOffset = 0;
+
+    // selection의 범위를 구하는 함수
+    const getBoundsForSelection = (blockIndex: number, childNodeIndex: number, offset: number) => {
+      const parent = blockRef.current[blockIndex];
+      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+      // let left = Infinity;
+      // let top = -Infinity;
+
+      childNodes.forEach((childNode, index) => {
+        if (index !== childNodeIndex) return;
+        const rect = getNodeBounds(childNode as Node, offset, offset);
+        left = Math.min(left, rect.left);
+        top = Math.max(top, rect.top);
+      });
+
+      return { left, top };
+    };
+
+    // Selection이 활성화 되어있는지 여부를 확인하는 함수
+    const isSelectionActive = () => {
+      const { blockIndex: startBlock, childNodeIndex: startChild, offset: startOffset } = selection.start;
+      const { blockIndex: endBlock, childNodeIndex: endChild, offset: endOffset } = selection.end;
+      if (startBlock !== endBlock || startChild !== endChild || startOffset !== endOffset) isSelection.current = true;
+      else isSelection.current = false;
+    };
 
     if (blocks.length === 0) return;
 
@@ -348,15 +350,6 @@ const NoteContent = () => {
     isSelectionActive();
   }, [selection, blocks.length]);
 
-  // 각 menu들 초기화
-  useEffect(() => {
-    setMenuState(prev => ({
-      ...prev,
-      isSlashMenuOpen: false,
-      slashMenuOpenIndex: null,
-    }));
-  }, []);
-
   // menuState.isSlashMenuOpen 상태에 따라 스크롤 막기
   useEffect(() => {
     const grandParent = noteRef.current?.parentElement?.parentElement?.parentElement;
@@ -364,11 +357,11 @@ const NoteContent = () => {
     if (menuState.isSlashMenuOpen || menuState.isSelectionMenuOpen) {
       grandParent.style.overflowY = 'hidden';
     } else {
-      grandParent.style.overflowY = '';
+      grandParent.style.overflowY = 'auto';
     }
 
     return () => {
-      grandParent.style.overflow = '';
+      grandParent.style.overflow = 'auto';
     };
   }, [menuState.isSlashMenuOpen, menuState.isSelectionMenuOpen]);
 
@@ -450,15 +443,18 @@ const NoteContent = () => {
   // Node의 배경을 칠해주는 함수
   const fillBackgroundNode = (left: number, right: number, index: number) => {
     const blockElement = blockRef.current[index];
-    const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
+    const blockElementLeft = blockElement?.getBoundingClientRect().left || 0;
 
     if (!blockElement) return;
-    fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
+    fillHTMLElementBackgroundImage(blockElement, left - blockElementLeft, right - blockElementLeft);
   };
 
-  const handleFakeBoxMouseEnter = (index: number) => {
+  const handleFakeBlockMouseEnter = (index: number) => {
     // block 버튼을 누르고 드래그 하기 전에 key를 초기화해서 에러를 가상돔과 돔 조작의 충돌을 방지하기 위한 조건문
     // key를 초기화 하면 focus도 사라져서 다시 줘야함
+
+    const { startContainer, startOffset } = getSelectionInfo(0) || {};
+
     if (isTyping) {
       const blockIndex = blockRef.current.findIndex(blockEl => blockEl && blockEl.contains(startContainer as Node));
       const parent = blockRef.current[blockIndex];
@@ -558,7 +554,7 @@ const NoteContent = () => {
     }
   };
 
-  const handleFakeBoxMouseLeave = (index: number) => {
+  const handleFakeBlockMouseLeave = (index: number) => {
     if (!isDragging) return;
 
     const parent = blockRef.current[index];
@@ -647,24 +643,25 @@ const NoteContent = () => {
   };
 
   useEffect(() => {
-    // 각 블록에 대해 반복하여 해당하는 fakeBox 높이 설정
+    // 각 블록에 맞게 fakeBlock의 높이를 설정
     blockContainerRef.current.forEach((block, index) => {
-      if (block && fakeBoxRef.current[index]) {
+      if (block && fakeBlockRef.current[index]) {
         const blockHeight = block.offsetHeight;
         if (blockHeight) {
-          fakeBoxRef.current[index]?.style.setProperty('height', `${blockHeight}px`);
+          fakeBlockRef.current[index]?.style.setProperty('height', `${blockHeight}px`);
         }
       }
     });
   }, [key, blocks]);
 
+  // 빈 노트 상태일 때
   if (blocks.length === 0) {
     return (
       <div
         className={tempNoteContent}
         role="button"
         tabIndex={0}
-        aria-label="새 블록 만들기"
+        aria-label="블록이 하나도 없을 때 빈 노트"
         onClick={createFirstBlock}
         onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -710,16 +707,16 @@ const NoteContent = () => {
             onMouseMove={() => handleMouseEnter(index)}
           >
             <div
-              className={fakeBox}
-              id={`fakeBox-${index}`}
+              className={fakeBlock}
+              id={`fakeBlock-${index}`}
               style={{
                 width: `${window.innerWidth - sidebarWidth}px`,
               }}
               ref={element => {
-                fakeBoxRef.current[index] = element;
+                fakeBlockRef.current[index] = element;
               }}
-              onMouseEnter={() => handleFakeBoxMouseEnter(index)}
-              onMouseLeave={() => handleFakeBoxMouseLeave(index)}
+              onMouseEnter={() => handleFakeBlockMouseEnter(index)}
+              onMouseLeave={() => handleFakeBlockMouseLeave(index)}
             >
               <div
                 className={css({ display: 'none' })}
@@ -728,8 +725,8 @@ const NoteContent = () => {
                 }}
               >
                 <BlockButton
-                  OpenBlockMenu={OpenBlockMenu}
-                  CloseBlockMenu={CloseBlockMenu}
+                  openBlockMenu={openBlockMenu}
+                  closeBlockMenu={closeBlockMenu}
                   index={index}
                   block={block}
                   blockList={blocks}
@@ -765,6 +762,7 @@ const NoteContent = () => {
       <div
         role="button"
         tabIndex={0}
+        aria-label="노트 하단의 빈 공간"
         className={bottomEmptyContianer}
         onClick={handleEmptyBottomClick}
         onKeyDown={e => {
@@ -772,9 +770,7 @@ const NoteContent = () => {
             handleEmptyBottomClick();
           }
         }}
-      >
-        d
-      </div>
+      />
       {menuState.isSelectionMenuOpen && (
         <div ref={selectionMenuRef}>
           <SelectionMenu
@@ -809,7 +805,7 @@ const blockContainer = css({
   mb: '0.5rem',
 });
 
-const fakeBox = css({
+const fakeBlock = css({
   position: 'absolute',
   transform: 'translateX(-30%)',
   zIndex: '1',

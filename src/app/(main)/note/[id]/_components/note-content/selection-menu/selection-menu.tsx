@@ -1,14 +1,9 @@
-import { JSX } from 'react';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
 import ISelectionPosition from '@/types/selection-position';
 import IMenuState from '@/types/menu-type';
-import BoldIcon from '@/icons/bold-icon';
-import ItalicIcon from '@/icons/italic-icon';
-import UnderlineIcon from '@/icons/underline-icon';
-import LineThroughIcon from '@/icons/line-through-icon';
-import CodeblockIcon from '@/icons/codeblock-icon';
+import { SELECTION_MENU_ITEMS } from '@/constants/menu-items';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import changeSelectionStyle from './changeSelectionStyle';
 
@@ -24,16 +19,7 @@ interface ISelectionMenuProps {
   selectionMenuButtonRef: React.RefObject<(HTMLDivElement | null)[]>;
 }
 
-const MENU_ITEMS: {
-  label: string;
-  icon: JSX.Element;
-}[] = [
-  { label: 'bold', icon: <BoldIcon color="black" /> },
-  { label: 'italic', icon: <ItalicIcon color="black" /> },
-  { label: 'underline', icon: <UnderlineIcon color="black" /> },
-  { label: 'line-through', icon: <LineThroughIcon color="black" /> },
-  { label: 'codeblock', icon: <CodeblockIcon color="black" /> },
-];
+const MENU_HEIGHT = 3;
 
 const SelectionMenu = ({
   setKey,
@@ -52,7 +38,6 @@ const SelectionMenu = ({
       isSelectionMenuOpen: false,
     }));
   });
-  const menuHeight = 3;
 
   const changeBlock = (type: string) => {
     changeSelectionStyle(type, noteId, selection, blockList, blockRef);
@@ -69,12 +54,12 @@ const SelectionMenu = ({
     <div
       ref={selectionMenuRef}
       style={{
-        top: `calc(${menuState.selectionMenuPosition.y}px - ${menuHeight}rem)`,
+        top: `calc(${menuState.selectionMenuPosition.y}px - ${MENU_HEIGHT}rem)`,
         left: menuState.selectionMenuPosition.x,
       }}
-      className={menu}
+      className={container}
     >
-      {MENU_ITEMS.map((item, index) => (
+      {SELECTION_MENU_ITEMS.map((item, index) => (
         <div
           role="button"
           tabIndex={0}
@@ -95,7 +80,7 @@ const SelectionMenu = ({
   );
 };
 
-const menu = css({
+const container = css({
   position: 'fixed',
   width: 'auto',
   height: 'auto',

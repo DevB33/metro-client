@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 import SearchIcon from '@/icons/search-icon';
 import CancleIcon from '@/icons/cancle-icon';
-import placeholder from '@/constants/placeholder';
+import PLACEHOLDER from '@/constants/placeholder';
 
 const searchBar = css({
   height: '3rem',
@@ -58,7 +58,7 @@ const SearchBar = () => {
         type="text"
         value={inputValue}
         onChange={handleChange}
-        placeholder={placeholder.searchModal}
+        placeholder={PLACEHOLDER.searchModal}
       />
       <div className={cancleButton} onClick={clearInput}>
         <CancleIcon color="black" />

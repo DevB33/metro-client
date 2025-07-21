@@ -1,8 +1,8 @@
-import LineColor from '@/constants/line-color';
+import LINE_COLOR from '@/constants/line-color';
 
 interface ITagType {
   name: string;
-  color: keyof typeof LineColor;
+  color: keyof typeof LINE_COLOR;
 }
 
 export default ITagType;

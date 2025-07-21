@@ -16,8 +16,8 @@ import SlashMenu from './slash-menu/slash-menu';
 import GhostBlock from './ghost-block/ghost-block';
 
 interface IBlockButton {
-  OpenBlockMenu: () => void;
-  CloseBlockMenu: () => void;
+  openBlockMenu: () => void;
+  closeBlockMenu: () => void;
   index: number;
   block: ITextBlock;
   setDragBlockIndex: React.Dispatch<React.SetStateAction<number | null>>;
@@ -29,8 +29,8 @@ interface IBlockButton {
 }
 
 const BlockButton = ({
-  OpenBlockMenu,
-  CloseBlockMenu,
+  openBlockMenu,
+  closeBlockMenu,
   index,
   block,
   blockList,
@@ -40,15 +40,13 @@ const BlockButton = ({
   menuState,
   setMenuState,
 }: IBlockButton) => {
-  const [isblockButtonModalOpen, setIsblockButtonModalOpen] = useState(false);
-  const buttonRef = useRef<HTMLDivElement>(null);
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
-  const [openedBySlashKey, setOpenedBySlashKey] = useState(true);
-
-  const ghostRef = useRef<HTMLDivElement>(null);
-
   const params = useParams();
   const noteId = params.id as string;
+  const buttonRef = useRef<HTMLDivElement>(null);
+  const ghostRef = useRef<HTMLDivElement>(null);
+  const [isblockButtonModalOpen, setIsblockButtonModalOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [openedBySlashKey, setOpenedBySlashKey] = useState(true);
 
   const handleDragStart = async (event: React.DragEvent<HTMLButtonElement>) => {
     if (ghostRef.current) {
@@ -103,7 +101,7 @@ const BlockButton = ({
 
   const handleClose = () => {
     setIsblockButtonModalOpen(false);
-    CloseBlockMenu();
+    closeBlockMenu();
   };
 
   const handleOpen = () => {
@@ -120,7 +118,7 @@ const BlockButton = ({
       blockButtonModalIndex: index,
     }));
 
-    OpenBlockMenu();
+    openBlockMenu();
   };
 
   const handleDelete = () => {
@@ -148,12 +146,12 @@ const BlockButton = ({
   };
 
   return (
-    <div className={blockBtnContainer} ref={buttonRef}>
+    <div className={container} ref={buttonRef}>
       <GhostBlock ghostRef={ghostRef} block={block} blockList={blockList} index={index} />
-      <button type="button" className={blockBtn} onClick={() => handleCreateBlockButton(index)}>
+      <button type="button" className={blockButton} onClick={() => handleCreateBlockButton(index)}>
         <PlusIcon />
       </button>
-      <button type="button" className={blockBtn} onClick={handleOpen} draggable onDragStart={handleDragStart}>
+      <button type="button" className={blockButton} onClick={handleOpen} draggable onDragStart={handleDragStart}>
         <GripVerticalIcon />
       </button>
       {menuState.blockButtonModalIndex === index && (
@@ -166,7 +164,7 @@ const BlockButton = ({
               </DropDown.Item>
             )}
             <DropDown.Item onClick={handleDelete}>
-              <div className={deleteBtn}>
+              <div className={deleteButton}>
                 <TrashIcon />
                 삭제하기
               </div>
@@ -188,7 +186,7 @@ const BlockButton = ({
   );
 };
 
-const blockBtnContainer = css({
+const container = css({
   position: 'absolute',
   top: '50%',
   transform: 'translateY(-50%)',
@@ -196,7 +194,7 @@ const blockBtnContainer = css({
   flexDirection: 'row',
 });
 
-const blockBtn = css({
+const blockButton = css({
   width: '1.5em',
   height: '1.5rem',
   padding: '0.2rem',
@@ -211,7 +209,7 @@ const blockBtn = css({
   },
 });
 
-const deleteBtn = css({
+const deleteButton = css({
   display: 'flex',
   flexDirection: 'row',
   color: 'red',

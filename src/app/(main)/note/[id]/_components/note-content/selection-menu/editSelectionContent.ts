@@ -4,17 +4,7 @@ import ISelectionPosition from '@/types/selection-position';
 import { ITextBlock, ITextBlockChild } from '@/types/block-type';
 import { getNoteList } from '@/apis/note';
 import { createBlock, deleteBlock, getBlockList, updateBlockNodes, updateBlocksOrder } from '@/apis/block';
-
-const defaultStyle = {
-  fontWeight: 'normal',
-  fontStyle: 'normal',
-  textDecoration: 'none',
-  color: '#000000',
-  backgroundColor: 'transparent',
-  width: 'auto',
-  height: 'auto',
-  borderRadius: '0',
-};
+import DEFAULT_STYLE from '@/constants/child-node-style';
 
 const splitChildren = (
   firstRawChildren: ITextBlockChild[],
@@ -29,7 +19,7 @@ const splitChildren = (
       : [
           {
             type: 'text',
-            style: defaultStyle,
+            style: DEFAULT_STYLE,
             content: '',
           },
         ];
@@ -40,7 +30,7 @@ const splitChildren = (
       : [
           {
             type: 'text',
-            style: defaultStyle,
+            style: DEFAULT_STYLE,
             content: '',
           },
         ];
@@ -114,12 +104,13 @@ const editSelectionContent = async (
   const emptyRawChildren = [
     {
       type: 'text' as const,
-      style: defaultStyle,
+      style: DEFAULT_STYLE,
       content: '',
     },
   ];
   // 블록 인덱스 범위
   // for문이 start와 end의 순서가 바뀐 역방향 selection에서도 잘 작동하도록 구현
+  // refactor: Promise.all 적용 할지
   for (
     let index = Math.min(startBlockIndex, endBlockIndex);
     index <= Math.max(startBlockIndex, endBlockIndex);
@@ -166,12 +157,12 @@ const editSelectionContent = async (
             rawChildren.length > 0
               ? rawChildren.map(child => ({
                   ...child,
-                  style: child.style ?? defaultStyle,
+                  style: child.style ?? DEFAULT_STYLE,
                 }))
               : [
                   {
                     type: 'text',
-                    style: defaultStyle,
+                    style: DEFAULT_STYLE,
                     content: '',
                   },
                 ];
@@ -241,7 +232,7 @@ const editSelectionContent = async (
               : [
                   {
                     type: 'text',
-                    style: defaultStyle,
+                    style: DEFAULT_STYLE,
                     content: '',
                   },
                 ];
@@ -307,7 +298,7 @@ const editSelectionContent = async (
               : [
                   {
                     type: 'text',
-                    style: defaultStyle,
+                    style: DEFAULT_STYLE,
                     content: '',
                   },
                 ];
@@ -413,7 +404,7 @@ const editSelectionContent = async (
               : [
                   {
                     type: 'text',
-                    style: defaultStyle,
+                    style: DEFAULT_STYLE,
                     content: '',
                   },
                 ];
@@ -464,7 +455,7 @@ const editSelectionContent = async (
               : [
                   {
                     type: 'text',
-                    style: defaultStyle,
+                    style: DEFAULT_STYLE,
                     content: '',
                   },
                 ];
@@ -516,7 +507,7 @@ const editSelectionContent = async (
               : [
                   {
                     type: 'text',
-                    style: defaultStyle,
+                    style: DEFAULT_STYLE,
                     content: '',
                   },
                 ];
@@ -576,7 +567,7 @@ const editSelectionContent = async (
               : [
                   {
                     type: 'text',
-                    style: defaultStyle,
+                    style: DEFAULT_STYLE,
                     content: '',
                   },
                 ];
@@ -639,7 +630,7 @@ const editSelectionContent = async (
               : [
                   {
                     type: 'text',
-                    style: defaultStyle,
+                    style: DEFAULT_STYLE,
                     content: '',
                   },
                 ];
