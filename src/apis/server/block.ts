@@ -1,6 +1,6 @@
 import getInstance from '.';
 
-export const getBlockList = async (noteId: string) => {
+const getBlockList = async (noteId: string) => {
   const instance = await getInstance();
   const response = await instance.get(`/blocks`, {
     params: {
