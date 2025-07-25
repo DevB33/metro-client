@@ -467,7 +467,12 @@ const mergeBlock = async (
 ) => {
   const updatedBlockList = [...blockList];
 
-  const previousBlock = updatedBlockList[index - 1];
+  let prevIndex = index - 1;
+  while (prevIndex >= 0 && blockList[prevIndex]?.type === 'PAGE') {
+    prevIndex -= 1;
+  }
+
+  const previousBlock = updatedBlockList[prevIndex];
   const previousBlockFirstChildContent = previousBlock.nodes[0].content;
   const previousBlockLength = previousBlock.nodes.length as number;
   const currentBlock = updatedBlockList[index];
@@ -479,20 +484,21 @@ const mergeBlock = async (
 
   const updatedChildren = [...previousBlock.nodes, ...currentBlock.nodes];
 
-  updatedBlockList[index - 1].nodes = updatedChildren;
+  updatedBlockList[prevIndex].nodes = updatedChildren;
   updatedBlockList.splice(index, 1);
+  console.log(updatedBlockList);
 
   // 빈 블록 두개 합치기 후 빈 텍스트 노드가 두개 중복해서 생기면 하나 지우기
   if (
-    updatedBlockList[index - 1].nodes.length === 2 &&
-    updatedBlockList[index - 1].nodes[0].content === '' &&
-    updatedBlockList[index - 1].nodes[1].content === ''
+    updatedBlockList[prevIndex].nodes.length === 2 &&
+    updatedBlockList[prevIndex].nodes[0].content === '' &&
+    updatedBlockList[prevIndex].nodes[1].content === ''
   ) {
-    updatedBlockList[index - 1].nodes.shift();
+    updatedBlockList[prevIndex].nodes.shift();
   }
 
   // 현재 블록의 바로 이전 블록 업데이트
-  await updateBlockNodes(blockList[index - 1].id, updatedBlockList[index - 1].nodes);
+  await updateBlockNodes(blockList[prevIndex].id, updatedBlockList[prevIndex].nodes);
   // 현재 블록 삭제
   await deleteBlock(noteId, blockList[index].order, blockList[index].order);
   // 현재 블록 이후 블록 앞으로 한칸 씩 당기기
@@ -512,8 +518,9 @@ const mergeBlock = async (
   const range = document.createRange();
   setTimeout(() => {
     if (range) {
-      const afterBlock = blockRef.current[index - 1];
+      const afterBlock = blockRef.current[prevIndex];
       const selection = window.getSelection();
+      console.log(blockRef, prevIndex);
 
       if (
         afterBlock?.childNodes[0]?.nodeName !== 'BR' &&
@@ -526,18 +533,19 @@ const mergeBlock = async (
 
         if (afterBlock?.childNodes[prevChildNodesLength]?.nodeType === Node.TEXT_NODE) {
           range?.setStart(
-            blockRef.current[index - 1]?.childNodes[prevChildNodesLength] as Node,
-            blockRef.current[index - 1]?.childNodes[prevChildNodesLength]?.textContent?.length ?? 0,
+            blockRef.current[prevIndex]?.childNodes[prevChildNodesLength] as Node,
+            blockRef.current[prevIndex]?.childNodes[prevChildNodesLength]?.textContent?.length ?? 0,
           );
         } else {
           range?.setStart(
-            blockRef.current[index - 1]?.childNodes[prevChildNodesLength]?.firstChild as Node,
-            blockRef.current[index - 1]?.childNodes[prevChildNodesLength]?.textContent?.length ?? 0,
+            blockRef.current[prevIndex]?.childNodes[prevChildNodesLength]?.firstChild as Node,
+            blockRef.current[prevIndex]?.childNodes[prevChildNodesLength]?.textContent?.length ?? 0,
           );
         }
       } else {
         // 빈 블록에서 빈블록이 아닌 블록으로 합쳐질 때를 제외한 나머지
         // 이전 블록이 빈 블록이면 합쳐지면서 child가 사라져서 previousBlockLength - 1을 해줌
+        console.log(afterBlock);
         range?.setStart(
           afterBlock?.childNodes[
             previousBlockFirstChildContent === '' && previousBlockLength === 1
@@ -664,6 +672,7 @@ const handleKeyDown = async (
 ) => {
   // selection 없을때
   if (!menuState.isSelectionMenuOpen) {
+    console.log(blockList);
     if (
       event.shiftKey &&
       (event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowRight')
