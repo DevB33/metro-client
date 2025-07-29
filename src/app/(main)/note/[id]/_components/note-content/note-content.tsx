@@ -328,7 +328,10 @@ const NoteContent = () => {
         top = Math.max(top, newTop);
       }
       // selection의 시작 블록이 끝 블록보다 node 인덱스가 같을 때,
-      if (selection.start.childNodeIndex === selection.end.childNodeIndex) {
+      if (
+        selection.start.childNodeIndex === selection.end.childNodeIndex &&
+        selection.start.offset !== selection.end.offset
+      ) {
         rectOffset = Math.min(selection.start.offset, selection.end.offset);
         const { left: newLeft, top: newTop } = getBoundsForSelection(
           selection.start.blockIndex,
