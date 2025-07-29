@@ -486,7 +486,6 @@ const mergeBlock = async (
 
   updatedBlockList[prevIndex].nodes = updatedChildren;
   updatedBlockList.splice(index, 1);
-  console.log(updatedBlockList);
 
   // 빈 블록 두개 합치기 후 빈 텍스트 노드가 두개 중복해서 생기면 하나 지우기
   if (
@@ -520,7 +519,6 @@ const mergeBlock = async (
     if (range) {
       const afterBlock = blockRef.current[prevIndex];
       const selection = window.getSelection();
-      console.log(blockRef, prevIndex);
 
       if (
         afterBlock?.childNodes[0]?.nodeName !== 'BR' &&
@@ -545,7 +543,6 @@ const mergeBlock = async (
       } else {
         // 빈 블록에서 빈블록이 아닌 블록으로 합쳐질 때를 제외한 나머지
         // 이전 블록이 빈 블록이면 합쳐지면서 child가 사라져서 previousBlockLength - 1을 해줌
-        console.log(afterBlock);
         range?.setStart(
           afterBlock?.childNodes[
             previousBlockFirstChildContent === '' && previousBlockLength === 1
@@ -672,7 +669,6 @@ const handleKeyDown = async (
 ) => {
   // selection 없을때
   if (!menuState.isSelectionMenuOpen) {
-    console.log(blockList);
     if (
       event.shiftKey &&
       (event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowRight')
