@@ -35,7 +35,7 @@ interface IBlockComponent {
   menuState: IMenuState;
   setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>;
   dragBlockIndex: number | null;
-  noteDetails: Record<string, INotes>;
+  childNotes: Record<string, INotes>;
 }
 
 const Block = memo(
@@ -55,7 +55,7 @@ const Block = memo(
     setMenuState,
     dragBlockIndex,
     isUp,
-    noteDetails,
+    childNotes,
   }: IBlockComponent) => {
     const router = useRouter();
     const params = useParams();
@@ -173,9 +173,9 @@ const Block = memo(
             onDrop={changeBlockOrder}
           >
             <BlockHTMLTag block={block} blockList={blockList} index={index} blockRef={blockRef}>
-              {(block.nodes[0]?.content && noteDetails?.[block.nodes[0].content]?.icon) || <PageIcon color="grey" />}
+              {(block.nodes[0]?.content && childNotes?.[block.nodes[0].content]?.icon) || <PageIcon color="grey" />}
               <span className={pageTitle}>
-                {(block.nodes[0]?.content && noteDetails?.[block.nodes[0].content]?.title) || '새 페이지'}
+                {(block.nodes[0]?.content && childNotes?.[block.nodes[0].content]?.title) || '새 페이지'}
               </span>
             </BlockHTMLTag>
           </div>
