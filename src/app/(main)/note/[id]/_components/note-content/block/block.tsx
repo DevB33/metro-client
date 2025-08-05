@@ -27,8 +27,7 @@ interface IBlockComponent {
   isTyping: boolean;
   setIsTyping: React.Dispatch<React.SetStateAction<boolean>>;
   setKey: React.Dispatch<React.SetStateAction<number>>;
-  isDragging: boolean;
-  setIsDragging: React.Dispatch<React.SetStateAction<boolean>>;
+  isDragging: React.RefObject<boolean>;
   isUp: React.RefObject<boolean>;
   selection: ISelectionPosition;
   setSelection: React.Dispatch<React.SetStateAction<ISelectionPosition>>;
@@ -48,7 +47,6 @@ const Block = memo(
     setIsTyping,
     setKey,
     isDragging,
-    setIsDragging,
     selection,
     setSelection,
     menuState,
@@ -136,7 +134,7 @@ const Block = memo(
             }}
             onMouseUp={event => {
               handleMouseUp(event, index, blockRef, blockList, selection, setSelection, setMenuState);
-              setIsDragging(false);
+              isDragging.current = false;
             }}
             onMouseDown={_event => {
               router.push(`/note/${block.nodes[0].content}`);
@@ -144,9 +142,7 @@ const Block = memo(
             onMouseMove={event =>
               handleMouseMove(event, index, blockRef, blockList, isDragging, selection, setSelection)
             }
-            onMouseLeave={event =>
-              handleMouseLeave(event, index, blockList, isDragging, isUp, blockRef, selection, setSelection)
-            }
+            onMouseLeave={event => handleMouseLeave(event, index, isDragging, isUp, blockRef, selection, setSelection)}
             onDragEnter={event => {
               if (dragBlockIndex === index) {
                 return;
@@ -238,15 +234,13 @@ const Block = memo(
           }}
           onMouseUp={event => {
             handleMouseUp(event, index, blockRef, blockList, selection, setSelection, setMenuState);
-            setIsDragging(false);
+            isDragging.current = false;
           }}
-          onMouseDown={event =>
-            handleMouseDown(event, blockRef, index, blockList, setIsDragging, setIsTyping, setKey, setSelection)
-          }
+          onMouseDown={event => {
+            handleMouseDown(event, blockRef, index, blockList, isDragging, setIsTyping, setKey, setSelection);
+          }}
           onMouseMove={event => handleMouseMove(event, index, blockRef, blockList, isDragging, selection, setSelection)}
-          onMouseLeave={event =>
-            handleMouseLeave(event, index, blockList, isDragging, isUp, blockRef, selection, setSelection)
-          }
+          onMouseLeave={event => handleMouseLeave(event, index, isDragging, isUp, blockRef, selection, setSelection)}
           onDragEnter={event => {
             if (dragBlockIndex === index) {
               return;

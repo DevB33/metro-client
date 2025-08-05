@@ -32,12 +32,13 @@ const NoteContent = () => {
   const isSelection = useRef(false);
   const prevClientY = useRef(0);
   const isUp = useRef(false);
+  const isDragging = useRef(false);
 
   const { data: blocks } = useSWR(SWR_KEYS.blockList(noteId));
 
   const [key, setKey] = useState(Date.now());
   const [isTyping, setIsTyping] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
+  // const [isDragging, setIsDragging] = useState(false);
   const [dragBlockIndex, setDragBlockIndex] = useState<number | null>(null);
   const [selection, setSelection] = useState<ISelectionPosition>({
     start: { blockId: '', blockIndex: 0, childNodeIndex: 0, offset: 0 },
@@ -57,6 +58,10 @@ const NoteContent = () => {
   // page 블록 있으면 page 정보 가져오는 로직
   // refactor: swr 사용으로 로직 변경, getNoteDetail 대신 getNoteInfo 사용
   const [noteDetails, setNoteDetails] = useState<Record<string, INotes>>({});
+
+  useEffect(() => {
+    console.log(selection.start, selection.end);
+  });
 
   useEffect(() => {
     if (!blocks) return;
@@ -373,7 +378,7 @@ const NoteContent = () => {
       if (blockRef.current.some(block => block?.contains(event.target as Node))) {
         return;
       }
-      setIsDragging(false);
+      isDragging.current = false;
       outSideDragging.current = false;
 
       // 외부에서 MouseUp 시에도 SelectionMenu가 띄워질 수 있도록 함
@@ -409,6 +414,15 @@ const NoteContent = () => {
       }
     };
 
+    // Node의 배경을 칠해주는 함수
+    const fillBackgroundNode = (left: number, right: number, index: number) => {
+      const blockElement = blockRef.current[index];
+      const blockElementLeft = blockElement?.getBoundingClientRect().left || 0;
+
+      if (!blockElement) return;
+      fillHTMLElementBackgroundImage(blockElement, left - blockElementLeft, right - blockElementLeft);
+    };
+
     const handleOutsideDrag = (event: MouseEvent) => {
       if (prevClientY.current < event.clientY) {
         isUp.current = false;
@@ -416,6 +430,184 @@ const NoteContent = () => {
       } else if (prevClientY.current > event.clientY) {
         isUp.current = true;
         prevClientY.current = event.clientY;
+      }
+
+      // 드래깅 중일 때만, 셀렉션 범위 색칠하는 로직
+      if (isDragging.current) {
+        blocks.forEach((_block: ITextBlock, index: number) => {
+          const parent = blockRef.current[index];
+          const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+
+          let left = 99999;
+          let right = 0;
+          if (
+            index < Math.min(selection.start.blockIndex, selection.end.blockIndex) ||
+            index > Math.max(selection.start.blockIndex, selection.end.blockIndex)
+          ) {
+            fillBackgroundNode(0, 0, index);
+          } else if (selection.start.blockIndex === selection.end.blockIndex) {
+            if (selection.start.childNodeIndex === selection.end.childNodeIndex) {
+              childNodes.forEach((childNode, idx) => {
+                if (idx === selection.start.childNodeIndex) {
+                  const rect = getNodeBounds(
+                    childNode as Node,
+                    Math.min(selection.start.offset, selection.end.offset),
+                    Math.max(selection.start.offset, selection.end.offset),
+                  );
+                  left = Math.min(left, rect.left);
+                  right = Math.max(right, rect.right);
+                }
+              });
+            } else if (selection.start.childNodeIndex < selection.end.childNodeIndex) {
+              childNodes.forEach((childNode, idx) => {
+                if (idx === selection.start.childNodeIndex) {
+                  const rect = getNodeBounds(
+                    childNode as Node,
+                    selection.start.offset,
+                    childNode.textContent?.length as number,
+                  );
+                  left = Math.min(left, rect.left);
+                }
+                if (idx === selection.end.childNodeIndex) {
+                  const rect = getNodeBounds(childNode as Node, 0, selection.end.offset as number);
+                  right = Math.max(right, rect.right);
+                }
+              });
+            } else if (selection.start.childNodeIndex > selection.end.childNodeIndex) {
+              childNodes.forEach((childNode, idx) => {
+                if (idx === selection.end.childNodeIndex) {
+                  const rect = getNodeBounds(
+                    childNode as Node,
+                    selection.end.offset,
+                    childNode.textContent?.length as number,
+                  );
+                  left = Math.min(left, rect.left);
+                }
+                if (idx === selection.start.childNodeIndex) {
+                  const rect = getNodeBounds(childNode as Node, 0, selection.start.offset as number);
+                  right = Math.max(right, rect.right);
+                }
+              });
+            }
+            // 만약 이 블록의 타입이 page이면 칠하지 않음
+            if (blocks[index].type === 'PAGE') return;
+            // 페이지 블록이 아니면 배경 칠하기
+            fillBackgroundNode(left, right, selection.start.blockIndex);
+          } else if (selection.start.blockIndex < selection.end.blockIndex) {
+            if (index === selection.start.blockIndex) {
+              childNodes.forEach((childNode, idx) => {
+                if (idx === selection.start.childNodeIndex) {
+                  const rect = getNodeBounds(
+                    childNode as Node,
+                    selection.start.offset,
+                    childNode.textContent?.length as number,
+                  );
+                  left = Math.min(left, rect.left);
+                  right = Math.max(right, rect.right);
+                } else {
+                  const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
+                  right = Math.max(right, rect.right);
+                }
+              });
+              // 만약 이 블록의 타입이 page이면 칠하지 않음
+              if (blocks[index].type === 'PAGE') return;
+              // 페이지 블록이 아니면 배경 칠하기
+              fillBackgroundNode(left, right, index);
+            }
+            if (index === selection.end.blockIndex) {
+              childNodes.forEach((childNode, idx) => {
+                if (idx === selection.end.childNodeIndex) {
+                  const rect = getNodeBounds(childNode as Node, 0, selection.end.offset);
+                  right = Math.max(right, rect.right);
+                }
+              });
+              // 만약 이 블록의 타입이 page이면 칠하지 않음
+              if (blocks[index].type === 'PAGE') return;
+              // 페이지 블록이 아니면 배경 칠하기
+              left = 0;
+              fillBackgroundNode(left, right, index);
+            } else if (index > selection.start.blockIndex && index < selection.end.blockIndex) {
+              childNodes.forEach(childNode => {
+                const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
+                left = Math.min(left, rect.left);
+                right = Math.max(right, rect.right);
+              });
+              if (blocks[index].type === 'PAGE') return;
+              // 페이지 블록이 아니면 배경 칠하기
+              fillBackgroundNode(left, right, index);
+            }
+          } else if (selection.start.blockIndex > selection.end.blockIndex) {
+            if (index === selection.end.blockIndex) {
+              childNodes.forEach((childNode, idx) => {
+                if (idx === selection.end.childNodeIndex) {
+                  const rect = getNodeBounds(
+                    childNode as Node,
+                    selection.end.offset,
+                    childNode.textContent?.length as number,
+                  );
+                  left = Math.min(left, rect.left);
+                  right = Math.max(right, rect.right);
+                } else {
+                  const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
+                  right = Math.max(right, rect.right);
+                }
+              });
+              // 만약 이 블록의 타입이 page이면 칠하지 않음
+              if (blocks[index].type === 'PAGE') return;
+              // 페이지 블록이 아니면 배경 칠하기
+              fillBackgroundNode(left, right, index);
+            }
+            if (index === selection.start.blockIndex) {
+              childNodes.forEach((childNode, idx) => {
+                if (idx === selection.start.childNodeIndex) {
+                  const rect = getNodeBounds(childNode as Node, 0, selection.start.offset);
+                  right = Math.max(right, rect.right);
+                }
+              });
+              // 만약 이 블록의 타입이 page이면 칠하지 않음
+              if (blocks[index].type === 'PAGE') return;
+              // 페이지 블록이 아니면 배경 칠하기
+              left = 0;
+              fillBackgroundNode(left, right, index);
+            } else if (index < selection.start.blockIndex && index > selection.end.blockIndex) {
+              childNodes.forEach(childNode => {
+                const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
+                left = Math.min(left, rect.left);
+                right = Math.max(right, rect.right);
+              });
+              if (blocks[index].type === 'PAGE') return;
+              // 페이지 블록이 아니면 배경 칠하기
+              fillBackgroundNode(left, right, index);
+            }
+          }
+
+          // // selction의 시작 블록과 끝 블록이 인덱스가 클 때, 각 노드 색칠
+          // if (selection.start.blockIndex > selection.end.blockIndex) {
+          //   childNodes.forEach(childNode => {
+          //     const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
+          //     left = Math.min(left, rect.left);
+          //     right = Math.max(right, rect.right);
+          //   });
+
+          //   // 만약 이 블록의 타입이 page이면 칠하지 않음
+          //   if (blocks[index].type === 'PAGE') return;
+          //   // 페이지 블록이 아니면 배경 칠하기
+          //   fillBackgroundNode(left, right, index);
+          // }
+
+          // // selction의 시작 블록과 끝 블록이 인덱스가 작을 때, 각 노드 색칠
+          // if (selection.start.blockIndex < selection.end.blockIndex) {
+          //   childNodes.forEach((childNode, idx) => {
+          //     const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
+          //     left = Math.min(left, rect.left);
+          //     right = Math.max(right, rect.right);
+          //   });
+          //   // 만약 이 블록의 타입이 page이면 칠하지 않음
+          //   if (blocks[index].type === 'PAGE') return;
+          //   // 페이지 블록이 아니면 배경 칠하기
+          //   fillBackgroundNode(left, right, index);
+          // }
+        });
       }
 
       // 외부의 input이나, textarea일 때는 기본 selection이 작동하게 함
@@ -439,16 +631,7 @@ const NoteContent = () => {
       document.removeEventListener('click', handleOutsideClick, true);
       document.removeEventListener('mousemove', handleOutsideDrag);
     };
-  }, []);
-
-  // Node의 배경을 칠해주는 함수
-  const fillBackgroundNode = (left: number, right: number, index: number) => {
-    const blockElement = blockRef.current[index];
-    const blockElementLeft = blockElement?.getBoundingClientRect().left || 0;
-
-    if (!blockElement) return;
-    fillHTMLElementBackgroundImage(blockElement, left - blockElementLeft, right - blockElementLeft);
-  };
+  }, [selection]);
 
   const handleFakeBlockMouseEnter = (index: number) => {
     // block 버튼을 누르고 드래그 하기 전에 key를 초기화해서 에러를 가상돔과 돔 조작의 충돌을 방지하기 위한 조건문
@@ -480,167 +663,11 @@ const NoteContent = () => {
       }, 100);
     }
 
-    if (!isDragging) return;
-    const parent = blockRef.current[index];
-    const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
-
+    if (!isDragging.current) return;
     setSelection(prev => ({
       ...prev,
-      end: { ...prev.end, blockId: blocks[index].id, blockIndex: index },
+      end: { ...prev.end, blockId: blocks[index].id, blockIndex: index, offset: 0 },
     }));
-
-    // 로컬 변수를 활용해 비동기적 함수 처리
-    const selectionEnd = {
-      ...selection.end,
-      blockIndex: index,
-    };
-
-    let left = 99999;
-    let right = 0;
-
-    // selction의 시작 블록과 끝 블록이 인덱스가 같을 때, 각 노드 색칠
-    if (selection.start.blockIndex === selectionEnd.blockIndex) {
-      childNodes.forEach((childNode, idx) => {
-        if (idx > selection.start.childNodeIndex) {
-          return;
-        }
-        if (idx < selection.start.childNodeIndex) {
-          const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
-          left = Math.min(left, rect.left);
-          right = Math.max(right, rect.right);
-        }
-        if (idx === selection.start.childNodeIndex) {
-          const rect = getNodeBounds(childNode as Node, 0, selection.start.offset as number);
-          left = Math.min(left, rect.left);
-          right = Math.max(right, rect.right);
-        }
-      });
-      // 만약 이 블록의 타입이 page이면 칠하지 않음
-      if (blocks[index].type === 'PAGE') return;
-      // 페이지 블록이 아니면 배경 칠하기
-      fillBackgroundNode(left, right, index);
-    }
-
-    // selction의 시작 블록과 끝 블록이 인덱스가 클 때, 각 노드 색칠
-    if (selection.start.blockIndex > selectionEnd.blockIndex) {
-      childNodes.forEach(childNode => {
-        const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
-        left = Math.min(left, rect.left);
-        right = Math.max(right, rect.right);
-      });
-      // 만약 이 블록의 타입이 page이면 칠하지 않음
-      if (blocks[index].type === 'PAGE') return;
-      // 페이지 블록이 아니면 배경 칠하기
-      fillBackgroundNode(left, right, index);
-    }
-
-    // selction의 시작 블록과 끝 블록이 인덱스가 작을 때, 각 노드 색칠
-    if (selection.start.blockIndex < selectionEnd.blockIndex) {
-      childNodes.forEach((childNode, idx) => {
-        const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
-        left = Math.min(left, rect.left);
-        right = Math.max(right, rect.right);
-
-        if (idx === childNodes.length - 1) {
-          setSelection(prev => ({
-            ...prev,
-            end: { ...prev.end, childNodeIndex: idx, offset: childNode.textContent?.length || 0 },
-          }));
-        }
-      });
-      // 만약 이 블록의 타입이 page이면 칠하지 않음
-      if (blocks[index].type === 'PAGE') return;
-      // 페이지 블록이 아니면 배경 칠하기
-      fillBackgroundNode(left, right, index);
-    }
-  };
-
-  const handleFakeBlockMouseLeave = (index: number) => {
-    if (!isDragging) return;
-
-    const parent = blockRef.current[index];
-    const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
-    const textLength = parent?.textContent?.length || 0;
-
-    // selction의 시작 블록과 끝 블록이 인덱스가 같을 때
-    if (selection.start.blockIndex === selection.end.blockIndex) {
-      // 첫번째 블록에서 위로 나가면 배경 없애기
-      if (isUp && selection.start.blockIndex === 0) {
-        const el = blockRef.current[index];
-        if (!el) return;
-        el.style.backgroundImage = `none`;
-      }
-      // 아래로 나갈 때, 커서 위치부터 끝까지 칠하기
-      if (!isUp) {
-        let left = 99999;
-        let right = 0;
-
-        childNodes.forEach(childNode => {
-          const rect = getNodeBounds(
-            childNode as Node,
-            selection.start.offset,
-            childNode.textContent?.length as number,
-          );
-          left = Math.min(left, rect.left);
-          right = Math.max(rect.right);
-        });
-        // 만약 이 블록의 타입이 page이면 칠하지 않음
-        if (blocks[index].type === 'PAGE') return;
-        // 페이지 블록이 아니면 배경 칠하기
-        fillBackgroundNode(left, right, index);
-      }
-    }
-
-    // 아래로 드래그한 상태에서 블록을 떠날 때
-    if (selection.start.blockIndex < selection.end.blockIndex) {
-      if (index === selection.end.blockIndex && isUp.current) {
-        const el = blockRef.current[index];
-        if (!el) return;
-        el.style.backgroundImage = `none`;
-      }
-      // 아래로 드래그 할 때
-      if (index !== selection.start.blockIndex && index === selection.end.blockIndex && !isUp.current) {
-        let left = 99999;
-        let right = 0;
-        childNodes.forEach(childNode => {
-          const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
-          left = Math.min(left, rect.left);
-          right = Math.max(right, rect.right);
-        });
-        // 만약 이 블록의 타입이 page이면 칠하지 않음
-        if (blocks[index].type === 'PAGE') return;
-        // 페이지 블록이 아니면 배경 칠하기
-        fillBackgroundNode(left, right, index);
-        setSelection(prev => ({
-          ...prev,
-          end: { ...prev.end, offset: textLength },
-        }));
-      }
-    }
-    // 위로 드래그한 상태에서 블록을 떠날 때
-    if (selection.start.blockIndex > selection.end.blockIndex) {
-      // 아래로 드래그 할 때
-      if (index !== selection.start.blockIndex && index === selection.end.blockIndex && !isUp.current) {
-        const el = blockRef.current[index];
-        if (!el) return;
-        el.style.backgroundImage = `none`;
-      }
-
-      // 위로 드래그 할 때
-      if (index !== selection.start.blockIndex && index === selection.end.blockIndex && isUp.current) {
-        let left = 99999;
-        let right = 0;
-        childNodes.forEach(childNode => {
-          const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
-          left = Math.min(left, rect.left);
-          right = Math.max(right, rect.right);
-        });
-        // 만약 이 블록의 타입이 page이면 칠하지 않음
-        if (blocks[index].type === 'PAGE') return;
-        // 페이지 블록이 아니면 배경 칠하기
-        fillBackgroundNode(left, right, index);
-      }
-    }
   };
 
   useEffect(() => {
@@ -717,7 +744,6 @@ const NoteContent = () => {
                 fakeBlockRef.current[index] = element;
               }}
               onMouseEnter={() => handleFakeBlockMouseEnter(index)}
-              onMouseLeave={() => handleFakeBlockMouseLeave(index)}
             >
               <div
                 className={css({ display: 'none' })}
@@ -748,7 +774,6 @@ const NoteContent = () => {
               setIsTyping={setIsTyping}
               setKey={setKey}
               isDragging={isDragging}
-              setIsDragging={setIsDragging}
               isUp={isUp}
               selection={selection}
               setSelection={setSelection}
