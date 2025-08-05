@@ -94,7 +94,7 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
         await createBlock({
           noteId,
           type: 'PAGE',
-          upperOrder: blockList[index - 1].order,
+          upperOrder: index > 0 ? blockList[index - 1].order : -1,
           nodes: [{ content: '', type: 'text' }],
         });
       } else {

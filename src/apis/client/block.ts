@@ -46,12 +46,6 @@ export const updateBlocksOrder = async (noteId: string, startOrder: number, endO
   await instance.patch(`/blocks/order`, JSON.stringify({ noteId, startOrder, endOrder, upperOrder }));
 };
 
-export const getNoteDetail = async (noteId: string) => {
-  const instance = await getInstance();
-  const response = await instance.get(`/notes/${noteId}`);
-  return response.data;
-};
-
 export const deleteBlock = async (noteId: string, startOrder: number, endOrder: number) => {
   const instance = await getInstance();
   await instance.delete(`/blocks`, {

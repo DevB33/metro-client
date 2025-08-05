@@ -1,4 +1,4 @@
-import { cva } from '@/../styled-system/css';
+import { css, cva } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
 import PLACEHOLDER from '@/constants/placeholder';
@@ -142,7 +142,7 @@ const BlockHTMLTag = ({ block, blockList, index, blockRef, children }: IBlockTag
   if (block.type === 'PAGE') {
     return (
       <div
-        style={{ cursor: 'pointer', display: 'flex', justifyContent: 'start', gap: '2px', width: '100%' }}
+        className={pageBlock}
         ref={element => {
           blockRef.current[index] = element;
         }}
@@ -203,6 +203,14 @@ const placeholderStyles = cva({
       },
     },
   },
+});
+
+const pageBlock = css({
+  display: 'flex',
+  justifyContent: 'start',
+  gap: '2px',
+  width: '100%',
+  cursor: 'pointer',
 });
 
 export default BlockHTMLTag;
