@@ -1,56 +1,26 @@
 import ISelectionPosition from '@/types/selection-position';
-import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundImage';
-import { ITextBlock } from '@/types/block-type';
-
-const getNodeBounds = (node: Node, startOffset: number, endOffset: number) => {
-  const range = document.createRange();
-
-  let targetNode = node;
-  // span 같은 element면 그 안에 있는 텍스트 노드로 변경
-  if (node.nodeType !== Node.TEXT_NODE) {
-    const firstTextNode = node.childNodes[0];
-    if (!firstTextNode || firstTextNode.nodeType !== Node.TEXT_NODE) {
-      return new DOMRect();
-    }
-    targetNode = firstTextNode;
-  }
-
-  range.setStart(targetNode as Node, startOffset);
-  range.setEnd(targetNode as Node, endOffset);
-  return range.getBoundingClientRect();
-};
 
 const handleMouseLeave = (
   event: React.MouseEvent<HTMLDivElement>,
   index: number,
-  blockList: ITextBlock[],
-  isDragging: boolean,
+  isDragging: React.RefObject<boolean>,
   isUp: React.RefObject<boolean>,
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   selection: ISelectionPosition,
   setSelection: React.Dispatch<React.SetStateAction<ISelectionPosition>>,
 ) => {
-  if (!isDragging) return;
+  console.log(isDragging.current);
+  if (!isDragging.current) return;
+
   const windowSelection = window.getSelection();
   if (windowSelection) windowSelection.removeAllRanges();
-
-  const fillBackgroundNode = (left: number, right: number, idx: number) => {
-    const blockElement = blockRef.current[idx];
-    const blockElementMarginLeft = blockElement?.getBoundingClientRect().left || 0;
-    if (!blockElement) return;
-    fillHTMLElementBackgroundImage(blockElement, left - blockElementMarginLeft, right - blockElementMarginLeft);
-  };
 
   const fakeBlock = document.getElementById(`fakeBlock-${index}`);
 
   const parent = blockRef.current[index];
   const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
-  const textLength = parent?.textContent?.length || 0;
   // 시작 블록에서 떠날 때
   if (index === selection.start.blockIndex && index === selection.end.blockIndex) {
-    let left = 99999;
-    let right = 0;
-
     // fakeBlock로 떠날 때, position 변화 x
     if (event.relatedTarget instanceof HTMLElement && fakeBlock?.contains(event.relatedTarget)) {
       return;
@@ -59,23 +29,6 @@ const handleMouseLeave = (
     // 아래로 떠날 때
     if (!isUp.current) {
       childNodes.forEach((childNode, idx) => {
-        // 시작 노드보다 뒤에 있는 노드일 때
-        if (idx > selection.start.childNodeIndex) {
-          const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
-          left = Math.min(left, rect.left);
-          right = Math.max(right, rect.right);
-        }
-
-        // 시작 노드일 때
-        if (idx === selection.start.childNodeIndex) {
-          const rect = getNodeBounds(
-            childNode as Node,
-            selection.start.offset,
-            childNode.textContent?.length as number,
-          );
-          left = Math.min(left, rect.left);
-          right = Math.max(right, rect.right);
-        }
         if (idx === childNodes.length - 1) {
           setSelection(prev => ({
             ...prev,
@@ -83,50 +36,19 @@ const handleMouseLeave = (
           }));
         }
       });
-      setSelection(prev => ({
-        ...prev,
-        end: { ...prev.end, offset: textLength },
-      }));
-      // 만약 이 블록의 타입이 page이면 칠하지 않음
-      if (blockList[index].type === 'PAGE') return;
-      // 페이지 블록이 아니면 배경 칠하기
-      fillBackgroundNode(left, right, index);
     }
 
     // 위로 떠날 때
     if (isUp.current) {
-      childNodes.forEach((childNode, idx) => {
-        // 시작 노드보다 앞에 있는 노드일 때
-        if (idx < selection.start.childNodeIndex) {
-          const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
-          left = Math.min(left, rect.left);
-          right = Math.max(right, rect.right);
-        }
-
-        // 시작 노드일 때
-        if (idx === selection.start.childNodeIndex) {
-          const rect = getNodeBounds(childNode as Node, 0, selection.start.offset);
-          left = Math.min(left, rect.left);
-          right = Math.max(right, rect.right);
-        }
-      });
       setSelection(prev => ({
         ...prev,
         end: { ...prev.end, childNodeIndex: 0, offset: 0 },
       }));
     }
-
-    // 만약 이 블록의 타입이 page이면 칠하지 않음
-    if (blockList[index].type === 'PAGE') return;
-    // 페이지 블록이 아니면 배경 칠하기
-    fillBackgroundNode(left, right, index);
   }
 
   // 아래로 드래그한 상태에서 블록을 떠날 때
   if (selection.start.blockIndex < selection.end.blockIndex) {
-    let left = 99999;
-    let right = 0;
-
     // 위로 드래그 할 때
     if (index !== selection.start.blockIndex && index === selection.end.blockIndex && isUp.current) {
       const el = blockRef.current[index];
@@ -137,9 +59,6 @@ const handleMouseLeave = (
     // 아래로 드래그 할 때
     if (index !== selection.start.blockIndex && index === selection.end.blockIndex && !isUp.current) {
       childNodes.forEach((childNode, idx) => {
-        const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
-        left = Math.min(left, rect.left);
-        right = Math.max(right, rect.right);
         if (idx === childNodes.length - 1) {
           setSelection(prev => ({
             ...prev,
@@ -147,45 +66,17 @@ const handleMouseLeave = (
           }));
         }
       });
-
-      setSelection(prev => ({
-        ...prev,
-        end: { ...prev.end, offset: textLength },
-      }));
-      // 만약 이 블록의 타입이 page이면 칠하지 않음
-      if (blockList[index].type === 'PAGE') return;
-      // 페이지 블록이 아니면 배경 칠하기
-      fillBackgroundNode(left, right, index);
     }
   }
 
   // 위로 드래그한 상태에서 블록을 떠날 때
   if (selection.start.blockIndex > selection.end.blockIndex) {
-    let left = 99999;
-    let right = 0;
-    // 아래로 드래그 할 때
-    if (index !== selection.start.blockIndex && index === selection.end.blockIndex && !isUp.current) {
-      const el = blockRef.current[index];
-      if (!el) return;
-      el.style.backgroundImage = `none`;
-    }
-
-    // 위로 드래그 할 때
     if (index !== selection.start.blockIndex && index === selection.end.blockIndex && isUp.current) {
-      childNodes.forEach(childNode => {
-        const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
-        left = Math.min(left, rect.left);
-        right = Math.max(right, rect.right);
-      });
-
+      console.log('여기');
       setSelection(prev => ({
         ...prev,
         end: { ...prev.end, childNodeIndex: 0, offset: 0 },
       }));
-      // 만약 이 블록의 타입이 page이면 칠하지 않음
-      if (blockList[index].type === 'PAGE') return;
-      // 페이지 블록이 아니면 배경 칠하기
-      fillBackgroundNode(left, right, index);
     }
   }
 };
