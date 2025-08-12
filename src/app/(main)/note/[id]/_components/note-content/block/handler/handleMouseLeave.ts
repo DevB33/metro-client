@@ -9,7 +9,6 @@ const handleMouseLeave = (
   selection: ISelectionPosition,
   setSelection: React.Dispatch<React.SetStateAction<ISelectionPosition>>,
 ) => {
-  console.log(isDragging.current);
   if (!isDragging.current) return;
 
   const windowSelection = window.getSelection();
@@ -72,7 +71,6 @@ const handleMouseLeave = (
   // 위로 드래그한 상태에서 블록을 떠날 때
   if (selection.start.blockIndex > selection.end.blockIndex) {
     if (index !== selection.start.blockIndex && index === selection.end.blockIndex && isUp.current) {
-      console.log('여기');
       setSelection(prev => ({
         ...prev,
         end: { ...prev.end, childNodeIndex: 0, offset: 0 },

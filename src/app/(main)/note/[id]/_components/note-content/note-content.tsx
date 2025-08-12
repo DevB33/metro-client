@@ -60,10 +60,6 @@ const NoteContent = () => {
   const [noteDetails, setNoteDetails] = useState<Record<string, INotes>>({});
 
   useEffect(() => {
-    console.log(selection.start, selection.end);
-  });
-
-  useEffect(() => {
     if (!blocks) return;
 
     const fetchPageNotes = async () => {
@@ -426,7 +422,7 @@ const NoteContent = () => {
       fillHTMLElementBackgroundImage(blockElement, left - blockElementLeft, right - blockElementLeft);
     };
 
-    const handleOutsideDrag = (event: MouseEvent) => {
+    const handleDrag = (event: MouseEvent) => {
       if (prevClientY.current < event.clientY) {
         isUp.current = false;
         prevClientY.current = event.clientY;
@@ -583,33 +579,6 @@ const NoteContent = () => {
               fillBackgroundNode(left, right, index);
             }
           }
-
-          // // selction의 시작 블록과 끝 블록이 인덱스가 클 때, 각 노드 색칠
-          // if (selection.start.blockIndex > selection.end.blockIndex) {
-          //   childNodes.forEach(childNode => {
-          //     const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
-          //     left = Math.min(left, rect.left);
-          //     right = Math.max(right, rect.right);
-          //   });
-
-          //   // 만약 이 블록의 타입이 page이면 칠하지 않음
-          //   if (blocks[index].type === 'PAGE') return;
-          //   // 페이지 블록이 아니면 배경 칠하기
-          //   fillBackgroundNode(left, right, index);
-          // }
-
-          // // selction의 시작 블록과 끝 블록이 인덱스가 작을 때, 각 노드 색칠
-          // if (selection.start.blockIndex < selection.end.blockIndex) {
-          //   childNodes.forEach((childNode, idx) => {
-          //     const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
-          //     left = Math.min(left, rect.left);
-          //     right = Math.max(right, rect.right);
-          //   });
-          //   // 만약 이 블록의 타입이 page이면 칠하지 않음
-          //   if (blocks[index].type === 'PAGE') return;
-          //   // 페이지 블록이 아니면 배경 칠하기
-          //   fillBackgroundNode(left, right, index);
-          // }
         });
       }
 
@@ -626,13 +595,13 @@ const NoteContent = () => {
     document.addEventListener('mouseup', handleOutsideMouseUp);
     document.addEventListener('mousedown', handleOutsideMouseDown, true);
     document.addEventListener('click', handleOutsideClick, true);
-    document.addEventListener('mousemove', handleOutsideDrag);
+    document.addEventListener('mousemove', handleDrag);
 
     return () => {
       document.removeEventListener('mouseup', handleOutsideMouseUp);
       document.removeEventListener('mousedown', handleOutsideMouseDown, true);
       document.removeEventListener('click', handleOutsideClick, true);
-      document.removeEventListener('mousemove', handleOutsideDrag);
+      document.removeEventListener('mousemove', handleDrag);
     };
   }, [selection]);
 
