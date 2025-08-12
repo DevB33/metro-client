@@ -9,7 +9,8 @@ import { ITextBlock } from '@/types/block-type';
 import INotes from '@/types/note-type';
 import ISelectionPosition from '@/types/selection-position';
 import IMenuState from '@/types/menu-type';
-import { createBlock, getBlockList, getNoteDetail } from '@/apis/client/block';
+import { createBlock, getBlockList } from '@/apis/client/block';
+import { getNoteInfo } from '@/apis/client/note';
 import SWR_KEYS from '@/constants/swr-keys';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundImage';
@@ -55,8 +56,8 @@ const NoteContent = () => {
   const [sidebarWidth, setSidebarWidth] = useState<number>(0);
 
   // page 블록 있으면 page 정보 가져오는 로직
-  // refactor: swr 사용으로 로직 변경, getNoteDetail 대신 getNoteInfo 사용
-  const [noteDetails, setNoteDetails] = useState<Record<string, INotes>>({});
+  // refactor: swr 사용으로 로직 변경
+  const [childNotes, setChildNotes] = useState<Record<string, INotes>>({});
 
   useEffect(() => {
     if (!blocks) return;
@@ -70,7 +71,7 @@ const NoteContent = () => {
           try {
             const id = block.nodes[0]?.content;
             if (id) {
-              const data = await getNoteDetail(id);
+              const data = await getNoteInfo(id);
               results[id] = data;
             }
           } catch (error) {
@@ -80,7 +81,7 @@ const NoteContent = () => {
         }),
       );
 
-      setNoteDetails(results);
+      setChildNotes(results);
     };
 
     fetchPageNotes();
@@ -412,6 +413,8 @@ const NoteContent = () => {
       }
     };
 
+    const inputElementList = Array.from(document.querySelectorAll('input, textarea'));
+
     // Node의 배경을 칠해주는 함수
     const fillBackgroundNode = (left: number, right: number, index: number) => {
       const blockElement = blockRef.current[index];
@@ -582,7 +585,6 @@ const NoteContent = () => {
       }
 
       // 외부의 input이나, textarea일 때는 기본 selection이 작동하게 함
-      const inputElementList = Array.from(document.querySelectorAll('input, textarea'));
       if (inputElementList.includes(event.target as Element)) return;
       // 외부 드래깅중이라면 window 기본 selection이 작동하지 않도록 함
       if (!outSideDragging.current) return;
@@ -733,6 +735,7 @@ const NoteContent = () => {
                   setIsTyping={setIsTyping}
                   menuState={menuState}
                   setMenuState={setMenuState}
+                  childNotes={childNotes}
                 />
               </div>
             </div>
@@ -751,7 +754,7 @@ const NoteContent = () => {
               menuState={menuState}
               setMenuState={setMenuState}
               dragBlockIndex={dragBlockIndex}
-              noteDetails={noteDetails}
+              childNotes={childNotes}
             />
           </div>
         ))}
