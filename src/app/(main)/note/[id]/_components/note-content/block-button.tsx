@@ -18,7 +18,6 @@ import GhostBlock from './ghost-block/ghost-block';
 
 interface IBlockButton {
   openBlockMenu: () => void;
-  closeBlockMenu: () => void;
   index: number;
   block: ITextBlock;
   setDragBlockIndex: React.Dispatch<React.SetStateAction<number | null>>;
@@ -31,7 +30,6 @@ interface IBlockButton {
 
 const BlockButton = ({
   openBlockMenu,
-  closeBlockMenu,
   index,
   block,
   blockList,
@@ -101,8 +99,15 @@ const BlockButton = ({
   };
 
   const handleClose = () => {
+    if (menuState.blockButtonModalIndex !== index) return;
     setIsblockButtonModalOpen(false);
-    closeBlockMenu();
+    setMenuState(prev => ({
+      ...prev,
+      blockButtonModalIndex: null,
+      isBlockMenuOpen: false,
+      slashMenuOpenIndex: null,
+      isSlashMenuOpen: false,
+    }));
   };
 
   const handleOpen = () => {
@@ -159,12 +164,22 @@ const BlockButton = ({
         <DropDown handleClose={handleClose}>
           <DropDown.Menu isOpen={isblockButtonModalOpen} top={dropdownPosition.top} left={dropdownPosition.left}>
             {block.type !== 'PAGE' && (
-              <DropDown.Item onClick={handleChange}>
+              <DropDown.Item
+                onClick={e => {
+                  e.stopPropagation();
+                  handleChange();
+                }}
+              >
                 <ArrowReapeatIcon width="16px" height="16px" />
                 전환
               </DropDown.Item>
             )}
-            <DropDown.Item onClick={handleDelete}>
+            <DropDown.Item
+              onClick={e => {
+                e.stopPropagation();
+                handleDelete();
+              }}
+            >
               <div className={deleteButton}>
                 <TrashIcon />
                 삭제하기

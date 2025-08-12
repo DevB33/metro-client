@@ -1,4 +1,5 @@
 interface IMenuState {
+  isBlockMenuOpen: boolean;
   isSlashMenuOpen: boolean;
   slashMenuOpenIndex: number | null;
   isSelectionMenuOpen: boolean;
