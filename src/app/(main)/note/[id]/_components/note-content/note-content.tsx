@@ -38,7 +38,6 @@ const NoteContent = () => {
 
   const [key, setKey] = useState(Date.now());
   const [isTyping, setIsTyping] = useState(false);
-  // const [isDragging, setIsDragging] = useState(false);
   const [dragBlockIndex, setDragBlockIndex] = useState<number | null>(null);
   const [selection, setSelection] = useState<ISelectionPosition>({
     start: { blockId: '', blockIndex: 0, childNodeIndex: 0, offset: 0 },
