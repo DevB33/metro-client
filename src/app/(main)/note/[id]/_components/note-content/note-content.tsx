@@ -18,7 +18,7 @@ import BlockButton from './block-button';
 import Block from './block/block';
 import SelectionMenu from './selection-menu/selection-menu';
 
-const NoteContent = () => {
+const NoteContent = ({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement | null> }) => {
   const params = useParams();
   const noteId = params.id as string;
   const blockContainerRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -58,6 +58,15 @@ const NoteContent = () => {
   // page 블록 있으면 page 정보 가져오는 로직
   // refactor: swr 사용으로 로직 변경, getNoteDetail 대신 getNoteInfo 사용
   const [noteDetails, setNoteDetails] = useState<Record<string, INotes>>({});
+
+  useEffect(() => {
+    if (menuState.isBlockMenuOpen) {
+      scrollRef.current?.style.setProperty('overflow-y', 'hidden');
+    }
+    if (!menuState.isBlockMenuOpen) {
+      scrollRef.current?.style.setProperty('overflow-y', 'scroll');
+    }
+  }, [menuState.isBlockMenuOpen, scrollRef]);
 
   useEffect(() => {
     if (!blocks) return;
@@ -737,6 +746,7 @@ const NoteContent = () => {
                   setIsTyping={setIsTyping}
                   menuState={menuState}
                   setMenuState={setMenuState}
+                  scrollRef={scrollRef}
                 />
               </div>
             </div>

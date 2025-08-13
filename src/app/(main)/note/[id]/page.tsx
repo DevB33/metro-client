@@ -5,8 +5,7 @@ import SWR_KEYS from '@/constants/swr-keys';
 import { getNoteInfo } from '@/apis/server/note';
 import getBlockList from '@/apis/server/block';
 import Header from './_components/header';
-import NoteHeader from './_components/note-header/note-header';
-import NoteConent from './_components/note-content/note-content';
+import ContentContainer from './_components/contenrContainer';
 
 const Note = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
@@ -25,13 +24,7 @@ const Note = async ({ params }: { params: Promise<{ id: string }> }) => {
     >
       <div className={container}>
         <Header />
-        <div className={contentContainer}>
-          <div className={noteContainer}>
-            <NoteHeader />
-            <div className={divider} />
-            <NoteConent />
-          </div>
-        </div>
+        <ContentContainer />
       </div>
     </SWRConfig>
   );
@@ -46,34 +39,6 @@ const container = css({
   alignItems: 'center',
   justifyItems: 'start',
   overflowX: 'scroll',
-});
-
-const contentContainer = css({
-  width: '100%',
-  height: '100%',
-  overflowY: 'scroll',
-});
-
-const noteContainer = css({
-  position: 'relative',
-  width: 'auto',
-  minWidth: '54.5rem',
-  minHeight: '100%',
-  height: '100%',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'start',
-  gap: 'tiny',
-  zIndex: 3,
-});
-
-const divider = css({
-  backgroundColor: 'gray',
-  width: '44.5rem',
-  height: '.5px',
-  borderRadius: '1rem',
-  mb: 'small',
 });
 
 export default Note;
