@@ -5,7 +5,7 @@ import SWR_KEYS from '@/constants/swr-keys';
 import { getNoteInfo } from '@/apis/server/note';
 import getBlockList from '@/apis/server/block';
 import Header from './_components/header';
-import ContentContainer from './_components/contenrContainer';
+import ContentContainer from './_components/contentContainer';
 
 const Note = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
