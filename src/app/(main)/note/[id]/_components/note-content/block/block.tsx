@@ -27,15 +27,14 @@ interface IBlockComponent {
   isTyping: boolean;
   setIsTyping: React.Dispatch<React.SetStateAction<boolean>>;
   setKey: React.Dispatch<React.SetStateAction<number>>;
-  isDragging: boolean;
-  setIsDragging: React.Dispatch<React.SetStateAction<boolean>>;
+  isDragging: React.RefObject<boolean>;
   isUp: React.RefObject<boolean>;
   selection: ISelectionPosition;
   setSelection: React.Dispatch<React.SetStateAction<ISelectionPosition>>;
   menuState: IMenuState;
   setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>;
   dragBlockIndex: number | null;
-  noteDetails: Record<string, INotes>;
+  childNotes: Record<string, INotes>;
 }
 
 const Block = memo(
@@ -48,14 +47,13 @@ const Block = memo(
     setIsTyping,
     setKey,
     isDragging,
-    setIsDragging,
     selection,
     setSelection,
     menuState,
     setMenuState,
     dragBlockIndex,
     isUp,
-    noteDetails,
+    childNotes,
   }: IBlockComponent) => {
     const router = useRouter();
     const params = useParams();
@@ -136,7 +134,7 @@ const Block = memo(
             }}
             onMouseUp={event => {
               handleMouseUp(event, index, blockRef, blockList, selection, setSelection, setMenuState);
-              setIsDragging(false);
+              isDragging.current = false;
             }}
             onMouseDown={_event => {
               router.push(`/note/${block.nodes[0].content}`);
@@ -144,9 +142,7 @@ const Block = memo(
             onMouseMove={event =>
               handleMouseMove(event, index, blockRef, blockList, isDragging, selection, setSelection)
             }
-            onMouseLeave={event =>
-              handleMouseLeave(event, index, blockList, isDragging, isUp, blockRef, selection, setSelection)
-            }
+            onMouseLeave={event => handleMouseLeave(event, index, isDragging, isUp, blockRef, selection, setSelection)}
             onDragEnter={event => {
               if (dragBlockIndex === index) {
                 return;
@@ -173,9 +169,9 @@ const Block = memo(
             onDrop={changeBlockOrder}
           >
             <BlockHTMLTag block={block} blockList={blockList} index={index} blockRef={blockRef}>
-              {(block.nodes[0]?.content && noteDetails?.[block.nodes[0].content]?.icon) || <PageIcon color="grey" />}
+              {(block.nodes[0]?.content && childNotes?.[block.nodes[0].content]?.icon) || <PageIcon color="grey" />}
               <span className={pageTitle}>
-                {(block.nodes[0]?.content && noteDetails?.[block.nodes[0].content]?.title) || '새 페이지'}
+                {(block.nodes[0]?.content && childNotes?.[block.nodes[0].content]?.title) || '새 페이지'}
               </span>
             </BlockHTMLTag>
           </div>
@@ -238,8 +234,9 @@ const Block = memo(
           }}
           onMouseUp={event => {
             handleMouseUp(event, index, blockRef, blockList, selection, setSelection, setMenuState);
-            setIsDragging(false);
+            isDragging.current = false;
           }}
+
           onMouseDown={event => {
             handleMouseDown(event, blockRef, index, blockList, setIsDragging, setIsTyping, setKey, setSelection);
             setMenuState(prev => ({
@@ -250,10 +247,9 @@ const Block = memo(
               isSlashMenuOpen: false,
             }));
           }}
+
           onMouseMove={event => handleMouseMove(event, index, blockRef, blockList, isDragging, selection, setSelection)}
-          onMouseLeave={event =>
-            handleMouseLeave(event, index, blockList, isDragging, isUp, blockRef, selection, setSelection)
-          }
+          onMouseLeave={event => handleMouseLeave(event, index, isDragging, isUp, blockRef, selection, setSelection)}
           onDragEnter={event => {
             if (dragBlockIndex === index) {
               return;

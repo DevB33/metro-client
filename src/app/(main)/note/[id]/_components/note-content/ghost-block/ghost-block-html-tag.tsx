@@ -71,11 +71,23 @@ const GhostBlockHTMLTag = ({ block, blockList, index, children }: IGhostBlockHTM
 
   // TODO: 페이지 블록 추가
 
+  if (block.type === 'PAGE') {
+    return <div className={pageBlock}>{children}</div>;
+  }
+
   return null;
 };
 
 const htmltag = css({
   opacity: '0.4',
+});
+
+const pageBlock = css({
+  display: 'flex',
+  justifyContent: 'start',
+  gap: '2px',
+  width: '100%',
+  cursor: 'pointer',
 });
 
 export default GhostBlockHTMLTag;

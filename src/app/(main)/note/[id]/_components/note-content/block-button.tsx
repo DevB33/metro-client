@@ -5,6 +5,7 @@ import { css } from '@/../styled-system/css';
 
 import { createBlock, deleteBlock, getBlockList, updateBlocksOrder } from '@/apis/client/block';
 import { getNoteList } from '@/apis/client/note';
+import INotes from '@/types/note-type';
 import { ITextBlock } from '@/types/block-type';
 import IMenuState from '@/types/menu-type';
 import PlusIcon from '@/icons/plus-icon';
@@ -27,6 +28,7 @@ interface IBlockButton {
   menuState: IMenuState;
   setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>;
   scrollRef: React.RefObject<HTMLDivElement | null>;
+  childNotes: Record<string, INotes>;
 }
 
 const BlockButton = ({
@@ -40,6 +42,7 @@ const BlockButton = ({
   menuState,
   setMenuState,
   scrollRef,
+  childNotes,
 }: IBlockButton) => {
   const params = useParams();
   const noteId = params.id as string;
@@ -156,7 +159,7 @@ const BlockButton = ({
 
   return (
     <div className={container} ref={buttonRef}>
-      <GhostBlock ghostRef={ghostRef} block={block} blockList={blockList} index={index} />
+      <GhostBlock ghostRef={ghostRef} block={block} blockList={blockList} index={index} childNotes={childNotes} />
       <button type="button" className={blockButton} onClick={() => handleCreateBlockButton(index)}>
         <PlusIcon />
       </button>

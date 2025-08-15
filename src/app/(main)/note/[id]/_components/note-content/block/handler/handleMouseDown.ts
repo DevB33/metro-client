@@ -6,7 +6,7 @@ const handleMouseDown = (
   blockRef: React.RefObject<(HTMLDivElement | null)[]>,
   index: number,
   blockList: ITextBlock[],
-  setIsDragging: React.Dispatch<React.SetStateAction<boolean>>,
+  isDragging: React.RefObject<boolean>,
   setIsTyping: React.Dispatch<React.SetStateAction<boolean>>,
   setKey: React.Dispatch<React.SetStateAction<number>>,
   setSelection: React.Dispatch<React.SetStateAction<ISelectionPosition>>,
@@ -20,7 +20,7 @@ const handleMouseDown = (
       ? childNodes.indexOf(textNode.parentNode as HTMLElement)
       : childNodes.indexOf(textNode as HTMLElement);
 
-  setIsDragging(true);
+  isDragging.current = true;
   setIsTyping(false);
   setKey(Math.random());
 
