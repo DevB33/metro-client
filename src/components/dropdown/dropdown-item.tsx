@@ -11,7 +11,7 @@ const DropDownItem = ({ children, onClick }: IDropDownItemProps) => {
 
 interface IDropDownItemProps {
   children: ReactNode;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 const container = css({

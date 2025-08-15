@@ -19,7 +19,7 @@ import BlockButton from './block-button';
 import Block from './block/block';
 import SelectionMenu from './selection-menu/selection-menu';
 
-const NoteContent = () => {
+const NoteContent = ({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement | null> }) => {
   const params = useParams();
   const noteId = params.id as string;
   const blockContainerRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -45,6 +45,7 @@ const NoteContent = () => {
     end: { blockId: '', blockIndex: 0, childNodeIndex: 0, offset: 0 },
   });
   const [menuState, setMenuState] = useState<IMenuState>({
+    isBlockMenuOpen: false,
     isSlashMenuOpen: false,
     slashMenuOpenIndex: null,
     isSelectionMenuOpen: false,
@@ -52,12 +53,21 @@ const NoteContent = () => {
     slashMenuPosition: { x: 0, y: 0 },
     selectionMenuPosition: { x: 0, y: 0 },
   });
-  const [isBlockMenuOpen, setIsBlockMenuOpen] = useState(false);
+
   const [sidebarWidth, setSidebarWidth] = useState<number>(0);
 
   // page 블록 있으면 page 정보 가져오는 로직
   // refactor: swr 사용으로 로직 변경
   const [childNotes, setChildNotes] = useState<Record<string, INotes>>({});
+
+  useEffect(() => {
+    if (menuState.isBlockMenuOpen) {
+      scrollRef.current?.style.setProperty('overflow-y', 'hidden');
+    }
+    if (!menuState.isBlockMenuOpen) {
+      scrollRef.current?.style.setProperty('overflow-y', 'scroll');
+    }
+  }, [menuState.isBlockMenuOpen, scrollRef]);
 
   useEffect(() => {
     if (!blocks) return;
@@ -154,11 +164,11 @@ const NoteContent = () => {
   };
 
   const openBlockMenu = () => {
-    setIsBlockMenuOpen(true);
-  };
-
-  const closeBlockMenu = () => {
-    setIsBlockMenuOpen(false);
+    // setIsBlockMenuOpen(true);
+    setMenuState(prev => ({
+      ...prev,
+      isBlockMenuOpen: true,
+    }));
   };
 
   // blockButton의 위치를 계산해 화면에 보여주는 함수
@@ -222,11 +232,12 @@ const NoteContent = () => {
 
   // FakeBlock에 MouseEnter, Leave 시 BlockButton 활성화 및 숨기기
   const handleMouseEnter = (index: number) => {
+    if (menuState.isBlockMenuOpen) return;
     showBlockButtonPosition(index);
   };
 
   const handleMouseLeave = (index: number) => {
-    if (isBlockMenuOpen) return;
+    if (menuState.isBlockMenuOpen && menuState.blockButtonModalIndex === index) return;
     blockButtonRef.current[index]?.style.setProperty('display', 'none');
   };
 
@@ -680,12 +691,12 @@ const NoteContent = () => {
         tabIndex={0}
         key={key}
         ref={noteRef}
-        onMouseDown={() =>
-          setMenuState(prev => ({
-            ...prev,
-            isSelectionMenuOpen: false,
-          }))
-        }
+        // onMouseDown={() =>
+        //   setMenuState(prev => ({
+        //     ...prev,
+        //     isSelectionMenuOpen: false,
+        //   }))
+        // }
         onKeyDown={() =>
           setMenuState(prev => ({
             ...prev,
@@ -726,7 +737,6 @@ const NoteContent = () => {
               >
                 <BlockButton
                   openBlockMenu={openBlockMenu}
-                  closeBlockMenu={closeBlockMenu}
                   index={index}
                   block={block}
                   blockList={blocks}
@@ -735,6 +745,7 @@ const NoteContent = () => {
                   setIsTyping={setIsTyping}
                   menuState={menuState}
                   setMenuState={setMenuState}
+                  scrollRef={scrollRef}
                   childNotes={childNotes}
                 />
               </div>

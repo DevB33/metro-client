@@ -19,7 +19,6 @@ import GhostBlock from './ghost-block/ghost-block';
 
 interface IBlockButton {
   openBlockMenu: () => void;
-  closeBlockMenu: () => void;
   index: number;
   block: ITextBlock;
   setDragBlockIndex: React.Dispatch<React.SetStateAction<number | null>>;
@@ -28,12 +27,12 @@ interface IBlockButton {
   blockRef: React.RefObject<(HTMLDivElement | null)[]>;
   menuState: IMenuState;
   setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>;
+  scrollRef: React.RefObject<HTMLDivElement | null>;
   childNotes: Record<string, INotes>;
 }
 
 const BlockButton = ({
   openBlockMenu,
-  closeBlockMenu,
   index,
   block,
   blockList,
@@ -42,6 +41,7 @@ const BlockButton = ({
   setIsTyping,
   menuState,
   setMenuState,
+  scrollRef,
   childNotes,
 }: IBlockButton) => {
   const params = useParams();
@@ -104,8 +104,16 @@ const BlockButton = ({
   };
 
   const handleClose = () => {
+    if (menuState.blockButtonModalIndex !== index) return;
     setIsblockButtonModalOpen(false);
-    closeBlockMenu();
+    setMenuState(prev => ({
+      ...prev,
+      blockButtonModalIndex: null,
+      isBlockMenuOpen: false,
+      slashMenuOpenIndex: null,
+      isSlashMenuOpen: false,
+    }));
+    scrollRef.current?.style.setProperty('overflow-y', 'scroll');
   };
 
   const handleOpen = () => {
@@ -121,8 +129,8 @@ const BlockButton = ({
       ...prev,
       blockButtonModalIndex: index,
     }));
-
     openBlockMenu();
+    scrollRef.current?.style.setProperty('overflow-y', 'hidden');
   };
 
   const handleDelete = () => {
@@ -162,12 +170,22 @@ const BlockButton = ({
         <DropDown handleClose={handleClose}>
           <DropDown.Menu isOpen={isblockButtonModalOpen} top={dropdownPosition.top} left={dropdownPosition.left}>
             {block.type !== 'PAGE' && (
-              <DropDown.Item onClick={handleChange}>
+              <DropDown.Item
+                onClick={e => {
+                  e.stopPropagation();
+                  handleChange();
+                }}
+              >
                 <ArrowReapeatIcon width="16px" height="16px" />
                 전환
               </DropDown.Item>
             )}
-            <DropDown.Item onClick={handleDelete}>
+            <DropDown.Item
+              onClick={e => {
+                e.stopPropagation();
+                handleDelete();
+              }}
+            >
               <div className={deleteButton}>
                 <TrashIcon />
                 삭제하기
