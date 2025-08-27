@@ -306,7 +306,7 @@ const NoteContent = () => {
 
     // selection의 시작 블록이 끝 블록과 인덱스가 같을 때,
     if (selection.start.blockIndex === selection.end.blockIndex) {
-      // selection의 시작 블록이 끝 블록보다 node 인덱스가 작을 때,
+      // selection의 시작 node가 끝 node보다 node 인덱스가 작을 때,
       if (selection.start.childNodeIndex < selection.end.childNodeIndex) {
         rectOffset = selection.start.offset;
         const { left: newLeft, top: newTop } = getBoundsForSelection(
@@ -317,7 +317,7 @@ const NoteContent = () => {
         left = Math.min(left, newLeft);
         top = Math.max(top, newTop);
       }
-      // selection의 시작 블록이 끝 블록보다 node 인덱스가 클 때,
+      // selection의 시작 node가 끝 node보다 node 인덱스가 클 때,
       if (selection.start.childNodeIndex > selection.end.childNodeIndex) {
         rectOffset = selection.end.offset;
         const { left: newLeft, top: newTop } = getBoundsForSelection(
@@ -328,7 +328,7 @@ const NoteContent = () => {
         left = Math.min(left, newLeft);
         top = Math.max(top, newTop);
       }
-      // selection의 시작 블록이 끝 블록보다 node 인덱스가 같을 때,
+      // selection의 시작 node가 끝 node보다 node 인덱스가 같을 때,
       if (
         selection.start.childNodeIndex === selection.end.childNodeIndex &&
         selection.start.offset !== selection.end.offset
@@ -343,6 +343,7 @@ const NoteContent = () => {
         top = Math.max(top, newTop);
       }
     }
+
     // selectionMenu의 위치를 설정
     setMenuState(prev => ({
       ...prev,
@@ -415,15 +416,6 @@ const NoteContent = () => {
 
     const inputElementList = Array.from(document.querySelectorAll('input, textarea'));
 
-    // Node의 배경을 칠해주는 함수
-    const fillBackgroundNode = (left: number, right: number, index: number) => {
-      const blockElement = blockRef.current[index];
-      const blockElementLeft = blockElement?.getBoundingClientRect().left || 0;
-
-      if (!blockElement) return;
-      fillHTMLElementBackgroundImage(blockElement, left - blockElementLeft, right - blockElementLeft);
-    };
-
     const handleDrag = (event: MouseEvent) => {
       if (prevClientY.current < event.clientY) {
         isUp.current = false;
@@ -436,149 +428,93 @@ const NoteContent = () => {
       // 드래깅 중일 때만, 셀렉션 범위 색칠하는 로직
       if (isDragging.current) {
         blocks.forEach((_block: ITextBlock, index: number) => {
+          const { blockIndex: startBlockIndex, childNodeIndex: startChildIndex, offset: startOffset } = selection.start;
+          const { blockIndex: endBlockIndex, childNodeIndex: endChildIndex, offset: endOffset } = selection.end;
+          const blockElement = blockRef.current[index];
+
+          if (!blockElement) return;
+
           const parent = blockRef.current[index];
           const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
 
-          let left = 99999;
-          let right = 0;
+          // 만약 이 블록의 타입이 page이면 칠하지 않음
+          if (blocks[index].type === 'PAGE') return;
+
           if (
             index < Math.min(selection.start.blockIndex, selection.end.blockIndex) ||
             index > Math.max(selection.start.blockIndex, selection.end.blockIndex)
           ) {
-            fillBackgroundNode(0, 0, index);
+            // 셀렉션 범위가 아닌 블록일 때
+            // 배경색 초기화
+            fillHTMLElementBackgroundImage(blockElement, childNodes[0], 0, childNodes[0], 0);
           } else if (selection.start.blockIndex === selection.end.blockIndex) {
-            if (selection.start.childNodeIndex === selection.end.childNodeIndex) {
-              childNodes.forEach((childNode, idx) => {
-                if (idx === selection.start.childNodeIndex) {
-                  const rect = getNodeBounds(
-                    childNode as Node,
-                    Math.min(selection.start.offset, selection.end.offset),
-                    Math.max(selection.start.offset, selection.end.offset),
-                  );
-                  left = Math.min(left, rect.left);
-                  right = Math.max(right, rect.right);
-                }
-              });
-            } else if (selection.start.childNodeIndex < selection.end.childNodeIndex) {
-              childNodes.forEach((childNode, idx) => {
-                if (idx === selection.start.childNodeIndex) {
-                  const rect = getNodeBounds(
-                    childNode as Node,
-                    selection.start.offset,
-                    childNode.textContent?.length as number,
-                  );
-                  left = Math.min(left, rect.left);
-                }
-                if (idx === selection.end.childNodeIndex) {
-                  const rect = getNodeBounds(childNode as Node, 0, selection.end.offset as number);
-                  right = Math.max(right, rect.right);
-                }
-              });
-            } else if (selection.start.childNodeIndex > selection.end.childNodeIndex) {
-              childNodes.forEach((childNode, idx) => {
-                if (idx === selection.end.childNodeIndex) {
-                  const rect = getNodeBounds(
-                    childNode as Node,
-                    selection.end.offset,
-                    childNode.textContent?.length as number,
-                  );
-                  left = Math.min(left, rect.left);
-                }
-                if (idx === selection.start.childNodeIndex) {
-                  const rect = getNodeBounds(childNode as Node, 0, selection.start.offset as number);
-                  right = Math.max(right, rect.right);
-                }
-              });
+            // 셀렉션 범위가 한 블록 내에 있을 때
+            if (startChildIndex === endChildIndex) {
+              // 같은 childNode 내에서의 셀렉션 칠하기
+              fillHTMLElementBackgroundImage(
+                blockElement,
+                childNodes[startChildIndex],
+                Math.min(startOffset, endOffset),
+                childNodes[endChildIndex],
+                Math.max(startOffset, endOffset),
+              );
+            } else {
+              // 서로 다른 childNode 간의 셀렉션 칠하기
+              fillHTMLElementBackgroundImage(
+                blockElement,
+                childNodes[Math.min(startChildIndex, endChildIndex)],
+                startChildIndex < endChildIndex ? startOffset : endOffset,
+                childNodes[Math.max(startChildIndex, endChildIndex)],
+                startChildIndex < endChildIndex ? endOffset : startOffset,
+              );
             }
-            // 만약 이 블록의 타입이 page이면 칠하지 않음
-            if (blocks[index].type === 'PAGE') return;
-            // 페이지 블록이 아니면 배경 칠하기
-            fillBackgroundNode(left, right, selection.start.blockIndex);
           } else if (selection.start.blockIndex < selection.end.blockIndex) {
-            if (index === selection.start.blockIndex) {
-              childNodes.forEach((childNode, idx) => {
-                if (idx === selection.start.childNodeIndex) {
-                  const rect = getNodeBounds(
-                    childNode as Node,
-                    selection.start.offset,
-                    childNode.textContent?.length as number,
-                  );
-                  left = Math.min(left, rect.left);
-                  right = Math.max(right, rect.right);
-                } else {
-                  const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
-                  right = Math.max(right, rect.right);
-                }
-              });
-              // 만약 이 블록의 타입이 page이면 칠하지 않음
-              if (blocks[index].type === 'PAGE') return;
-              // 페이지 블록이 아니면 배경 칠하기
-              fillBackgroundNode(left, right, index);
-            }
-            if (index === selection.end.blockIndex) {
-              childNodes.forEach((childNode, idx) => {
-                if (idx === selection.end.childNodeIndex) {
-                  const rect = getNodeBounds(childNode as Node, 0, selection.end.offset);
-                  right = Math.max(right, rect.right);
-                }
-              });
-              // 만약 이 블록의 타입이 page이면 칠하지 않음
-              if (blocks[index].type === 'PAGE') return;
-              // 페이지 블록이 아니면 배경 칠하기
-              left = 0;
-              fillBackgroundNode(left, right, index);
-            } else if (index > selection.start.blockIndex && index < selection.end.blockIndex) {
-              childNodes.forEach(childNode => {
-                const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
-                left = Math.min(left, rect.left);
-                right = Math.max(right, rect.right);
-              });
-              if (blocks[index].type === 'PAGE') return;
-              // 페이지 블록이 아니면 배경 칠하기
-              fillBackgroundNode(left, right, index);
+            // 위에서 아래로 드래그한 셀렉션
+            if (index > startBlockIndex && index < endBlockIndex) {
+              // 처음과 끝 블록 사이의 블록들은 전부 색칠
+              fillHTMLElementBackgroundImage(
+                blockElement,
+                childNodes[0],
+                0,
+                childNodes[childNodes.length - 1],
+                childNodes[childNodes.length - 1].textContent.length,
+              );
+            } else if (index === startBlockIndex) {
+              // 드래그를 시작한 블록은 시작점부터 끝까지 색칠
+              fillHTMLElementBackgroundImage(
+                blockElement,
+                childNodes[startChildIndex],
+                startOffset,
+                childNodes[childNodes.length - 1],
+                childNodes[childNodes.length - 1].textContent.length,
+              );
+            } else if (index === endBlockIndex) {
+              // 드래그를 끝낸 블록은 끝점부터 마지막까지 색칠
+              fillHTMLElementBackgroundImage(blockElement, childNodes[0], 0, childNodes[endChildIndex], endOffset);
             }
           } else if (selection.start.blockIndex > selection.end.blockIndex) {
-            if (index === selection.end.blockIndex) {
-              childNodes.forEach((childNode, idx) => {
-                if (idx === selection.end.childNodeIndex) {
-                  const rect = getNodeBounds(
-                    childNode as Node,
-                    selection.end.offset,
-                    childNode.textContent?.length as number,
-                  );
-                  left = Math.min(left, rect.left);
-                  right = Math.max(right, rect.right);
-                } else {
-                  const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
-                  right = Math.max(right, rect.right);
-                }
-              });
-              // 만약 이 블록의 타입이 page이면 칠하지 않음
-              if (blocks[index].type === 'PAGE') return;
-              // 페이지 블록이 아니면 배경 칠하기
-              fillBackgroundNode(left, right, index);
-            }
-            if (index === selection.start.blockIndex) {
-              childNodes.forEach((childNode, idx) => {
-                if (idx === selection.start.childNodeIndex) {
-                  const rect = getNodeBounds(childNode as Node, 0, selection.start.offset);
-                  right = Math.max(right, rect.right);
-                }
-              });
-              // 만약 이 블록의 타입이 page이면 칠하지 않음
-              if (blocks[index].type === 'PAGE') return;
-              // 페이지 블록이 아니면 배경 칠하기
-              left = 0;
-              fillBackgroundNode(left, right, index);
-            } else if (index < selection.start.blockIndex && index > selection.end.blockIndex) {
-              childNodes.forEach(childNode => {
-                const rect = getNodeBounds(childNode as Node, 0, childNode.textContent?.length as number);
-                left = Math.min(left, rect.left);
-                right = Math.max(right, rect.right);
-              });
-              if (blocks[index].type === 'PAGE') return;
-              // 페이지 블록이 아니면 배경 칠하기
-              fillBackgroundNode(left, right, index);
+            // 아래에서 위로 드래그한 셀렉션
+            if (index < startBlockIndex && index > endBlockIndex) {
+              // 처음과 끝 블록 사이의 블록들은 전부 색칠
+              fillHTMLElementBackgroundImage(
+                blockElement,
+                childNodes[0],
+                0,
+                childNodes[childNodes.length - 1],
+                childNodes[childNodes.length - 1].textContent.length,
+              );
+            } else if (index === startBlockIndex) {
+              // 드래그를 시작한 블록은 처음부터 시작점까지 색칠
+              fillHTMLElementBackgroundImage(blockElement, childNodes[0], 0, childNodes[startChildIndex], startOffset);
+            } else if (index === endBlockIndex) {
+              // 드래그를 끝낸 블록은 끝점부터 마지막까지 색칠
+              fillHTMLElementBackgroundImage(
+                blockElement,
+                childNodes[endChildIndex],
+                endOffset,
+                childNodes[childNodes.length - 1],
+                childNodes[childNodes.length - 1].textContent.length,
+              );
             }
           }
         });
@@ -604,7 +540,7 @@ const NoteContent = () => {
       document.removeEventListener('click', handleOutsideClick, true);
       document.removeEventListener('mousemove', handleDrag);
     };
-  }, [selection]);
+  }, [selection, blocks]);
 
   const handleFakeBlockMouseEnter = (index: number) => {
     // block 버튼을 누르고 드래그 하기 전에 key를 초기화해서 에러를 가상돔과 돔 조작의 충돌을 방지하기 위한 조건문
