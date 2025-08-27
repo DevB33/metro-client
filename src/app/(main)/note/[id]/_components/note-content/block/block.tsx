@@ -236,9 +236,18 @@ const Block = memo(
             handleMouseUp(event, index, blockRef, blockList, selection, setSelection, setMenuState);
             isDragging.current = false;
           }}
+
           onMouseDown={event => {
-            handleMouseDown(event, blockRef, index, blockList, isDragging, setIsTyping, setKey, setSelection);
+            handleMouseDown(event, blockRef, index, blockList, setIsDragging, setIsTyping, setKey, setSelection);
+            setMenuState(prev => ({
+              ...prev,
+              blockButtonModalIndex: null,
+              isBlockMenuOpen: false,
+              slashMenuOpenIndex: null,
+              isSlashMenuOpen: false,
+            }));
           }}
+
           onMouseMove={event => handleMouseMove(event, index, blockRef, blockList, isDragging, selection, setSelection)}
           onMouseLeave={event => handleMouseLeave(event, index, isDragging, isUp, blockRef, selection, setSelection)}
           onDragEnter={event => {
