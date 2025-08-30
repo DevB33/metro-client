@@ -667,7 +667,7 @@ const handleKeyDown = async (
   selection: ISelectionPosition,
   noteId: string,
 ) => {
-  if (event.ctrlKey || event.metaKey) {
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() !== 'r') {
     event.preventDefault();
   }
 
