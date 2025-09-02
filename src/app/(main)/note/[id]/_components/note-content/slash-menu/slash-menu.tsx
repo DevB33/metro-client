@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { useParams } from 'next/navigation';
 import { mutate } from 'swr';
+import { toast } from 'react-toastify';
 import { css } from '@/../styled-system/css';
 
 import { TBlockType, ITextBlock } from '@/types/block-type';
@@ -10,6 +11,7 @@ import { createBlock, getBlockList, updateBlocksOrder, updateBlockType, deleteBl
 import { getNoteList } from '@/apis/client/note';
 import SWR_KEYS from '@/constants/swr-keys';
 import { SLASH_MENU_ITEMS } from '@/constants/menu-items';
+import { TOAST_ERRORMESSAGE } from '@/constants/toast-message';
 import useClickOutside from '@/hooks/useClickOutside';
 
 interface ISlashMenuProps {
@@ -36,93 +38,101 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
 
   const makeBlock = useCallback(
     async (type: TBlockType) => {
-      if (index !== blockList.length - 1) {
-        await updateBlocksOrder(
-          noteId,
-          blockList[index + 1].order,
-          blockList[blockList.length - 1].order,
-          blockList[index + 1].order,
-        );
-      }
+      try {
+        if (index !== blockList.length - 1) {
+          await updateBlocksOrder(
+            noteId,
+            blockList[index + 1].order,
+            blockList[blockList.length - 1].order,
+            blockList[index + 1].order,
+          );
+        }
 
-      await createBlock({
-        noteId,
-        type,
-        upperOrder: blockList[index].order,
-        nodes: [{ content: '', type: 'text' }],
-      });
-
-      if (type === 'PAGE' && index === blockList.length - 1) {
         await createBlock({
           noteId,
-          type: 'DEFAULT',
-          upperOrder: blockList[index].order + 1,
+          type,
+          upperOrder: blockList[index].order,
           nodes: [{ content: '', type: 'text' }],
         });
-      }
 
-      await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
-      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
-
-      setMenuState(prev => ({
-        ...prev,
-        isSlashMenuOpen: false,
-        slashMenuOpenIndex: null,
-      }));
-
-      setTimeout(() => {
-        const parent1 = blockRef.current[index + 1]?.parentNode as HTMLElement;
-        const parent2 = parent1?.parentNode as HTMLElement;
-        const parent3 = parent2?.parentNode as HTMLElement;
-
-        if (type === 'UL' || type === 'OL') {
-          parent3?.focus();
-        } else if (type === 'QUOTE') {
-          parent2?.focus();
-        } else {
-          parent1?.focus();
+        if (type === 'PAGE' && index === blockList.length - 1) {
+          await createBlock({
+            noteId,
+            type: 'DEFAULT',
+            upperOrder: blockList[index].order + 1,
+            nodes: [{ content: '', type: 'text' }],
+          });
         }
-      }, 0);
+
+        await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+        await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+
+        setMenuState(prev => ({
+          ...prev,
+          isSlashMenuOpen: false,
+          slashMenuOpenIndex: null,
+        }));
+
+        setTimeout(() => {
+          const parent1 = blockRef.current[index + 1]?.parentNode as HTMLElement;
+          const parent2 = parent1?.parentNode as HTMLElement;
+          const parent3 = parent2?.parentNode as HTMLElement;
+
+          if (type === 'UL' || type === 'OL') {
+            parent3?.focus();
+          } else if (type === 'QUOTE') {
+            parent2?.focus();
+          } else {
+            parent1?.focus();
+          }
+        }, 0);
+      } catch (error) {
+        toast.error(TOAST_ERRORMESSAGE.BlockCreate);
+      }
     },
     [noteId, blockList, index, blockRef, setMenuState],
   );
 
   const changeBlock = useCallback(
     async (type: TBlockType) => {
-      if (type === 'PAGE') {
-        await deleteBlock(noteId, blockList[index].order, blockList[index].order);
-        await createBlock({
-          noteId,
-          type: 'PAGE',
-          upperOrder: index > 0 ? blockList[index - 1].order : -1,
-          nodes: [{ content: '', type: 'text' }],
-        });
-      } else {
-        await updateBlockType(blockList[index].id, type);
-      }
-
-      await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
-      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
-
-      setMenuState(prev => ({
-        ...prev,
-        isSlashMenuOpen: false,
-        slashMenuOpenIndex: null,
-      }));
-
-      setTimeout(() => {
-        const parent1 = blockRef.current[index]?.parentNode as HTMLElement;
-        const parent2 = parent1?.parentNode as HTMLElement;
-        const parent3 = parent2?.parentNode as HTMLElement;
-
-        if (type === 'UL' || type === 'OL') {
-          parent3?.focus();
-        } else if (type === 'QUOTE') {
-          parent2?.focus();
+      try {
+        if (type === 'PAGE') {
+          await deleteBlock(noteId, blockList[index].order, blockList[index].order);
+          await createBlock({
+            noteId,
+            type: 'PAGE',
+            upperOrder: index > 0 ? blockList[index - 1].order : -1,
+            nodes: [{ content: '', type: 'text' }],
+          });
         } else {
-          parent1?.focus();
+          await updateBlockType(blockList[index].id, type);
         }
-      }, 0);
+
+        await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+        await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+
+        setMenuState(prev => ({
+          ...prev,
+          isSlashMenuOpen: false,
+          slashMenuOpenIndex: null,
+        }));
+
+        setTimeout(() => {
+          const parent1 = blockRef.current[index]?.parentNode as HTMLElement;
+          const parent2 = parent1?.parentNode as HTMLElement;
+          const parent3 = parent2?.parentNode as HTMLElement;
+
+          if (type === 'UL' || type === 'OL') {
+            parent3?.focus();
+          } else if (type === 'QUOTE') {
+            parent2?.focus();
+          } else {
+            parent1?.focus();
+          }
+        }, 0);
+      } catch (error) {
+        toast.error(TOAST_ERRORMESSAGE.BlockStyleUpdate);
+      }
     },
     [noteId, blockList, index, blockRef, setMenuState],
   );
