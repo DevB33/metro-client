@@ -1,4 +1,5 @@
 import { mutate } from 'swr';
+import { toast } from 'react-toastify';
 
 import {
   createBlock,
@@ -11,8 +12,9 @@ import {
 import { ITextBlock } from '@/types/block-type';
 import ISelectionPosition from '@/types/selection-position';
 import IMenuState from '@/types/menu-type';
-import SWR_KEYS from '@/constants/swr-keys';
 import getSelectionInfo from '@/utils/getSelectionInfo';
+import SWR_KEYS from '@/constants/swr-keys';
+import { TOAST_ERRORMESSAGE } from '@/constants/toast-message';
 import KEY_NAME from '@/constants/key-name';
 import editSelectionContent from '../../selection-menu/editSelectionContent';
 
@@ -667,513 +669,524 @@ const handleKeyDown = async (
   selection: ISelectionPosition,
   noteId: string,
 ) => {
-  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() !== 'r') {
-    event.preventDefault();
-  }
-
-  // selection 없을때
-  if (!menuState.isSelectionMenuOpen) {
-    if (
-      event.shiftKey &&
-      (event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowRight')
-    ) {
+  try {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() !== 'r') {
       event.preventDefault();
     }
 
-    // ctrl + A 텍스트 전체 선택 기본 셀렉션 막기
-    if (event.ctrlKey && (event.key === 'a' || event.key === 'A')) {
-      event.preventDefault();
-    }
-
-    // enter 클릭
-    if (event.key === KEY_NAME.enter && !event.shiftKey) {
-      event.preventDefault();
-      if (event.nativeEvent.isComposing) {
-        return;
-      }
-      setIsTyping(false);
-      setKey(Math.random());
-      splitBlock(index, blockList, blockRef, noteId);
-    }
-
-    // todo : shift + Enter 로직 구현 필요
-    // note : 임시로 enter 로직과 동일하게 구현
-    // shift + enter 클릭
-    if (event.key === KEY_NAME.enter && event.shiftKey) {
-      event.preventDefault();
-      if (event.nativeEvent.isComposing) {
-        return;
-      }
-      setIsTyping(false);
-      setKey(Math.random());
-      splitBlock(index, blockList, blockRef, noteId);
-    }
-
-    // 일반 backspace 클릭
-    if (event.key === KEY_NAME.backspace && !menuState.isSelectionMenuOpen) {
-      const { startOffset, startContainer } = getSelectionInfo(0) || {};
-      if (startOffset === undefined || startOffset === null || !startContainer) return;
-
-      const parent = blockRef.current[index];
-      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
-      const currentChildNodeIndex =
-        childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
-          ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
-          : childNodes.indexOf(startContainer as HTMLElement);
-
-      // 첫 블록 첫 커서일 때
-      if (index === 0 && (currentChildNodeIndex === -1 || currentChildNodeIndex === 0) && startOffset === 0) {
+    // selection 없을때
+    if (!menuState.isSelectionMenuOpen) {
+      if (
+        event.shiftKey &&
+        (event.key === 'ArrowUp' ||
+          event.key === 'ArrowDown' ||
+          event.key === 'ArrowLeft' ||
+          event.key === 'ArrowRight')
+      ) {
         event.preventDefault();
+      }
 
-        // default 블록이 아닐 때는 default로 변경
-        if (blockList[index].type !== 'DEFAULT') {
-          setIsTyping(false);
-          setKey(Math.random());
+      // ctrl + A 텍스트 전체 선택 기본 셀렉션 막기
+      if (event.ctrlKey && (event.key === 'a' || event.key === 'A')) {
+        event.preventDefault();
+      }
 
-          await updateBlockType(blockList[index].id, 'DEFAULT');
-          await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
-          focusBlock(index, blockRef, blockList);
+      // enter 클릭
+      if (event.key === KEY_NAME.enter && !event.shiftKey) {
+        event.preventDefault();
+        if (event.nativeEvent.isComposing) {
+          return;
         }
-        return;
-      }
-
-      // 한 줄이 다 지워졌을 때
-      if (currentChildNodeIndex === -1) {
-        event.preventDefault();
         setIsTyping(false);
         setKey(Math.random());
+        splitBlock(index, blockList, blockRef, noteId);
+      }
 
-        if (startOffset === 0) {
-          // 블록 합치기 로직
+      // todo : shift + Enter 로직 구현 필요
+      // note : 임시로 enter 로직과 동일하게 구현
+      // shift + enter 클릭
+      if (event.key === KEY_NAME.enter && event.shiftKey) {
+        event.preventDefault();
+        if (event.nativeEvent.isComposing) {
+          return;
+        }
+        setIsTyping(false);
+        setKey(Math.random());
+        splitBlock(index, blockList, blockRef, noteId);
+      }
+
+      // 일반 backspace 클릭
+      if (event.key === KEY_NAME.backspace && !menuState.isSelectionMenuOpen) {
+        const { startOffset, startContainer } = getSelectionInfo(0) || {};
+        if (startOffset === undefined || startOffset === null || !startContainer) return;
+
+        const parent = blockRef.current[index];
+        const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+        const currentChildNodeIndex =
+          childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
+            ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
+            : childNodes.indexOf(startContainer as HTMLElement);
+
+        // 첫 블록 첫 커서일 때
+        if (index === 0 && (currentChildNodeIndex === -1 || currentChildNodeIndex === 0) && startOffset === 0) {
+          event.preventDefault();
+
+          // default 블록이 아닐 때는 default로 변경
           if (blockList[index].type !== 'DEFAULT') {
-            // default 블록이 아닐 때는 블록을 합치는 대신 블록을 default로 변경
+            setIsTyping(false);
+            setKey(Math.random());
+
             await updateBlockType(blockList[index].id, 'DEFAULT');
             await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
             focusBlock(index, blockRef, blockList);
-          } else {
-            mergeBlock(index, blockList, blockRef, noteId);
           }
+          return;
         }
-        // note : 미완 shift + enter 로 생긴 줄 합치는 로직
-        // else {
-        //   // 줄 합치기 로직
-        //   const updatedBlockList = [...blockList];
 
-        //   if (
-        //     updatedBlockList[index].nodes[startOffset - 1].type === 'br' &&
-        //     (!updatedBlockList[index].nodes[startOffset - 2] ||
-        //       updatedBlockList[index].nodes[startOffset - 2].type !== 'br') &&
-        //     !updatedBlockList[index].nodes[startOffset + 1]
-        //   ) {
-        //     updatedBlockList[index].nodes.splice(startOffset - 1, 2);
-        //   } else {
-        //     updatedBlockList[index].nodes.splice(startOffset, 1);
-        //   }
-
-        //   // 현재 블록 업데이트
-        //   await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
-        //   await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
-
-        //   // 한 줄이 다 지워진 상태에서의 줄 합치기 일때 focus를 주는 로직
-        //   setTimeout(() => {
-        //     const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
-        //     const range = document.createRange();
-
-        //     // 한줄이 다 지워졌을때는 startContainer가 부모로 잡히기 때문에 현재 위치를 startOffset으로 알 수 있음
-        //     // 따라서 줄이 지워질 때 startOffset - 1인 노드에 마지막에 focus
-        //     // 빈 줄이 2개만 있을 때 두 번째 줄에서 첫 번째 줄로 합치면 newChildNodes[startOffset - 1] 이 undefined가 됨
-        //     // 따라서 undefined일 때는 블록의 내용이 모두 지워졌을 때 이므로 현재 block에 focus
-        //     if (newChildNodes[startOffset - 1]) {
-        //       range.setStart(
-        //         newChildNodes[startOffset - 1],
-        //         newChildNodes[startOffset - 1].textContent?.length as number,
-        //       );
-        //     } else {
-        //       focusBlock(index, blockRef, blockList);
-        //     }
-        //     const windowSelection = window.getSelection();
-
-        //     windowSelection?.removeAllRanges();
-        //     windowSelection?.addRange(range);
-        //   }, 0);
-        // }
-
-        return;
-      }
-
-      // 줄 또는 블록 합치기 로직
-      if (startOffset === 0) {
-        if (currentChildNodeIndex <= 0) {
+        // 한 줄이 다 지워졌을 때
+        if (currentChildNodeIndex === -1) {
           event.preventDefault();
           setIsTyping(false);
           setKey(Math.random());
 
-          if (blockList[index].type !== 'DEFAULT') {
-            await updateBlockType(blockList[index].id, 'DEFAULT');
-            await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
-            focusBlock(index, blockRef, blockList);
-          } else {
-            mergeBlock(index, blockList, blockRef, noteId);
+          if (startOffset === 0) {
+            // 블록 합치기 로직
+            if (blockList[index].type !== 'DEFAULT') {
+              // default 블록이 아닐 때는 블록을 합치는 대신 블록을 default로 변경
+              await updateBlockType(blockList[index].id, 'DEFAULT');
+              await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+              focusBlock(index, blockRef, blockList);
+            } else {
+              mergeBlock(index, blockList, blockRef, noteId);
+            }
+          }
+          // note : 미완 shift + enter 로 생긴 줄 합치는 로직
+          // else {
+          //   // 줄 합치기 로직
+          //   const updatedBlockList = [...blockList];
+
+          //   if (
+          //     updatedBlockList[index].nodes[startOffset - 1].type === 'br' &&
+          //     (!updatedBlockList[index].nodes[startOffset - 2] ||
+          //       updatedBlockList[index].nodes[startOffset - 2].type !== 'br') &&
+          //     !updatedBlockList[index].nodes[startOffset + 1]
+          //   ) {
+          //     updatedBlockList[index].nodes.splice(startOffset - 1, 2);
+          //   } else {
+          //     updatedBlockList[index].nodes.splice(startOffset, 1);
+          //   }
+
+          //   // 현재 블록 업데이트
+          //   await updateBlockNodes(blockList[index].id, updatedBlockList[index].nodes);
+          //   await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+
+          //   // 한 줄이 다 지워진 상태에서의 줄 합치기 일때 focus를 주는 로직
+          //   setTimeout(() => {
+          //     const newChildNodes = Array.from(blockRef.current[index]?.childNodes as NodeListOf<HTMLElement>);
+          //     const range = document.createRange();
+
+          //     // 한줄이 다 지워졌을때는 startContainer가 부모로 잡히기 때문에 현재 위치를 startOffset으로 알 수 있음
+          //     // 따라서 줄이 지워질 때 startOffset - 1인 노드에 마지막에 focus
+          //     // 빈 줄이 2개만 있을 때 두 번째 줄에서 첫 번째 줄로 합치면 newChildNodes[startOffset - 1] 이 undefined가 됨
+          //     // 따라서 undefined일 때는 블록의 내용이 모두 지워졌을 때 이므로 현재 block에 focus
+          //     if (newChildNodes[startOffset - 1]) {
+          //       range.setStart(
+          //         newChildNodes[startOffset - 1],
+          //         newChildNodes[startOffset - 1].textContent?.length as number,
+          //       );
+          //     } else {
+          //       focusBlock(index, blockRef, blockList);
+          //     }
+          //     const windowSelection = window.getSelection();
+
+          //     windowSelection?.removeAllRanges();
+          //     windowSelection?.addRange(range);
+          //   }, 0);
+          // }
+
+          return;
+        }
+
+        // 줄 또는 블록 합치기 로직
+        if (startOffset === 0) {
+          if (currentChildNodeIndex <= 0) {
+            event.preventDefault();
+            setIsTyping(false);
+            setKey(Math.random());
+
+            if (blockList[index].type !== 'DEFAULT') {
+              await updateBlockType(blockList[index].id, 'DEFAULT');
+              await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+              focusBlock(index, blockRef, blockList);
+            } else {
+              mergeBlock(index, blockList, blockRef, noteId);
+            }
+          }
+          // note : 미완 shift + enter 로 생긴 줄 합치는 로직
+          // else if (currentChildNodeIndex > 0) {
+          //   if (blockList[index].nodes[currentChildNodeIndex - 1].type === 'br') {
+          //     event.preventDefault();
+          //     setIsTyping(false);
+          //     setKey(Math.random());
+
+          //     mergeLine(index, currentChildNodeIndex, blockList, blockRef, noteId);
+          //   }
+          // }
+        }
+      }
+
+      // space 클릭
+      if (event.key === KEY_NAME.space) {
+        const { startOffset, startContainer } = getSelectionInfo(0) || {};
+        if (startOffset === undefined || startOffset === null || !startContainer) return;
+
+        const parent = blockRef.current[index];
+        const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
+        const currentChildNodeIndex =
+          childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
+            ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
+            : childNodes.indexOf(startContainer as HTMLElement);
+
+        // h1으로 전환
+        if (
+          currentChildNodeIndex === 0 &&
+          startOffset === 1 &&
+          startContainer.textContent &&
+          startContainer.textContent[0] === '#' &&
+          blockList[index].type !== 'H1'
+        ) {
+          event.preventDefault();
+          setIsTyping(false);
+          setKey(Math.random());
+          turnIntoH1(index, blockList, noteId);
+          focusBlock(index, blockRef, blockList);
+        }
+
+        // h2로 전환
+        if (
+          currentChildNodeIndex === 0 &&
+          startOffset === 2 &&
+          startContainer.textContent &&
+          startContainer.textContent[0] === '#' &&
+          startContainer.textContent[1] === '#' &&
+          blockList[index].type !== 'H2'
+        ) {
+          event.preventDefault();
+          setIsTyping(false);
+          setKey(Math.random());
+          turnIntoH2(index, blockList, noteId);
+          focusBlock(index, blockRef, blockList);
+        }
+
+        // h3으로 전환
+        if (
+          currentChildNodeIndex === 0 &&
+          startOffset === 3 &&
+          startContainer.textContent &&
+          startContainer.textContent[0] === '#' &&
+          startContainer.textContent[1] === '#' &&
+          startContainer.textContent[2] === '#' &&
+          blockList[index].type !== 'H3'
+        ) {
+          event.preventDefault();
+          setIsTyping(false);
+          setKey(Math.random());
+          turnIntoH3(index, blockList, noteId);
+          focusBlock(index, blockRef, blockList);
+        }
+
+        // ul로 전환
+        if (
+          currentChildNodeIndex === 0 &&
+          startOffset === 1 &&
+          startContainer.textContent &&
+          startContainer.textContent[0] === '-' &&
+          blockList[index].type !== 'UL'
+        ) {
+          event.preventDefault();
+          setIsTyping(false);
+          setKey(Math.random());
+          turnIntoUl(index, blockList, noteId);
+          focusBlock(index, blockRef, blockList);
+        }
+
+        // ol로 전환
+        if (
+          currentChildNodeIndex === 0 &&
+          startContainer.textContent &&
+          startContainer.textContent[startOffset - 1] === '.' &&
+          /^\d+$/.test(startContainer.textContent.slice(0, startOffset - 1)) &&
+          blockList[index].type !== 'OL'
+        ) {
+          event.preventDefault();
+          setIsTyping(false);
+          setKey(Math.random());
+          turnIntoOl(index, blockList, noteId, startOffset);
+          focusBlock(index, blockRef, blockList);
+        }
+
+        // 인용문으로 전환
+        if (
+          currentChildNodeIndex === 0 &&
+          startOffset === 1 &&
+          startContainer.textContent &&
+          startContainer.textContent[0] === '|' &&
+          blockList[index].type !== 'QUOTE'
+        ) {
+          event.preventDefault();
+          setIsTyping(false);
+          setKey(Math.random());
+          turnIntoQuote(index, blockList, noteId);
+          focusBlock(index, blockRef, blockList);
+        }
+      }
+
+      // slash 클릭
+      if (event.key === KEY_NAME.slash) {
+        event.preventDefault();
+        setIsTyping(false);
+        setKey(Math.random());
+        openSlashMenu(index, blockRef, setMenuState);
+      }
+
+      // 방향키 클릭
+      if (
+        event.key === KEY_NAME.arrowUp ||
+        event.key === KEY_NAME.arrowDown ||
+        event.key === KEY_NAME.arrowLeft ||
+        event.key === KEY_NAME.arrowRight
+      ) {
+        const { range, startOffset, startContainer } = getSelectionInfo(0) || {};
+        let rect = range?.getBoundingClientRect() as DOMRect;
+        if ((rect?.width === 0 && rect?.height === 0) || !rect) {
+          const fallbackRect = blockRef.current[index]?.getBoundingClientRect();
+          if (fallbackRect) {
+            rect = fallbackRect;
           }
         }
-        // note : 미완 shift + enter 로 생긴 줄 합치는 로직
-        // else if (currentChildNodeIndex > 0) {
-        //   if (blockList[index].nodes[currentChildNodeIndex - 1].type === 'br') {
-        //     event.preventDefault();
-        //     setIsTyping(false);
-        //     setKey(Math.random());
+        const cursorX = rect?.left;
+        const firstChild = blockRef.current[index]?.childNodes[0];
+        const lastChild =
+          blockRef.current[index]?.childNodes[(blockRef.current[index]?.childNodes.length as number) - 1];
+        let pageBlockHeight = 0;
 
-        //     mergeLine(index, currentChildNodeIndex, blockList, blockRef, noteId);
-        //   }
-        // }
+        // 이전 블록으로 커서 이동
+        if (event.key === KEY_NAME.arrowUp && index > 0) {
+          event.preventDefault();
+
+          let currentIndex = index - 1;
+
+          while (currentIndex >= 0 && blockList[currentIndex]?.type === 'PAGE') {
+            const pageBlockElement = blockRef.current[currentIndex];
+            if (pageBlockElement) {
+              const pageBlockRect = pageBlockElement.getBoundingClientRect();
+              pageBlockHeight += pageBlockRect.height + 13.5;
+            }
+            currentIndex -= 1;
+          }
+          // 현재 위치에서 y좌표만 위로 10 높은 곳에 focus
+          const top = blockList[index].type === 'QUOTE' ? 25 : 12;
+          const caret = document.caretPositionFromPoint(cursorX, rect.top - top - pageBlockHeight) as CaretPosition;
+          if (blockList[index - 1].nodes.length === 1 && blockList[index - 1].nodes[0].content === '') {
+            // 빈 블록으로 갈때는 그냥 그 블록에 focus
+            focusBlock(index - 1, blockRef, blockList);
+          } else {
+            setTimeout(() => {
+              if (range) {
+                const { offsetNode, offset } = caret;
+                const newRange = document.createRange();
+                const windowSelection = window.getSelection();
+
+                newRange.setStart(offsetNode, offset);
+
+                windowSelection?.removeAllRanges();
+                windowSelection?.addRange(newRange);
+              }
+            }, 0);
+          }
+        }
+
+        // 다음 블록으로 커서 이동
+        if (event.key === KEY_NAME.arrowDown && index < blockList.length - 1) {
+          event.preventDefault();
+          let currentIndex = index + 1;
+
+          while (blockList[currentIndex] && blockList[currentIndex]?.type === 'PAGE') {
+            const pageBlockElement = blockRef.current[currentIndex];
+            if (pageBlockElement) {
+              const pageBlockRect = pageBlockElement.getBoundingClientRect();
+              pageBlockHeight += pageBlockRect.height + 13.5;
+            }
+            currentIndex += 1;
+          }
+          // 현재 위치에서 y좌표만 아래로 10 낮은 곳에 focus
+          const bottom = blockList[index].type === 'QUOTE' ? 25 : 12;
+          const caret = document.caretPositionFromPoint(
+            cursorX,
+            rect.bottom + bottom + pageBlockHeight,
+          ) as CaretPosition;
+          if (blockList[index + 1].nodes.length === 1 && blockList[index + 1].nodes[0].content === '') {
+            // 빈 블록으로 갈때는 그냥 그 블록에 focus
+            focusBlock(index + 1, blockRef, blockList);
+          } else {
+            setTimeout(() => {
+              if (range) {
+                const { offsetNode, offset } = caret;
+                const newRange = document.createRange();
+                const windowSelection = window.getSelection();
+
+                newRange.setStart(offsetNode, offset);
+                windowSelection?.removeAllRanges();
+                windowSelection?.addRange(newRange);
+              }
+            }, 0);
+          }
+        }
+
+        // 블록의 맨 끝에서 오른쪽 방향키 클릭하면 다음 블록으로 커서 이동
+        if (
+          event.key === KEY_NAME.arrowRight &&
+          ((startOffset === (lastChild?.textContent?.length as number) && startContainer === lastChild) ||
+            (blockList[index].nodes.length === 1 && blockList[index].nodes[0].content === '')) &&
+          index < blockList.length - 1
+        ) {
+          let targetIndex = index + 1;
+
+          // 다음 블록이 페이지 블록이라면 한칸 더 이동
+          while (blockList[targetIndex] && blockList[targetIndex]?.type === 'PAGE') {
+            targetIndex += 1;
+          }
+
+          event.preventDefault();
+          focusBlock(targetIndex, blockRef, blockList);
+        }
+
+        // 블록의 맨 앞에서 왼쪽 방향키 클릭하면 이전 블록으로 커서 이동
+        if (event.key === KEY_NAME.arrowLeft) {
+          if (
+            ((startOffset === 0 && startContainer === firstChild) ||
+              (startOffset === 0 && startContainer?.firstChild?.firstChild === firstChild?.firstChild) ||
+              (blockList[index].nodes.length === 1 && blockList[index].nodes[0].content === '')) &&
+            index > 0
+          ) {
+            let targetIndex = index - 1;
+
+            // 다음 블록이 페이지 블록이라면 한칸 더 이동
+            while (targetIndex >= 0 && blockList[targetIndex]?.type === 'PAGE') {
+              targetIndex -= 1;
+            }
+            const prevBlockNodeLength = (blockRef.current[targetIndex]?.childNodes.length as number) - 1;
+            const prevBlockLastChild = blockRef.current[targetIndex]?.childNodes[prevBlockNodeLength];
+
+            setTimeout(() => {
+              if (range) {
+                if (blockList[targetIndex].type === 'UL' || blockList[targetIndex].type === 'OL') {
+                  (blockRef.current[targetIndex]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
+                } else if (blockList[targetIndex].type === 'QUOTE') {
+                  (blockRef.current[targetIndex]?.parentNode?.parentNode as HTMLElement)?.focus();
+                } else {
+                  (blockRef.current[targetIndex]?.parentNode as HTMLElement)?.focus();
+                }
+
+                const windowSelection = window.getSelection();
+                if (prevBlockLastChild?.nodeType === Node.TEXT_NODE || prevBlockLastChild?.nodeType === 1)
+                  range?.setStart(prevBlockLastChild as Node, prevBlockLastChild?.textContent?.length as number);
+                else {
+                  range?.setStart(
+                    blockRef.current[targetIndex]?.childNodes[prevBlockNodeLength]?.firstChild as Node,
+                    blockRef.current[targetIndex]?.childNodes[prevBlockNodeLength]?.firstChild?.textContent
+                      ?.length as number,
+                  );
+                }
+                range.collapse(true);
+
+                windowSelection?.removeAllRanges();
+                windowSelection?.addRange(range);
+              }
+            }, 0);
+          }
+        }
       }
     }
 
-    // space 클릭
-    if (event.key === KEY_NAME.space) {
-      const { startOffset, startContainer } = getSelectionInfo(0) || {};
-      if (startOffset === undefined || startOffset === null || !startContainer) return;
-
-      const parent = blockRef.current[index];
-      const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
-      const currentChildNodeIndex =
-        childNodes.indexOf(startContainer as HTMLElement) === -1 && startContainer?.nodeType === Node.TEXT_NODE
-          ? childNodes.indexOf(startContainer.parentNode as HTMLElement)
-          : childNodes.indexOf(startContainer as HTMLElement);
-
-      // h1으로 전환
-      if (
-        currentChildNodeIndex === 0 &&
-        startOffset === 1 &&
-        startContainer.textContent &&
-        startContainer.textContent[0] === '#' &&
-        blockList[index].type !== 'H1'
-      ) {
-        event.preventDefault();
-        setIsTyping(false);
-        setKey(Math.random());
-        turnIntoH1(index, blockList, noteId);
-        focusBlock(index, blockRef, blockList);
-      }
-
-      // h2로 전환
-      if (
-        currentChildNodeIndex === 0 &&
-        startOffset === 2 &&
-        startContainer.textContent &&
-        startContainer.textContent[0] === '#' &&
-        startContainer.textContent[1] === '#' &&
-        blockList[index].type !== 'H2'
-      ) {
-        event.preventDefault();
-        setIsTyping(false);
-        setKey(Math.random());
-        turnIntoH2(index, blockList, noteId);
-        focusBlock(index, blockRef, blockList);
-      }
-
-      // h3으로 전환
-      if (
-        currentChildNodeIndex === 0 &&
-        startOffset === 3 &&
-        startContainer.textContent &&
-        startContainer.textContent[0] === '#' &&
-        startContainer.textContent[1] === '#' &&
-        startContainer.textContent[2] === '#' &&
-        blockList[index].type !== 'H3'
-      ) {
-        event.preventDefault();
-        setIsTyping(false);
-        setKey(Math.random());
-        turnIntoH3(index, blockList, noteId);
-        focusBlock(index, blockRef, blockList);
-      }
-
-      // ul로 전환
-      if (
-        currentChildNodeIndex === 0 &&
-        startOffset === 1 &&
-        startContainer.textContent &&
-        startContainer.textContent[0] === '-' &&
-        blockList[index].type !== 'UL'
-      ) {
-        event.preventDefault();
-        setIsTyping(false);
-        setKey(Math.random());
-        turnIntoUl(index, blockList, noteId);
-        focusBlock(index, blockRef, blockList);
-      }
-
-      // ol로 전환
-      if (
-        currentChildNodeIndex === 0 &&
-        startContainer.textContent &&
-        startContainer.textContent[startOffset - 1] === '.' &&
-        /^\d+$/.test(startContainer.textContent.slice(0, startOffset - 1)) &&
-        blockList[index].type !== 'OL'
-      ) {
-        event.preventDefault();
-        setIsTyping(false);
-        setKey(Math.random());
-        turnIntoOl(index, blockList, noteId, startOffset);
-        focusBlock(index, blockRef, blockList);
-      }
-
-      // 인용문으로 전환
-      if (
-        currentChildNodeIndex === 0 &&
-        startOffset === 1 &&
-        startContainer.textContent &&
-        startContainer.textContent[0] === '|' &&
-        blockList[index].type !== 'QUOTE'
-      ) {
-        event.preventDefault();
-        setIsTyping(false);
-        setKey(Math.random());
-        turnIntoQuote(index, blockList, noteId);
-        focusBlock(index, blockRef, blockList);
-      }
-    }
-
-    // slash 클릭
-    if (event.key === KEY_NAME.slash) {
+    // selection 있을때
+    if (menuState.isSelectionMenuOpen) {
       event.preventDefault();
       setIsTyping(false);
       setKey(Math.random());
-      openSlashMenu(index, blockRef, setMenuState);
-    }
 
-    // 방향키 클릭
-    if (
-      event.key === KEY_NAME.arrowUp ||
-      event.key === KEY_NAME.arrowDown ||
-      event.key === KEY_NAME.arrowLeft ||
-      event.key === KEY_NAME.arrowRight
-    ) {
-      const { range, startOffset, startContainer } = getSelectionInfo(0) || {};
-      let rect = range?.getBoundingClientRect() as DOMRect;
-      if ((rect?.width === 0 && rect?.height === 0) || !rect) {
-        const fallbackRect = blockRef.current[index]?.getBoundingClientRect();
-        if (fallbackRect) {
-          rect = fallbackRect;
-        }
+      // selection이 역방향인지 아닌지 판단
+      const isBackward =
+        selection.start.blockIndex > selection.end.blockIndex ||
+        (selection.start.blockIndex === selection.end.blockIndex &&
+          selection.start.childNodeIndex > selection.end.childNodeIndex) ||
+        (selection.start.blockIndex === selection.end.blockIndex &&
+          selection.start.childNodeIndex === selection.end.childNodeIndex &&
+          selection.start.offset > selection.end.offset);
+
+      // backspace 클릭
+      if (event.key === KEY_NAME.backspace) {
+        await editSelectionContent('delete', noteId, event.key, selection, isBackward, blockList, blockRef);
       }
-      const cursorX = rect?.left;
-      const firstChild = blockRef.current[index]?.childNodes[0];
-      const lastChild = blockRef.current[index]?.childNodes[(blockRef.current[index]?.childNodes.length as number) - 1];
-      let pageBlockHeight = 0;
-
-      // 이전 블록으로 커서 이동
-      if (event.key === KEY_NAME.arrowUp && index > 0) {
-        event.preventDefault();
-
-        let currentIndex = index - 1;
-
-        while (currentIndex >= 0 && blockList[currentIndex]?.type === 'PAGE') {
-          const pageBlockElement = blockRef.current[currentIndex];
-          if (pageBlockElement) {
-            const pageBlockRect = pageBlockElement.getBoundingClientRect();
-            pageBlockHeight += pageBlockRect.height + 13.5;
-          }
-          currentIndex -= 1;
-        }
-        // 현재 위치에서 y좌표만 위로 10 높은 곳에 focus
-        const top = blockList[index].type === 'QUOTE' ? 25 : 12;
-        const caret = document.caretPositionFromPoint(cursorX, rect.top - top - pageBlockHeight) as CaretPosition;
-        if (blockList[index - 1].nodes.length === 1 && blockList[index - 1].nodes[0].content === '') {
-          // 빈 블록으로 갈때는 그냥 그 블록에 focus
-          focusBlock(index - 1, blockRef, blockList);
+      // 엔터 입력
+      if (event.key === KEY_NAME.enter && !event.shiftKey) {
+        if (!isBackward) {
+          await editSelectionContent('enter', noteId, event.key, selection, isBackward, blockList, blockRef);
+          selection.start.blockIndex += 1;
+          selection.start.childNodeIndex = 0;
+          selection.start.offset = 0;
         } else {
-          setTimeout(() => {
-            if (range) {
-              const { offsetNode, offset } = caret;
-              const newRange = document.createRange();
-              const windowSelection = window.getSelection();
-
-              newRange.setStart(offsetNode, offset);
-
-              windowSelection?.removeAllRanges();
-              windowSelection?.addRange(newRange);
-            }
-          }, 0);
+          await editSelectionContent('enter', noteId, event.key, selection, isBackward, blockList, blockRef);
+          selection.end.blockIndex += 1;
+          selection.end.childNodeIndex = 0;
+          selection.end.offset = 0;
         }
       }
+      // 다른 키 입력
+      else if (isInputtableKey(event.nativeEvent)) {
+        if (!isBackward) {
+          await editSelectionContent('write', noteId, event.key, selection, isBackward, blockList, blockRef);
 
-      // 다음 블록으로 커서 이동
-      if (event.key === KEY_NAME.arrowDown && index < blockList.length - 1) {
-        event.preventDefault();
-        let currentIndex = index + 1;
-
-        while (blockList[currentIndex] && blockList[currentIndex]?.type === 'PAGE') {
-          const pageBlockElement = blockRef.current[currentIndex];
-          if (pageBlockElement) {
-            const pageBlockRect = pageBlockElement.getBoundingClientRect();
-            pageBlockHeight += pageBlockRect.height + 13.5;
+          // selection start가 처음부터여서 해당 노드가 다 지워지고 새로운 노드가 생긴거면 노드 인덱스는 그대로, offset은 1
+          if (selection.start.offset === 0) {
+            // 한 줄 전체가 지워진 경우
+            if (selection.start.childNodeIndex === 0) {
+              selection.start.childNodeIndex = 0;
+            }
+            selection.start.offset = 1;
           }
-          currentIndex += 1;
-        }
-        // 현재 위치에서 y좌표만 아래로 10 낮은 곳에 focus
-        const bottom = blockList[index].type === 'QUOTE' ? 25 : 12;
-        const caret = document.caretPositionFromPoint(cursorX, rect.bottom + bottom + pageBlockHeight) as CaretPosition;
-        if (blockList[index + 1].nodes.length === 1 && blockList[index + 1].nodes[0].content === '') {
-          // 빈 블록으로 갈때는 그냥 그 블록에 focus
-          focusBlock(index + 1, blockRef, blockList);
+          // selection start가 처음부터가 아니라 해당 노드가 다 지워지지 않고 새로운 노드가 생긴거면 노드 인덱스는 +1, offset은 1
+          else {
+            selection.start.childNodeIndex += 1;
+            selection.start.offset = 1;
+          }
         } else {
-          setTimeout(() => {
-            if (range) {
-              const { offsetNode, offset } = caret;
-              const newRange = document.createRange();
-              const windowSelection = window.getSelection();
+          await editSelectionContent('write', noteId, event.key, selection, isBackward, blockList, blockRef);
 
-              newRange.setStart(offsetNode, offset);
-              windowSelection?.removeAllRanges();
-              windowSelection?.addRange(newRange);
+          // selection start가 처음부터여서 해당 노드가 다 지워지고 새로운 노드가 생긴거면 노드 인덱스는 그대로, offset은 1
+          if (selection.end.offset === 0) {
+            // 한 줄 전체가 지워진 경우
+            if (selection.start.childNodeIndex === 0) {
+              selection.end.childNodeIndex = 0;
             }
-          }, 0);
-        }
-      }
-
-      // 블록의 맨 끝에서 오른쪽 방향키 클릭하면 다음 블록으로 커서 이동
-      if (
-        event.key === KEY_NAME.arrowRight &&
-        ((startOffset === (lastChild?.textContent?.length as number) && startContainer === lastChild) ||
-          (blockList[index].nodes.length === 1 && blockList[index].nodes[0].content === '')) &&
-        index < blockList.length - 1
-      ) {
-        let targetIndex = index + 1;
-
-        // 다음 블록이 페이지 블록이라면 한칸 더 이동
-        while (blockList[targetIndex] && blockList[targetIndex]?.type === 'PAGE') {
-          targetIndex += 1;
-        }
-
-        event.preventDefault();
-        focusBlock(targetIndex, blockRef, blockList);
-      }
-
-      // 블록의 맨 앞에서 왼쪽 방향키 클릭하면 이전 블록으로 커서 이동
-      if (event.key === KEY_NAME.arrowLeft) {
-        if (
-          ((startOffset === 0 && startContainer === firstChild) ||
-            (startOffset === 0 && startContainer?.firstChild?.firstChild === firstChild?.firstChild) ||
-            (blockList[index].nodes.length === 1 && blockList[index].nodes[0].content === '')) &&
-          index > 0
-        ) {
-          let targetIndex = index - 1;
-
-          // 다음 블록이 페이지 블록이라면 한칸 더 이동
-          while (targetIndex >= 0 && blockList[targetIndex]?.type === 'PAGE') {
-            targetIndex -= 1;
+            selection.end.offset = 1;
           }
-          const prevBlockNodeLength = (blockRef.current[targetIndex]?.childNodes.length as number) - 1;
-          const prevBlockLastChild = blockRef.current[targetIndex]?.childNodes[prevBlockNodeLength];
-
-          setTimeout(() => {
-            if (range) {
-              if (blockList[targetIndex].type === 'UL' || blockList[targetIndex].type === 'OL') {
-                (blockRef.current[targetIndex]?.parentNode?.parentNode?.parentNode as HTMLElement)?.focus();
-              } else if (blockList[targetIndex].type === 'QUOTE') {
-                (blockRef.current[targetIndex]?.parentNode?.parentNode as HTMLElement)?.focus();
-              } else {
-                (blockRef.current[targetIndex]?.parentNode as HTMLElement)?.focus();
-              }
-
-              const windowSelection = window.getSelection();
-              if (prevBlockLastChild?.nodeType === Node.TEXT_NODE || prevBlockLastChild?.nodeType === 1)
-                range?.setStart(prevBlockLastChild as Node, prevBlockLastChild?.textContent?.length as number);
-              else {
-                range?.setStart(
-                  blockRef.current[targetIndex]?.childNodes[prevBlockNodeLength]?.firstChild as Node,
-                  blockRef.current[targetIndex]?.childNodes[prevBlockNodeLength]?.firstChild?.textContent
-                    ?.length as number,
-                );
-              }
-              range.collapse(true);
-
-              windowSelection?.removeAllRanges();
-              windowSelection?.addRange(range);
-            }
-          }, 0);
-        }
-      }
-    }
-  }
-
-  // selection 있을때
-  if (menuState.isSelectionMenuOpen) {
-    event.preventDefault();
-    setIsTyping(false);
-    setKey(Math.random());
-
-    // selection이 역방향인지 아닌지 판단
-    const isBackward =
-      selection.start.blockIndex > selection.end.blockIndex ||
-      (selection.start.blockIndex === selection.end.blockIndex &&
-        selection.start.childNodeIndex > selection.end.childNodeIndex) ||
-      (selection.start.blockIndex === selection.end.blockIndex &&
-        selection.start.childNodeIndex === selection.end.childNodeIndex &&
-        selection.start.offset > selection.end.offset);
-
-    // backspace 클릭
-    if (event.key === KEY_NAME.backspace) {
-      await editSelectionContent('delete', noteId, event.key, selection, isBackward, blockList, blockRef);
-    }
-    // 엔터 입력
-    if (event.key === KEY_NAME.enter && !event.shiftKey) {
-      if (!isBackward) {
-        await editSelectionContent('enter', noteId, event.key, selection, isBackward, blockList, blockRef);
-        selection.start.blockIndex += 1;
-        selection.start.childNodeIndex = 0;
-        selection.start.offset = 0;
-      } else {
-        await editSelectionContent('enter', noteId, event.key, selection, isBackward, blockList, blockRef);
-        selection.end.blockIndex += 1;
-        selection.end.childNodeIndex = 0;
-        selection.end.offset = 0;
-      }
-    }
-    // 다른 키 입력
-    else if (isInputtableKey(event.nativeEvent)) {
-      if (!isBackward) {
-        await editSelectionContent('write', noteId, event.key, selection, isBackward, blockList, blockRef);
-
-        // selection start가 처음부터여서 해당 노드가 다 지워지고 새로운 노드가 생긴거면 노드 인덱스는 그대로, offset은 1
-        if (selection.start.offset === 0) {
-          // 한 줄 전체가 지워진 경우
-          if (selection.start.childNodeIndex === 0) {
-            selection.start.childNodeIndex = 0;
+          // selection start가 처음부터가 아니라 해당 노드가 다 지워지지 않고 새로운 노드가 생긴거면 노드 인덱스는 +1, offset은 1
+          else {
+            selection.end.childNodeIndex += 1;
+            selection.end.offset = 1;
           }
-          selection.start.offset = 1;
-        }
-        // selection start가 처음부터가 아니라 해당 노드가 다 지워지지 않고 새로운 노드가 생긴거면 노드 인덱스는 +1, offset은 1
-        else {
-          selection.start.childNodeIndex += 1;
-          selection.start.offset = 1;
-        }
-      } else {
-        await editSelectionContent('write', noteId, event.key, selection, isBackward, blockList, blockRef);
-
-        // selection start가 처음부터여서 해당 노드가 다 지워지고 새로운 노드가 생긴거면 노드 인덱스는 그대로, offset은 1
-        if (selection.end.offset === 0) {
-          // 한 줄 전체가 지워진 경우
-          if (selection.start.childNodeIndex === 0) {
-            selection.end.childNodeIndex = 0;
-          }
-          selection.end.offset = 1;
-        }
-        // selection start가 처음부터가 아니라 해당 노드가 다 지워지지 않고 새로운 노드가 생긴거면 노드 인덱스는 +1, offset은 1
-        else {
-          selection.end.childNodeIndex += 1;
-          selection.end.offset = 1;
         }
       }
+
+      await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+
+      setTimeout(() => {
+        focusAfterSelection(selection, isBackward, event.key, blockRef);
+      }, 0);
     }
-
-    await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
-
-    setTimeout(() => {
-      focusAfterSelection(selection, isBackward, event.key, blockRef);
-    }, 0);
+  } catch (error) {
+    toast.error(TOAST_ERRORMESSAGE.NoteUpdate);
   }
 };
 

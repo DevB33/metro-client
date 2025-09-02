@@ -10,8 +10,19 @@ import ContentContainer from './_components/contentContainer';
 const Note = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
 
-  const noteMetadata = await getNoteInfo(id);
-  const blockList = await getBlockList(id);
+  let noteMetadata;
+  try {
+    noteMetadata = await getNoteInfo(id);
+  } catch (error) {
+    throw new Error('노트 정보를 불러오기 실패');
+  }
+
+  let blockList;
+  try {
+    blockList = await getBlockList(id);
+  } catch (error) {
+    throw new Error('블록 목록 불러오기 실패');
+  }
 
   return (
     <SWRConfig

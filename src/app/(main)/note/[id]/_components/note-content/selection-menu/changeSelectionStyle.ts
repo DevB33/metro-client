@@ -1,16 +1,22 @@
 import { mutate } from 'swr';
+import { toast } from 'react-toastify';
 
 import { getBlockList, updateBlockNodes } from '@/apis/client/block';
 import SWR_KEYS from '@/constants/swr-keys';
 import ISelectionPosition from '@/types/selection-position';
 import { ITextBlock } from '@/types/block-type';
 import DEFAULT_STYLE from '@/constants/child-node-style';
+import { TOAST_ERRORMESSAGE } from '@/constants/toast-message';
 import createNewStyle from '@/utils/createNewStyle';
 
 const updateBlock = async (noteId: string, blockId: string, updatedNodes: ITextBlock['nodes']) => {
-  const cleanedNodes = updatedNodes.filter(node => node.content !== '');
-  await updateBlockNodes(blockId, cleanedNodes);
-  await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+  try {
+    const cleanedNodes = updatedNodes.filter(node => node.content !== '');
+    await updateBlockNodes(blockId, cleanedNodes);
+    await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+  } catch (error) {
+    toast.error(TOAST_ERRORMESSAGE.BlockStyleUpdate);
+  }
 };
 
 const changeSelectionStyle = async (

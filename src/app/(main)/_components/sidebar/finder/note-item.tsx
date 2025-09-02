@@ -174,27 +174,35 @@ const NoteItem = ({
   };
 
   const changeNotedOrder = async () => {
-    if (draggingNoteInfo?.noteId === note.id || draggingNoteInfo?.parentId !== note.parentId) {
-      return;
+    try {
+      if (draggingNoteInfo?.noteId === note.id || draggingNoteInfo?.parentId !== note.parentId) {
+        return;
+      }
+
+      setIsDragOver(false);
+
+      await updateBlocksOrder(note.parentId, draggingNoteInfo.order, draggingNoteInfo.order, note.order);
+
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+      await mutate(SWR_KEYS.blockList(note.parentId), getBlockList(note.parentId), false);
+    } catch (error) {
+      toast.error(TOAST_ERRORMESSAGE.NoteOrderChange);
     }
-
-    setIsDragOver(false);
-
-    await updateBlocksOrder(note.parentId, draggingNoteInfo.order, draggingNoteInfo.order, note.order);
-
-    await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
-    await mutate(SWR_KEYS.blockList(note.parentId), getBlockList(note.parentId), false);
   };
 
   const changeBlockOrderToFirst = async () => {
-    if (!draggingNoteInfo) {
-      return;
-    }
-    setIsDragFirst(false);
-    await updateBlocksOrder(note.id, draggingNoteInfo.order, draggingNoteInfo.order, -1);
+    try {
+      if (!draggingNoteInfo) {
+        return;
+      }
+      setIsDragFirst(false);
+      await updateBlocksOrder(note.id, draggingNoteInfo.order, draggingNoteInfo.order, -1);
 
-    await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
-    await mutate(SWR_KEYS.blockList(note.id), getBlockList(note.id), false);
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+      await mutate(SWR_KEYS.blockList(note.id), getBlockList(note.id), false);
+    } catch (error) {
+      toast.error(TOAST_ERRORMESSAGE.NoteOrderChange);
+    }
   };
 
   return (

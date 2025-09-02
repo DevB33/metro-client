@@ -1,4 +1,5 @@
 import { ITextBlock } from '@/types/block-type';
+import IMenuState from '@/types/menu-type';
 import ISelectionPosition from '@/types/selection-position';
 
 const handleMouseDown = (
@@ -10,7 +11,13 @@ const handleMouseDown = (
   setIsTyping: React.Dispatch<React.SetStateAction<boolean>>,
   setKey: React.Dispatch<React.SetStateAction<number>>,
   setSelection: React.Dispatch<React.SetStateAction<ISelectionPosition>>,
+  setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>,
 ) => {
+  setMenuState(prev => ({
+    ...prev,
+    isSelectionMenuOpen: false,
+  }));
+
   const parent = blockRef.current[index];
   const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
   const textNode = document.caretPositionFromPoint(event.clientX, event.clientY)?.offsetNode;

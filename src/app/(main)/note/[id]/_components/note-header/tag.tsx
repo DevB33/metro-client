@@ -1,12 +1,14 @@
 import { css } from '@/../styled-system/css';
 import { useEffect, useRef, useState } from 'react';
 import useSWR, { mutate } from 'swr';
+import { toast } from 'react-toastify';
 
 import { editNoteTags, getNoteInfo, getNoteList } from '@/apis/client/note';
 import ITagType from '@/types/tag-type';
 import LINE_COLOR from '@/constants/line-color';
 import KEY_NAME from '@/constants/key-name';
 import SWR_KEYS from '@/constants/swr-keys';
+import { TOAST_ERRORMESSAGE } from '@/constants/toast-message';
 import TagIcon from '@/icons/tag-icon';
 import useClickOutside from '@/hooks/useClickOutside';
 import TagBox from './tag-box';
@@ -46,37 +48,45 @@ const Tag = ({ noteId }: ITag) => {
     }
   }, [isEditing]);
 
-  const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const inputValue = e.currentTarget.value;
-    const isDuplicate = tagList.some(tag => tag.name === inputValue);
+  const handleKeyDown = async (event: React.KeyboardEvent<HTMLInputElement>) => {
+    try {
+      const inputValue = event.currentTarget.value;
+      const isDuplicate = tagList.some(tag => tag.name === inputValue);
 
-    if (e.key === KEY_NAME.enter) {
-      if (e.nativeEvent.isComposing) {
-        return;
-      }
+      if (event.key === KEY_NAME.enter) {
+        if (event.nativeEvent.isComposing) {
+          return;
+        }
 
-      if (isDuplicate || inputValue.trim() === '') {
-        inputRef.current?.blur();
-        e.currentTarget.value = '';
+        if (isDuplicate || inputValue.trim() === '') {
+          inputRef.current?.blur();
+          event.currentTarget.value = '';
+          setIsEditing(false);
+          return;
+        }
+
+        await editNoteTags(noteId, [...tagList, { name: inputValue.trim(), color: getRandomColor() }]);
+        await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+        await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId), false);
+
         setIsEditing(false);
-        return;
       }
-
-      await editNoteTags(noteId, [...tagList, { name: inputValue.trim(), color: getRandomColor() }]);
-      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
-      await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId), false);
-
-      setIsEditing(false);
+    } catch (error) {
+      toast.error(TOAST_ERRORMESSAGE.SetTag);
     }
   };
 
   const handleTagDelete = async (tagToDelete: string) => {
-    await editNoteTags(
-      noteId,
-      tagList.filter(tag => tag.name !== tagToDelete),
-    );
-    await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
-    await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId), false);
+    try {
+      await editNoteTags(
+        noteId,
+        tagList.filter(tag => tag.name !== tagToDelete),
+      );
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+      await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId), false);
+    } catch (error) {
+      toast.error(TOAST_ERRORMESSAGE.TagDelete);
+    }
   };
 
   return (

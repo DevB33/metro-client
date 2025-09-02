@@ -10,6 +10,8 @@ import KEY_NAME from '@/constants/key-name';
 import SWR_KEYS from '@/constants/swr-keys';
 import PageIcon from '@/icons/page-icon';
 import IconSelector from '@/app/(main)/note/[id]/_components/note-header/icon-selector';
+import { toast } from 'react-toastify';
+import { TOAST_ERRORMESSAGE } from '@/constants/toast-message';
 
 interface IEditTitleModal {
   noteId: string;
@@ -77,9 +79,13 @@ const EditTitleModal = ({ noteId, closeEditModal, top, left, right, bottom }: IE
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
     debounceTimer.current = setTimeout(async () => {
-      await editNoteTitle(noteId, value);
-      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
-      await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId), false);
+      try {
+        await editNoteTitle(noteId, value);
+        await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+        await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId), false);
+      } catch (error) {
+        toast.error(TOAST_ERRORMESSAGE.EditTitle);
+      }
     }, 100);
 
     return () => {
@@ -92,9 +98,13 @@ const EditTitleModal = ({ noteId, closeEditModal, top, left, right, bottom }: IE
   };
 
   const handleSelectIcon = async (selectedIcon: string | null) => {
-    await editNoteIcon(noteId, selectedIcon);
-    await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
-    await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId));
+    try {
+      await editNoteIcon(noteId, selectedIcon);
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+      await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId));
+    } catch (error) {
+      toast.error(TOAST_ERRORMESSAGE.IconSelect);
+    }
   };
 
   const handleSelectorOpen = () => {

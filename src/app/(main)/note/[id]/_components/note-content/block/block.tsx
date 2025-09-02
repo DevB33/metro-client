@@ -1,6 +1,7 @@
 import { memo, useState, useRef, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { mutate } from 'swr';
+import { toast } from 'react-toastify';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
@@ -10,6 +11,7 @@ import IMenuState from '@/types/menu-type';
 import { getBlockList, updateBlocksOrder } from '@/apis/client/block';
 import { getNoteList } from '@/apis/client/note';
 import PageIcon from '@/icons/page-icon';
+import { TOAST_ERRORMESSAGE } from '@/constants/toast-message';
 import SWR_KEYS from '@/constants/swr-keys';
 import handleInput from './handler/handleInput';
 import handleKeyDown from './handler/handleKeyDown';
@@ -69,30 +71,38 @@ const Block = memo(
     }, [blockList, index]);
 
     const changeBlockOrder = async () => {
-      setIsDragOver(false);
+      try {
+        setIsDragOver(false);
 
-      await updateBlocksOrder(
-        noteId,
-        blockList[dragBlockIndex as number].order,
-        blockList[dragBlockIndex as number].order,
-        blockList[index].order,
-      );
+        await updateBlocksOrder(
+          noteId,
+          blockList[dragBlockIndex as number].order,
+          blockList[dragBlockIndex as number].order,
+          blockList[index].order,
+        );
 
-      await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
-      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+        await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+        await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+      } catch (error) {
+        toast.error(TOAST_ERRORMESSAGE.BlockOrderChange);
+      }
     };
 
     const changeBlockOrderToFirst = async () => {
-      setIsDragFirst(false);
-      await updateBlocksOrder(
-        noteId,
-        blockList[dragBlockIndex as number].order,
-        blockList[dragBlockIndex as number].order,
-        -1,
-      );
+      try {
+        setIsDragFirst(false);
+        await updateBlocksOrder(
+          noteId,
+          blockList[dragBlockIndex as number].order,
+          blockList[dragBlockIndex as number].order,
+          -1,
+        );
 
-      await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
-      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+        await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+        await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+      } catch (error) {
+        toast.error(TOAST_ERRORMESSAGE.BlockOrderChange);
+      }
     };
 
     if (block.type === 'PAGE') {
@@ -237,7 +247,17 @@ const Block = memo(
             isDragging.current = false;
           }}
           onMouseDown={event => {
-            handleMouseDown(event, blockRef, index, blockList, isDragging, setIsTyping, setKey, setSelection);
+            handleMouseDown(
+              event,
+              blockRef,
+              index,
+              blockList,
+              isDragging,
+              setIsTyping,
+              setKey,
+              setSelection,
+              setMenuState,
+            );
             setMenuState(prev => ({
               ...prev,
               blockButtonModalIndex: null,

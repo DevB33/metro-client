@@ -20,13 +20,6 @@ const handleMouseMove = (
 ) => {
   if (!isDragging.current) return;
 
-  if (index !== selection.end.blockIndex) {
-    setSelection(prev => ({
-      ...prev,
-      end: { ...prev.end, blockId: blockList[index].id, blockIndex: index },
-    }));
-  }
-
   const parent = blockRef.current[index];
   const childNodes = Array.from(parent?.childNodes as NodeListOf<HTMLElement>);
   const textNode = document.caretPositionFromPoint(event.clientX, event.clientY)?.offsetNode;
@@ -47,7 +40,7 @@ const handleMouseMove = (
 
   setSelection(prev => ({
     ...prev,
-    end: { ...prev.end, childNodeIndex: currentChildNodeIndex, offset: charIdx },
+    end: { blockId: blockList[index].id, blockIndex: index, childNodeIndex: currentChildNodeIndex, offset: charIdx },
   }));
 
   if (isCollapsedSelection(selection)) {

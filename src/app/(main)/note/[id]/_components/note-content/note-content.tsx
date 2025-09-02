@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import useSWR, { mutate } from 'swr';
+import { toast } from 'react-toastify';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
@@ -14,6 +15,7 @@ import { getNoteInfo } from '@/apis/client/note';
 import SWR_KEYS from '@/constants/swr-keys';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundImage';
+import { TOAST_ERRORMESSAGE } from '@/constants/toast-message';
 import BUTTON_OFFSET from '@/constants/button-offset';
 import BlockButton from './block-button';
 import Block from './block/block';
@@ -116,11 +118,37 @@ const NoteContent = ({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement 
 
   // 맨 처음 블록을 생성하는 함수
   const createFirstBlock = async () => {
-    if (blocks.length === 0) {
+    try {
+      if (blocks.length === 0) {
+        await createBlock({
+          noteId,
+          type: 'DEFAULT',
+          upperOrder: -1,
+          nodes: [
+            {
+              type: 'text',
+              content: '',
+            },
+          ],
+        });
+
+        await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+        setTimeout(() => {
+          (blockRef.current[0]?.parentNode as HTMLElement)?.focus();
+        }, 0);
+      }
+    } catch (error) {
+      toast.error(TOAST_ERRORMESSAGE.BlockCreate);
+    }
+  };
+
+  // 맨 마지막에 빈 블록을 생성하는 함수
+  const createLastBlock = async () => {
+    try {
       await createBlock({
         noteId,
         type: 'DEFAULT',
-        upperOrder: -1,
+        upperOrder: blocks[blocks.length - 1].order,
         nodes: [
           {
             type: 'text',
@@ -131,29 +159,11 @@ const NoteContent = ({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement 
 
       await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
       setTimeout(() => {
-        (blockRef.current[0]?.parentNode as HTMLElement)?.focus();
+        (blockRef.current[blocks.length]?.parentNode as HTMLElement)?.focus();
       }, 0);
+    } catch (error) {
+      toast.error(TOAST_ERRORMESSAGE.BlockCreate);
     }
-  };
-
-  // 맨 마지막에 빈 블록을 생성하는 함수
-  const createLastBlock = async () => {
-    await createBlock({
-      noteId,
-      type: 'DEFAULT',
-      upperOrder: blocks[blocks.length - 1].order,
-      nodes: [
-        {
-          type: 'text',
-          content: '',
-        },
-      ],
-    });
-
-    await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
-    setTimeout(() => {
-      (blockRef.current[blocks.length]?.parentNode as HTMLElement)?.focus();
-    }, 0);
   };
 
   // 하단에 빈 블록을 클릭했을 때 동작하는 함수
@@ -220,6 +230,10 @@ const NoteContent = ({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement 
 
   // Selection의 상태를 초기화 해주는 함수
   const resetSelection = () => {
+    blockRef.current.forEach(blockElement => {
+      if (!blockElement) return;
+      blockElement.style.backgroundImage = 'none';
+    });
     setSelection(prev => ({
       ...prev,
       start: { blockId: '', blockIndex: 0, childNodeIndex: 0, offset: 0 },
@@ -417,7 +431,6 @@ const NoteContent = ({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement 
 
       // selectionMenu가 아닌 곳에서 Click 시 resetSelection
       if (selectionMenuRef.current) {
-        if (!selectionMenuButtonRef.current.some(ref => ref?.contains(event.target as Node))) return;
         if (!selectionMenuRef.current.contains(event.target as Node)) {
           resetSelection();
         }
