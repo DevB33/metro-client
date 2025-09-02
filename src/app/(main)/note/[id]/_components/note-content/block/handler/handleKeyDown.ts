@@ -667,6 +667,10 @@ const handleKeyDown = async (
   selection: ISelectionPosition,
   noteId: string,
 ) => {
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() !== 'r') {
+    event.preventDefault();
+  }
+
   // selection 없을때
   if (!menuState.isSelectionMenuOpen) {
     if (
