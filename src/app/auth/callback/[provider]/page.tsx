@@ -29,7 +29,6 @@ const AuthCallback = () => {
         }
         toast.success(TOAST_SUCCESSMESSAGE.Login);
       } catch (error) {
-        // eslint-disable-next-line no-console
         toast.error(TOAST_ERRORMESSAGE.Login);
       } finally {
         redirect('/');

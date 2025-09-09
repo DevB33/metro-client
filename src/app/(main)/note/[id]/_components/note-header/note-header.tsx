@@ -3,10 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { css } from '@/../styled-system/css';
 import useSWR, { mutate } from 'swr';
+import { toast } from 'react-toastify';
 import { useParams } from 'next/navigation';
 
 import { editNoteCover, editNoteIcon, getNoteInfo, getNoteList } from '@/apis/client/note';
 import SWR_KEYS from '@/constants/swr-keys';
+import { TOAST_ERRORMESSAGE } from '@/constants/toast-message';
 import useClickOutside from '@/hooks/useClickOutside';
 import IconSelector from './icon-selector';
 import Tag from './tag';
@@ -27,8 +29,12 @@ const NoteHeader = () => {
   const { data } = useSWR(SWR_KEYS.noteMetadata(noteId));
 
   useEffect(() => {
-    mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId));
-  }, []);
+    try {
+      mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId));
+    } catch (error) {
+      toast.error(TOAST_ERRORMESSAGE.NoteFetch);
+    }
+  }, [noteId]);
 
   const handleMouseEnter = () => {
     setIsHover(true);
@@ -39,9 +45,13 @@ const NoteHeader = () => {
   };
 
   const handleSelectIcon = async (selectedIcon: string | null) => {
-    await editNoteIcon(noteId, selectedIcon);
-    await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
-    await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId));
+    try {
+      await editNoteIcon(noteId, selectedIcon);
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+      await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId));
+    } catch (error) {
+      toast.error(TOAST_ERRORMESSAGE.IconSelect);
+    }
   };
 
   const handleSelectorOpen = () => {
@@ -61,15 +71,23 @@ const NoteHeader = () => {
   };
 
   const handleSelectCover = async (selectedColor: string) => {
-    await editNoteCover(noteId, selectedColor);
-    await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
-    await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId), false);
+    try {
+      await editNoteCover(noteId, selectedColor);
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+      await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId), false);
+    } catch (error) {
+      toast.error(TOAST_ERRORMESSAGE.CoverSelect);
+    }
   };
 
   const deleteCover = async () => {
-    await editNoteCover(noteId, null);
-    await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
-    await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId), false);
+    try {
+      await editNoteCover(noteId, null);
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+      await mutate(SWR_KEYS.noteMetadata(noteId), getNoteInfo(noteId), false);
+    } catch (error) {
+      toast.error(TOAST_ERRORMESSAGE.CoverDelete);
+    }
   };
 
   const iconSelectorRef = useClickOutside(handleSelectorClose);

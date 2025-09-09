@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { mutate } from 'swr';
+import { toast } from 'react-toastify';
 import { css } from '@/../styled-system/css';
 
 import { createBlock, deleteBlock, getBlockList, updateBlocksOrder } from '@/apis/client/block';
@@ -12,6 +13,7 @@ import PlusIcon from '@/icons/plus-icon';
 import GripVerticalIcon from '@/icons/grip-vertical-icon';
 import TrashIcon from '@/icons/trash-icon';
 import ArrowReapeatIcon from '@/icons/arrow-repeat-icon';
+import { TOAST_ERRORMESSAGE } from '@/constants/toast-message';
 import SWR_KEYS from '@/constants/swr-keys';
 import DropDown from '@/components/dropdown/dropdown';
 import SlashMenu from './slash-menu/slash-menu';
@@ -63,44 +65,52 @@ const BlockButton = ({
   };
 
   const deleteBlockByIndex = async () => {
-    await deleteBlock(noteId, blockList[index].order, blockList[index].order);
-    // 현재 블록 이후 블록 앞으로 한칸 씩 당기기
-    // 현재 블록이 마지막 블록이 아닐 때만 당김
-    if (index < blockList.length - 1) {
-      await updateBlocksOrder(
-        noteId,
-        blockList[index + 1].order,
-        blockList[blockList.length - 1].order,
-        index === 0 ? -1 : blockList[index - 1].order,
-      );
-    }
+    try {
+      await deleteBlock(noteId, blockList[index].order, blockList[index].order);
+      // 현재 블록 이후 블록 앞으로 한칸 씩 당기기
+      // 현재 블록이 마지막 블록이 아닐 때만 당김
+      if (index < blockList.length - 1) {
+        await updateBlocksOrder(
+          noteId,
+          blockList[index + 1].order,
+          blockList[blockList.length - 1].order,
+          index === 0 ? -1 : blockList[index - 1].order,
+        );
+      }
 
-    await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
-    await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+      await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+    } catch (error) {
+      toast.error(TOAST_ERRORMESSAGE.BlockDelete);
+    }
   };
 
   const handleCreateBlockButton = async (blockIndex: number) => {
-    if (index !== blockList.length - 1) {
-      // 현재 블록 이후 블록 뒤로 한칸씩 미루기
-      await updateBlocksOrder(
+    try {
+      if (index !== blockList.length - 1) {
+        // 현재 블록 이후 블록 뒤로 한칸씩 미루기
+        await updateBlocksOrder(
+          noteId,
+          blockList[index + 1].order,
+          blockList[blockList.length - 1].order,
+          blockList[index + 1].order,
+        );
+      }
+      // 현재 블록 바로 뒤에 블록 생성
+      await createBlock({
         noteId,
-        blockList[index + 1].order,
-        blockList[blockList.length - 1].order,
-        blockList[index + 1].order,
-      );
-    }
-    // 현재 블록 바로 뒤에 블록 생성
-    await createBlock({
-      noteId,
-      type: 'DEFAULT',
-      upperOrder: blockList[index].order,
-      nodes: [{ content: '', type: 'text' }],
-    });
-    await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+        type: 'DEFAULT',
+        upperOrder: blockList[index].order,
+        nodes: [{ content: '', type: 'text' }],
+      });
+      await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
 
-    setTimeout(() => {
-      (blockRef.current[blockIndex + 1]?.parentNode as HTMLElement)?.focus();
-    }, 0);
+      setTimeout(() => {
+        (blockRef.current[blockIndex + 1]?.parentNode as HTMLElement)?.focus();
+      }, 0);
+    } catch (error) {
+      toast.error(TOAST_ERRORMESSAGE.BlockCreate);
+    }
   };
 
   const handleClose = () => {

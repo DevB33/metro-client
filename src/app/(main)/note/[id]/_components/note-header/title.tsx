@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { css } from '@/../styled-system/css';
 import useSWR, { mutate } from 'swr';
+import { toast } from 'react-toastify';
 
 import { editNoteTitle, getNoteInfo, getNoteList } from '@/apis/client/note';
 import SWR_KEYS from '@/constants/swr-keys';
+import { TOAST_ERRORMESSAGE } from '@/constants/toast-message';
 
 interface ITitle {
   noteId: string;
@@ -22,8 +24,12 @@ const Title = ({ noteId }: ITitle) => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
     debounceTimer.current = setTimeout(async () => {
-      await editNoteTitle(noteId, value);
-      await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+      try {
+        await editNoteTitle(noteId, value);
+        await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
+      } catch (error) {
+        toast.error(TOAST_ERRORMESSAGE.EditTitle);
+      }
     }, 100);
 
     return () => {
@@ -33,8 +39,12 @@ const Title = ({ noteId }: ITitle) => {
 
   useEffect(() => {
     const getNewTitle = async () => {
-      const newTitle = await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
-      setValue(newTitle.title);
+      try {
+        const newTitle = await mutate(`noteMetadata-${noteId}`, getNoteInfo(noteId), false);
+        setValue(newTitle.title);
+      } catch (error) {
+        toast.error(TOAST_ERRORMESSAGE.NoteFetch);
+      }
     };
 
     getNewTitle();
