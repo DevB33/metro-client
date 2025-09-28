@@ -31,11 +31,11 @@
   <tr>
     <td align="center">
       <h3>노트 생성</h3>
-      <img src="https://github.com/user-attachments/assets/44c0e180-4aed-4df0-b36f-6381e4f9daf3" width="400" />
+      <img src="https://github.com/user-attachments/assets/44c0e180-4aed-4df0-b36f-6381e4f9daf3" width="380" />
     </td>
     <td align="center">
       <h3>노트 순서 변경</h3>
-      <img src="https://github.com/user-attachments/assets/7fa0f6e8-c635-435a-afc4-1a7ad291cb90" width="400" />
+      <img src="https://github.com/user-attachments/assets/7fa0f6e8-c635-435a-afc4-1a7ad291cb90" width="380" />
     </td>
   </tr>
   <tr>
