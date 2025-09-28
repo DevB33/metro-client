@@ -41,7 +41,7 @@
   <tr>
     <td align="center" colspan="2">
       <h3>노트 수정</h3>
-      <img src="https://github.com/user-attachments/assets/e841f817-ce46-4341-a8a7-d43bf4c2ee16" width="950" />
+      <img src="https://github.com/user-attachments/assets/e841f817-ce46-4341-a8a7-d43bf4c2ee16" width="800" />
     </td>
   </tr>
 </table>
@@ -56,7 +56,7 @@
   <tr>
     <td align="center" colspan="2">
       <h3>두 가지 형태의 노선도 시각화</h3>
-      <img src="https://github.com/user-attachments/assets/56a99f29-a623-4ea4-8260-97c640fd4444" width="950" />
+      <img src="https://github.com/user-attachments/assets/56a99f29-a623-4ea4-8260-97c640fd4444" width="800" />
     </td>
   </tr>
 </table>
@@ -74,13 +74,13 @@
   <tr>
     <td align="center" colspan="2">
       <h3>아이콘 & 커버 수정</h3>
-      <img src="https://github.com/user-attachments/assets/43038c8a-1c69-46a3-8e0c-cc34375dd3e0" width="950" />
+      <img src="https://github.com/user-attachments/assets/43038c8a-1c69-46a3-8e0c-cc34375dd3e0" width="800" />
     </td>
   </tr>
   <tr>
     <td align="center" colspan="2">
       <h3>태그 수정</h3>
-      <img src="https://github.com/user-attachments/assets/c94b50a5-5e5b-4f00-85cb-6ef162718ec4" width="950" />
+      <img src="https://github.com/user-attachments/assets/c94b50a5-5e5b-4f00-85cb-6ef162718ec4" width="800" />
     </td>
   </tr>
 </table>
@@ -96,19 +96,19 @@
    <tr>
     <td align="center" colspan="2">
       <h3>타이핑 중 엔터</h3>
-      <img src="https://github.com/user-attachments/assets/034bda65-93b0-4de6-8156-4838985f84ae" width="950" />
+      <img src="https://github.com/user-attachments/assets/034bda65-93b0-4de6-8156-4838985f84ae" width="800" />
     </td>
   </tr>
   <tr>
     <td align="center" colspan="2">
       <h3>블록 타입 변경</h3>
-      <img src="https://github.com/user-attachments/assets/ed0eea7c-cbc9-4f7a-80cc-1a989ba4ec28" width="950" />
+      <img src="https://github.com/user-attachments/assets/ed0eea7c-cbc9-4f7a-80cc-1a989ba4ec28" width="800" />
     </td>
   </tr>
   <tr>
     <td align="center" colspan="2">
       <h3>블록 순서 변경</h3>
-      <img src="https://github.com/user-attachments/assets/1e65f363-3d41-4d92-b2d3-7d1a50a77007" width="950" />
+      <img src="https://github.com/user-attachments/assets/1e65f363-3d41-4d92-b2d3-7d1a50a77007" width="800" />
     </td>
   </tr>
 </table>
@@ -124,7 +124,7 @@
    <tr>
     <td align="center" colspan="2">
       <h3>셀렉션 범위 삭제 및 입력</h3>
-      <img src="https://github.com/user-attachments/assets/8399f0b8-9931-47f7-85b7-5817790522b2" width="950" />
+      <img src="https://github.com/user-attachments/assets/8399f0b8-9931-47f7-85b7-5817790522b2" width="800" />
     </td>
   </tr>
   <tr>
