@@ -147,8 +147,8 @@
 
 <img width="1214" height="753" alt="KakaoTalk_Photo_2025-09-28-16-05-12" src="https://github.com/user-attachments/assets/2d48b86c-2ba3-4b37-9d9a-01c0f9097bcd" />
 
-- 위 문제를 해결하기 위해서 다른 프로젝트에서는 이 문제를 해결하기 위해 **MobX**라는 상태 라이브러리를 사용하여 상태를 추적하는 방식을 사용했습니다.
-- 그러나 MobX는 **상태관리를 위한 라이브러리**이고, 저희는 별도의 상태관리 라이브러리가 필요하지 않아 React의 memo를 활용하여 문제를 해결했습니다.
+- 다른 프로젝트에서는 이 문제를 해결하기 위해 **MobX**라는 상태 라이브러리의 observeer를 이용하여 상태를 추적하는 방식을 사용했습니다.
+- 그러나 MobX는 **상태관리를 위한 라이브러리**이고, 저희는 별도의 상태관리 라이브러리가 필요하지 않아 기본 React의 memo를 활용하여 문제를 해결했습니다.
 
 <img width="995" height="818" alt="KakaoTalk_Photo_2025-09-28-16-05-18" src="https://github.com/user-attachments/assets/c64ae268-d830-4a5c-89ae-dca8893d100c" />
 
