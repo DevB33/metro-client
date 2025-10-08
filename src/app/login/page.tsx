@@ -5,6 +5,7 @@ import { css, cva } from '@/../styled-system/css';
 import KakaoLoginButton from './_components/kakao-login-button';
 import NaverLoginButton from './_components/naver-login-button';
 import GoogleLoginButton from './_components/google-login-button';
+import GuestLoginButton from './_components/guest-login-button';
 
 const Login = async () => {
   const cookie = await cookies();
@@ -29,6 +30,7 @@ const Login = async () => {
         <KakaoLoginButton />
         <NaverLoginButton />
         <GoogleLoginButton />
+        <GuestLoginButton />
       </div>
       <div className={policy}>
         <button type="button" className={policyButton}>

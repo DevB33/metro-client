@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { css } from '@/../styled-system/css';
+import { mutate } from 'swr';
 
 import LogoutIcon from '@/icons/logout-icon';
 
@@ -20,6 +21,8 @@ const SettingButton = () => {
       if (response.status !== 200) {
         throw new Error('Failed to logout');
       }
+      // 캐시 초기화
+      mutate(() => true, undefined, false);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
