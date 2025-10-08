@@ -259,7 +259,7 @@ const splitBlock = async (
     nodes: newAfterBlock,
   });
 
-  // await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
+  await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
 
   focusBlock(index + 1, blockRef, updatedBlockList);
 };
