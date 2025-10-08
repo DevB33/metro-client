@@ -258,7 +258,7 @@ const splitBlock = async (
     upperOrder: updatedBlockList[index].order,
     nodes: newAfterBlock,
   });
-  console.log('newAfterBlock', newAfterBlock);
+
   // await mutate(SWR_KEYS.blockList(noteId), getBlockList(noteId), false);
 
   focusBlock(index + 1, blockRef, updatedBlockList);

@@ -37,8 +37,6 @@ const NoteContent = ({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement 
 
   const { data: blocks } = useSWR(SWR_KEYS.blockList(noteId));
 
-  console.log('blocks: ', blocks);
-
   const [key, setKey] = useState(Date.now());
   const [isTyping, setIsTyping] = useState(false);
   const [dragBlockIndex, setDragBlockIndex] = useState<number | null>(null);

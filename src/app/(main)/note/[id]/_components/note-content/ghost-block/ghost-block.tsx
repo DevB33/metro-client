@@ -13,7 +13,6 @@ interface IGhostBlock {
 }
 
 const GhostBlock = ({ ghostRef, block, blockList, index }: IGhostBlock) => {
-  console.log('GhostBlock 렌더링', block);
   if (block.type === 'PAGE') {
     return (
       <div ref={ghostRef} className={container}>

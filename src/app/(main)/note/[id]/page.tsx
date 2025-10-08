@@ -12,9 +12,7 @@ const Note = async ({ params }: { params: Promise<{ id: string }> }) => {
 
   let noteMetadata;
   try {
-    // console.log(id);
     noteMetadata = await getNoteInfo(id);
-    // console.log(noteMetadata);
   } catch (error) {
     throw new Error('노트 정보를 불러오기 실패');
   }
@@ -22,7 +20,6 @@ const Note = async ({ params }: { params: Promise<{ id: string }> }) => {
   let blockList;
   try {
     blockList = await getBlockList(id);
-    console.log(blockList);
   } catch (error) {
     throw new Error('블록 목록 불러오기 실패');
   }
