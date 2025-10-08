@@ -119,7 +119,7 @@ const NoteItem = ({
     try {
       await deleteNote(note.id);
       await mutate(SWR_KEYS.NOTE_LIST, getNoteList, false);
-      await mutate(SWR_KEYS.blockList(note.id), getBlockList(note.id), false);
+      await mutate(SWR_KEYS.blockList(note.parentId), getBlockList(note.parentId), false);
       const parentId = findParentId(noteList, note.id);
 
       if (parentId) {
