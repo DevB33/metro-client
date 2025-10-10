@@ -5,7 +5,6 @@ import { toast } from 'react-toastify';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
-import INotes from '@/types/note-type';
 import ISelectionPosition from '@/types/selection-position';
 import IMenuState from '@/types/menu-type';
 import { getBlockList, updateBlocksOrder } from '@/apis/client/block';
@@ -36,7 +35,6 @@ interface IBlockComponent {
   menuState: IMenuState;
   setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>;
   dragBlockIndex: number | null;
-  childNotes: Record<string, INotes>;
 }
 
 const Block = memo(
@@ -55,7 +53,6 @@ const Block = memo(
     setMenuState,
     dragBlockIndex,
     isUp,
-    childNotes,
   }: IBlockComponent) => {
     const router = useRouter();
     const params = useParams();
@@ -139,7 +136,7 @@ const Block = memo(
             }}
             onKeyDown={event => {
               if (event.key === 'Enter') {
-                router.push(`/note/${block.nodes[0].content}`);
+                router.push(`/note/${block.nodes[0].id}`);
               }
             }}
             onMouseUp={event => {
@@ -147,7 +144,7 @@ const Block = memo(
               isDragging.current = false;
             }}
             onMouseDown={_event => {
-              router.push(`/note/${block.nodes[0].content}`);
+              router.push(`/note/${block.nodes[0].id}`);
             }}
             onMouseMove={event =>
               handleMouseMove(event, index, blockRef, blockList, isDragging, selection, setSelection)
@@ -179,9 +176,13 @@ const Block = memo(
             onDrop={changeBlockOrder}
           >
             <BlockHTMLTag block={block} blockList={blockList} index={index} blockRef={blockRef}>
-              {(block.nodes[0]?.content && childNotes?.[block.nodes[0].content]?.icon) || <PageIcon color="grey" />}
+              {block.nodes[0]?.content?.split(':')[0] === '' ? (
+                <PageIcon color="grey" />
+              ) : (
+                block.nodes[0]?.content?.split(':')[0]
+              )}
               <span className={pageTitle}>
-                {(block.nodes[0]?.content && childNotes?.[block.nodes[0].content]?.title) || '새 페이지'}
+                {block.nodes[0]?.content?.split(':')[1] === '' ? '새 페이지' : block.nodes[0]?.content?.split(':')[1]}
               </span>
             </BlockHTMLTag>
           </div>

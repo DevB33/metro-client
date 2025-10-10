@@ -8,6 +8,7 @@ export interface ITextBlock {
 }
 
 export interface ITextBlockChild {
+  id: string;
   type: 'text' | 'span' | 'br';
   style?: IBlockStyle;
   content?: string;

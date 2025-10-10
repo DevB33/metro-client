@@ -30,7 +30,6 @@ interface IBlockButton {
   menuState: IMenuState;
   setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>;
   scrollRef: React.RefObject<HTMLDivElement | null>;
-  childNotes: Record<string, INotes>;
 }
 
 const BlockButton = ({
@@ -44,7 +43,6 @@ const BlockButton = ({
   menuState,
   setMenuState,
   scrollRef,
-  childNotes,
 }: IBlockButton) => {
   const params = useParams();
   const noteId = params.id as string;
@@ -169,7 +167,7 @@ const BlockButton = ({
 
   return (
     <div className={container} ref={buttonRef}>
-      <GhostBlock ghostRef={ghostRef} block={block} blockList={blockList} index={index} childNotes={childNotes} />
+      <GhostBlock ghostRef={ghostRef} block={block} blockList={blockList} index={index} />
       <button type="button" className={blockButton} onClick={() => handleCreateBlockButton(index)}>
         <PlusIcon />
       </button>

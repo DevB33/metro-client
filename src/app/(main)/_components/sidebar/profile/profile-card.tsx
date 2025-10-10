@@ -11,13 +11,17 @@ const ProfileCard = () => {
   return (
     <div className={container}>
       <div className={profileContainer}>
-        <Image
-          src={userInfo?.avatar}
-          alt={`${userInfo.name}의 프로필 이미지`}
-          className={profileImg}
-          width={32}
-          height={32}
-        />
+        {userInfo?.avatar === 'test' ? (
+          <div className={profileImg} />
+        ) : (
+          <Image
+            src={userInfo?.avatar}
+            alt={`${userInfo.name}의 프로필 이미지`}
+            className={profileImg}
+            width={32}
+            height={32}
+          />
+        )}
         <div className={profileName}>{userInfo.name}님의 METRO</div>
       </div>
       <SettingButton />

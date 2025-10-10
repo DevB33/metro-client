@@ -1,6 +1,6 @@
+import { Fragment } from 'react';
 import { css } from '@/../styled-system/css';
 
-import INotes from '@/types/note-type';
 import { ITextBlock } from '@/types/block-type';
 import PageIcon from '@/icons/page-icon';
 import GhostBlockHTMLTag from './ghost-block-html-tag';
@@ -10,17 +10,20 @@ interface IGhostBlock {
   block: ITextBlock;
   blockList: ITextBlock[];
   index: number;
-  childNotes: Record<string, INotes>;
 }
 
-const GhostBlock = ({ ghostRef, block, blockList, index, childNotes }: IGhostBlock) => {
+const GhostBlock = ({ ghostRef, block, blockList, index }: IGhostBlock) => {
   if (block.type === 'PAGE') {
     return (
       <div ref={ghostRef} className={container}>
         <GhostBlockHTMLTag block={block} blockList={blockList} index={index}>
-          {(block.nodes[0]?.content && childNotes?.[block.nodes[0].content]?.icon) || <PageIcon color="grey" />}
+          {block.nodes[0]?.content?.split(':')[0] === '' ? (
+            <PageIcon color="grey" />
+          ) : (
+            block.nodes[0]?.content?.split(':')[0]
+          )}
           <span className={pageTitle}>
-            {(block.nodes[0]?.content && childNotes?.[block.nodes[0].content]?.title) || '새 페이지'}
+            {block.nodes[0]?.content?.split(':')[1] === '' ? '새 페이지' : block.nodes[0]?.content?.split(':')[1]}
           </span>
         </GhostBlockHTMLTag>
       </div>
@@ -30,17 +33,17 @@ const GhostBlock = ({ ghostRef, block, blockList, index, childNotes }: IGhostBlo
   return (
     <div ref={ghostRef} className={container}>
       <GhostBlockHTMLTag block={block} blockList={blockList} index={index}>
-        {block.nodes?.map((child, idx) => {
+        {block.nodes?.map(child => {
           if (child.type === 'br') {
-            return <br key={idx} />;
+            return <br key={child.id} />;
           }
 
           if (child.type === 'text') {
-            return child.content;
+            return <Fragment key={child.id}>{child.content}</Fragment>;
           }
 
           return (
-            <span key={idx} style={child.style}>
+            <span key={child.id} style={child.style}>
               {child.content}
             </span>
           );

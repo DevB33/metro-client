@@ -22,6 +22,7 @@ const MainLayout = async ({ children, modal }: Readonly<{ children: React.ReactN
   }
 
   let user;
+
   try {
     user = await getUserInfo();
   } catch (error) {

@@ -7,11 +7,9 @@ import { toast } from 'react-toastify';
 import { css } from '@/../styled-system/css';
 
 import { ITextBlock } from '@/types/block-type';
-import INotes from '@/types/note-type';
 import ISelectionPosition from '@/types/selection-position';
 import IMenuState from '@/types/menu-type';
 import { createBlock, getBlockList } from '@/apis/client/block';
-import { getNoteInfo } from '@/apis/client/note';
 import SWR_KEYS from '@/constants/swr-keys';
 import getSelectionInfo from '@/utils/getSelectionInfo';
 import fillHTMLElementBackgroundImage from '@/utils/fillHTMLElementBackgroundImage';
@@ -60,7 +58,6 @@ const NoteContent = ({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement 
 
   // page 블록 있으면 page 정보 가져오는 로직
   // refactor: swr 사용으로 로직 변경
-  const [childNotes, setChildNotes] = useState<Record<string, INotes>>({});
 
   useEffect(() => {
     if (menuState.isBlockMenuOpen) {
@@ -70,34 +67,6 @@ const NoteContent = ({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement 
       scrollRef.current?.style.setProperty('overflow-y', 'scroll');
     }
   }, [menuState.isBlockMenuOpen, scrollRef]);
-
-  useEffect(() => {
-    if (!blocks) return;
-
-    const fetchPageNotes = async () => {
-      const pageBlocks: ITextBlock[] = blocks.filter((block: ITextBlock): block is ITextBlock => block.type === 'PAGE');
-      const results: Record<string, INotes> = {};
-
-      await Promise.all(
-        pageBlocks.map(async block => {
-          try {
-            const id = block.nodes[0]?.content;
-            if (id) {
-              const data = await getNoteInfo(id);
-              results[id] = data;
-            }
-          } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error('Error fetching page Detail:', error);
-          }
-        }),
-      );
-
-      setChildNotes(results);
-    };
-
-    fetchPageNotes();
-  }, [blocks]);
 
   // 사이드 바 너비를 감지해 저장하는 observer를 선언하는 useEffect
   useEffect(() => {
@@ -695,7 +664,6 @@ const NoteContent = ({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement 
                   menuState={menuState}
                   setMenuState={setMenuState}
                   scrollRef={scrollRef}
-                  childNotes={childNotes}
                 />
               </div>
             </div>
@@ -714,7 +682,6 @@ const NoteContent = ({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement 
               menuState={menuState}
               setMenuState={setMenuState}
               dragBlockIndex={dragBlockIndex}
-              childNotes={childNotes}
             />
           </div>
         ))}
