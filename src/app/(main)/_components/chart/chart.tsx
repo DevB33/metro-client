@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Group } from '@visx/group';
 import { hierarchy, Tree } from '@visx/hierarchy';
 import { LinearGradient } from '@visx/gradient';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { pointRadial } from 'd3-shape';
 import LINE_COLOR from '@/constants/line-color';
 import useSWR from 'swr';

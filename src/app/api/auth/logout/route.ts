@@ -6,7 +6,7 @@ export async function POST() {
     const cookie = await cookies();
     const accessToken = cookie.get('accessToken')?.value;
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/logout`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_DOCKER_INTERNAL_URL}/auth/logout`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

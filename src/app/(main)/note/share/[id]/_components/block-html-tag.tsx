@@ -8,23 +8,23 @@ interface IBlockTag {
 }
 
 const BlockHTMLTag = ({ block, blocks, index, children }: IBlockTag) => {
-  if (block.type === 'default') {
+  if (block.type === 'DEFAULT') {
     return <p>{children}</p>;
   }
 
-  if (block.type === 'h1') {
+  if (block.type === 'H1') {
     return <h1>{children}</h1>;
   }
 
-  if (block.type === 'h2') {
+  if (block.type === 'H2') {
     return <h2>{children}</h2>;
   }
 
-  if (block.type === 'h3') {
+  if (block.type === 'H3') {
     return <h3>{children}</h3>;
   }
 
-  if (block.type === 'ul') {
+  if (block.type === 'UL') {
     return (
       <ul>
         <li>
@@ -34,13 +34,13 @@ const BlockHTMLTag = ({ block, blocks, index, children }: IBlockTag) => {
     );
   }
 
-  if (block.type === 'ol') {
+  if (block.type === 'OL') {
     let startNumber = 1;
 
     blocks.forEach((item, idx) => {
       if (idx >= index) return;
 
-      if (item.type === 'ol') {
+      if (item.type === 'OL') {
         startNumber += 1;
       } else {
         startNumber = 1;
@@ -56,7 +56,7 @@ const BlockHTMLTag = ({ block, blocks, index, children }: IBlockTag) => {
     );
   }
 
-  if (block.type === 'quote') {
+  if (block.type === 'QUOTE') {
     return (
       <blockquote>
         <p>{children}</p>

@@ -6,7 +6,6 @@ import { css } from '@/../styled-system/css';
 
 import { createBlock, deleteBlock, getBlockList, updateBlocksOrder } from '@/apis/client/block';
 import { getNoteList } from '@/apis/client/note';
-import INotes from '@/types/note-type';
 import { ITextBlock } from '@/types/block-type';
 import IMenuState from '@/types/menu-type';
 import PlusIcon from '@/icons/plus-icon';

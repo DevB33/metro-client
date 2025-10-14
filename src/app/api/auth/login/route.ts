@@ -2,7 +2,7 @@
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/login`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_DOCKER_INTERNAL_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

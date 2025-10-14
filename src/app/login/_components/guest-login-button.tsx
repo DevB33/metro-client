@@ -35,7 +35,7 @@ const guestButton = css({
 
 const GuestLoginButton = () => {
   const handleGuestLogin = async () => {
-    await fetch('http://localhost:8080/auth/guest-login', {
+    await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/guest-login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -26,10 +26,11 @@ const blockDiv = css({
 const Content = () => {
   const blocks: ITextBlock[] = [
     {
-      id: 1,
-      type: 'h1',
-      children: [
+      id: '1',
+      type: 'H1',
+      nodes: [
         {
+          id: '1-1',
           type: 'text',
           style: {
             fontStyle: 'italic',
@@ -44,11 +45,12 @@ const Content = () => {
           content: '제목1 입니다.',
         },
       ],
+      order: 1,
     },
     {
-      id: 2,
-      type: 'default',
-      children: [
+      id: '2',
+      type: 'DEFAULT',
+      nodes: [
         {
           type: 'text',
           style: {
@@ -64,146 +66,7 @@ const Content = () => {
           content: '기본 블록 입니다.',
         },
       ],
-    },
-    {
-      id: 3,
-      type: 'quote',
-      children: [
-        {
-          type: 'text',
-          style: {
-            fontStyle: 'italic',
-            fontWeight: 'regular',
-            textDecoration: 'none',
-            color: 'black',
-            backgroundColor: 'grey',
-            width: '100%',
-            height: 'auto',
-            borderRadius: 8,
-          },
-          content: '인용문입니다.',
-        },
-      ],
-    },
-    {
-      id: 4,
-      type: 'h2',
-      children: [
-        {
-          type: 'text',
-          style: {
-            fontStyle: 'normal',
-            fontWeight: 'bold',
-            textDecoration: 'underline',
-            color: 'black',
-            backgroundColor: 'white',
-            width: '100%',
-            height: 'auto',
-            borderRadius: 4,
-          },
-          content: '제목2 입니다.',
-        },
-      ],
-    },
-    {
-      id: 5,
-      type: 'ul',
-      children: [
-        {
-          type: 'span',
-          style: {
-            fontStyle: 'normal',
-            fontWeight: 'bold',
-            textDecoration: 'none',
-            color: 'black',
-            backgroundColor: 'white',
-            width: '100%',
-            height: 'auto',
-            borderRadius: 0,
-          },
-          content: '순서가 없는 리스트 1 bold',
-        },
-      ],
-    },
-    {
-      id: 6,
-      type: 'ul',
-      children: [
-        {
-          type: 'span',
-          style: {
-            fontStyle: 'italic',
-            fontWeight: 'regular',
-            textDecoration: 'none',
-            color: 'black',
-            backgroundColor: 'white',
-            width: '100%',
-            height: 'auto',
-            borderRadius: 0,
-          },
-          content: '순서가 없는 리스트 2 italic',
-        },
-      ],
-    },
-    {
-      id: 7,
-      type: 'ol',
-      children: [
-        {
-          type: 'text',
-          style: {
-            fontStyle: 'normal',
-            fontWeight: 'bold',
-            textDecoration: 'none',
-            color: 'black',
-            backgroundColor: 'white',
-            width: '100%',
-            height: 'auto',
-            borderRadius: 0,
-          },
-          content: '순서가 있는 리스트 1',
-        },
-      ],
-    },
-    {
-      id: 8,
-      type: 'ol',
-      children: [
-        {
-          type: 'text',
-          style: {
-            fontStyle: 'italic',
-            fontWeight: 'regular',
-            textDecoration: 'none',
-            color: 'black',
-            backgroundColor: 'white',
-            width: '100%',
-            height: 'auto',
-            borderRadius: 0,
-          },
-          content: '순서가 있는 리스트 2',
-        },
-      ],
-    },
-    {
-      id: 9,
-      type: 'default',
-      children: [
-        {
-          type: 'span',
-          style: {
-            fontStyle: 'normal',
-            fontWeight: 'regular',
-            textDecoration: 'none',
-            color: 'red',
-            backgroundColor: 'rgba(161, 161, 161, 0.5)',
-            width: '100%',
-            height: 'auto',
-            borderRadius: 0,
-          },
-          content: '코드 블록 입니다.',
-        },
-      ],
+      order: 2,
     },
   ];
 
@@ -212,9 +75,9 @@ const Content = () => {
       {blocks.map((block, index) => (
         <div key={block.id} className={blockDiv}>
           <BlockHTMLTag block={block} blocks={blocks} index={index}>
-            {block.children.map((child, idx) => {
+            {block.nodes.map(child => {
               if (child.type === 'br') {
-                return <br key={idx} />;
+                return <br key={child.id} />;
               }
 
               if (child.type === 'text') {
@@ -222,7 +85,7 @@ const Content = () => {
               }
 
               return (
-                <span key={idx} style={child.style}>
+                <span key={child.id} style={child.style}>
                   {child.content}
                 </span>
               );

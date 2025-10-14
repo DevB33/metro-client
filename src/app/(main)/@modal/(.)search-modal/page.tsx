@@ -88,7 +88,7 @@ const SearchModal = () => {
           <div className={divider} />
           <div className={searchListContainer}>
             {searchResultList.length > 0 ? (
-              searchResultList.map(page => <SearchResult key={page.pageId} page={page} />)
+              searchResultList.map(page => <SearchResult key={page.id} page={page} />)
             ) : (
               <div className={noResult}>결과가 없습니다.</div>
             )}

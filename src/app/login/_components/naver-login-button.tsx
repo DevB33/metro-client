@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { v4 as uuidv4 } from 'uuid';
 import { css } from '@/../styled-system/css';
 
 const naverButton = css({
@@ -20,7 +21,7 @@ const naverButton = css({
 });
 
 const NaverLoginButton = () => {
-  const uuid = crypto.randomUUID();
+  const uuid = uuidv4();
 
   const handleNaverLogin = () => {
     window.location.href = `${process.env.NEXT_PUBLIC_NAVER_AUTH_URL}${uuid}`;

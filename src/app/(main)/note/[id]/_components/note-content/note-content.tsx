@@ -470,7 +470,7 @@ const NoteContent = ({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement 
                 childNodes[0],
                 0,
                 childNodes[childNodes.length - 1],
-                childNodes[childNodes.length - 1].textContent.length,
+                childNodes[childNodes.length - 1].textContent!.length,
               );
             } else if (index === startBlockIndex) {
               // 드래그를 시작한 블록은 시작점부터 끝까지 색칠
@@ -479,7 +479,7 @@ const NoteContent = ({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement 
                 childNodes[startChildIndex],
                 startOffset,
                 childNodes[childNodes.length - 1],
-                childNodes[childNodes.length - 1].textContent.length,
+                childNodes[childNodes.length - 1].textContent!.length,
               );
             } else if (index === endBlockIndex) {
               // 드래그를 끝낸 블록은 끝점부터 마지막까지 색칠
@@ -494,7 +494,7 @@ const NoteContent = ({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement 
                 childNodes[0],
                 0,
                 childNodes[childNodes.length - 1],
-                childNodes[childNodes.length - 1].textContent.length,
+                childNodes[childNodes.length - 1].textContent!.length,
               );
             } else if (index === startBlockIndex) {
               // 드래그를 시작한 블록은 처음부터 시작점까지 색칠
@@ -506,7 +506,7 @@ const NoteContent = ({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement 
                 childNodes[endChildIndex],
                 endOffset,
                 childNodes[childNodes.length - 1],
-                childNodes[childNodes.length - 1].textContent.length,
+                childNodes[childNodes.length - 1].textContent!.length,
               );
             }
           }

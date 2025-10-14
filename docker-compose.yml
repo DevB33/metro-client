@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  client:
+    image: kiuuon29/metro-client:251008
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    depends_on:
+      - server
+  server:
+    image: minseokoh/metro-server:251005
+    ports:
+      - 8080:8080
