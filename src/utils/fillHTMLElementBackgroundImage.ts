@@ -5,7 +5,7 @@ const fillHTMLElementBackgroundImage = (
   endNode: Node,
   endOffset: number,
 ) => {
-  if (!startNode || !endNode) return;
+  if (!startNode || !endNode || startNode.nodeName === 'BR') return;
 
   const startTextNode = startNode.nodeType === Node.ELEMENT_NODE ? startNode.firstChild : startNode;
   const endTextNode = endNode.nodeType === Node.ELEMENT_NODE ? endNode.firstChild : endNode;

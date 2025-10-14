@@ -39,7 +39,7 @@ const container = css({
   display: 'flex',
   flexDirection: 'column',
   height: 'auto',
-  overflowY: 'scroll',
+  overflowY: 'auto',
   px: 'small',
   py: 'tiny',
   userSelect: 'none',

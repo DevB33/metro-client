@@ -64,7 +64,7 @@ const NoteContent = ({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement 
       scrollRef.current?.style.setProperty('overflow-y', 'hidden');
     }
     if (!menuState.isBlockMenuOpen) {
-      scrollRef.current?.style.setProperty('overflow-y', 'scroll');
+      scrollRef.current?.style.setProperty('overflow-y', 'auto');
     }
   }, [menuState.isBlockMenuOpen, scrollRef]);
 
@@ -659,6 +659,7 @@ const NoteContent = ({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement 
                   block={block}
                   blockList={blocks}
                   blockRef={blockRef}
+                  blockButtonRef={blockButtonRef}
                   setDragBlockIndex={setDragBlockIndex}
                   setIsTyping={setIsTyping}
                   menuState={menuState}

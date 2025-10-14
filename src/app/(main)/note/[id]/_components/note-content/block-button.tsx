@@ -26,6 +26,7 @@ interface IBlockButton {
   setIsTyping: React.Dispatch<React.SetStateAction<boolean>>;
   blockList: ITextBlock[];
   blockRef: React.RefObject<(HTMLDivElement | null)[]>;
+  blockButtonRef: React.RefObject<(HTMLDivElement | null)[]>;
   menuState: IMenuState;
   setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>;
   scrollRef: React.RefObject<HTMLDivElement | null>;
@@ -37,6 +38,7 @@ const BlockButton = ({
   block,
   blockList,
   blockRef,
+  blockButtonRef,
   setDragBlockIndex,
   setIsTyping,
   menuState,
@@ -120,7 +122,8 @@ const BlockButton = ({
       slashMenuOpenIndex: null,
       isSlashMenuOpen: false,
     }));
-    scrollRef.current?.style.setProperty('overflow-y', 'scroll');
+    blockButtonRef.current[index]?.style.setProperty('display', 'none');
+    scrollRef.current?.style.setProperty('overflow-y', 'auto');
   };
 
   const handleOpen = () => {
@@ -206,6 +209,7 @@ const BlockButton = ({
           index={index}
           blockList={blockList}
           blockRef={blockRef}
+          blockButtonRef={blockButtonRef}
           menuState={menuState}
           setMenuState={setMenuState}
           openedBySlashKey={openedBySlashKey}

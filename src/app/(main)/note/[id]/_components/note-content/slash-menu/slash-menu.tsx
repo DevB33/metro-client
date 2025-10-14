@@ -18,12 +18,21 @@ interface ISlashMenuProps {
   index: number;
   blockList: ITextBlock[];
   blockRef: React.RefObject<(HTMLDivElement | null)[]>;
+  blockButtonRef: React.RefObject<(HTMLDivElement | null)[]>;
   menuState: IMenuState;
   setMenuState: React.Dispatch<React.SetStateAction<IMenuState>>;
   openedBySlashKey: boolean;
 }
 
-const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, openedBySlashKey }: ISlashMenuProps) => {
+const SlashMenu = ({
+  index,
+  blockList,
+  blockRef,
+  blockButtonRef,
+  menuState,
+  setMenuState,
+  openedBySlashKey,
+}: ISlashMenuProps) => {
   const params = useParams();
   const noteId = params.id as string;
 
@@ -122,6 +131,8 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
           const parent2 = parent1?.parentNode as HTMLElement;
           const parent3 = parent2?.parentNode as HTMLElement;
 
+          blockButtonRef.current[index]?.style.setProperty('display', 'none');
+
           if (type === 'UL' || type === 'OL') {
             parent3?.focus();
           } else if (type === 'QUOTE') {
@@ -134,7 +145,7 @@ const SlashMenu = ({ index, blockList, blockRef, menuState, setMenuState, opened
         toast.error(TOAST_ERRORMESSAGE.BlockStyleUpdate);
       }
     },
-    [noteId, blockList, index, blockRef, setMenuState],
+    [noteId, blockList, index, blockRef, setMenuState, blockButtonRef],
   );
 
   useEffect(() => {

@@ -49,7 +49,7 @@ const container = css({
   flexDirection: 'column',
   alignItems: 'center',
   justifyItems: 'start',
-  overflowX: 'scroll',
+  overflowX: 'auto',
 });
 
 export default Note;
