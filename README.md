@@ -1,14 +1,6 @@
-<p align="center">
-  <img width="400" height="129" alt="Group 18" src="https://github.com/user-attachments/assets/727d0bc2-3166-413e-b031-eb07d4993454" />
-</p>
-
 <div align='center'>
   
-## 🚇 서비스 소개
-  
-**METRO**는 외부 라이브러리에 의존하지 않고 **직접 구현**한 블록 기반 웹 에디터로, 
-
-폴더 구조와 지하철 노선도와 비슷한 시각화를 통해 아이디어를 체계적으로 정리할 수 있는 메모 서비스입니다.
+<img width="7869" height="3474" alt="메트로 소개" src="https://github.com/user-attachments/assets/af565aba-c9ca-450c-9057-6741a1626a60" />
 
  <h4>
       <a><del>🌏 서비스</del></a> | 
@@ -23,7 +15,9 @@
 
 ## 📱 기능 소개
 
-### 폴더구조의 노트정리
+<details>
+
+<summary><h3>폴더구조의 노트정리</h3></summary>
 
 > 자신만의 노트들을 폴더 구조를 통해 효율적으로 정리할 수 있습니다.
 
@@ -46,9 +40,11 @@
   </tr>
 </table>
 
-<br />
+</details>
 
-### 지하철 노선도 형태로 시각화
+<details>
+
+<summary><h3>지하철 노선도 형태로 시각화</h3></summary>
 
 > 폴더 구조로 정리된 노트들을 지하철 노선도 형태의 그래프로도 확인할 수 있습니다.
 
@@ -61,14 +57,13 @@
   </tr>
 </table>
 
-<br />
+</details>
 
-### 에디터
+<details>
 
-**노트 헤더 커스텀**
+<summary><h3>노트 헤더 커스텀</h3></summary>
+
 > 노트의 아이콘, 커버, 제목, 태그 등을 직접 설정할 수 있습니다.
-
-<br />
 
 <table>
   <tr>
@@ -85,17 +80,18 @@
   </tr>
 </table>
 
-<br />
+</details>
 
-**블록 기반 에디터**
+<details>
+
+<summary><h3>블록 기반 에디터</h3></summary>
+
 > 노트 내용을 블록 단위로 구성하고 편집할 수 있습니다.
-
-<br />
 
 <table>
    <tr>
     <td align="center" colspan="2">
-      <h3>타이핑 중 엔터</h3>
+      <h3>새로운 블록 생성</h3>
       <img src="https://github.com/user-attachments/assets/034bda65-93b0-4de6-8156-4838985f84ae" width="800" />
     </td>
   </tr>
@@ -113,12 +109,13 @@
   </tr>
 </table>
 
-<br />
+</details>
 
-**가상 셀렉션**
+<details>
+
+<summary><h3>가상 셀렉션</h3></summary>
+
 > 가상 셀렉션을 통해 블록 단위로 범위 입력, 수정, 삭제 등을 할 수 있습니다.
-
-<br />
 
 <table>
    <tr>
@@ -134,6 +131,8 @@
     </td>
   </tr>
 </table>
+
+</details>
 
 <br />
 
@@ -154,7 +153,11 @@
 
 더 자세한 문제 상황과 해결 방법은 아래 링크에 정리해 두었습니다.
 
-[⭐ contentEditable의 DOM 조작과 리액트의 vDOM 충돌 문제 해결](https://nine-income-43f.notion.site/contentEditable-DOM-vDOM-1939d29069ce80e49d5ae40dd2957b80)
+<h3>
+  <a href="https://nine-income-43f.notion.site/contentEditable-DOM-vDOM-1939d29069ce80e49d5ae40dd2957b80">
+    ⭐ contentEditable의 DOM 조작과 리액트의 vDOM 충돌 문제 해결
+  </a>
+</h3>
 
 ---
 
@@ -174,7 +177,11 @@
 
 이러한 과정을 거쳐 가상 셀렉션을 구현하게 되었으며, 그 과정에서 여러 가지 문제점들이 발생했습니다. 각각의 문제와 이를 해결한 방법은 아래 링크에 정리해 두었습니다.
 
-[⭐ 블록 기반 에디터에서 가상 selection 구현하기](https://nine-income-43f.notion.site/selection-1f19d29069ce80448976d4a68fbaea1f#1fc9d29069ce80b1b64eed2256633f79)
+<h3>
+  <a href="https://nine-income-43f.notion.site/selection-1f19d29069ce80448976d4a68fbaea1f#1fc9d29069ce80b1b64eed2256633f79">
+    ⭐ 블록 기반 에디터에서 가상 selection 구현하기
+  </a>
+</h3>
 
 <br />
 
